@@ -1,0 +1,14 @@
+<?xml version='1.0' encoding='utf-8'?>
+
+<schemalist>
+  <schema id='org.gnome.shell.extensions.custom-hot-corners'
+          path='/org/gnome/shell/extensions/custom-hot-corners/'>
+
+    <key name='actions' type='a(ibbss)'>
+      <default>[(0, true, true, 'toggleOverview', '')]</default>
+      <summary>Actions associated with a hot corner</summary>
+    </key>
+
+  </schema>
+
+</schemalist>

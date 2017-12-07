@@ -1,0 +1,8 @@
+{
+    "description": "Customizable hot corners.",
+    "shell-version": ["3.26"],
+    "name": "Custom Hot Corners",
+    "uuid": "@uuid@",
+    "settings-schema": "org.gnome.shell.extensions.@PACKAGE_NAME@",
+    "gettext-domain": "@PACKAGE_NAME@"
+}

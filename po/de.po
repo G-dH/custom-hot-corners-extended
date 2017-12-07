@@ -1,0 +1,31 @@
+# German translation for custom-hot-corners package.
+# Copyright (C) 2017 Jan Runge
+# This file is distributed under the same license as the custom-hot-corners package.
+# Jan Runge <janrunx@gmail.com>, 2017.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: custom-hot-corners 0.1\n"
+"Report-Msgid-Bugs-To: janrunx@gmail.com\n"
+"POT-Creation-Date: 2017-12-04 22:12+0100\n"
+"PO-Revision-Date: 2017-12-06 11:44+0100\n"
+"Last-Translator: Jan Runge <janrunx@gmail.com>\n"
+"Language-Team: \n"
+"Language: de\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Poedit 2.0.4\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: prefs.js:21
+msgid "-"
+msgstr "-"
+
+#: prefs.js:22
+msgid "Toggle overview"
+msgstr "Übersicht anzeigen"
+
+#: prefs.js:23
+msgid "Run command"
+msgstr "Befehl ausführen"
