@@ -120,6 +120,16 @@ const CustomHotCorner = new Lang.Class({
         Main.layoutManager.uiGroup.add_actor(this._ripple3);
     },
 
+    destroy: function () {
+        Main.layoutManager.uiGroup.remove_actor(this._ripple1);
+        Main.layoutManager.uiGroup.remove_actor(this._ripple2);
+        Main.layoutManager.uiGroup.remove_actor(this._ripple3);
+        this._ripple1.destroy();
+        this._ripple2.destroy();
+        this._ripple3.destroy();
+        this.parent();
+    },
+
     // Overridden to allow all 4 monitor corners
     setBarrierSize: function (size) {
         // Use code of parent class to remove old barriers but new barriers
