@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: custom-hot-corners 0.1\n"
 "Report-Msgid-Bugs-To: janrunx@gmail.com\n"
-"POT-Creation-Date: 2017-12-04 22:12+0100\n"
-"PO-Revision-Date: 2017-12-06 11:44+0100\n"
+"POT-Creation-Date: 2017-12-08 15:59+0100\n"
+"PO-Revision-Date: 2017-12-08 16:02+0100\n"
 "Last-Translator: Jan Runge <janrunx@gmail.com>\n"
 "Language-Team: \n"
 "Language: de\n"
@@ -18,14 +18,22 @@ msgstr ""
 "X-Generator: Poedit 2.0.4\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: prefs.js:21
+#: prefs.js:38
 msgid "-"
 msgstr "-"
 
-#: prefs.js:22
+#: prefs.js:39
 msgid "Toggle overview"
 msgstr "Übersicht anzeigen"
 
-#: prefs.js:23
+#: prefs.js:40
+msgid "Show desktop"
+msgstr "Desktop anzeigen"
+
+#: prefs.js:41
 msgid "Run command"
 msgstr "Befehl ausführen"
+
+#: prefs.js:43
+msgid "Show desktop requires wmctrl to be installed"
+msgstr "Für die Desktop-anzeigen-Funktion muss das Programm wmctrl installiert sein"
