@@ -218,7 +218,7 @@ const CustomHotCorner = new Lang.Class({
         Util.spawn([
             'sh',
             '-c',
-            ('if wmctrl -m | grep -q "mode: OFF"; ' +
+            ('if wmctrl -m | grep -q -e "mode: OFF" -e "mode: N/A"; ' +
              'then wmctrl -k on; else wmctrl -k off; fi')
         ]);
     },
