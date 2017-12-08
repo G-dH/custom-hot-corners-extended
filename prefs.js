@@ -30,14 +30,17 @@ Gettext.textdomain(Me.metadata['gettext-domain']);
 const _ = Gettext.gettext;
 
 let _actions = [];
+let _wmctrlInfo = '';
 
 function init() {
     Convenience.initTranslations();
     _actions = _actions.concat([
         ['disabled', _("-")],
         ['toggleOverview', _("Toggle overview")],
+        ['showDesktop', _("Show desktop")],
         ['runCommand', _("Run command")]
     ]);
+    _wmctrlInfo = _("Show desktop requires wmctrl to be installed");
 }
 
 function buildPrefsWidget() {
@@ -85,11 +88,23 @@ const CornerWidget = new GObject.Class({
 const PrefsWidget = new GObject.Class({
     Name: 'Prefs.Widget',
     GTypeName: 'PrefsWidget',
-    Extends: Gtk.Notebook,
+    Extends: Gtk.Grid,
 
     _init: function () {
         this.parent();
-        this.set_tab_pos(Gtk.PositionType.LEFT);
+
+        this.infoBarLabel = new Gtk.Label({ label: '' });
+        this.infoBar = new Gtk.InfoBar();
+        this.infoBar.get_content_area().add(this.infoBarLabel);
+        this.infoBarRevealer = new Gtk.Revealer({
+            transition_type: Gtk.RevealerTransitionType.SLIDE_UP
+        });
+        this.infoBarRevealer.add(this.infoBar);
+        this.attach(this.infoBarRevealer, 0, 0, 1, 1);
+
+        this.notebook = new Gtk.Notebook();
+        this.notebook.set_tab_pos(Gtk.PositionType.LEFT);
+        this.attach(this.notebook, 0, 1, 1, 1);
 
         this._settings = Convenience.getSettings();
         this._cornerWidgets = [];
@@ -129,8 +144,9 @@ const PrefsWidget = new GObject.Class({
                 grid.attach(cw, x, y, 1, 1);
             }
 
-            this.append_page(grid, new Gtk.Label({ label: 'Monitor ' + 1 }));
+            this.notebook.append_page(grid, new Gtk.Label({ label: 'Monitor ' + 1 }));
         }
+        this._showWmctrlInfo();
     },
 
     _saveSettings: function () {
@@ -144,5 +160,21 @@ const PrefsWidget = new GObject.Class({
         }
         let val = new GLib.Variant('a(ibbss)', actions);
         this._settings.set_value('actions', val);
+        this._showWmctrlInfo();
+    },
+
+    _showWmctrlInfo: function () {
+        if (GLib.find_program_in_path("wmctrl")) {
+            this.infoBarRevealer.reveal_child = false;
+        } else {
+            for (let cw of this._cornerWidgets) {
+                if (cw.actionCombo.active_id === 'showDesktop') {
+                    this.infoBarLabel.label = _wmctrlInfo;
+                    this.infoBarRevealer.reveal_child = true;
+                    return;
+                }
+            }
+            this.infoBarRevealer.reveal_child = false;
+        }
     }
 });

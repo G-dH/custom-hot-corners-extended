@@ -82,6 +82,7 @@ const CustomHotCorner = new Lang.Class({
 
         let m = new Map([
             ['toggleOverview', this._toggleOverview],
+            ['showDesktop', this._showDesktop],
             ['runCommand', this._runCommand]
         ]);
         this._actionFunction = m.get(action) || function () {};
@@ -210,6 +211,16 @@ const CustomHotCorner = new Lang.Class({
             this._rippleAnimation();
             Main.overview.toggle();
         }
+    },
+
+    _showDesktop: function () {
+        this._rippleAnimation();
+        Util.spawn([
+            'sh',
+            '-c',
+            ('if wmctrl -m | grep -q "mode: OFF"; ' +
+             'then wmctrl -k on; else wmctrl -k off; fi')
+        ]);
     },
 
     _runCommand: function () {
