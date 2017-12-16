@@ -144,7 +144,8 @@ const PrefsWidget = new GObject.Class({
                 grid.attach(cw, x, y, 1, 1);
             }
 
-            this.notebook.append_page(grid, new Gtk.Label({ label: 'Monitor ' + 1 }));
+            let l = new Gtk.Label({ label: 'Monitor ' + (i + 1) });
+            this.notebook.append_page(grid, l);
         }
         this._showWmctrlInfo();
     },
