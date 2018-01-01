@@ -10,8 +10,11 @@ extension_DATA = convenience.js extension.js metadata.json prefs.js
 localprefix = $(HOME)/.local/share/gnome-shell/extensions
 
 local-install: zip-file
-	-rm -fr "$(localprefix)/$(uuid)"
+	$(MAKE) local-uninstall
 	unzip -q "$(abs_builddir)/$(uuid).zip" -d "$(localprefix)/$(uuid)"
+
+local-uninstall:
+	-rm -fr "$(localprefix)/$(uuid)"
 
 tmpinst = $(abs_builddir)/_tmpinst
 
