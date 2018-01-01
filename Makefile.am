@@ -5,7 +5,12 @@ EXTRA_DIST = convenience.js extension.js metadata.json prefs.js
 
 topextensiondir = $(datadir)/gnome-shell/extensions
 extensiondir = $(topextensiondir)/$(uuid)
-extension_DATA = convenience.js extension.js metadata.json prefs.js
+extension_DATA = convenience.js \
+                 extension.js \
+                 metadata.json \
+                 prefs.js \
+                 README.md \
+                 LICENSE
 
 localprefix = $(HOME)/.local/share/gnome-shell/extensions
 
