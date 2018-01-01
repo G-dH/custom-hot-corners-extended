@@ -11,7 +11,7 @@ localprefix = $(HOME)/.local/share/gnome-shell/extensions
 
 local-install: zip-file
 	-rm -fr "$(localprefix)/$(uuid)"
-	unzip -q "$(abs_builddir)/$(uuid).zip" -d "$(localprefix)"
+	unzip -q "$(abs_builddir)/$(uuid).zip" -d "$(localprefix)/$(uuid)"
 
 tmpinst = $(abs_builddir)/_tmpinst
 
@@ -22,6 +22,6 @@ zip-file: all
 	glib-compile-schemas "$(tmpinst)$(gsettingsschemadir)"
 	mv "$(tmpinst)$(gsettingsschemadir)" "$(tmpinst)$(extensiondir)/"
 	mv "$(tmpinst)$(localedir)" "$(tmpinst)$(extensiondir)/"
-	cd "$(tmpinst)$(topextensiondir)" && \
-	zip -qr "$(abs_builddir)/$(uuid).zip" "$(uuid)"
+	cd "$(tmpinst)$(topextensiondir)/$(uuid)" && \
+	zip -qr "$(abs_builddir)/$(uuid).zip" .
 	-rm -fr "$(tmpinst)"
