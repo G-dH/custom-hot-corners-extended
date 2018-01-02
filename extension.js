@@ -104,8 +104,9 @@ const CustomHotCorner = new Lang.Class({
         // Rotate the ripple actors according to the corner.
         // Negative scaling doesn't work here because that property is used
         // in the _animRipple function of the parent class.
-        // TODO: Test if this also works with a right-to-left style
-        let angle = left ? (top ? 0 : 270) : (top ? 90 : 180);
+        let ltr = (Clutter.get_default_text_direction() ==
+                   Clutter.TextDirection.LTR);
+        let angle = (left && ltr) ? (top ? 0 : 270) : (top ? 90 : 180);
         let properties = {
             style_class: 'ripple-box',
             opacity: 0,

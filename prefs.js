@@ -50,7 +50,6 @@ function buildPrefsWidget() {
 }
 
 const CornerWidget = new GObject.Class({
-    // TODO: Is this the correct Name and GTypeName?
     Name: 'Corner.Widget',
     GTypeName: 'CornerWidget',
     Extends: Gtk.Grid,
