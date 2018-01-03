@@ -89,6 +89,20 @@ const CustomHotCorner = new Lang.Class({
 
         this._x = left ? monitor.x : monitor.x + monitor.width;
         this._y = top ? monitor.y : monitor.y + monitor.height;
+
+        // Avoid pointer barriers that are at the same position
+        // but block opposite directions. Neither with X nor with Wayland
+        // such barriers work.
+        for (let c of Main.layoutManager.hotCorners) {
+            if (this._x === c._x && this._y === c._y) {
+                if (this._top === c._top) {
+                    this._x += this._left ? 1 : -1;
+                } else if (this._left === c._left) {
+                    this._y += this._top ? 1 : -1;
+                }
+            }
+        }
+
         this._enterd = false;
         this._monitor = monitor;
         this._pressureBarrier = new Layout.PressureBarrier(
