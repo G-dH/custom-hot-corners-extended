@@ -38,6 +38,7 @@ function init() {
         ['disabled', _("-")],
         ['toggleOverview', _("Toggle overview")],
         ['showDesktop', _("Show desktop")],
+        ['showApplications', _("Show applications")],
         ['runCommand', _("Run command")]
     ]);
     _wmctrlInfo = _("Show desktop requires wmctrl to be installed");
