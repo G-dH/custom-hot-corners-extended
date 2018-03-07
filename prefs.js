@@ -19,7 +19,6 @@ const GObject = imports.gi.GObject;
 const Gio = imports.gi.Gio;
 const Gtk = imports.gi.Gtk;
 const Gdk = imports.gi.Gdk;
-const Lang = imports.lang;
 const Gettext = imports.gettext;
 
 const ExtensionUtils = imports.misc.extensionUtils;
@@ -134,7 +133,7 @@ const PrefsWidget = new GObject.Class({
                     }
                 }
 
-                let f = Lang.bind(this, this._saveSettings);
+                let f = this._saveSettings.bind(this);
                 cw.actionCombo.connect('changed', f);
                 cw.commandEntry.connect('changed', f);
 
