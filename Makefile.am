@@ -16,6 +16,7 @@ localprefix = $(HOME)/.local/share/gnome-shell/extensions
 
 local-install: zip-file
 	$(MAKE) local-uninstall
+	$(MKDIR_P) "$(localprefix)"
 	unzip -q "$(abs_builddir)/$(uuid).zip" -d "$(localprefix)/$(uuid)"
 
 local-uninstall:
