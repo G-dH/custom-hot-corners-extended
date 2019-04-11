@@ -70,11 +70,11 @@ function _updateHotCorners() {
     }
 }
 
-const CustomHotCorner = new Lang.Class({
-    Name: 'CustomHotCorner',
-    Extends: Layout.HotCorner,
-
-    _init: function (monitor, top, left, action, command) {
+const CustomHotCorner = class CustomHotCorner extends Layout.HotCorner {
+    constructor(monitor, top, left, action, command) {
+        let x = left ? monitor.x : monitor.x + monitor.width;
+        let y = top ? monitor.y : monitor.y + monitor.height;
+        super(Main.layoutManager, monitor, x, y);
         this._top = top;
         this._left = left;
         this._action = action;
@@ -88,8 +88,8 @@ const CustomHotCorner = new Lang.Class({
         ]);
         this._actionFunction = m.get(action) || function () {};
 
-        this._x = left ? monitor.x : monitor.x + monitor.width;
-        this._y = top ? monitor.y : monitor.y + monitor.height;
+        this._x = x;
+        this._y = y;
 
         // Avoid pointer barriers that are at the same position
         // but block opposite directions. Neither with X nor with Wayland
@@ -135,23 +135,23 @@ const CustomHotCorner = new Lang.Class({
         Main.layoutManager.uiGroup.add_actor(this._ripple1);
         Main.layoutManager.uiGroup.add_actor(this._ripple2);
         Main.layoutManager.uiGroup.add_actor(this._ripple3);
-    },
+    }
 
-    destroy: function () {
+    destroy() {
         Main.layoutManager.uiGroup.remove_actor(this._ripple1);
         Main.layoutManager.uiGroup.remove_actor(this._ripple2);
         Main.layoutManager.uiGroup.remove_actor(this._ripple3);
         this._ripple1.destroy();
         this._ripple2.destroy();
         this._ripple3.destroy();
-        this.parent();
-    },
+        super.destroy();
+    }
 
     // Overridden to allow all 4 monitor corners
-    setBarrierSize: function (size) {
+    setBarrierSize(size) {
         // Use code of parent class to remove old barriers but new barriers
         // must be created here since the properties are construct only.
-        this.parent(0);
+        super.setBarrierSize(0);
 
         if (size > 0) {
             const BD = Meta.BarrierDirection;
@@ -175,10 +175,10 @@ const CustomHotCorner = new Lang.Class({
             this._pressureBarrier.addBarrier(this._verticalBarrier);
             this._pressureBarrier.addBarrier(this._horizontalBarrier);
         }
-    },
+    }
 
     // Overridden to allow all 4 monitor corners
-    _setupFallbackCornerIfNeeded: function (layoutManager) {
+    _setupFallbackCornerIfNeeded(layoutManager) {
         if (global.display.supports_extended_barriers())
             return;
 
@@ -205,31 +205,31 @@ const CustomHotCorner = new Lang.Class({
         this.actor.connect('leave-event', this._onEnvironsLeft.bind(this));
         this._corner.connect('enter-event', this._onCornerEntered.bind(this));
         this._corner.connect('leave-event', this._onCornerLeft.bind(this));
-    },
+    }
 
     // Overridden to allow running custom actions
-    _onCornerEntered: function () {
+    _onCornerEntered() {
         if (!this._entered) {
             this._entered = true;
             this._runAction();
         }
         return Clutter.EVENT_PROPAGATE;
-    },
+    }
 
-    _runAction: function () {
+    _runAction() {
         if (!this._monitor.inFullscreen) {
             this._actionFunction();
         }
-    },
+    }
 
-    _toggleOverview: function () {
+    _toggleOverview() {
         if (Main.overview.shouldToggleByCornerOrButton()) {
             this._rippleAnimation();
             Main.overview.toggle();
         }
-    },
+    }
 
-    _showDesktop: function () {
+    _showDesktop() {
         this._rippleAnimation();
         Util.spawn([
             'sh',
@@ -237,15 +237,15 @@ const CustomHotCorner = new Lang.Class({
             ('if wmctrl -m | grep -q -e "mode: OFF" -e "mode: N/A"; ' +
              'then wmctrl -k on; else wmctrl -k off; fi')
         ]);
-    },
+    }
 
-    _showApplications: function () {
+    _showApplications() {
         this._rippleAnimation();
         Main.overview.viewSelector._toggleAppsPage();
-    },
+    }
 
-    _runCommand: function () {
+    _runCommand() {
         this._rippleAnimation();
         Util.spawnCommandLine(this._command);
     }
-});
+}
