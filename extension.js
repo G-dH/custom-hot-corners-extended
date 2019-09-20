@@ -22,6 +22,7 @@ const Lang = imports.lang;
 
 const Main = imports.ui.main;
 const Layout = imports.ui.layout;
+const Ripples = imports.ui.ripples;
 const Util = imports.misc.util;
 const ExtensionUtils = imports.misc.extensionUtils;
 const Me = ExtensionUtils.getCurrentExtension();
@@ -117,34 +118,12 @@ const CustomHotCorner = class CustomHotCorner extends Layout.HotCorner {
         this._setupFallbackCornerIfNeeded(Main.layoutManager);
 
         // Rotate the ripple actors according to the corner.
-        // Negative scaling doesn't work here because that property is used
-        // in the _animRipple function of the parent class.
         let ltr = (Clutter.get_default_text_direction() ==
                    Clutter.TextDirection.LTR);
         let angle = (left && ltr) ? (top ? 0 : 270) : (top ? 90 : 180);
-        let properties = {
-            style_class: 'ripple-box',
-            opacity: 0,
-            visible: false,
-            rotation_angle_z: angle
-        };
-        this._ripple1 = new St.BoxLayout(properties);
-        this._ripple2 = new St.BoxLayout(properties);
-        this._ripple3 = new St.BoxLayout(properties);
-
-        Main.layoutManager.uiGroup.add_actor(this._ripple1);
-        Main.layoutManager.uiGroup.add_actor(this._ripple2);
-        Main.layoutManager.uiGroup.add_actor(this._ripple3);
-    }
-
-    destroy() {
-        Main.layoutManager.uiGroup.remove_actor(this._ripple1);
-        Main.layoutManager.uiGroup.remove_actor(this._ripple2);
-        Main.layoutManager.uiGroup.remove_actor(this._ripple3);
-        this._ripple1.destroy();
-        this._ripple2.destroy();
-        this._ripple3.destroy();
-        super.destroy();
+        this._ripples._ripple1.rotation_angle_z = angle;
+        this._ripples._ripple2.rotation_angle_z = angle;
+        this._ripples._ripple3.rotation_angle_z = angle;
     }
 
     // Overridden to allow all 4 monitor corners
@@ -205,6 +184,10 @@ const CustomHotCorner = class CustomHotCorner extends Layout.HotCorner {
         this.actor.connect('leave-event', this._onEnvironsLeft.bind(this));
         this._corner.connect('enter-event', this._onCornerEntered.bind(this));
         this._corner.connect('leave-event', this._onCornerLeft.bind(this));
+    }
+
+    _rippleAnimation() {
+        this._ripples.playAnimation(this._x, this._y);
     }
 
     // Overridden to allow running custom actions
