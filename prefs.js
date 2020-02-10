@@ -27,18 +27,15 @@ Gettext.textdomain(Me.metadata['gettext-domain']);
 const _ = Gettext.gettext;
 
 let _actions = [];
-let _wmctrlInfo = '';
 
 function init() {
     ExtensionUtils.initTranslations();
     _actions = _actions.concat([
         ['disabled', _("-")],
         ['toggleOverview', _("Toggle overview")],
-        ['showDesktop', _("Show desktop")],
         ['showApplications', _("Show applications")],
         ['runCommand', _("Run command")]
     ]);
-    _wmctrlInfo = _("Show desktop requires wmctrl to be installed");
 }
 
 function buildPrefsWidget() {
@@ -94,18 +91,9 @@ const PrefsWidget = new GObject.Class({
     _init: function () {
         this.parent();
 
-        this.infoBarLabel = new Gtk.Label({ label: '' });
-        this.infoBar = new Gtk.InfoBar();
-        this.infoBar.get_content_area().add(this.infoBarLabel);
-        this.infoBarRevealer = new Gtk.Revealer({
-            transition_type: Gtk.RevealerTransitionType.SLIDE_UP
-        });
-        this.infoBarRevealer.add(this.infoBar);
-        this.attach(this.infoBarRevealer, 0, 0, 1, 1);
-
         this.notebook = new Gtk.Notebook();
         this.notebook.set_tab_pos(Gtk.PositionType.LEFT);
-        this.attach(this.notebook, 0, 1, 1, 1);
+        this.attach(this.notebook, 0, 0, 1, 1);
 
         this._cornerWidgets = [];
 
@@ -130,22 +118,6 @@ const PrefsWidget = new GObject.Class({
 
             let label = new Gtk.Label({ label: 'Monitor ' + (monitor.index + 1) });
             this.notebook.append_page(grid, label);
-        }
-        this._showWmctrlInfo();
-    },
-
-    _showWmctrlInfo: function () {
-        if (GLib.find_program_in_path("wmctrl")) {
-            this.infoBarRevealer.reveal_child = false;
-        } else {
-            for (let cw of this._cornerWidgets) {
-                if (cw.actionCombo.active_id === 'showDesktop') {
-                    this.infoBarLabel.label = _wmctrlInfo;
-                    this.infoBarRevealer.reveal_child = true;
-                    return;
-                }
-            }
-            this.infoBarRevealer.reveal_child = false;
         }
     }
 });
