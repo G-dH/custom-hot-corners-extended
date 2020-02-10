@@ -1,11 +1,11 @@
 ACLOCAL_AMFLAGS = -I m4
 
 SUBDIRS = schemas po
-EXTRA_DIST = convenience.js extension.js metadata.json prefs.js
+EXTRA_DIST = settings.js extension.js metadata.json prefs.js
 
 topextensiondir = $(datadir)/gnome-shell/extensions
 extensiondir = $(topextensiondir)/$(uuid)
-extension_DATA = convenience.js \
+extension_DATA = settings.js \
                  extension.js \
                  metadata.json \
                  prefs.js \
