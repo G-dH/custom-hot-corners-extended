@@ -16,14 +16,12 @@
 
 const GLib = imports.gi.GLib;
 const GObject = imports.gi.GObject;
-const Gio = imports.gi.Gio;
 const Gtk = imports.gi.Gtk;
-const Gdk = imports.gi.Gdk;
 const Gettext = imports.gettext;
 
 const ExtensionUtils = imports.misc.extensionUtils;
 const Me = ExtensionUtils.getCurrentExtension();
-const Convenience = Me.imports.convenience;
+const Settings = Me.imports.settings;
 
 Gettext.textdomain(Me.metadata['gettext-domain']);
 const _ = Gettext.gettext;
@@ -32,7 +30,7 @@ let _actions = [];
 let _wmctrlInfo = '';
 
 function init() {
-    Convenience.initTranslations();
+    ExtensionUtils.initTranslations();
     _actions = _actions.concat([
         ['disabled', _("-")],
         ['toggleOverview', _("Toggle overview")],
@@ -54,29 +52,33 @@ const CornerWidget = new GObject.Class({
     GTypeName: 'CornerWidget',
     Extends: Gtk.Grid,
 
-    _init: function (monitorNumber, top, left) {
+    _init: function (corner) {
         this.parent({
             expand: true,
             halign: Gtk.Align.FILL,
-            valign: top ? Gtk.Align.START : Gtk.Align.END
+            valign: corner.top ? Gtk.Align.START : Gtk.Align.END
         });
-        this.top = top;
-        this.left = left;
-        this.monitorNumber = monitorNumber;
+        this.corner = corner;
         this.actionCombo = new Gtk.ComboBoxText({ hexpand: true });
+        this.commandEntry = new Gtk.Entry({ margin_top: 8 });
 
         _actions.forEach(a => this.actionCombo.append(a[0], a[1]));
-        this.actionCombo.active_id = 'disabled';
-        this.commandEntry = new Gtk.Entry({ margin_top: 8 });
+
+        this.actionCombo.active_id = this.corner.action;
+        this.commandEntry.text = this.corner.command;
 
         let revealer = new Gtk.Revealer({
             transition_type: Gtk.RevealerTransitionType.SLIDE_UP,
-            reveal_child: false
+            reveal_child: this.actionCombo.active_id === 'runCommand'
         });
         revealer.add(this.commandEntry);
 
-        this.actionCombo.connect('changed', ac => {
-            revealer.reveal_child = ac.active_id === 'runCommand';
+        this.actionCombo.connect('changed', () => {
+            revealer.reveal_child = this.actionCombo.active_id === 'runCommand';
+            this.corner.action = this.actionCombo.active_id;
+        });
+        this.commandEntry.connect('changed', () => {
+            this.corner.command = this.commandEntry.text;
         });
 
         this.attach(this.actionCombo, 0, 0, 1, 1);
@@ -105,13 +107,11 @@ const PrefsWidget = new GObject.Class({
         this.notebook.set_tab_pos(Gtk.PositionType.LEFT);
         this.attach(this.notebook, 0, 1, 1, 1);
 
-        this._settings = Convenience.getSettings();
         this._cornerWidgets = [];
 
-        let actions = this._settings.get_value('actions').deep_unpack();
-        let numberOfMonitors = Gdk.Screen.get_default().get_n_monitors();
+        let monitors = Settings.Monitor.all();
 
-        for (let i = 0; i < numberOfMonitors; ++i) {
+        for (let monitor of monitors) {
             let grid = new Gtk.Grid({
                 expand: true,
                 margin: 10,
@@ -120,46 +120,17 @@ const PrefsWidget = new GObject.Class({
             });
 
             // Add widgets for every corner
-            for (let [top, left] of [[true, true], [true, false],
-                                     [false, true], [false, false]]) {
-                let cw = new CornerWidget(i, top, left);
-
-                for (let a of actions) {
-                    if (cw.monitorNumber === a[0] &&
-                            cw.top === a[1] &&
-                            cw.left === a[2]) {
-                        cw.actionCombo.active_id = a[3];
-                        cw.commandEntry.text = a[4];
-                    }
-                }
-
-                let f = this._saveSettings.bind(this);
-                cw.actionCombo.connect('changed', f);
-                cw.commandEntry.connect('changed', f);
-
+            for (let corner of monitor.corners) {
+                let cw = new CornerWidget(corner);
                 this._cornerWidgets.push(cw);
-                let x = left ? 0 : 1;
-                let y = top ? 0 : 1;
+                let x = corner.left ? 0 : 1;
+                let y = corner.top ? 0 : 1;
                 grid.attach(cw, x, y, 1, 1);
             }
 
-            let l = new Gtk.Label({ label: 'Monitor ' + (i + 1) });
-            this.notebook.append_page(grid, l);
+            let label = new Gtk.Label({ label: 'Monitor ' + (monitor.index + 1) });
+            this.notebook.append_page(grid, label);
         }
-        this._showWmctrlInfo();
-    },
-
-    _saveSettings: function () {
-        let actions = [];
-        for (let cw of this._cornerWidgets) {
-            let id = cw.actionCombo.active_id;
-            let cmd = cw.commandEntry.text;
-            if (id !== 'disabled' || cmd.length > 0) {
-                actions.push([cw.monitorNumber, cw.top, cw.left, id, cmd]);
-            }
-        }
-        let val = new GLib.Variant('a(ibbss)', actions);
-        this._settings.set_value('actions', val);
         this._showWmctrlInfo();
     },
 
