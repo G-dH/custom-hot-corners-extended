@@ -14,110 +14,63 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-const GLib = imports.gi.GLib;
-const GObject = imports.gi.GObject;
 const Gtk = imports.gi.Gtk;
-const Gettext = imports.gettext;
 
 const ExtensionUtils = imports.misc.extensionUtils;
 const Me = ExtensionUtils.getCurrentExtension();
 const Settings = Me.imports.settings;
 
-Gettext.textdomain(Me.metadata['gettext-domain']);
-const _ = Gettext.gettext;
-
-let _actions = [];
+function _loadUI(file) {
+    let path = Me.dir.get_child(file).get_path();
+    return Gtk.Builder.new_from_file(path);
+}
 
 function init() {
-    ExtensionUtils.initTranslations();
-    _actions = _actions.concat([
-        ['disabled', _("-")],
-        ['toggleOverview', _("Toggle overview")],
-        ['showApplications', _("Show applications")],
-        ['runCommand', _("Run command")]
-    ]);
 }
 
 function buildPrefsWidget() {
-    let widget = new PrefsWidget();
-    widget.show_all();
-    return widget;
-}
+    let prefsUI = _loadUI('prefs-widget.ui');
+    let prefsWidget = prefsUI.get_object('prefsGrid');
+    let notebook = prefsUI.get_object('notebook');
 
-const CornerWidget = new GObject.Class({
-    Name: 'Corner.Widget',
-    GTypeName: 'CornerWidget',
-    Extends: Gtk.Grid,
-
-    _init: function (corner) {
-        this.parent({
+    for (let monitor of Settings.Monitor.all()) {
+        let grid = new Gtk.Grid({
             expand: true,
-            halign: Gtk.Align.FILL,
-            valign: corner.top ? Gtk.Align.START : Gtk.Align.END
-        });
-        this.corner = corner;
-        this.actionCombo = new Gtk.ComboBoxText({ hexpand: true });
-        this.commandEntry = new Gtk.Entry({ margin_top: 8 });
-
-        _actions.forEach(a => this.actionCombo.append(a[0], a[1]));
-
-        this.actionCombo.active_id = this.corner.action;
-        this.commandEntry.text = this.corner.command;
-
-        let revealer = new Gtk.Revealer({
-            transition_type: Gtk.RevealerTransitionType.SLIDE_UP,
-            reveal_child: this.actionCombo.active_id === 'runCommand'
-        });
-        revealer.add(this.commandEntry);
-
-        this.actionCombo.connect('changed', () => {
-            revealer.reveal_child = this.actionCombo.active_id === 'runCommand';
-            this.corner.action = this.actionCombo.active_id;
-        });
-        this.commandEntry.connect('changed', () => {
-            this.corner.command = this.commandEntry.text;
+            margin: 10,
+            row_spacing: 20,
+            column_spacing: 20
         });
 
-        this.attach(this.actionCombo, 0, 0, 1, 1);
-        this.attach(revealer, 0, 1, 1, 1);
-    }
-});
+        // Add widgets for every corner
+        for (let corner of monitor.corners) {
+            let cwUI = _loadUI('corner-widget.ui');
+            let cw = cwUI.get_object('cornerWidget');
+            let actionCombo = cwUI.get_object('actionCombo');
+            let commandEntry = cwUI.get_object('commandEntry');
+            let commandEntryRevealer = cwUI.get_object('commandEntryRevealer');
 
-const PrefsWidget = new GObject.Class({
-    Name: 'Prefs.Widget',
-    GTypeName: 'PrefsWidget',
-    Extends: Gtk.Grid,
+            actionCombo.active_id = corner.action;
+            commandEntry.text = corner.command;
+            commandEntryRevealer.reveal_child = corner.action === 'runCommand';
 
-    _init: function () {
-        this.parent();
-
-        this.notebook = new Gtk.Notebook();
-        this.notebook.set_tab_pos(Gtk.PositionType.LEFT);
-        this.attach(this.notebook, 0, 0, 1, 1);
-
-        this._cornerWidgets = [];
-
-        let monitors = Settings.Monitor.all();
-
-        for (let monitor of monitors) {
-            let grid = new Gtk.Grid({
-                expand: true,
-                margin: 10,
-                row_spacing: 20,
-                column_spacing: 20
+            actionCombo.connect('changed', () => {
+                corner.action = actionCombo.active_id;
+                commandEntryRevealer.reveal_child = corner.action === 'runCommand';
+            });
+            commandEntry.connect('changed', () => {
+                corner.command = commandEntry.text;
             });
 
-            // Add widgets for every corner
-            for (let corner of monitor.corners) {
-                let cw = new CornerWidget(corner);
-                this._cornerWidgets.push(cw);
-                let x = corner.left ? 0 : 1;
-                let y = corner.top ? 0 : 1;
-                grid.attach(cw, x, y, 1, 1);
-            }
-
-            let label = new Gtk.Label({ label: 'Monitor ' + (monitor.index + 1) });
-            this.notebook.append_page(grid, label);
+            cw.valign = corner.top ? Gtk.Align.START : Gtk.Align.END;
+            let x = corner.left ? 0 : 1;
+            let y = corner.top ? 0 : 1;
+            grid.attach(cw, x, y, 1, 1);
         }
+
+        let label = new Gtk.Label({ label: 'Monitor ' + (monitor.index + 1) });
+        notebook.append_page(grid, label);
     }
-});
+
+    prefsWidget.show_all();
+    return prefsWidget;
+}
