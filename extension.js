@@ -207,7 +207,11 @@ const CustomHotCorner = class CustomHotCorner extends Layout.HotCorner {
 
     _showApplications() {
         this._rippleAnimation();
-        Main.overview.viewSelector._toggleAppsPage();
+        if (Main.overview.viewSelector._showAppsButton.checked) {
+            Main.overview.hide();
+        } else {
+            Main.overview.viewSelector._toggleAppsPage();
+        }
     }
 
     _runCommand() {
