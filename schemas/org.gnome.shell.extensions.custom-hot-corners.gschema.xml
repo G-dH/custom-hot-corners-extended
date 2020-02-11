@@ -8,5 +8,8 @@
     <key name='command' type='s'>
       <default>''</default>
     </key>
+    <key name='fullscreen' type='b'>
+      <default>false</default>
+    </key>
   </schema>
 </schemalist>

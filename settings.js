@@ -108,6 +108,14 @@ var Corner = class Corner {
         this._gsettings.set_string('command', command);
     }
 
+    get fullscreen() {
+        return this._gsettings.get_boolean('fullscreen');
+    }
+
+    set fullscreen(bool_val) {
+        this._gsettings.set_boolean('fullscreen', bool_val);
+    }
+
     _loadSettings() {
         let schema = 'org.gnome.shell.extensions.custom-hot-corners.corner';
         let v = this.top ? 'top' : 'bottom';

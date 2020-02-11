@@ -48,10 +48,12 @@ function buildPrefsWidget() {
             let actionCombo = cwUI.get_object('actionCombo');
             let commandEntry = cwUI.get_object('commandEntry');
             let commandEntryRevealer = cwUI.get_object('commandEntryRevealer');
+            let fullscreenSwitch = cwUI.get_object('fullscreenSwitch');
 
             actionCombo.active_id = corner.action;
             commandEntry.text = corner.command;
             commandEntryRevealer.reveal_child = corner.action === 'runCommand';
+            fullscreenSwitch.active = corner.fullscreen;
 
             actionCombo.connect('changed', () => {
                 corner.action = actionCombo.active_id;
@@ -59,6 +61,9 @@ function buildPrefsWidget() {
             });
             commandEntry.connect('changed', () => {
                 corner.command = commandEntry.text;
+            });
+            fullscreenSwitch.connect('notify::active', () => {
+                corner.fullscreen = fullscreenSwitch.active;
             });
 
             cw.valign = corner.top ? Gtk.Align.START : Gtk.Align.END;

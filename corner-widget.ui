@@ -2,6 +2,42 @@
 <!-- Generated with glade 3.22.1 -->
 <interface domain="custom-hot-corners">
   <requires lib="gtk+" version="3.20"/>
+  <object class="GtkPopover" id="cornerSettings">
+    <property name="can_focus">False</property>
+    <property name="relative_to">settingsButton</property>
+    <child>
+      <object class="GtkGrid">
+        <property name="visible">True</property>
+        <property name="can_focus">False</property>
+        <property name="margin_left">8</property>
+        <property name="margin_right">8</property>
+        <property name="margin_top">8</property>
+        <property name="margin_bottom">8</property>
+        <property name="column_spacing">12</property>
+        <child>
+          <object class="GtkSwitch" id="fullscreenSwitch">
+            <property name="visible">True</property>
+            <property name="can_focus">True</property>
+          </object>
+          <packing>
+            <property name="left_attach">1</property>
+            <property name="top_attach">0</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkLabel">
+            <property name="visible">True</property>
+            <property name="can_focus">False</property>
+            <property name="label" translatable="yes">Enable in fullscreen mode</property>
+          </object>
+          <packing>
+            <property name="left_attach">0</property>
+            <property name="top_attach">0</property>
+          </packing>
+        </child>
+      </object>
+    </child>
+  </object>
   <object class="GtkGrid" id="cornerWidget">
     <property name="visible">True</property>
     <property name="can_focus">False</property>
@@ -27,18 +63,48 @@
       </packing>
     </child>
     <child>
-      <object class="GtkComboBoxText" id="actionCombo">
+      <object class="GtkGrid">
         <property name="visible">True</property>
         <property name="can_focus">False</property>
-        <property name="hexpand">True</property>
-        <property name="active">0</property>
-        <items>
-          <item id="disabled" translatable="yes">-</item>
-          <item id="toggleOverview" translatable="yes">Toggle overview</item>
-          <item id="showApplications" translatable="yes">Show applications</item>
-          <item id="runCommand" translatable="yes">Run command</item>
-        </items>
-        <signal name="changed" handler="_saveSettings" swapped="no"/>
+        <child>
+          <object class="GtkComboBoxText" id="actionCombo">
+            <property name="visible">True</property>
+            <property name="can_focus">False</property>
+            <property name="hexpand">True</property>
+            <property name="active">0</property>
+            <items>
+              <item id="disabled" translatable="yes">-</item>
+              <item id="toggleOverview" translatable="yes">Toggle overview</item>
+              <item id="showApplications" translatable="yes">Show applications</item>
+              <item id="runCommand" translatable="yes">Run command</item>
+            </items>
+            <signal name="changed" handler="_saveSettings" swapped="no"/>
+          </object>
+          <packing>
+            <property name="left_attach">0</property>
+            <property name="top_attach">0</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkMenuButton" id="settingsButton">
+            <property name="visible">True</property>
+            <property name="can_focus">True</property>
+            <property name="receives_default">True</property>
+            <property name="margin_left">4</property>
+            <property name="popover">cornerSettings</property>
+            <child>
+              <object class="GtkImage">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="icon_name">emblem-system-symbolic</property>
+              </object>
+            </child>
+          </object>
+          <packing>
+            <property name="left_attach">1</property>
+            <property name="top_attach">0</property>
+          </packing>
+        </child>
       </object>
       <packing>
         <property name="left_attach">0</property>

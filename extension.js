@@ -191,7 +191,9 @@ const CustomHotCorner = class CustomHotCorner extends Layout.HotCorner {
     }
 
     _runAction() {
-        if (!this._monitor.inFullscreen) {
+        if (this._monitor.inFullscreen && this._corner.fullscreen) {
+            this._actionFunction();
+        } else if (!this._monitor.inFullscreen) {
             this._actionFunction();
         }
     }
