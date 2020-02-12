@@ -47,14 +47,14 @@ function disable() {
 }
 
 function _removeHotCorners() {
+    _corners.forEach(c => c.destroy());
+    _corners = [];
     // hot corners might be null
     Main.layoutManager.hotCorners.filter(Boolean).forEach(c => c.destroy());
     Main.layoutManager.hotCorners = [];
 }
 
 function _updateHotCorners() {
-    _corners.forEach(c => c.destroy());
-    _corners = [];
     _removeHotCorners();
 
     for (let i = 0; i < Main.layoutManager.monitors.length; ++i) {
