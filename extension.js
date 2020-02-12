@@ -29,7 +29,7 @@ const Me = ExtensionUtils.getCurrentExtension();
 const Settings = Me.imports.settings;
 
 let _origUpdateHotCorners = Main.layoutManager._updateHotCorners;
-let _monitors = [];
+let _corners = [];
 
 function init() {
 }
@@ -53,13 +53,14 @@ function _removeHotCorners() {
 }
 
 function _updateHotCorners() {
-    _monitors.forEach(m => m.destroy());
-    _monitors = [];
+    _corners.forEach(c => c.destroy());
+    _corners = [];
     _removeHotCorners();
-    _monitors = Settings.Monitor.all();
 
-    for (let monitor of _monitors) {
-        for (let corner of monitor.corners) {
+    for (let i = 0; i < Main.layoutManager.monitors.length; ++i) {
+        const corners = Settings.Corner.forMonitor(i, global.display.get_monitor_geometry(i));
+        for (let corner of corners) {
+            _corners.push(corner);
             // Update all hot corners if something changes
             corner.connect('changed', () => _updateHotCorners());
             if (corner.action !== 'disabled') {

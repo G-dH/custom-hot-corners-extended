@@ -14,7 +14,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-const Gtk = imports.gi.Gtk;
+const {Gtk, Gdk} = imports.gi;
 
 const ExtensionUtils = imports.misc.extensionUtils;
 const Me = ExtensionUtils.getCurrentExtension();
@@ -33,7 +33,10 @@ function buildPrefsWidget() {
     let prefsWidget = prefsUI.get_object('prefsGrid');
     let notebook = prefsUI.get_object('notebook');
 
-    for (let monitor of Settings.Monitor.all()) {
+    const display = Gdk.Display.get_default();
+    const num_monitors = display.get_n_monitors();
+
+    for (let monitorIndex = 0; monitorIndex < num_monitors; ++monitorIndex) {
         let grid = new Gtk.Grid({
             expand: true,
             margin: 10,
@@ -41,8 +44,11 @@ function buildPrefsWidget() {
             column_spacing: 20
         });
 
-        // Add widgets for every corner
-        for (let corner of monitor.corners) {
+        const monitor = display.get_monitor(monitorIndex);
+        const geometry = monitor.get_geometry();
+        const corners = Settings.Corner.forMonitor(monitorIndex, geometry);
+
+        for (let corner of corners) {
             let cwUI = _loadUI('corner-widget.ui');
             let cw = cwUI.get_object('cornerWidget');
             let actionCombo = cwUI.get_object('actionCombo');
@@ -72,7 +78,7 @@ function buildPrefsWidget() {
             grid.attach(cw, x, y, 1, 1);
         }
 
-        let label = new Gtk.Label({ label: 'Monitor ' + (monitor.index + 1) });
+        let label = new Gtk.Label({ label: 'Monitor ' + (monitorIndex + 1) });
         notebook.append_page(grid, label);
     }
 

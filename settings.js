@@ -14,62 +14,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-const {GLib, Gio, Gdk} = imports.gi;
+const {GLib, Gio} = imports.gi;
 
 const ExtensionUtils = imports.misc.extensionUtils;
 const Me = ExtensionUtils.getCurrentExtension();
-
-var Monitor = class Monitor {
-    constructor(index, geometry, primary) {
-        this.index = index;
-        this.x = geometry.x;
-        this.y = geometry.y;
-        this.width = geometry.width;
-        this.height = geometry.height;
-        this.corners = this.createCorners();
-    }
-
-    destroy() {
-        this.corners.forEach(c => c.destroy());
-        this.corners = [];
-    }
-
-    createCorners() {
-        let corners = [];
-        for (let top of [true, false]) {
-            for (let left of [true, false]) {
-                let x = left ? this.x : this.x + this.width;
-                let y = top ? this.y : this.y + this.height;
-                let c = new Corner(this.index, top, left, x, y);
-                corners.push(c);
-            }
-        }
-        return corners;
-    }
-
-    /**
-     * Return array of all active monitors. If there is a primary monitor
-     * it will be the first in the array.
-     */
-    static all() {
-        const display = Gdk.Display.get_default();
-        const num_monitors = display.get_n_monitors();
-        const primary_monitor = display.get_primary_monitor();
-
-        const monitors = [];
-
-        for (let i = 0; i < num_monitors; ++i) {
-            let m = display.get_monitor(i);
-            if (m === primary_monitor) {
-                monitors.unshift(new Monitor(i, m.get_geometry(), true));
-            } else {
-                monitors.push(new Monitor(i, m.get_geometry(), false));
-            }
-        }
-
-        return monitors;
-    }
-}
 
 var Corner = class Corner {
     constructor(monitorIndex, top, left, x, y) {
@@ -80,6 +28,19 @@ var Corner = class Corner {
         this.y = y;
         this._gsettings = this._loadSettings();
         this._connectionIds = [];
+    }
+
+    static forMonitor(index, geometry) {
+        let corners = [];
+        for (let top of [true, false]) {
+            for (let left of [true, false]) {
+                let x = left ? geometry.x : geometry.x + geometry.width;
+                let y = top ? geometry.y : geometry.y + geometry.height;
+                let c = new Corner(index, top, left, x, y);
+                corners.push(c);
+            }
+        }
+        return corners;
     }
 
     connect(name, callback) {
@@ -126,6 +87,10 @@ var Corner = class Corner {
     }
 }
 
+/**
+ * Copied from Gnome Shells extensionUtils.js and adapted to allow
+ * loading the setting with a specific path.
+ */
 function getSettings(schema, path) {
     let schemaDir = Me.dir.get_child('schemas');
     let schemaSource;
