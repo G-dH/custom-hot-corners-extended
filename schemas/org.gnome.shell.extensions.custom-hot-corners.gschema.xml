@@ -11,5 +11,11 @@
     <key name='fullscreen' type='b'>
       <default>false</default>
     </key>
+    <key name='barrier-size' type='i'>
+      <default>20</default>
+    </key>
+    <key name='pressure-threshold' type='i'>
+      <default>100</default>
+    </key>
   </schema>
 </schemalist>

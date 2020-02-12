@@ -2,6 +2,17 @@
 <!-- Generated with glade 3.22.1 -->
 <interface domain="custom-hot-corners">
   <requires lib="gtk+" version="3.20"/>
+  <object class="GtkAdjustment" id="barrierAdjustment">
+    <property name="lower">1</property>
+    <property name="upper">500</property>
+    <property name="step_increment">1</property>
+    <property name="page_increment">10</property>
+  </object>
+  <object class="GtkAdjustment" id="pressureThresholdAdjustment">
+    <property name="upper">800</property>
+    <property name="step_increment">1</property>
+    <property name="page_increment">10</property>
+  </object>
   <object class="GtkPopover" id="cornerSettings">
     <property name="can_focus">False</property>
     <property name="relative_to">settingsButton</property>
@@ -13,11 +24,13 @@
         <property name="margin_right">8</property>
         <property name="margin_top">8</property>
         <property name="margin_bottom">8</property>
+        <property name="row_spacing">8</property>
         <property name="column_spacing">12</property>
         <child>
           <object class="GtkSwitch" id="fullscreenSwitch">
             <property name="visible">True</property>
             <property name="can_focus">True</property>
+            <property name="halign">end</property>
           </object>
           <packing>
             <property name="left_attach">1</property>
@@ -28,11 +41,61 @@
           <object class="GtkLabel">
             <property name="visible">True</property>
             <property name="can_focus">False</property>
+            <property name="halign">start</property>
             <property name="label" translatable="yes">Enable in fullscreen mode</property>
           </object>
           <packing>
             <property name="left_attach">0</property>
             <property name="top_attach">0</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkLabel">
+            <property name="visible">True</property>
+            <property name="can_focus">False</property>
+            <property name="halign">start</property>
+            <property name="label" translatable="yes">Barrier size</property>
+          </object>
+          <packing>
+            <property name="left_attach">0</property>
+            <property name="top_attach">1</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkSpinButton" id="barrierSize">
+            <property name="visible">True</property>
+            <property name="can_focus">True</property>
+            <property name="adjustment">barrierAdjustment</property>
+            <property name="numeric">True</property>
+          </object>
+          <packing>
+            <property name="left_attach">1</property>
+            <property name="top_attach">1</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkLabel">
+            <property name="visible">True</property>
+            <property name="can_focus">False</property>
+            <property name="halign">start</property>
+            <property name="label" translatable="yes">Pressure Threshold</property>
+          </object>
+          <packing>
+            <property name="left_attach">0</property>
+            <property name="top_attach">2</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkSpinButton" id="pressureThreshold">
+            <property name="visible">True</property>
+            <property name="can_focus">True</property>
+            <property name="halign">end</property>
+            <property name="adjustment">pressureThresholdAdjustment</property>
+            <property name="numeric">True</property>
+          </object>
+          <packing>
+            <property name="left_attach">1</property>
+            <property name="top_attach">2</property>
           </packing>
         </child>
       </object>
@@ -53,7 +116,6 @@
             <property name="can_focus">True</property>
             <property name="margin_top">8</property>
             <property name="hexpand">True</property>
-            <signal name="changed" handler="_saveSettings" swapped="no"/>
           </object>
         </child>
       </object>
@@ -78,7 +140,6 @@
               <item id="showApplications" translatable="yes">Show applications</item>
               <item id="runCommand" translatable="yes">Run command</item>
             </items>
-            <signal name="changed" handler="_saveSettings" swapped="no"/>
           </object>
           <packing>
             <property name="left_attach">0</property>
