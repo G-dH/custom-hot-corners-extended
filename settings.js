@@ -77,6 +77,22 @@ var Corner = class Corner {
         this._gsettings.set_boolean('fullscreen', bool_val);
     }
 
+    get barrierSize() {
+        return this._gsettings.get_int('barrier-size');
+    }
+
+    set barrierSize(size) {
+        this._gsettings.set_int('barrier-size', size);
+    }
+
+    get pressureThreshold() {
+        return this._gsettings.get_int('pressure-threshold');
+    }
+
+    set pressureThreshold(threshold) {
+        this._gsettings.set_int('pressure-threshold', threshold);
+    }
+
     _loadSettings() {
         let schema = 'org.gnome.shell.extensions.custom-hot-corners.corner';
         let v = this.top ? 'top' : 'bottom';

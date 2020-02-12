@@ -14,7 +14,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-const {Gtk, Gdk} = imports.gi;
+const {Gtk, Gdk, GLib} = imports.gi;
 
 const ExtensionUtils = imports.misc.extensionUtils;
 const Me = ExtensionUtils.getCurrentExtension();
@@ -55,11 +55,15 @@ function buildPrefsWidget() {
             let commandEntry = cwUI.get_object('commandEntry');
             let commandEntryRevealer = cwUI.get_object('commandEntryRevealer');
             let fullscreenSwitch = cwUI.get_object('fullscreenSwitch');
+            let barrierSizeSpinButton = cwUI.get_object('barrierSize');
+            let pressureThresholdSpinButton = cwUI.get_object('pressureThreshold');
 
             actionCombo.active_id = corner.action;
             commandEntry.text = corner.command;
             commandEntryRevealer.reveal_child = corner.action === 'runCommand';
             fullscreenSwitch.active = corner.fullscreen;
+            barrierSizeSpinButton.value = corner.barrierSize;
+            pressureThresholdSpinButton.value = corner.pressureThreshold;
 
             actionCombo.connect('changed', () => {
                 corner.action = actionCombo.active_id;
@@ -70,6 +74,37 @@ function buildPrefsWidget() {
             });
             fullscreenSwitch.connect('notify::active', () => {
                 corner.fullscreen = fullscreenSwitch.active;
+            });
+            barrierSizeSpinButton.timout_id = null;
+            barrierSizeSpinButton.connect('changed', () => {
+                barrierSizeSpinButton.update();
+                // Cancel previous timeout
+                if (barrierSizeSpinButton.timeout_id) {
+                    GLib.Source.remove(barrierSizeSpinButton.timeout_id);
+                }
+                barrierSizeSpinButton.timeout_id = GLib.timeout_add(
+                    GLib.PRIORITY_DEFAULT,
+                    1000,
+                    () => {
+                        corner.barrierSize = barrierSizeSpinButton.value;
+                        barrierSizeSpinButton.timeout_id = null;
+                    }
+                );
+            });
+            pressureThresholdSpinButton.timeout_id = null;
+            pressureThresholdSpinButton.connect('changed', () => {
+                pressureThresholdSpinButton.update();
+                if (pressureThresholdSpinButton.timeout_id) {
+                    GLib.Source.remove(pressureThresholdSpinButton.timeout_id);
+                }
+                pressureThresholdSpinButton.timeout_id = GLib.timeout_add(
+                    GLib.PRIORITY_DEFAULT,
+                    1000,
+                    () => {
+                        corner.pressureThreshold = pressureThresholdSpinButton.value;
+                        pressureThresholdSpinButton.timeout_id = null;
+                    }
+                );
             });
 
             cw.valign = corner.top ? Gtk.Align.START : Gtk.Align.END;

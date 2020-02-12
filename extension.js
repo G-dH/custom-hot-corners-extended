@@ -99,7 +99,7 @@ const CustomHotCorner = class CustomHotCorner extends Layout.HotCorner {
 
         this._enterd = false;
         this._pressureBarrier = new Layout.PressureBarrier(
-            Layout.HOT_CORNER_PRESSURE_THRESHOLD,
+            corner.pressureThreshold,
             Layout.HOT_CORNER_PRESSURE_TIMEOUT,
             Shell.ActionMode.NORMAL | Shell.ActionMode.OVERVIEW
         );
@@ -115,7 +115,7 @@ const CustomHotCorner = class CustomHotCorner extends Layout.HotCorner {
         this._ripples._ripple2.rotation_angle_z = angle;
         this._ripples._ripple3.rotation_angle_z = angle;
 
-        this.setBarrierSize(20);
+        this.setBarrierSize(corner.barrierSize);
     }
 
     // Overridden to allow all 4 monitor corners
