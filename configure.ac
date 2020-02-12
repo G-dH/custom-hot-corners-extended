@@ -2,7 +2,7 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ([2.69])
-AC_INIT([custom-hot-corners], [0.4], [janrunx@gmail.com])
+AC_INIT([custom-hot-corners], [0.5], [janrunx@gmail.com])
 AM_INIT_AUTOMAKE([foreign])
 
 AC_SUBST([uuid], [$PACKAGE_NAME@janrunx.gmail.com])
