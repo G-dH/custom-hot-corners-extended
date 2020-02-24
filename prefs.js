@@ -36,6 +36,8 @@ function buildPrefsWidget() {
     const display = Gdk.Display.get_default();
     const num_monitors = display.get_n_monitors();
 
+    const cornerWidgets = [];
+
     for (let monitorIndex = 0; monitorIndex < num_monitors; ++monitorIndex) {
         let grid = new Gtk.Grid({
             expand: true,
@@ -50,6 +52,7 @@ function buildPrefsWidget() {
 
         for (let corner of corners) {
             let cwUI = _loadUI('corner-widget.ui');
+            cornerWidgets.push(cwUI);
             let cw = cwUI.get_object('cornerWidget');
             let actionCombo = cwUI.get_object('actionCombo');
             let commandEntry = cwUI.get_object('commandEntry');
@@ -68,6 +71,7 @@ function buildPrefsWidget() {
             actionCombo.connect('changed', () => {
                 corner.action = actionCombo.active_id;
                 commandEntryRevealer.reveal_child = corner.action === 'runCommand';
+                showWmctrlInfo();
             });
             commandEntry.connect('changed', () => {
                 corner.command = commandEntry.text;
@@ -117,6 +121,23 @@ function buildPrefsWidget() {
         notebook.append_page(grid, label);
     }
 
+    function showWmctrlInfo() {
+        let revealer = prefsUI.get_object('infoBarRevealer');
+        if (GLib.find_program_in_path("wmctrl")) {
+            revealer.reveal_child = false;
+        } else {
+            for (let cw of cornerWidgets) {
+                let actionCombo = cw.get_object('actionCombo');
+                if (actionCombo.active_id === 'showDesktop') {
+                    revealer.reveal_child = true;
+                    return;
+                }
+            }
+            revealer.reveal_child = false;
+        }
+    }
+
     prefsWidget.show_all();
+    showWmctrlInfo();
     return prefsWidget;
 }
