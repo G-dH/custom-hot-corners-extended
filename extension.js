@@ -79,6 +79,7 @@ const CustomHotCorner = class CustomHotCorner extends Layout.HotCorner {
 
         let m = new Map([
             ['toggleOverview', this._toggleOverview],
+            ['showDesktop', this._showDesktop],
             ['showApplications', this._showApplications],
             ['runCommand', this._runCommand]
         ]);
@@ -204,6 +205,16 @@ const CustomHotCorner = class CustomHotCorner extends Layout.HotCorner {
             this._rippleAnimation();
             Main.overview.toggle();
         }
+    }
+
+    _showDesktop() {
+        this._rippleAnimation();
+        Util.spawn([
+            'sh',
+            '-c',
+            ('if wmctrl -m | grep -q -e "mode: OFF" -e "mode: N/A"; ' +
+             'then wmctrl -k on; else wmctrl -k off; fi')
+        ]);
     }
 
     _showApplications() {

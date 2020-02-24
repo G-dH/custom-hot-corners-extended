@@ -138,6 +138,7 @@
               <item id="disabled" translatable="yes">-</item>
               <item id="toggleOverview" translatable="yes">Toggle overview</item>
               <item id="showApplications" translatable="yes">Show applications</item>
+              <item id="showDesktop" translatable="yes">Show desktop</item>
               <item id="runCommand" translatable="yes">Run command</item>
             </items>
           </object>
