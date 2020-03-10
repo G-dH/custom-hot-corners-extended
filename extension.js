@@ -18,7 +18,7 @@ const Clutter = imports.gi.Clutter;
 const St = imports.gi.St;
 const Meta = imports.gi.Meta;
 const Shell = imports.gi.Shell;
-const Lang = imports.lang;
+const GObject = imports.gi.GObject;
 
 const Main = imports.ui.main;
 const Layout = imports.ui.layout;
@@ -70,10 +70,11 @@ function _updateHotCorners() {
     }
 }
 
-const CustomHotCorner = class CustomHotCorner extends Layout.HotCorner {
-    constructor(corner) {
+const CustomHotCorner = GObject.registerClass(
+class CustomHotCorner extends Layout.HotCorner {
+    _init(corner) {
         let monitor = Main.layoutManager.monitors[corner.monitorIndex];
-        super(Main.layoutManager, monitor, corner.x, corner.y);
+        super._init(Main.layoutManager, monitor, corner.x, corner.y);
         this._corner = corner;
         this._monitor = monitor;
 
@@ -230,4 +231,4 @@ const CustomHotCorner = class CustomHotCorner extends Layout.HotCorner {
         this._rippleAnimation();
         Util.spawnCommandLine(this._corner.command);
     }
-}
+});
