@@ -58,6 +58,7 @@ function buildPrefsWidget() {
             let commandEntry = cwUI.get_object('commandEntry');
             let commandEntryRevealer = cwUI.get_object('commandEntryRevealer');
             let fullscreenSwitch = cwUI.get_object('fullscreenSwitch');
+            let clickSwitch = cwUI.get_object('clickSwitch');
             let barrierSizeSpinButton = cwUI.get_object('barrierSize');
             let pressureThresholdSpinButton = cwUI.get_object('pressureThreshold');
 
@@ -65,6 +66,7 @@ function buildPrefsWidget() {
             commandEntry.text = corner.command;
             commandEntryRevealer.reveal_child = corner.action === 'runCommand';
             fullscreenSwitch.active = corner.fullscreen;
+            clickSwitch.active = corner.click;
             barrierSizeSpinButton.value = corner.barrierSize;
             pressureThresholdSpinButton.value = corner.pressureThreshold;
 
@@ -78,6 +80,9 @@ function buildPrefsWidget() {
             });
             fullscreenSwitch.connect('notify::active', () => {
                 corner.fullscreen = fullscreenSwitch.active;
+            });
+            clickSwitch.connect('notify::active', () => {
+                corner.click = clickSwitch.active;
             });
             barrierSizeSpinButton.timout_id = null;
             barrierSizeSpinButton.connect('changed', () => {

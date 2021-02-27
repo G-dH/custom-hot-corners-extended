@@ -77,6 +77,14 @@ var Corner = class Corner {
         this._gsettings.set_boolean('fullscreen', bool_val);
     }
 
+    get click() {
+        return this._gsettings.get_boolean('click');
+    }
+
+    set click(bool_val) {
+        this._gsettings.set_boolean('click', bool_val);
+    }
+
     get barrierSize() {
         return this._gsettings.get_int('barrier-size');
     }
