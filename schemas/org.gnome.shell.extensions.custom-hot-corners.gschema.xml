@@ -11,6 +11,9 @@
     <key name='fullscreen' type='b'>
       <default>false</default>
     </key>
+    <key name='click' type='b'>
+      <default>false</default>
+    </key>
     <key name='barrier-size' type='i'>
       <default>20</default>
     </key>

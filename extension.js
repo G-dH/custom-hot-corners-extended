@@ -18,7 +18,7 @@ const Clutter = imports.gi.Clutter;
 const St = imports.gi.St;
 const Meta = imports.gi.Meta;
 const Shell = imports.gi.Shell;
-const Lang = imports.lang;
+const GObject = imports.gi.GObject;
 
 const Main = imports.ui.main;
 const Layout = imports.ui.layout;
@@ -70,10 +70,11 @@ function _updateHotCorners() {
     }
 }
 
-const CustomHotCorner = class CustomHotCorner extends Layout.HotCorner {
-    constructor(corner) {
+const CustomHotCorner = GObject.registerClass(
+class CustomHotCorner extends Layout.HotCorner {
+    _init(corner) {
         let monitor = Main.layoutManager.monitors[corner.monitorIndex];
-        super(Main.layoutManager, monitor, corner.x, corner.y);
+        super._init(Main.layoutManager, monitor, corner.x, corner.y);
         this._corner = corner;
         this._monitor = monitor;
 
@@ -105,8 +106,26 @@ const CustomHotCorner = class CustomHotCorner extends Layout.HotCorner {
             Shell.ActionMode.NORMAL | Shell.ActionMode.OVERVIEW
         );
 
-        this._pressureBarrier.connect('trigger', this._runAction.bind(this));
-        this._setupFallbackCornerIfNeeded(Main.layoutManager);
+        if (! this._corner.click) {
+            this._pressureBarrier.connect('trigger', this._runAction.bind(this));
+            this._setupFallbackCornerIfNeeded(Main.layoutManager);
+
+            this.setBarrierSize(corner.barrierSize);
+
+        } else {
+            this.cActor = new Clutter.Actor({
+                name: 'hot-corner',
+                x: this._corner.x, y: this._corner.y,
+                width: 4, height: 4,
+                reactive: true,
+                scale_x: this._corner.left ? 1 : -1,
+                scale_y: this._corner.top ? 1 : -1
+            });
+            this.cActor._delegate = this;
+            this.cActor.connect('button-press-event', this._onCornerClicked.bind(this));
+            Main.layoutManager.addChrome(this.cActor);
+            _corners.push(this.cActor);
+        }
 
         // Rotate the ripple actors according to the corner.
         let ltr = (Clutter.get_default_text_direction() ==
@@ -115,8 +134,7 @@ const CustomHotCorner = class CustomHotCorner extends Layout.HotCorner {
         this._ripples._ripple1.rotation_angle_z = angle;
         this._ripples._ripple2.rotation_angle_z = angle;
         this._ripples._ripple3.rotation_angle_z = angle;
-
-        this.setBarrierSize(corner.barrierSize);
+    
     }
 
     // Overridden to allow all 4 monitor corners
@@ -151,9 +169,8 @@ const CustomHotCorner = class CustomHotCorner extends Layout.HotCorner {
 
     // Overridden to allow all 4 monitor corners
     _setupFallbackCornerIfNeeded(layoutManager) {
-        if (global.display.supports_extended_barriers())
+        if (global.display.supports_extended_barriers() || this._corner.click)
             return;
-
         this.actor = new Clutter.Actor({
             name: 'hot-corner-environs',
             x: this._corner.x, y: this._corner.y,
@@ -190,6 +207,11 @@ const CustomHotCorner = class CustomHotCorner extends Layout.HotCorner {
             this._runAction();
         }
         return Clutter.EVENT_PROPAGATE;
+    }
+
+    _onCornerClicked(actor, event) {
+        this._runAction();
+        return Clutter.EVENT_STOP;   
     }
 
     _runAction() {
@@ -230,4 +252,4 @@ const CustomHotCorner = class CustomHotCorner extends Layout.HotCorner {
         this._rippleAnimation();
         Util.spawnCommandLine(this._corner.command);
     }
-}
+});
