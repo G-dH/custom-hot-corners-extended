@@ -59,30 +59,59 @@ function buildPrefsWidget() {
             let commandEntryRevealer = cwUI.get_object('commandEntryRevealer');
             let fullscreenSwitch = cwUI.get_object('fullscreenSwitch');
             let clickSwitch = cwUI.get_object('clickSwitch');
+            let scrollSwitch = cwUI.get_object('scrollSwitch');
+            let workspaceSwitch = cwUI.get_object('workspaceSwitch');
             let barrierSizeSpinButton = cwUI.get_object('barrierSize');
             let pressureThresholdSpinButton = cwUI.get_object('pressureThreshold');
+            let workspaceIndexSpinButton = cwUI.get_object('workspaceIndex');
 
             actionCombo.active_id = corner.action;
             commandEntry.text = corner.command;
             commandEntryRevealer.reveal_child = corner.action === 'runCommand';
             fullscreenSwitch.active = corner.fullscreen;
             clickSwitch.active = corner.click;
+            scrollSwitch.active = corner.scroll;
+            workspaceSwitch.active = corner.switchWorkspace;
             barrierSizeSpinButton.value = corner.barrierSize;
             pressureThresholdSpinButton.value = corner.pressureThreshold;
+            workspaceIndexSpinButton.value = corner.workspaceIndex;
 
             actionCombo.connect('changed', () => {
                 corner.action = actionCombo.active_id;
                 commandEntryRevealer.reveal_child = corner.action === 'runCommand';
-                showWmctrlInfo();
+//                showWmctrlInfo();
             });
+            commandEntry.timeout_id = null;
             commandEntry.connect('changed', () => {
-                corner.command = commandEntry.text;
+                if (commandEntry.timeout_id) {
+                    GLib.Source.remove(commandEntry.timeout_id);
+                }
+                commandEntry.timeout_id = GLib.timeout_add(
+                    GLib.PRIORITY_DEFAULT,
+                    1000,
+                    () => {
+                        corner.command = commandEntry.text;
+                        commandEntry.timeout_id = null;
+                    }
+                );
             });
             fullscreenSwitch.connect('notify::active', () => {
                 corner.fullscreen = fullscreenSwitch.active;
             });
             clickSwitch.connect('notify::active', () => {
                 corner.click = clickSwitch.active;
+            });
+            scrollSwitch.connect('notify::active', () => {
+                corner.scroll = scrollSwitch.active;
+                if (scrollSwitch.active === true && workspaceSwitch.active === true) {
+                    workspaceSwitch.active = false;
+                }
+            });
+            workspaceSwitch.connect('notify::active', () => {
+                corner.switchWorkspace = workspaceSwitch.active;
+                if (workspaceSwitch.active === true &&  scrollSwitch.active === true) {
+                    scrollSwitch.active = false;
+                }
             });
             barrierSizeSpinButton.timout_id = null;
             barrierSizeSpinButton.connect('changed', () => {
@@ -115,6 +144,21 @@ function buildPrefsWidget() {
                     }
                 );
             });
+            workspaceIndexSpinButton.timeout_id = null;
+            workspaceIndexSpinButton.connect('changed', () => {
+                workspaceIndexSpinButton.update();
+                if (workspaceIndexSpinButton.timeout_id) {
+                    GLib.Source.remove(workspaceIndexSpinButton.timeout_id);
+                }
+                workspaceIndexSpinButton.timeout_id = GLib.timeout_add(
+                    GLib.PRIORITY_DEFAULT,
+                    1000,
+                    () => {
+                        corner.workspaceIndex = workspaceIndexSpinButton.value;
+                        workspaceIndexSpinButton.timeout_id = null;
+                    }
+                );
+            });
 
             cw.valign = corner.top ? Gtk.Align.START : Gtk.Align.END;
             let x = corner.left ? 0 : 1;
@@ -126,23 +170,6 @@ function buildPrefsWidget() {
         notebook.append_page(grid, label);
     }
 
-    function showWmctrlInfo() {
-        let revealer = prefsUI.get_object('infoBarRevealer');
-        if (GLib.find_program_in_path("wmctrl")) {
-            revealer.reveal_child = false;
-        } else {
-            for (let cw of cornerWidgets) {
-                let actionCombo = cw.get_object('actionCombo');
-                if (actionCombo.active_id === 'showDesktop') {
-                    revealer.reveal_child = true;
-                    return;
-                }
-            }
-            revealer.reveal_child = false;
-        }
-    }
-
     prefsWidget.show_all();
-    showWmctrlInfo();
     return prefsWidget;
 }

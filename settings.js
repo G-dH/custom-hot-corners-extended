@@ -85,6 +85,30 @@ var Corner = class Corner {
         this._gsettings.set_boolean('click', bool_val);
     }
 
+    get scroll() {
+        return this._gsettings.get_boolean('scroll');
+    }
+
+    set scroll(bool_val) {
+        this._gsettings.set_boolean('scroll', bool_val);
+    }
+
+    get switchWorkspace() {
+        return this._gsettings.get_boolean('switch-workspace');
+    }
+
+    set switchWorkspace(bool_val) {
+        this._gsettings.set_boolean('switch-workspace', bool_val);
+    }
+
+    get workspaceIndex() {
+        return this._gsettings.get_int('workspace-index');
+    }
+
+    set workspaceIndex(index) {
+        this._gsettings.set_int('workspace-index', index);
+    }
+
     get barrierSize() {
         return this._gsettings.get_int('barrier-size');
     }

@@ -19,6 +19,7 @@ const St = imports.gi.St;
 const Meta = imports.gi.Meta;
 const Shell = imports.gi.Shell;
 const GObject = imports.gi.GObject;
+const GLib = imports.gi.GLib;
 
 const Main = imports.ui.main;
 const Layout = imports.ui.layout;
@@ -29,7 +30,7 @@ const Me = ExtensionUtils.getCurrentExtension();
 const Settings = Me.imports.settings;
 
 let _origUpdateHotCorners = Main.layoutManager._updateHotCorners;
-let _corners = [];
+let _collector = [];
 
 function init() {
 }
@@ -47,8 +48,8 @@ function disable() {
 }
 
 function _removeHotCorners() {
-    _corners.forEach(c => c.destroy());
-    _corners = [];
+    _collector.forEach(c => c.destroy());
+    _collector = [];
     // hot corners might be null
     Main.layoutManager.hotCorners.filter(Boolean).forEach(c => c.destroy());
     Main.layoutManager.hotCorners = [];
@@ -56,13 +57,21 @@ function _removeHotCorners() {
 
 function _updateHotCorners() {
     _removeHotCorners();
-
+    Main.layoutManager.hotCorners=[];
     for (let i = 0; i < Main.layoutManager.monitors.length; ++i) {
         const corners = Settings.Corner.forMonitor(i, global.display.get_monitor_geometry(i));
+        if (corners[2].action !== 'disabled' ||
+            corners[3].action !== 'disabled' ||
+            corners[2].click || corners[3].scroll) {
+            // workaround for unclickable corners above focused windows under X11 session:
+            //  add 1px high rectangle at the bottom of the monitor to move windows up
+            fiX11(global.display.get_monitor_geometry(i))
+        }
         for (let corner of corners) {
-            _corners.push(corner);
-            // Update all hot corners if something changes
-            corner.connect('changed', () => _updateHotCorners());
+            _collector.push(corner);
+
+            // Update hot corner if something changes
+            corner.connect('changed', () => _updateCorner(corner));
             if (corner.action !== 'disabled') {
                 Main.layoutManager.hotCorners.push(new CustomHotCorner(corner));
             }
@@ -70,9 +79,50 @@ function _updateHotCorners() {
     }
 }
 
+function _updateCorner(corner) {
+    destroyCorner(corner);
+    if (corner.action !== 'disabled') {
+        Main.layoutManager.hotCorners.push(new CustomHotCorner(corner));
+    }
+}
+
+function destroyCorner(corner) {
+    let hc=Main.layoutManager.hotCorners;
+    for (let i = 0; i < hc.length; i++) {
+        if (hc[i]._corner.top === corner.top &&
+            hc[i]._corner.left === corner.left &&
+            hc[i]._corner.monitorIndex === corner.monitorIndex)  {
+                Main.layoutManager.hotCorners[i].destroy();
+                Main.layoutManager.hotCorners.splice(i,1);
+                break;
+        }
+    }
+}
+
+function fiX11(geometry) {
+    let bottomSpacer = new Clutter.Rectangle({
+        name: 'bootom-spacer',
+        x: geometry.x, y: geometry.y + geometry.height - 1,
+        width: geometry.width,
+        height: 1,
+        reactive: false,
+        color: new Clutter.Color({
+            red:0,
+            green:0,
+            blue:0,
+            alpha:255
+        })
+    });
+    _collector.push(bottomSpacer);
+    Main.layoutManager.addChrome(bottomSpacer, {
+            affectsStruts: true
+        });
+}
+
 const CustomHotCorner = GObject.registerClass(
 class CustomHotCorner extends Layout.HotCorner {
     _init(corner) {
+        this._actionTimeoutId = null;
         let monitor = Main.layoutManager.monitors[corner.monitorIndex];
         super._init(Main.layoutManager, monitor, corner.x, corner.y);
         this._corner = corner;
@@ -82,7 +132,8 @@ class CustomHotCorner extends Layout.HotCorner {
             ['toggleOverview', this._toggleOverview],
             ['showDesktop', this._showDesktop],
             ['showApplications', this._showApplications],
-            ['runCommand', this._runCommand]
+            ['runCommand', this._runCommand],
+            ['switchToWorkspace', this._switchToWorkspace]
         ]);
         this._actionFunction = m.get(this._corner.action) || function () {};
 
@@ -90,10 +141,10 @@ class CustomHotCorner extends Layout.HotCorner {
         // but block opposite directions. Neither with X nor with Wayland
         // such barriers work.
         for (let c of Main.layoutManager.hotCorners) {
-            if (this._corner.x === c._x && this._corner.y === c._y) {
-                if (this._corner.top === c._top) {
+            if (this._corner.x === c._corner.x && this._corner.y === c._corner.y) {
+                if (this._corner.top === c._corner.top) {
                     this._corner.x += this._corner.left ? 1 : -1;
-                } else if (this._corner.left === c._left) {
+                } else if (this._corner.left === c._corner.left) {
                     this._corner.y += this._corner.top ? 1 : -1;
                 }
             }
@@ -105,26 +156,30 @@ class CustomHotCorner extends Layout.HotCorner {
             Layout.HOT_CORNER_PRESSURE_TIMEOUT,
             Shell.ActionMode.NORMAL | Shell.ActionMode.OVERVIEW
         );
+            this.setBarrierSize(corner.barrierSize);
 
-        if (! this._corner.click) {
+        if (! (this._corner.click || this._corner.scroll || this._corner.switchWorkspace)) {
             this._pressureBarrier.connect('trigger', this._runAction.bind(this));
             this._setupFallbackCornerIfNeeded(Main.layoutManager);
 
-            this.setBarrierSize(corner.barrierSize);
-
         } else {
-            this.cActor = new Clutter.Actor({
-                name: 'hot-corner',
-                x: this._corner.x, y: this._corner.y,
-                width: 4, height: 4,
+            this._cActor = new Clutter.Actor({
+                name: 'click-corner',
+                x: this._corner.x,
+                y: this._corner.y,
+                width: 3, height: 3,
                 reactive: true,
                 scale_x: this._corner.left ? 1 : -1,
                 scale_y: this._corner.top ? 1 : -1
             });
-            this.cActor._delegate = this;
-            this.cActor.connect('button-press-event', this._onCornerClicked.bind(this));
-            Main.layoutManager.addChrome(this.cActor);
-            _corners.push(this.cActor);
+            if (this._corner.click) {
+                this._cActor.connect('button-press-event', this._onCornerClicked.bind(this));
+            }
+            if (this._corner.scroll || this._corner.switchWorkspace) {
+                this._cActor.connect('scroll-event', this._onCornerScrolled.bind(this));
+            }
+            Main.layoutManager.addChrome(this._cActor);
+            _collector.push(this._cActor);
         }
 
         // Rotate the ripple actors according to the corner.
@@ -169,7 +224,7 @@ class CustomHotCorner extends Layout.HotCorner {
 
     // Overridden to allow all 4 monitor corners
     _setupFallbackCornerIfNeeded(layoutManager) {
-        if (global.display.supports_extended_barriers() || this._corner.click)
+        if (global.display.supports_extended_barriers() || this._corner.click || this._corner.scroll)
             return;
         this.actor = new Clutter.Actor({
             name: 'hot-corner-environs',
@@ -211,7 +266,28 @@ class CustomHotCorner extends Layout.HotCorner {
 
     _onCornerClicked(actor, event) {
         this._runAction();
-        return Clutter.EVENT_STOP;   
+        return Clutter.EVENT_STOP;
+    }
+
+    _onCornerScrolled(actor, event) {
+        let direction = event.get_scroll_direction();
+        if (direction !== Clutter.ScrollDirection.SMOOTH &&
+            this._actionTimeoutId === null) {
+            if (this._corner.switchWorkspace) {
+                _switchWorkspace(direction);
+            }
+            if (this._corner.scroll) {
+                this._runAction();
+            }
+            this._actionTimeoutId = GLib.timeout_add(
+                    GLib.PRIORITY_DEFAULT,
+                    100,
+                    () => {
+                        this._actionTimeoutId = null;
+                    }
+            );
+        }
+        return Clutter.EVENT_STOP;
     }
 
     _runAction() {
@@ -231,12 +307,7 @@ class CustomHotCorner extends Layout.HotCorner {
 
     _showDesktop() {
         this._rippleAnimation();
-        Util.spawn([
-            'sh',
-            '-c',
-            ('if wmctrl -m | grep -q -e "mode: OFF" -e "mode: N/A"; ' +
-             'then wmctrl -k on; else wmctrl -k off; fi')
-        ]);
+        _togleShowDesktop()
     }
 
     _showApplications() {
@@ -252,4 +323,76 @@ class CustomHotCorner extends Layout.HotCorner {
         this._rippleAnimation();
         Util.spawnCommandLine(this._corner.command);
     }
+
+    _switchToWorkspace () {
+        this._rippleAnimation();
+        let idx = this._corner.workspaceIndex-1;
+        let maxIndex = global.workspaceManager.n_workspaces-1;
+        if (maxIndex < idx) {
+            // last not empty workspace
+            idx = maxIndex-1;
+        }
+        let ws = global.workspaceManager.get_workspace_by_index(idx);
+        Main.wm.actionMoveWorkspace(ws);
+    }
 });
+
+var _minimizedWindows = [];
+function _togleShowDesktop() {
+    let metaWorkspace = global.workspace_manager.get_active_workspace();
+    let windows = metaWorkspace.list_windows();
+    if (Main.overview.visible) {
+        return;
+    }
+    if (!_minimizedWindows.length) {
+        for ( let win of windows) {
+
+            let wm_class = win.wm_class ? win.wm_class.toLowerCase() : 'null';
+            let window_type = win.window_type ? win.window_type : 'null';
+            let title = win.title ? win.title : 'null';
+
+            if (  !(win.minimized ||
+                    window_type == Meta.WindowType.DESKTOP ||
+                    window_type == Meta.WindowType.DOCK ||
+                    title.startsWith('DING') ||
+                    wm_class.endsWith('notejot') ||
+                    wm_class == 'conky' ||
+                    ( title.startsWith('@!') && title.endsWith('BDH') ) )) {
+
+                win.minimize();
+                _minimizedWindows.push(win);
+            }
+        }
+    } else {
+        for ( let win of _minimizedWindows ) {
+            win.unminimize();
+        }
+        _minimizedWindows = [];
+    }
+}
+
+function _switchWorkspace(direction) {
+        let motion;
+        switch (direction) {
+        case Clutter.ScrollDirection.UP:
+            motion = Meta.MotionDirection.UP;
+            break;
+        case Clutter.ScrollDirection.DOWN:
+            motion = Meta.MotionDirection.DOWN;
+            break;
+        case Clutter.ScrollDirection.LEFT:
+            motion = Meta.MotionDirection.LEFT;
+            break;
+        case Clutter.ScrollDirection.RIGHT:
+            motion = Meta.MotionDirection.RIGHT;
+            break;
+        default:
+            return Clutter.EVENT_PROPAGATE;
+        }
+        let activeWs = global.workspaceManager.get_active_workspace();
+        let ws = activeWs.get_neighbor(motion);
+        if(!ws) return Clutter.EVENT_STOP;
+        Main.wm.actionMoveWorkspace(ws);
+        return Clutter.EVENT_STOP;
+
+}
