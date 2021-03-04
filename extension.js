@@ -60,9 +60,10 @@ function _updateHotCorners() {
     Main.layoutManager.hotCorners=[];
     for (let i = 0; i < Main.layoutManager.monitors.length; ++i) {
         const corners = Settings.Corner.forMonitor(i, global.display.get_monitor_geometry(i));
-        if (corners[2].action !== 'disabled' ||
+        if (! Meta.is_wayland_compositor() &&
+            (corners[2].action !== 'disabled' ||
             corners[3].action !== 'disabled' ||
-            corners[2].click || corners[3].scroll) {
+            corners[2].click || corners[3].scroll) ) {
             // workaround for unclickable corners above focused windows under X11 session:
             //  add 1px high rectangle at the bottom of the monitor to move windows up
             fiX11(global.display.get_monitor_geometry(i))
@@ -101,7 +102,7 @@ function destroyCorner(corner) {
 
 function fiX11(geometry) {
     let bottomSpacer = new Clutter.Rectangle({
-        name: 'bootom-spacer',
+        name: 'bottom-spacer',
         x: geometry.x, y: geometry.y + geometry.height - 1,
         width: geometry.width,
         height: 1,
@@ -158,7 +159,7 @@ class CustomHotCorner extends Layout.HotCorner {
         );
             this.setBarrierSize(corner.barrierSize);
 
-        if (! (this._corner.click || this._corner.scroll || this._corner.switchWorkspace)) {
+        if (! (this._corner.click || this._corner.scroll)) {
             this._pressureBarrier.connect('trigger', this._runAction.bind(this));
             this._setupFallbackCornerIfNeeded(Main.layoutManager);
 
