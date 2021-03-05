@@ -14,7 +14,7 @@
     <key name='click' type='b'>
       <default>false</default>
     </key>
-    <key name='scroll' type='b'>
+    <key name='scroll-to-activate' type='b'>
       <default>false</default>
     </key>
     <key name='switch-workspace' type='b'>
@@ -28,6 +28,23 @@
     </key>
     <key name='workspace-index' type='i'>
       <default>1</default>
+    </key>
+  </schema>
+  <schema id='org.gnome.shell.extensions.custom-hot-corners.misc'>
+    <key name='panel-scroll' type='b'>
+      <default>false</default>
+    </key>
+    <key name='ws-switch-ignore-last' type='b'>
+      <default>false</default>
+    </key>
+    <key name='ws-switch-wrap' type='b'>
+      <default>false</default>
+    </key>
+    <key name='ws-switch-indicator' type='b'>
+      <default>false</default>
+    </key>
+    <key name='scroll-event-delay' type='i'>
+      <default>50</default>
     </key>
   </schema>
 </schemalist>

@@ -14,6 +14,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+const Workspace = imports.ui.workspace;
+
 const Clutter = imports.gi.Clutter;
 const St = imports.gi.St;
 const Meta = imports.gi.Meta;
@@ -28,9 +30,15 @@ const Util = imports.misc.util;
 const ExtensionUtils = imports.misc.extensionUtils;
 const Me = ExtensionUtils.getCurrentExtension();
 const Settings = Me.imports.settings;
+const WorkspaceSwitcherPopup = imports.ui.workspaceSwitcherPopup;
 
 let _origUpdateHotCorners = Main.layoutManager._updateHotCorners;
 let _collector = [];
+let _mscOptions;
+let _wsSwitchIgnoreLast;
+let _wsSwitchWrap;
+let _scrollEventDelay;
+let _wsSwitchIndicator;
 
 function init() {
 }
@@ -38,6 +46,7 @@ function init() {
 function enable() {
     Main.layoutManager._updateHotCorners = _updateHotCorners;
     Main.layoutManager._updateHotCorners();
+    _initMscOptions();
 }
 
 function disable() {
@@ -45,6 +54,10 @@ function disable() {
     _removeHotCorners();
     Main.layoutManager._updateHotCorners = _origUpdateHotCorners;
     Main.layoutManager._updateHotCorners();
+    if (_panelConnection !== null) {
+        Main.panel.disconnect(_panelConnection);
+        _panelConnection = null;
+    }
 }
 
 function _removeHotCorners() {
@@ -53,6 +66,21 @@ function _removeHotCorners() {
     // hot corners might be null
     Main.layoutManager.hotCorners.filter(Boolean).forEach(c => c.destroy());
     Main.layoutManager.hotCorners = [];
+}
+
+function _initMscOptions() {
+    _mscOptions = new Settings.MscOptions();
+    _mscOptions.connect('changed::panel-scroll', () => _updatePanelScrollWS(_mscOptions.scrollPanel));
+    _mscOptions.connect('changed', _updateMscOptions);
+    _updatePanelScrollWS(_mscOptions.scrollPanel);
+    _updateMscOptions();
+}
+
+function _updateMscOptions() {
+    _wsSwitchIgnoreLast = _mscOptions.wsSwitchIgnoreLast;
+    _wsSwitchWrap = _mscOptions.wsSwitchWrap;
+    _scrollEventDelay = _mscOptions.scrollEventDelay;
+    _wsSwitchIndicator = _mscOptions.wsSwitchIndicator;
 }
 
 function _updateHotCorners() {
@@ -66,7 +94,7 @@ function _updateHotCorners() {
             corners[2].click || corners[3].scroll) ) {
             // workaround for unclickable corners above focused windows under X11 session:
             //  add 1px high rectangle at the bottom of the monitor to move windows up
-            fiX11(global.display.get_monitor_geometry(i))
+            _fiX11(global.display.get_monitor_geometry(i))
         }
         for (let corner of corners) {
             _collector.push(corner);
@@ -81,18 +109,19 @@ function _updateHotCorners() {
 }
 
 function _updateCorner(corner) {
-    destroyCorner(corner);
+    _destroyCorner(corner);
     if (corner.action !== 'disabled') {
         Main.layoutManager.hotCorners.push(new CustomHotCorner(corner));
     }
 }
 
-function destroyCorner(corner) {
+function _destroyCorner(corner) {
     let hc=Main.layoutManager.hotCorners;
     for (let i = 0; i < hc.length; i++) {
         if (hc[i]._corner.top === corner.top &&
             hc[i]._corner.left === corner.left &&
             hc[i]._corner.monitorIndex === corner.monitorIndex)  {
+                corner._cornerActor.destroy();
                 Main.layoutManager.hotCorners[i].destroy();
                 Main.layoutManager.hotCorners.splice(i,1);
                 break;
@@ -100,9 +129,11 @@ function destroyCorner(corner) {
     }
 }
 
-function fiX11(geometry) {
+function _fiX11(geometry) {
     let bottomSpacer = new Clutter.Rectangle({
         name: 'bottom-spacer',
+        // affectsStruts property works when object touches the edge of the screen
+        // but scale_x/y property cannot be -1
         x: geometry.x, y: geometry.y + geometry.height - 1,
         width: geometry.width,
         height: 1,
@@ -120,10 +151,10 @@ function fiX11(geometry) {
         });
 }
 
+
 const CustomHotCorner = GObject.registerClass(
 class CustomHotCorner extends Layout.HotCorner {
     _init(corner) {
-        this._actionTimeoutId = null;
         let monitor = Main.layoutManager.monitors[corner.monitorIndex];
         super._init(Main.layoutManager, monitor, corner.x, corner.y);
         this._corner = corner;
@@ -159,11 +190,12 @@ class CustomHotCorner extends Layout.HotCorner {
         );
             this.setBarrierSize(corner.barrierSize);
 
-        if (! (this._corner.click || this._corner.scroll)) {
+        if (! (this._corner.click || this._corner.scrollToActivate)) {
             this._pressureBarrier.connect('trigger', this._runAction.bind(this));
             this._setupFallbackCornerIfNeeded(Main.layoutManager);
 
-        } else {
+        } 
+        if (this._corner.click || this._corner.scrollToActivate || this._corner.switchWorkspace) {
             this._cActor = new Clutter.Actor({
                 name: 'click-corner',
                 x: this._corner.x,
@@ -176,7 +208,7 @@ class CustomHotCorner extends Layout.HotCorner {
             if (this._corner.click) {
                 this._cActor.connect('button-press-event', this._onCornerClicked.bind(this));
             }
-            if (this._corner.scroll || this._corner.switchWorkspace) {
+            if (this._corner.scrollToActivate || this._corner.switchWorkspace) {
                 this._cActor.connect('scroll-event', this._onCornerScrolled.bind(this));
             }
             Main.layoutManager.addChrome(this._cActor);
@@ -225,7 +257,7 @@ class CustomHotCorner extends Layout.HotCorner {
 
     // Overridden to allow all 4 monitor corners
     _setupFallbackCornerIfNeeded(layoutManager) {
-        if (global.display.supports_extended_barriers() || this._corner.click || this._corner.scroll)
+        if (global.display.supports_extended_barriers() || this._corner.click || this._corner.scrollToActivate)
             return;
         this.actor = new Clutter.Actor({
             name: 'hot-corner-environs',
@@ -272,21 +304,16 @@ class CustomHotCorner extends Layout.HotCorner {
 
     _onCornerScrolled(actor, event) {
         let direction = event.get_scroll_direction();
-        if (direction !== Clutter.ScrollDirection.SMOOTH &&
-            this._actionTimeoutId === null) {
+        if (_actionTimeoutActive(direction)) {
+            return
+        }
+        if (direction !== Clutter.ScrollDirection.SMOOTH) {
             if (this._corner.switchWorkspace) {
                 _switchWorkspace(direction);
             }
-            if (this._corner.scroll) {
+            if (this._corner.scrollToActivate) {
                 this._runAction();
             }
-            this._actionTimeoutId = GLib.timeout_add(
-                    GLib.PRIORITY_DEFAULT,
-                    100,
-                    () => {
-                        this._actionTimeoutId = null;
-                    }
-            );
         }
         return Clutter.EVENT_STOP;
     }
@@ -338,7 +365,7 @@ class CustomHotCorner extends Layout.HotCorner {
     }
 });
 
-var _minimizedWindows = [];
+let _minimizedWindows = [];
 function _togleShowDesktop() {
     let metaWorkspace = global.workspace_manager.get_active_workspace();
     let windows = metaWorkspace.list_windows();
@@ -373,6 +400,7 @@ function _togleShowDesktop() {
 }
 
 function _switchWorkspace(direction) {
+        let lastWsIndex =  global.workspaceManager.n_workspaces - (_wsSwitchIgnoreLast ? 2 : 1);
         let motion;
         switch (direction) {
         case Clutter.ScrollDirection.UP:
@@ -390,10 +418,101 @@ function _switchWorkspace(direction) {
         default:
             return Clutter.EVENT_PROPAGATE;
         }
+
+
         let activeWs = global.workspaceManager.get_active_workspace();
         let ws = activeWs.get_neighbor(motion);
-        if(!ws) return Clutter.EVENT_STOP;
+        if (_wsSwitchWrap){
+            if (motion === Meta.MotionDirection.DOWN) {
+                if (activeWs.index() + 1 > lastWsIndex) {
+                    ws = global.workspaceManager.get_workspace_by_index(0);
+                }
+            } else if (motion === Meta.MotionDirection.UP) {
+                if (activeWs.index() - 1 < 0){
+                    ws = global.workspaceManager.get_workspace_by_index(lastWsIndex);
+                }
+            }
+
+        } else if (!ws || ws.index() > lastWsIndex) {
+            return Clutter.EVENT_STOP;
+        }
+
+        if (_wsSwitchIndicator) {
+            if (Main.wm._workspaceSwitcherPopup == null)
+                Main.wm._workspaceSwitcherPopup = new WorkspaceSwitcherPopup.WorkspaceSwitcherPopup();
+                Main.wm._workspaceSwitcherPopup.reactive = false;
+                Main.wm._workspaceSwitcherPopup.connect('destroy', function() {
+                    Main.wm._workspaceSwitcherPopup = null;
+                });
+            // Do not show wokspaceSwithcer in overview
+            if(!Main.overview.visible) {
+                Main.wm._workspaceSwitcherPopup.display(motion, ws.index());
+            }
+        }
         Main.wm.actionMoveWorkspace(ws);
         return Clutter.EVENT_STOP;
+}
 
+let _actionTimeoutId = null;
+
+function _actionTimeoutActive(direction) {
+    if (_actionTimeoutId || direction === Clutter.ScrollDirection.SMOOTH) {
+        return true;
+    }
+   _actionTimeoutId = GLib.timeout_add(
+            GLib.PRIORITY_DEFAULT,
+            _scrollEventDelay,
+            () => {
+                _actionTimeoutId = null;
+            }
+        );
+    return false;
+}
+
+let _panelConnection = null;
+function _updatePanelScrollWS(active) {
+    if (active && _panelConnection === null) {
+        _panelConnection = Main.panel.connect('scroll-event', _onPanelScrolled);
+    } else if (_panelConnection !== null) {
+        Main.panel.disconnect(_panelConnection);
+        _panelConnection = null;
+    }
+}
+
+function _onPanelScrolled(actor, event) {
+    let direction = event.get_scroll_direction();
+    if (_actionTimeoutActive(direction)) {
+        return
+    }
+    if (event.get_source() !== actor) {
+        return Clutter.EVENT_PROPAGATE;
+    }
+    if (direction !== Clutter.ScrollDirection.SMOOTH) {
+        _switchWorkspace(direction);
+    }
+    return Clutter.EVENT_STOP;
+}
+
+/*injectToFunction (Workspace.Workspace.prototype, 'zoomFromOverview', function () {
+        activate_window ();
+    });
+*/
+function activate_window () {
+        if (!(slot_index == -1 || clone == null))
+            clone.metaWindow.activate (global.get_current_time());
+        slot_index = -1;
+        clone = null;
+    }
+
+function injectToFunction(parent, name, func) {
+    let origin = parent[name];
+    parent[name] = function()
+    {
+        let ret;
+        ret = origin.apply(this, arguments);
+        if (ret === undefined)
+            ret = func.apply(this, arguments);
+        return ret;
+    }
+    return origin;
 }

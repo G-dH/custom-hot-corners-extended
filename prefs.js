@@ -38,6 +38,49 @@ function buildPrefsWidget() {
 
     const cornerWidgets = [];
 
+    let mscOptions = new Settings.MscOptions();
+    let msUI = _loadUI('misc-settings-widget.ui');
+    let miscUI = msUI.get_object('miscOptions');
+    let scrollPanelSwitch = msUI.get_object('scrollPanelSwitch');
+    let ignoreLastWsSwitch = msUI.get_object('ignoreLastWsSwitch');
+    let wrapWsSwitch = msUI.get_object('wrapWsSwitch');
+    let wsIndicatorSwitch = msUI.get_object('wsIndicatorSwitch');
+    let scrollEventsDelaySpinBtn = msUI.get_object('scrollEventsDelaySpinBtn');
+
+    scrollPanelSwitch.active = mscOptions.scrollPanel;
+    scrollPanelSwitch.connect('notify::active', () => {
+                mscOptions.scrollPanel = scrollPanelSwitch.active;
+            });
+    ignoreLastWsSwitch.active = mscOptions.wsSwitchIgnoreLast;
+    ignoreLastWsSwitch.connect('notify::active', () =>{
+                mscOptions.wsSwitchIgnoreLast = ignoreLastWsSwitch.active;
+            });
+    wrapWsSwitch.active = mscOptions.wsSwitchWrap;
+    wrapWsSwitch.connect('notify::active', () =>{
+                mscOptions.wsSwitchWrap = wrapWsSwitch.active;
+            });
+    wsIndicatorSwitch.active = mscOptions.wsSwitchIndicator;
+    wsIndicatorSwitch.connect('notify::active', () =>{
+                mscOptions.wsSwitchIndicator = wsIndicatorSwitch.active;
+            });
+    scrollEventsDelaySpinBtn.value = mscOptions.scrollEventDelay;
+    scrollEventsDelaySpinBtn.timeout_id = null;
+    scrollEventsDelaySpinBtn.connect('changed', () => {
+                scrollEventsDelaySpinBtn.update();
+                if (scrollEventsDelaySpinBtn.timeout_id) {
+                    GLib.Source.remove(scrollEventsDelaySpinBtn.timeout_id);
+                }
+                scrollEventsDelaySpinBtn.timeout_id = GLib.timeout_add(
+                    GLib.PRIORITY_DEFAULT,
+                    1000,
+                    () => {
+                        mscOptions.scrollEventDelay = scrollEventsDelaySpinBtn.value;
+                        scrollEventsDelaySpinBtn.timeout_id = null;
+                    }
+                );
+            });
+
+
     for (let monitorIndex = 0; monitorIndex < num_monitors; ++monitorIndex) {
         let grid = new Gtk.Grid({
             expand: true,
@@ -70,7 +113,7 @@ function buildPrefsWidget() {
             commandEntryRevealer.reveal_child = corner.action === 'runCommand';
             fullscreenSwitch.active = corner.fullscreen;
             clickSwitch.active = corner.click;
-            scrollSwitch.active = corner.scroll;
+            scrollSwitch.active = corner.scrollToActivate;
             workspaceSwitch.active = corner.switchWorkspace;
             barrierSizeSpinButton.value = corner.barrierSize;
             pressureThresholdSpinButton.value = corner.pressureThreshold;
@@ -102,7 +145,7 @@ function buildPrefsWidget() {
                 corner.click = clickSwitch.active;
             });
             scrollSwitch.connect('notify::active', () => {
-                corner.scroll = scrollSwitch.active;
+                corner.scrollToActivate = scrollSwitch.active;
                 if (scrollSwitch.active === true && workspaceSwitch.active === true) {
                     workspaceSwitch.active = false;
                 }
@@ -168,8 +211,11 @@ function buildPrefsWidget() {
 
         let label = new Gtk.Label({ label: 'Monitor ' + (monitorIndex + 1) });
         notebook.append_page(grid, label);
+        
     }
-
+    let label = new Gtk.Label({ label: 'Misc', halign: Gtk.Align.START});
+    notebook.append_page(miscUI, label);
     prefsWidget.show_all();
+    //notebook.set_current_page(0);
     return prefsWidget;
 }

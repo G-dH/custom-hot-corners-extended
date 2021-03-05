@@ -19,6 +19,68 @@ const {GLib, Gio} = imports.gi;
 const ExtensionUtils = imports.misc.extensionUtils;
 const Me = ExtensionUtils.getCurrentExtension();
 
+
+var MscOptions = class MscOptions {
+    constructor() {
+        this._gsettings = this._loadSettings();
+        this._connectionIds = [];
+    }
+
+    connect(name, callback) {
+        let id = this._gsettings.connect(name, callback);
+        this._connectionIds.push(id);
+        return id;
+    }
+
+    destroy() {
+        this._connectionIds.forEach(id => this._gsettings.disconnect(id));
+    }
+
+    _loadSettings() {
+        let schema = 'org.gnome.shell.extensions.custom-hot-corners.misc';
+        let path = '/org/gnome/shell/extensions/custom-hot-corners/misc/';
+        return getSettings(schema, path);
+    }
+
+
+    get scrollPanel() {
+        return this._gsettings.get_boolean('panel-scroll');
+    }
+
+    set scrollPanel(bool_val) {
+        this._gsettings.set_boolean('panel-scroll', bool_val);
+    }
+
+    get wsSwitchIgnoreLast() {
+        return this._gsettings.get_boolean('ws-switch-ignore-last');
+    }
+
+    set wsSwitchIgnoreLast(bool_val) {
+        this._gsettings.set_boolean('ws-switch-ignore-last', bool_val);
+    }
+    get wsSwitchWrap() {
+        return this._gsettings.get_boolean('ws-switch-wrap');
+    }
+
+    set wsSwitchWrap(bool_val) {
+        this._gsettings.set_boolean('ws-switch-wrap', bool_val);
+    }
+    get wsSwitchIndicator() {
+        return this._gsettings.get_boolean('ws-switch-indicator');
+    }
+
+    set wsSwitchIndicator(bool_val) {
+        this._gsettings.set_boolean('ws-switch-indicator', bool_val);
+    }
+    get scrollEventDelay() {
+        return this._gsettings.get_int('scroll-event-delay');
+    }
+
+    set scrollEventDelay(delay) {
+        this._gsettings.set_int('scroll-event-delay', delay);
+    }
+}
+
 var Corner = class Corner {
     constructor(monitorIndex, top, left, x, y) {
         this.monitorIndex = monitorIndex;
@@ -85,12 +147,12 @@ var Corner = class Corner {
         this._gsettings.set_boolean('click', bool_val);
     }
 
-    get scroll() {
-        return this._gsettings.get_boolean('scroll');
+    get scrollToActivate() {
+        return this._gsettings.get_boolean('scroll-to-activate');
     }
 
-    set scroll(bool_val) {
-        this._gsettings.set_boolean('scroll', bool_val);
+    set scrollToActivate(bool_val) {
+        this._gsettings.set_boolean('scroll-to-activate', bool_val);
     }
 
     get switchWorkspace() {
