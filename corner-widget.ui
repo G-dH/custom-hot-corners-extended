@@ -8,35 +8,10 @@
     <property name="step_increment">1</property>
     <property name="page_increment">10</property>
   </object>
-  <object class="GtkSpinButton" id="barrierSize">
-    <property name="visible">True</property>
-    <property name="can_focus">True</property>
-    <property name="adjustment">barrierAdjustment</property>
-    <property name="numeric">True</property>
-  </object>
-  <object class="GtkLabel" id="barrierLabel">
-    <property name="visible">True</property>
-    <property name="can_focus">False</property>
-    <property name="halign">start</property>
-    <property name="label" translatable="yes">Barrier size</property>
-  </object>
-  <object class="GtkLabel" id="pressureLabel">
-    <property name="visible">True</property>
-    <property name="can_focus">False</property>
-    <property name="halign">start</property>
-    <property name="label" translatable="yes">Pressure Threshold</property>
-  </object>
   <object class="GtkAdjustment" id="pressureThresholdAdjustment">
     <property name="upper">800</property>
     <property name="step_increment">1</property>
     <property name="page_increment">10</property>
-  </object>
-  <object class="GtkSpinButton" id="pressureThreshold">
-    <property name="visible">True</property>
-    <property name="can_focus">True</property>
-    <property name="halign">end</property>
-    <property name="adjustment">pressureThresholdAdjustment</property>
-    <property name="numeric">True</property>
   </object>
   <object class="GtkAdjustment" id="workspaceIndexAdjustment">
     <property name="lower">1</property>
@@ -81,12 +56,33 @@
           </packing>
         </child>
         <child>
-          <object class="GtkLabel">
-            <property name="visible">True</property>
+          <object class="GtkLabel" id="pressureLabel">
             <property name="can_focus">False</property>
-            <property name="tooltip_text" translatable="yes">Index of workspace to be activated when "Switch to workspace" action is triggered</property>
             <property name="halign">start</property>
-            <property name="label" translatable="yes">Switch to workspace - Index</property>
+            <property name="label" translatable="yes">Pressure Threshold</property>
+          </object>
+          <packing>
+            <property name="left_attach">0</property>
+            <property name="top_attach">2</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkSpinButton" id="pressureThreshold">
+            <property name="can_focus">True</property>
+            <property name="halign">end</property>
+            <property name="adjustment">pressureThresholdAdjustment</property>
+            <property name="numeric">True</property>
+          </object>
+          <packing>
+            <property name="left_attach">1</property>
+            <property name="top_attach">2</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkLabel" id="barrierLabel">
+            <property name="can_focus">False</property>
+            <property name="halign">start</property>
+            <property name="label" translatable="yes">Barrier size</property>
           </object>
           <packing>
             <property name="left_attach">0</property>
@@ -94,31 +90,15 @@
           </packing>
         </child>
         <child>
-          <object class="GtkSpinButton" id="workspaceIndex">
-            <property name="visible">True</property>
+          <object class="GtkSpinButton" id="barrierSize">
             <property name="can_focus">True</property>
-            <property name="halign">end</property>
-            <property name="text" translatable="yes">0</property>
-            <property name="adjustment">workspaceIndexAdjustment</property>
+            <property name="adjustment">barrierAdjustment</property>
             <property name="numeric">True</property>
-            <property name="value">1</property>
           </object>
           <packing>
             <property name="left_attach">1</property>
             <property name="top_attach">1</property>
           </packing>
-        </child>
-        <child>
-          <placeholder/>
-        </child>
-        <child>
-          <placeholder/>
-        </child>
-        <child>
-          <placeholder/>
-        </child>
-        <child>
-          <placeholder/>
         </child>
       </object>
     </child>
@@ -164,7 +144,7 @@
               <item id="runCommand" translatable="yes">Run Command</item>
               <item id="nextWorkspace" translatable="yes">Next Workspace</item>
               <item id="prevWorkspace" translatable="yes">Previous Workspace</item>
-              <item id="switchToWorkspace" translatable="yes">Switch to specific Workspace</item>
+              <item id="switchToWorkspace" translatable="yes">Switch to Workspace</item>
             </items>
           </object>
           <packing>
@@ -196,6 +176,31 @@
       <packing>
         <property name="left_attach">0</property>
         <property name="top_attach">0</property>
+      </packing>
+    </child>
+    <child>
+      <object class="GtkRevealer" id="wsIndexRevealer">
+        <property name="visible">True</property>
+        <property name="can_focus">False</property>
+        <property name="transition_type">slide-up</property>
+        <child>
+          <object class="GtkSpinButton" id="workspaceIndex">
+            <property name="visible">True</property>
+            <property name="can_focus">True</property>
+            <property name="valign">center</property>
+            <property name="margin_top">8</property>
+            <property name="text" translatable="yes">1</property>
+            <property name="xalign">0.5</property>
+            <property name="input_purpose">digits</property>
+            <property name="adjustment">workspaceIndexAdjustment</property>
+            <property name="numeric">True</property>
+            <property name="value">1</property>
+          </object>
+        </child>
+      </object>
+      <packing>
+        <property name="left_attach">0</property>
+        <property name="top_attach">2</property>
       </packing>
     </child>
   </object>

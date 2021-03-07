@@ -121,7 +121,7 @@ function _shouldCreateCorner(corner) {
 
 function _updateCorner(corner, trigger) {
     _destroyCorner(corner);
-    if (corner.getAction(trigger) !== 'disabled') {
+    if (_shouldCreateCorner(corner)) {
         Main.layoutManager.hotCorners.push(new CustomHotCorner(corner));
     }
 }

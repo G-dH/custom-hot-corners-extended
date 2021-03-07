@@ -139,6 +139,7 @@ function _buildCornerWidget(corner, trigger) {
                 let actionCombo = cwUI.get_object('actionCombo');
                 let commandEntry = cwUI.get_object('commandEntry');
                 let commandEntryRevealer = cwUI.get_object('commandEntryRevealer');
+                let wsIndexRevealer = cwUI.get_object('wsIndexRevealer');
                 let workspaceIndexSpinButton = cwUI.get_object('workspaceIndex');
 
 
@@ -151,8 +152,10 @@ function _buildCornerWidget(corner, trigger) {
                 actionCombo.connect('changed', () => {
                     corner.setAction(trigger, actionCombo.active_id);
                     commandEntryRevealer.reveal_child = corner.getAction(trigger) === 'runCommand';
+                    wsIndexRevealer.reveal_child = corner.getAction(trigger) === 'switchToWorkspace';
 
                 });
+                wsIndexRevealer.reveal_child = corner.getAction(trigger) === 'switchToWorkspace';
 
                 commandEntry.text = corner.getCommand(trigger);
                 commandEntryRevealer.reveal_child = corner.getAction(trigger) === 'runCommand';
@@ -172,16 +175,14 @@ function _buildCornerWidget(corner, trigger) {
                 });
 
                 if (trigger === Settings.Triggers.PRESSURE) {
-                    let popUpGrid = cwUI.get_object('popUpGrid');
                     let barrierLabel = cwUI.get_object('barrierLabel');
                     let pressureLabel = cwUI.get_object('pressureLabel');
                     let barrierSizeSpinButton = cwUI.get_object('barrierSize');
                     let pressureThresholdSpinButton = cwUI.get_object('pressureThreshold');
-                    popUpGrid.attach(barrierLabel, 0, 2, 1, 1);
-                    popUpGrid.attach(barrierSizeSpinButton, 1, 2, 1, 1);
-                    popUpGrid.attach(pressureLabel, 0, 3, 1, 1);
-                    popUpGrid.attach(pressureThresholdSpinButton, 1, 3, 1, 1);
-
+                    barrierLabel.show();
+                    barrierSizeSpinButton.show();
+                    pressureLabel.show();
+                    pressureThresholdSpinButton.show();
 
                     barrierSizeSpinButton.value = corner.barrierSize;
                     barrierSizeSpinButton.timout_id = null;
