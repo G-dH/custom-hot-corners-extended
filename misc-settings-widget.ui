@@ -122,7 +122,7 @@
         <property name="can_focus">False</property>
         <property name="halign">start</property>
         <property name="valign">start</property>
-        <property name="label" translatable="yes">Delay berveen scroll events (ms)
+        <property name="label" translatable="yes">Minimum delay between scroll events (ms)
 &lt;small&gt;(prevents accidental double-scrolling)&lt;/small&gt;</property>
         <property name="use_markup">True</property>
       </object>

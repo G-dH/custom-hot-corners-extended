@@ -19,6 +19,8 @@ const {Gtk, Gdk, GLib} = imports.gi;
 const ExtensionUtils = imports.misc.extensionUtils;
 const Me = ExtensionUtils.getCurrentExtension();
 const Settings = Me.imports.settings;
+let triggers = Settings.listTriggers();
+let triggerLabels = Settings.triggerLabels;
 
 function _loadUI(file) {
     let path = Me.dir.get_child(file).get_path();
@@ -26,12 +28,14 @@ function _loadUI(file) {
 }
 
 function init() {
+    log(`initializing ${Me.metadata.name} Preferences`);
 }
 
 function buildPrefsWidget() {
-    let prefsUI = _loadUI('prefs-widget.ui');
-    let prefsWidget = prefsUI.get_object('prefsGrid');
-    let notebook = prefsUI.get_object('notebook');
+    let prefsWidget = new Gtk.Grid();
+    let notebook = new Gtk.Notebook;
+    notebook.tab_pos = Gtk.POS_LEFT;
+    prefsWidget.attach(notebook,0,0,1,1);
 
     const display = Gdk.Display.get_default();
     const num_monitors = display.get_n_monitors();
@@ -82,140 +86,155 @@ function buildPrefsWidget() {
 
 
     for (let monitorIndex = 0; monitorIndex < num_monitors; ++monitorIndex) {
-        let grid = new Gtk.Grid({
+        let grid = {};
+        for (let trigger of triggers) {
+
+        grid[trigger] = new Gtk.Grid({
             expand: true,
             margin: 10,
             row_spacing: 20,
             column_spacing: 20
         });
+        }
+
+        let triggersBook = new Gtk.Notebook();
 
         const monitor = display.get_monitor(monitorIndex);
         const geometry = monitor.get_geometry();
         const corners = Settings.Corner.forMonitor(monitorIndex, geometry);
 
+
+
         for (let corner of corners) {
-            let cwUI = _loadUI('corner-widget.ui');
-            cornerWidgets.push(cwUI);
-            let cw = cwUI.get_object('cornerWidget');
-            let actionCombo = cwUI.get_object('actionCombo');
-            let commandEntry = cwUI.get_object('commandEntry');
-            let commandEntryRevealer = cwUI.get_object('commandEntryRevealer');
-            let fullscreenSwitch = cwUI.get_object('fullscreenSwitch');
-            let clickSwitch = cwUI.get_object('clickSwitch');
-            let scrollSwitch = cwUI.get_object('scrollSwitch');
-            let workspaceSwitch = cwUI.get_object('workspaceSwitch');
-            let barrierSizeSpinButton = cwUI.get_object('barrierSize');
-            let pressureThresholdSpinButton = cwUI.get_object('pressureThreshold');
-            let workspaceIndexSpinButton = cwUI.get_object('workspaceIndex');
-
-            actionCombo.active_id = corner.action;
-            commandEntry.text = corner.command;
-            commandEntryRevealer.reveal_child = corner.action === 'runCommand';
-            fullscreenSwitch.active = corner.fullscreen;
-            clickSwitch.active = corner.click;
-            scrollSwitch.active = corner.scrollToActivate;
-            workspaceSwitch.active = corner.switchWorkspace;
-            barrierSizeSpinButton.value = corner.barrierSize;
-            pressureThresholdSpinButton.value = corner.pressureThreshold;
-            workspaceIndexSpinButton.value = corner.workspaceIndex;
-
-            actionCombo.connect('changed', () => {
-                corner.action = actionCombo.active_id;
-                commandEntryRevealer.reveal_child = corner.action === 'runCommand';
-//                showWmctrlInfo();
-            });
-            commandEntry.timeout_id = null;
-            commandEntry.connect('changed', () => {
-                if (commandEntry.timeout_id) {
-                    GLib.Source.remove(commandEntry.timeout_id);
-                }
-                commandEntry.timeout_id = GLib.timeout_add(
-                    GLib.PRIORITY_DEFAULT,
-                    1000,
-                    () => {
-                        corner.command = commandEntry.text;
-                        commandEntry.timeout_id = null;
-                    }
-                );
-            });
-            fullscreenSwitch.connect('notify::active', () => {
-                corner.fullscreen = fullscreenSwitch.active;
-            });
-            clickSwitch.connect('notify::active', () => {
-                corner.click = clickSwitch.active;
-            });
-            scrollSwitch.connect('notify::active', () => {
-                corner.scrollToActivate = scrollSwitch.active;
-                if (scrollSwitch.active === true && workspaceSwitch.active === true) {
-                    workspaceSwitch.active = false;
-                }
-            });
-            workspaceSwitch.connect('notify::active', () => {
-                corner.switchWorkspace = workspaceSwitch.active;
-                if (workspaceSwitch.active === true &&  scrollSwitch.active === true) {
-                    scrollSwitch.active = false;
-                }
-            });
-            barrierSizeSpinButton.timout_id = null;
-            barrierSizeSpinButton.connect('changed', () => {
-                barrierSizeSpinButton.update();
-                // Cancel previous timeout
-                if (barrierSizeSpinButton.timeout_id) {
-                    GLib.Source.remove(barrierSizeSpinButton.timeout_id);
-                }
-                barrierSizeSpinButton.timeout_id = GLib.timeout_add(
-                    GLib.PRIORITY_DEFAULT,
-                    1000,
-                    () => {
-                        corner.barrierSize = barrierSizeSpinButton.value;
-                        barrierSizeSpinButton.timeout_id = null;
-                    }
-                );
-            });
-            pressureThresholdSpinButton.timeout_id = null;
-            pressureThresholdSpinButton.connect('changed', () => {
-                pressureThresholdSpinButton.update();
-                if (pressureThresholdSpinButton.timeout_id) {
-                    GLib.Source.remove(pressureThresholdSpinButton.timeout_id);
-                }
-                pressureThresholdSpinButton.timeout_id = GLib.timeout_add(
-                    GLib.PRIORITY_DEFAULT,
-                    1000,
-                    () => {
-                        corner.pressureThreshold = pressureThresholdSpinButton.value;
-                        pressureThresholdSpinButton.timeout_id = null;
-                    }
-                );
-            });
-            workspaceIndexSpinButton.timeout_id = null;
-            workspaceIndexSpinButton.connect('changed', () => {
-                workspaceIndexSpinButton.update();
-                if (workspaceIndexSpinButton.timeout_id) {
-                    GLib.Source.remove(workspaceIndexSpinButton.timeout_id);
-                }
-                workspaceIndexSpinButton.timeout_id = GLib.timeout_add(
-                    GLib.PRIORITY_DEFAULT,
-                    1000,
-                    () => {
-                        corner.workspaceIndex = workspaceIndexSpinButton.value;
-                        workspaceIndexSpinButton.timeout_id = null;
-                    }
-                );
-            });
-
-            cw.valign = corner.top ? Gtk.Align.START : Gtk.Align.END;
-            let x = corner.left ? 0 : 1;
-            let y = corner.top ? 0 : 1;
-            grid.attach(cw, x, y, 1, 1);
+            for (let trigger of triggers) {
+                let cw = _buildCornerWidget(corner, trigger);
+                cw.valign = corner.top ? Gtk.Align.START : Gtk.Align.END;
+                let x = corner.left ? 0 : 1;
+                let y = corner.top ? 0 : 1;
+                grid[trigger].attach(cw, x, y, 1, 1);
+            }
         }
+        for (let trigger of triggers){
+            let label = new Gtk.Label({ label: Settings.TriggerLabels[trigger]});
+            triggersBook.append_page(grid[trigger], label);
 
+
+        }
         let label = new Gtk.Label({ label: 'Monitor ' + (monitorIndex + 1) });
-        notebook.append_page(grid, label);
+        notebook.append_page(triggersBook, label);
         
     }
-    let label = new Gtk.Label({ label: 'Misc', halign: Gtk.Align.START});
+    let label = new Gtk.Label({ label: 'Options', halign: Gtk.Align.START});
     notebook.append_page(miscUI, label);
     prefsWidget.show_all();
-    //notebook.set_current_page(0);
     return prefsWidget;
+}
+
+
+function _buildCornerWidget(corner, trigger) {
+                let cwUI = _loadUI('corner-widget.ui');
+                //cornerWidgets.push(cwUI);
+                let cw = cwUI.get_object('cornerWidget');
+                let fullscreenSwitch = cwUI.get_object('fullscreenSwitch');
+                let actionCombo = cwUI.get_object('actionCombo');
+                let commandEntry = cwUI.get_object('commandEntry');
+                let commandEntryRevealer = cwUI.get_object('commandEntryRevealer');
+                let workspaceIndexSpinButton = cwUI.get_object('workspaceIndex');
+
+
+                fullscreenSwitch.active = corner.fullscreen;
+                fullscreenSwitch.connect('notify::active', () => {
+                    corner.fullscreen = fullscreenSwitch.active;
+                });
+    
+                actionCombo.active_id = corner.getAction(trigger);
+                actionCombo.connect('changed', () => {
+                    corner.setAction(trigger, actionCombo.active_id);
+                    commandEntryRevealer.reveal_child = corner.getAction(trigger) === 'runCommand';
+
+                });
+
+                commandEntry.text = corner.getCommand(trigger);
+                commandEntryRevealer.reveal_child = corner.getAction(trigger) === 'runCommand';
+                commandEntry.timeout_id = null;
+                commandEntry.connect('changed', () => {
+                    if (commandEntry.timeout_id) {
+                        GLib.Source.remove(commandEntry.timeout_id);
+                    }
+                    commandEntry.timeout_id = GLib.timeout_add(
+                        GLib.PRIORITY_DEFAULT,
+                        1000,
+                        () => {
+                            corner.setCommand(trigger, commandEntry.text);
+                            commandEntry.timeout_id = null;
+                        }
+                    );
+                });
+
+                if (trigger === Settings.Triggers.PRESSURE) {
+                    let popUpGrid = cwUI.get_object('popUpGrid');
+                    let barrierLabel = cwUI.get_object('barrierLabel');
+                    let pressureLabel = cwUI.get_object('pressureLabel');
+                    let barrierSizeSpinButton = cwUI.get_object('barrierSize');
+                    let pressureThresholdSpinButton = cwUI.get_object('pressureThreshold');
+                    popUpGrid.attach(barrierLabel, 0, 2, 1, 1);
+                    popUpGrid.attach(barrierSizeSpinButton, 1, 2, 1, 1);
+                    popUpGrid.attach(pressureLabel, 0, 3, 1, 1);
+                    popUpGrid.attach(pressureThresholdSpinButton, 1, 3, 1, 1);
+
+
+                    barrierSizeSpinButton.value = corner.barrierSize;
+                    barrierSizeSpinButton.timout_id = null;
+                    barrierSizeSpinButton.connect('changed', () => {
+                        barrierSizeSpinButton.update();
+                        // Cancel previous timeout
+                        if (barrierSizeSpinButton.timeout_id) {
+                            GLib.Source.remove(barrierSizeSpinButton.timeout_id);
+                        }
+                        barrierSizeSpinButton.timeout_id = GLib.timeout_add(
+                            GLib.PRIORITY_DEFAULT,
+                            1000,
+                            () => {
+                                corner.barrierSize = barrierSizeSpinButton.value;
+                                barrierSizeSpinButton.timeout_id = null;
+                            }
+                        );
+                    });
+    
+                    pressureThresholdSpinButton.value = corner.pressureThreshold;
+                    pressureThresholdSpinButton.timeout_id = null;
+                    pressureThresholdSpinButton.connect('changed', () => {
+                        pressureThresholdSpinButton.update();
+                        if (pressureThresholdSpinButton.timeout_id) {
+                            GLib.Source.remove(pressureThresholdSpinButton.timeout_id);
+                        }
+                        pressureThresholdSpinButton.timeout_id = GLib.timeout_add(
+                            GLib.PRIORITY_DEFAULT,
+                            1000,
+                            () => {
+                                corner.pressureThreshold = pressureThresholdSpinButton.value;
+                                pressureThresholdSpinButton.timeout_id = null;
+                            }
+                        );
+                    });
+
+                }
+
+                workspaceIndexSpinButton.value = corner.getWorkspaceIndex(trigger);
+                workspaceIndexSpinButton.timeout_id = null;
+                workspaceIndexSpinButton.connect('changed', () => {
+                    workspaceIndexSpinButton.update();
+                    if (workspaceIndexSpinButton.timeout_id) {
+                        GLib.Source.remove(workspaceIndexSpinButton.timeout_id);
+                    }
+                    workspaceIndexSpinButton.timeout_id = GLib.timeout_add(
+                        GLib.PRIORITY_DEFAULT,
+                        1000,
+                        () => {
+                            corner.setWorkspaceIndex(trigger, workspaceIndexSpinButton.value);
+                            workspaceIndexSpinButton.timeout_id = null;
+                        }
+                    );
+                });
+                return cw;
 }

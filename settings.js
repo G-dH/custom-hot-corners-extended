@@ -19,6 +19,28 @@ const {GLib, Gio} = imports.gi;
 const ExtensionUtils = imports.misc.extensionUtils;
 const Me = ExtensionUtils.getCurrentExtension();
 
+var Triggers ={
+    PRESSURE: 0,
+    BUTTON_PRIMARY: 1,
+    BUTTON_SECONDARY: 2,
+    BUTTON_MIDDLE: 3,
+    SCROLL_UP: 4,
+    SCROLL_DOWN:5
+}
+Object.freeze(Triggers);
+
+var TriggerLabels = [   
+    'Pressure',
+    'Primary Button',
+    'Secondary Button',
+    'Middle Button',
+    'Scroll Up',
+    'Scroll Down'
+];
+
+function listTriggers() {
+    return Object.values(Triggers);
+}
 
 var MscOptions = class MscOptions {
     constructor() {
@@ -83,12 +105,13 @@ var MscOptions = class MscOptions {
 
 var Corner = class Corner {
     constructor(monitorIndex, top, left, x, y) {
+        this._gsettings = {};
         this.monitorIndex = monitorIndex;
         this.top = top;
         this.left = left;
         this.x = x;
         this.y = y;
-        this._gsettings = this._loadSettings();
+        this._gsettings = this._loadSettingsForTrigges();
         this._connectionIds = [];
     }
 
@@ -105,94 +128,81 @@ var Corner = class Corner {
         return corners;
     }
 
-    connect(name, callback) {
-        let id = this._gsettings.connect(name, callback);
-        this._connectionIds.push(id);
+    connect(name, callback, trigger) {
+        let id = this._gsettings[trigger].connect(name, callback);
+        this._connectionIds.push([this._gsettings[trigger],id]);
         return id;
     }
 
     destroy() {
-        this._connectionIds.forEach(id => this._gsettings.disconnect(id));
+        this._connectionIds.forEach(id => id[0].disconnect(id[1]));
     }
 
-    get action() {
-        return this._gsettings.get_string('action');
+    _loadSettingsForTrigges() {
+        let gsettings = {};
+        for (let trigger of listTriggers()) {
+            gsettings[trigger]= this._loadSettings(trigger);
+        }
+        return gsettings;
     }
 
-    set action(action) {
-        this._gsettings.set_string('action', action);
+
+
+    getAction(trigger) {
+        return this._gsettings[trigger].get_string('action');
     }
 
-    get command() {
-        return this._gsettings.get_string('command');
+    setAction(trigger, action) {
+        this._gsettings[trigger].set_string('action', action);
     }
 
-    set command(command) {
-        this._gsettings.set_string('command', command);
+    getCommand(trigger) {
+        return this._gsettings[trigger].get_string('command');
     }
 
-    get fullscreen() {
+    setCommand(trigger, command) {
+        this._gsettings[trigger].set_string('command', command);
+    }
+
+    getFullscreen(trigger) {
         return this._gsettings.get_boolean('fullscreen');
     }
 
-    set fullscreen(bool_val) {
+    setFullscreen(trigger, bool_val) {
         this._gsettings.set_boolean('fullscreen', bool_val);
     }
 
-    get click() {
-        return this._gsettings.get_boolean('click');
+    getWorkspaceIndex(trigger) {
+        return this._gsettings[trigger].get_int('workspace-index');
     }
 
-    set click(bool_val) {
-        this._gsettings.set_boolean('click', bool_val);
-    }
-
-    get scrollToActivate() {
-        return this._gsettings.get_boolean('scroll-to-activate');
-    }
-
-    set scrollToActivate(bool_val) {
-        this._gsettings.set_boolean('scroll-to-activate', bool_val);
-    }
-
-    get switchWorkspace() {
-        return this._gsettings.get_boolean('switch-workspace');
-    }
-
-    set switchWorkspace(bool_val) {
-        this._gsettings.set_boolean('switch-workspace', bool_val);
-    }
-
-    get workspaceIndex() {
-        return this._gsettings.get_int('workspace-index');
-    }
-
-    set workspaceIndex(index) {
-        this._gsettings.set_int('workspace-index', index);
+    setWorkspaceIndex(trigger, index) {
+        this._gsettings[trigger].set_int('workspace-index', index);
     }
 
     get barrierSize() {
-        return this._gsettings.get_int('barrier-size');
+        return this._gsettings[Triggers.PRESSURE].get_int('barrier-size');
     }
 
     set barrierSize(size) {
-        this._gsettings.set_int('barrier-size', size);
+        this._gsettings[Triggers.PRESSURE].set_int('barrier-size', size);
     }
 
     get pressureThreshold() {
-        return this._gsettings.get_int('pressure-threshold');
+        return this._gsettings[Triggers.PRESSURE].get_int('pressure-threshold');
     }
 
     set pressureThreshold(threshold) {
-        this._gsettings.set_int('pressure-threshold', threshold);
+        this._gsettings[Triggers.PRESSURE].set_int('pressure-threshold', threshold);
     }
 
-    _loadSettings() {
+    _loadSettings(trigger) {
+        let label = (TriggerLabels[trigger].replace(' ', '-')).toLowerCase();
         let schema = 'org.gnome.shell.extensions.custom-hot-corners.corner';
         let v = this.top ? 'top' : 'bottom';
         let h = this.left ? 'left' : 'right';
         let path = '/org/gnome/shell/extensions/custom-hot-corners/';
-        path += `monitor-${this.monitorIndex}-${v}-${h}/`;
+        path += `monitor-${this.monitorIndex}-${v}-${h}-${label}/`;
         return getSettings(schema, path);
     }
 }

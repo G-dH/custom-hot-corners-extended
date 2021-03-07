@@ -1,5 +1,5 @@
 /* Copyright 2017 Jan Runge <janrunx@gmail.com>
- *
+ * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -32,8 +32,12 @@ const Me = ExtensionUtils.getCurrentExtension();
 const Settings = Me.imports.settings;
 const WorkspaceSwitcherPopup = imports.ui.workspaceSwitcherPopup;
 
+const triggers = Settings.listTriggers();
+const Triggers = Settings.Triggers;
+
 let _origUpdateHotCorners = Main.layoutManager._updateHotCorners;
 let _collector = [];
+
 let _mscOptions;
 let _wsSwitchIgnoreLast;
 let _wsSwitchWrap;
@@ -60,6 +64,14 @@ function disable() {
     }
 }
 
+function _initMscOptions() {
+    _mscOptions = new Settings.MscOptions();
+    _mscOptions.connect('changed::panel-scroll', () => _updatePanelScrollWS(_mscOptions.scrollPanel));
+    _mscOptions.connect('changed', _updateMscOptions);
+    _updatePanelScrollWS(_mscOptions.scrollPanel);
+    _updateMscOptions();
+}
+
 function _removeHotCorners() {
     _collector.forEach(c => c.destroy());
     _collector = [];
@@ -68,13 +80,6 @@ function _removeHotCorners() {
     Main.layoutManager.hotCorners = [];
 }
 
-function _initMscOptions() {
-    _mscOptions = new Settings.MscOptions();
-    _mscOptions.connect('changed::panel-scroll', () => _updatePanelScrollWS(_mscOptions.scrollPanel));
-    _mscOptions.connect('changed', _updateMscOptions);
-    _updatePanelScrollWS(_mscOptions.scrollPanel);
-    _updateMscOptions();
-}
 
 function _updateMscOptions() {
     _wsSwitchIgnoreLast = _mscOptions.wsSwitchIgnoreLast;
@@ -88,29 +93,35 @@ function _updateHotCorners() {
     Main.layoutManager.hotCorners=[];
     for (let i = 0; i < Main.layoutManager.monitors.length; ++i) {
         const corners = Settings.Corner.forMonitor(i, global.display.get_monitor_geometry(i));
-        if (! Meta.is_wayland_compositor() &&
-            (corners[2].action !== 'disabled' ||
-            corners[3].action !== 'disabled' ||
-            corners[2].click || corners[3].scroll) ) {
+        if (! Meta.is_wayland_compositor()) {
             // workaround for unclickable corners above focused windows under X11 session:
             //  add 1px high rectangle at the bottom of the monitor to move windows up
             _fiX11(global.display.get_monitor_geometry(i))
         }
         for (let corner of corners) {
             _collector.push(corner);
-
-            // Update hot corner if something changes
-            corner.connect('changed', () => _updateCorner(corner));
-            if (corner.action !== 'disabled') {
+            for (let trigger of triggers) {
+                // Update hot corner if something changes
+                corner.connect('changed', () => _updateCorner(corner, trigger), trigger);
+            }
+            if (_shouldCreateCorner(corner)) {
                 Main.layoutManager.hotCorners.push(new CustomHotCorner(corner));
             }
         }
     }
 }
 
-function _updateCorner(corner) {
+function _shouldCreateCorner(corner) {
+    let answer = null;
+    for (let trigger of triggers) {
+        answer = answer || (corner.getAction(trigger) !== 'disabled');
+    }
+    return answer;
+}
+
+function _updateCorner(corner, trigger) {
     _destroyCorner(corner);
-    if (corner.action !== 'disabled') {
+    if (corner.getAction(trigger) !== 'disabled') {
         Main.layoutManager.hotCorners.push(new CustomHotCorner(corner));
     }
 }
@@ -121,7 +132,6 @@ function _destroyCorner(corner) {
         if (hc[i]._corner.top === corner.top &&
             hc[i]._corner.left === corner.left &&
             hc[i]._corner.monitorIndex === corner.monitorIndex)  {
-                corner._cornerActor.destroy();
                 Main.layoutManager.hotCorners[i].destroy();
                 Main.layoutManager.hotCorners.splice(i,1);
                 break;
@@ -159,15 +169,18 @@ class CustomHotCorner extends Layout.HotCorner {
         super._init(Main.layoutManager, monitor, corner.x, corner.y);
         this._corner = corner;
         this._monitor = monitor;
+        this.command = '';
 
-        let m = new Map([
+        this.m = new Map([
             ['toggleOverview', this._toggleOverview],
             ['showDesktop', this._showDesktop],
             ['showApplications', this._showApplications],
             ['runCommand', this._runCommand],
-            ['switchToWorkspace', this._switchToWorkspace]
+            ['switchToWorkspace', this._switchToWorkspace],
+            ['prevWorkspace', this._prevWorkspace],
+            ['nextWorkspace', this._nextWorkspace]
         ]);
-        this._actionFunction = m.get(this._corner.action) || function () {};
+        //this._actionFunction = m.get(this._corner.action) || function () {};
 
         // Avoid pointer barriers that are at the same position
         // but block opposite directions. Neither with X nor with Wayland
@@ -190,12 +203,12 @@ class CustomHotCorner extends Layout.HotCorner {
         );
             this.setBarrierSize(corner.barrierSize);
 
-        if (! (this._corner.click || this._corner.scrollToActivate)) {
-            this._pressureBarrier.connect('trigger', this._runAction.bind(this));
+        if (this._corner.getAction(Triggers.PRESSURE) !== 'disabled') {
+            this._pressureBarrier.connect('trigger', this._onPressureTriggerd.bind(this));
             this._setupFallbackCornerIfNeeded(Main.layoutManager);
 
         } 
-        if (this._corner.click || this._corner.scrollToActivate || this._corner.switchWorkspace) {
+        if (this._shouldCreateActor) {
             this._cActor = new Clutter.Actor({
                 name: 'click-corner',
                 x: this._corner.x,
@@ -205,10 +218,10 @@ class CustomHotCorner extends Layout.HotCorner {
                 scale_x: this._corner.left ? 1 : -1,
                 scale_y: this._corner.top ? 1 : -1
             });
-            if (this._corner.click) {
+            if (this._shouldConnect([Triggers.BUTTON_PRIMARY, Triggers.BUTTON_SECONDARY, Triggers.BUTTON_MIDDLE])) {
                 this._cActor.connect('button-press-event', this._onCornerClicked.bind(this));
             }
-            if (this._corner.scrollToActivate || this._corner.switchWorkspace) {
+            if (this._shouldConnect([Triggers.SCROLL_UP, Triggers.SCROLL_DOWN])) {
                 this._cActor.connect('scroll-event', this._onCornerScrolled.bind(this));
             }
             Main.layoutManager.addChrome(this._cActor);
@@ -260,7 +273,7 @@ class CustomHotCorner extends Layout.HotCorner {
         if (global.display.supports_extended_barriers() || this._corner.click || this._corner.scrollToActivate)
             return;
         this.actor = new Clutter.Actor({
-            name: 'hot-corner-environs',
+            name: 'event-corner',
             x: this._corner.x, y: this._corner.y,
             width: 3, height: 3,
             reactive: true,
@@ -284,6 +297,27 @@ class CustomHotCorner extends Layout.HotCorner {
         this._cornerActor.connect('leave-event', this._onCornerLeft.bind(this));
     }
 
+    _shouldCreateActor() {
+        let answer = null;
+        for (let trigger of triggers) {
+            if (trigger === Triggers.PRESSURE) {
+                continue;
+            }
+            answer = answer || (this._corner.getAction(trigger) !== 'disabled');
+        }
+        return answer;
+    }
+
+    _shouldConnect(signals) {
+        let answer = null;
+        for (let trigger of triggers) {
+            if (signals.includes(trigger)) {
+            answer = answer || (this._corner.getAction(trigger) !== 'disabled');
+            }
+        }
+        return answer;
+    }
+
     _rippleAnimation() {
         this._ripples.playAnimation(this._corner.x, this._corner.y);
     }
@@ -297,27 +331,67 @@ class CustomHotCorner extends Layout.HotCorner {
         return Clutter.EVENT_PROPAGATE;
     }
 
+
+    _onPressureTriggerd (actor, event) {
+        this._actionFunction = this.m.get(this._corner.getAction(Triggers.PRESSURE)) || function () {}
+        this.command = this._corner.getCommand(Triggers.PRESSURE);
+        this._runAction();
+
+    }
+
     _onCornerClicked(actor, event) {
+        let button = event.get_button();
+        switch (button) {
+            case Clutter.BUTTON_PRIMARY:
+                this._actionFunction = this.m.get(this._corner.getAction(Triggers.BUTTON_PRIMARY)) || function () {};
+                this.command = this._corner.getCommand(Triggers.BUTTON_PRIMARY);
+                break;
+            case Clutter.BUTTON_SECONDARY:
+                this._actionFunction = this.m.get(this._corner.getAction(Triggers.BUTTON_SECONDARY)) || function () {};
+                this.command = this._corner.getCommand(Triggers.BUTTON_SECONDARY);
+                break;
+            case Clutter.BUTTON_MIDDLE:
+                this._actionFunction = this.m.get(this._corner.getAction(Triggers.BUTTON_MIDDLE)) || function () {};
+                this.command = this._corner.getCommand(Triggers.BUTTON_MIDDLE);
+                break;
+            default:
+                return Clutter.EVENT_PROPAGATE;
+        }
         this._runAction();
         return Clutter.EVENT_STOP;
     }
 
     _onCornerScrolled(actor, event) {
         let direction = event.get_scroll_direction();
-        if (_actionTimeoutActive(direction)) {
-            return
+        switch (direction) {
+            case Clutter.ScrollDirection.UP:
+                this._actionFunction = this.m.get(this._corner.getAction(Triggers.SCROLL_UP)) || function () {};
+                this.command = this._corner.getCommand(Triggers.SCROLL_UP);
+                break;
+            case Clutter.ScrollDirection.DOWN:
+                this._actionFunction = this.m.get(this._corner.getAction(Triggers.SCROLL_DOWN)) || function () {};
+                this.command = this._corner.getCommand(Triggers.SCROLL_DOWN);
+                break;
+            default:
+                return Clutter.EVENT_PROPAGATE;
         }
-        if (direction !== Clutter.ScrollDirection.SMOOTH) {
-            if (this._corner.switchWorkspace) {
-                _switchWorkspace(direction);
-            }
-            if (this._corner.scrollToActivate) {
-                this._runAction();
-            }
-        }
+        this._runAction();
         return Clutter.EVENT_STOP;
     }
 
+ /*   _onCornerScrolled(actor, event) {
+        let direction = event.get_scroll_direction();
+        if (_actionTimeoutActive(direction)) {
+            return
+        }
+        if (this._corner.switchWorkspace) {
+            _switchWorkspace(direction);
+        } else if (this._corner.scrollToActivate) {
+            this._runAction();
+        }
+        return Clutter.EVENT_STOP;
+    }
+*/
     _runAction() {
         if (this._monitor.inFullscreen && this._corner.fullscreen) {
             this._actionFunction();
@@ -349,7 +423,7 @@ class CustomHotCorner extends Layout.HotCorner {
 
     _runCommand() {
         this._rippleAnimation();
-        Util.spawnCommandLine(this._corner.command);
+        Util.spawnCommandLine(this.command);
     }
 
     _switchToWorkspace () {
@@ -363,9 +437,18 @@ class CustomHotCorner extends Layout.HotCorner {
         let ws = global.workspaceManager.get_workspace_by_index(idx);
         Main.wm.actionMoveWorkspace(ws);
     }
+
+    _prevWorkspace() {
+        _switchWorkspace(Clutter.ScrollDirection.UP);
+    }
+
+    _nextWorkspace() {
+        _switchWorkspace(Clutter.ScrollDirection.DOWN);
+    }
 });
 
 let _minimizedWindows = [];
+
 function _togleShowDesktop() {
     let metaWorkspace = global.workspace_manager.get_active_workspace();
     let windows = metaWorkspace.list_windows();
@@ -418,7 +501,6 @@ function _switchWorkspace(direction) {
         default:
             return Clutter.EVENT_PROPAGATE;
         }
-
 
         let activeWs = global.workspaceManager.get_active_workspace();
         let ws = activeWs.get_neighbor(motion);
@@ -487,9 +569,7 @@ function _onPanelScrolled(actor, event) {
     if (event.get_source() !== actor) {
         return Clutter.EVENT_PROPAGATE;
     }
-    if (direction !== Clutter.ScrollDirection.SMOOTH) {
-        _switchWorkspace(direction);
-    }
+    _switchWorkspace(direction);
     return Clutter.EVENT_STOP;
 }
 
