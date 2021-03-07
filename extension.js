@@ -169,7 +169,8 @@ class CustomHotCorner extends Layout.HotCorner {
         super._init(Main.layoutManager, monitor, corner.x, corner.y);
         this._corner = corner;
         this._monitor = monitor;
-        this.command = '';
+        this._command = '';
+        this._wsIndex = 0
 
         this.m = new Map([
             ['toggleOverview', this._toggleOverview],
@@ -331,10 +332,18 @@ class CustomHotCorner extends Layout.HotCorner {
         return Clutter.EVENT_PROPAGATE;
     }
 
+    _setActionVars(trigger) {
+        let action = this._corner.getAction(trigger);
+        this._actionFunction = this.m.get(action) || function () {};
+        if (action === 'switchToWorkspace'){
+            this._wsIndex = this._corner.getWorkspaceIndex(trigger);
+        } else if (action === 'runCommand') {
+            this._command = this._corner.getCommand(trigger);
+        }
+    }
 
     _onPressureTriggerd (actor, event) {
-        this._actionFunction = this.m.get(this._corner.getAction(Triggers.PRESSURE)) || function () {}
-        this.command = this._corner.getCommand(Triggers.PRESSURE);
+        this._setActionVars(Triggers.PRESSURE);
         this._runAction();
 
     }
@@ -343,16 +352,13 @@ class CustomHotCorner extends Layout.HotCorner {
         let button = event.get_button();
         switch (button) {
             case Clutter.BUTTON_PRIMARY:
-                this._actionFunction = this.m.get(this._corner.getAction(Triggers.BUTTON_PRIMARY)) || function () {};
-                this.command = this._corner.getCommand(Triggers.BUTTON_PRIMARY);
+                this._setActionVars(Triggers.BUTTON_PRIMARY);
                 break;
             case Clutter.BUTTON_SECONDARY:
-                this._actionFunction = this.m.get(this._corner.getAction(Triggers.BUTTON_SECONDARY)) || function () {};
-                this.command = this._corner.getCommand(Triggers.BUTTON_SECONDARY);
+                this._setActionVars(Triggers.BUTTON_SECONDARY);
                 break;
             case Clutter.BUTTON_MIDDLE:
-                this._actionFunction = this.m.get(this._corner.getAction(Triggers.BUTTON_MIDDLE)) || function () {};
-                this.command = this._corner.getCommand(Triggers.BUTTON_MIDDLE);
+                this._setActionVars(Triggers.BUTTON_MIDDLE);
                 break;
             default:
                 return Clutter.EVENT_PROPAGATE;
@@ -365,12 +371,10 @@ class CustomHotCorner extends Layout.HotCorner {
         let direction = event.get_scroll_direction();
         switch (direction) {
             case Clutter.ScrollDirection.UP:
-                this._actionFunction = this.m.get(this._corner.getAction(Triggers.SCROLL_UP)) || function () {};
-                this.command = this._corner.getCommand(Triggers.SCROLL_UP);
+                this._setActionVars(Triggers.SCROLL_UP);
                 break;
             case Clutter.ScrollDirection.DOWN:
-                this._actionFunction = this.m.get(this._corner.getAction(Triggers.SCROLL_DOWN)) || function () {};
-                this.command = this._corner.getCommand(Triggers.SCROLL_DOWN);
+                this._setActionVars(Triggers.SCROLL_DOWN);
                 break;
             default:
                 return Clutter.EVENT_PROPAGATE;
@@ -379,25 +383,14 @@ class CustomHotCorner extends Layout.HotCorner {
         return Clutter.EVENT_STOP;
     }
 
- /*   _onCornerScrolled(actor, event) {
-        let direction = event.get_scroll_direction();
-        if (_actionTimeoutActive(direction)) {
-            return
-        }
-        if (this._corner.switchWorkspace) {
-            _switchWorkspace(direction);
-        } else if (this._corner.scrollToActivate) {
-            this._runAction();
-        }
-        return Clutter.EVENT_STOP;
-    }
-*/
     _runAction() {
         if (this._monitor.inFullscreen && this._corner.fullscreen) {
             this._actionFunction();
         } else if (!this._monitor.inFullscreen) {
             this._actionFunction();
         }
+        this._actionFunction = null;
+        this._ac
     }
 
     _toggleOverview() {
@@ -423,12 +416,12 @@ class CustomHotCorner extends Layout.HotCorner {
 
     _runCommand() {
         this._rippleAnimation();
-        Util.spawnCommandLine(this.command);
+        Util.spawnCommandLine(this._command);
     }
 
     _switchToWorkspace () {
         this._rippleAnimation();
-        let idx = this._corner.workspaceIndex-1;
+        let idx = this._wsIndex-1;
         let maxIndex = global.workspaceManager.n_workspaces-1;
         if (maxIndex < idx) {
             // last not empty workspace

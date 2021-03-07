@@ -10,7 +10,7 @@ extension_DATA = settings.js \
                  metadata.json \
                  prefs.js \
                  corner-widget.ui \
-                 misc-settings-widget.ui
+                 misc-settings-widget.ui \
                  README.md \
                  LICENSE
 
