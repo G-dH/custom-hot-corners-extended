@@ -177,7 +177,7 @@ class CustomHotCorner extends Layout.HotCorner {
             ['showDesktop', this._showDesktop],
             ['showApplications', this._showApplications],
             ['runCommand', this._runCommand],
-            ['switchToWorkspace', this._switchToWorkspace],
+            ['moveToWorkspace', this._moveToWorkspace],
             ['prevWorkspace', this._prevWorkspace],
             ['nextWorkspace', this._nextWorkspace]
         ]);
@@ -335,7 +335,7 @@ class CustomHotCorner extends Layout.HotCorner {
     _setActionVars(trigger) {
         let action = this._corner.getAction(trigger);
         this._actionFunction = this.m.get(action) || function () {};
-        if (action === 'switchToWorkspace'){
+        if (action === 'moveToWorkspace'){
             this._wsIndex = this._corner.getWorkspaceIndex(trigger);
         } else if (action === 'runCommand') {
             this._command = this._corner.getCommand(trigger);
@@ -419,7 +419,7 @@ class CustomHotCorner extends Layout.HotCorner {
         Util.spawnCommandLine(this._command);
     }
 
-    _switchToWorkspace () {
+    _moveToWorkspace () {
         this._rippleAnimation();
         let idx = this._wsIndex-1;
         let maxIndex = global.workspaceManager.n_workspaces-1;
@@ -529,7 +529,6 @@ function _switchWorkspace(direction) {
 }
 
 let _actionTimeoutId = null;
-
 function _actionTimeoutActive(direction) {
     if (_actionTimeoutId || direction === Clutter.ScrollDirection.SMOOTH) {
         return true;
@@ -564,28 +563,4 @@ function _onPanelScrolled(actor, event) {
     }
     _switchWorkspace(direction);
     return Clutter.EVENT_STOP;
-}
-
-/*injectToFunction (Workspace.Workspace.prototype, 'zoomFromOverview', function () {
-        activate_window ();
-    });
-*/
-function activate_window () {
-        if (!(slot_index == -1 || clone == null))
-            clone.metaWindow.activate (global.get_current_time());
-        slot_index = -1;
-        clone = null;
-    }
-
-function injectToFunction(parent, name, func) {
-    let origin = parent[name];
-    parent[name] = function()
-    {
-        let ret;
-        ret = origin.apply(this, arguments);
-        if (ret === undefined)
-            ret = func.apply(this, arguments);
-        return ret;
-    }
-    return origin;
 }

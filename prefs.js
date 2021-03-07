@@ -133,7 +133,6 @@ function buildPrefsWidget() {
 
 function _buildCornerWidget(corner, trigger) {
                 let cwUI = _loadUI('corner-widget.ui');
-                //cornerWidgets.push(cwUI);
                 let cw = cwUI.get_object('cornerWidget');
                 let fullscreenSwitch = cwUI.get_object('fullscreenSwitch');
                 let actionCombo = cwUI.get_object('actionCombo');
@@ -152,10 +151,10 @@ function _buildCornerWidget(corner, trigger) {
                 actionCombo.connect('changed', () => {
                     corner.setAction(trigger, actionCombo.active_id);
                     commandEntryRevealer.reveal_child = corner.getAction(trigger) === 'runCommand';
-                    wsIndexRevealer.reveal_child = corner.getAction(trigger) === 'switchToWorkspace';
+                    wsIndexRevealer.reveal_child = corner.getAction(trigger) === 'moveToWorkspace';
 
                 });
-                wsIndexRevealer.reveal_child = corner.getAction(trigger) === 'switchToWorkspace';
+                wsIndexRevealer.reveal_child = corner.getAction(trigger) === 'moveToWorkspace';
 
                 commandEntry.text = corner.getCommand(trigger);
                 commandEntryRevealer.reveal_child = corner.getAction(trigger) === 'runCommand';

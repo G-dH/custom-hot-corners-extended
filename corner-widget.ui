@@ -144,7 +144,7 @@
               <item id="runCommand" translatable="yes">Run Command</item>
               <item id="nextWorkspace" translatable="yes">Next Workspace</item>
               <item id="prevWorkspace" translatable="yes">Previous Workspace</item>
-              <item id="switchToWorkspace" translatable="yes">Switch to Workspace</item>
+              <item id="moveToWorkspace" translatable="yes">Move to Workspace</item>
             </items>
           </object>
           <packing>
