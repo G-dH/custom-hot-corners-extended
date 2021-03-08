@@ -206,30 +206,10 @@ class CustomHotCorner extends Layout.HotCorner {
 
         if (this._corner.getAction(Triggers.PRESSURE) !== 'disabled') {
             this._pressureBarrier.connect('trigger', this._onPressureTriggerd.bind(this));
-            this._setupFallbackCornerIfNeeded(Main.layoutManager);
 
         } 
-        if (this._shouldCreateActor) {
-            this._cActor = new Clutter.Actor({
-                name: 'click-corner',
-                x: this._corner.x,
-                y: this._corner.y,
-                width: 3, height: 3,
-                reactive: true,
-                scale_x: this._corner.left ? 1 : -1,
-                scale_y: this._corner.top ? 1 : -1
-            });
-            if (this._shouldConnect([Triggers.BUTTON_PRIMARY, Triggers.BUTTON_SECONDARY, Triggers.BUTTON_MIDDLE])) {
-                this._cActor.connect('button-press-event', this._onCornerClicked.bind(this));
-            }
-            if (this._shouldConnect([Triggers.SCROLL_UP, Triggers.SCROLL_DOWN])) {
-                this._cActor.connect('scroll-event', this._onCornerScrolled.bind(this));
-            }
-            Main.layoutManager.addChrome(this._cActor);
-            _collector.push(this._cActor);
-        }
+        this._setupCornerActorsIfNeeded(Main.layoutManager);
 
-        // Rotate the ripple actors according to the corner.
         let ltr = (Clutter.get_default_text_direction() ==
                    Clutter.TextDirection.LTR);
         let angle = (this._corner.left && ltr) ? (this._corner.top ? 0 : 270) : (this._corner.top ? 90 : 180);
@@ -270,32 +250,45 @@ class CustomHotCorner extends Layout.HotCorner {
     }
 
     // Overridden to allow all 4 monitor corners
-    _setupFallbackCornerIfNeeded(layoutManager) {
-        if (global.display.supports_extended_barriers() || this._corner.click || this._corner.scrollToActivate)
+    _setupCornerActorsIfNeeded(layoutManager) {
+         if (!(this._shouldCreateActor() || global.display.supports_extended_barriers())) {
             return;
-        this.actor = new Clutter.Actor({
-            name: 'event-corner',
-            x: this._corner.x, y: this._corner.y,
+        }
+
+        this._actor = new Clutter.Actor({
+            name: 'hot-corner-environs',
+            x: this._corner.x,
+            y: this._corner.y,
             width: 3, height: 3,
             reactive: true,
             scale_x: this._corner.left ? 1 : -1,
             scale_y: this._corner.top ? 1 : -1
         });
 
-        this._cornerActor = new Clutter.Actor({
-            name: 'hot-corner',
-            x: 0, y: 0,
-            width: 1, height: 1,
-            reactive: true
-        });
+        if (! global.display.supports_extended_barriers()) {
 
-        this._cornerActor._delegate = this;
-        this.actor.add_child(this._cornerActor);
-        layoutManager.addChrome(this.actor);
+            this._cornerActor = new Clutter.Actor({
+                name: 'hot-corner',
+                x: 0, y: 0,
+                width: 1, height: 1,
+                reactive: true
+            });
+            this._cornerActor._delegate = this;
+            this._actor.add_child(this._cornerActor);
+            this._cornerActor.connect('enter-event', this._onCornerEntered.bind(this));
+            //this._cornerActor.connect('leave-event', this._onCornerLeft.bind(this));
+            //this._actor.connect('leave-event', this._onEnvironsLeft.bind(this));
+        }
 
-        this.actor.connect('leave-event', this._onEnvironsLeft.bind(this));
-        this._cornerActor.connect('enter-event', this._onCornerEntered.bind(this));
-        this._cornerActor.connect('leave-event', this._onCornerLeft.bind(this));
+        layoutManager.addChrome(this._actor);
+
+        if (this._shouldConnect([Triggers.BUTTON_PRIMARY, Triggers.BUTTON_SECONDARY, Triggers.BUTTON_MIDDLE])) {
+            this._actor.connect('button-press-event', this._onCornerClicked.bind(this));
+        }
+        if (this._shouldConnect([Triggers.SCROLL_UP, Triggers.SCROLL_DOWN])) {
+            this._actor.connect('scroll-event', this._onCornerScrolled.bind(this));
+        }
+        _collector.push(this._actor);
     }
 
     _shouldCreateActor() {
@@ -390,7 +383,6 @@ class CustomHotCorner extends Layout.HotCorner {
             this._actionFunction();
         }
         this._actionFunction = null;
-        this._ac
     }
 
     _toggleOverview() {
