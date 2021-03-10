@@ -132,6 +132,9 @@ function _destroyCorner(corner) {
         if (hc[i]._corner.top === corner.top &&
             hc[i]._corner.left === corner.left &&
             hc[i]._corner.monitorIndex === corner.monitorIndex)  {
+                if (Main.layoutManager.hotCorners[i]._actor) {
+                    Main.layoutManager.hotCorners[i]._actor.destroy();
+                }
                 Main.layoutManager.hotCorners[i].destroy();
                 Main.layoutManager.hotCorners.splice(i,1);
                 break;
@@ -160,7 +163,6 @@ function _fiX11(geometry) {
             affectsStruts: true
         });
 }
-
 
 const CustomHotCorner = GObject.registerClass(
 class CustomHotCorner extends Layout.HotCorner {
@@ -277,7 +279,7 @@ class CustomHotCorner extends Layout.HotCorner {
             this._actor.add_child(this._cornerActor);
             this._cornerActor.connect('enter-event', this._onCornerEntered.bind(this));
             //this._cornerActor.connect('leave-event', this._onCornerLeft.bind(this));
-            //this._actor.connect('leave-event', this._onEnvironsLeft.bind(this));
+            this._actor.connect('leave-event', this._onEnvironsLeft.bind(this));
         }
 
         layoutManager.addChrome(this._actor);
@@ -294,7 +296,7 @@ class CustomHotCorner extends Layout.HotCorner {
     _shouldCreateActor() {
         let answer = null;
         for (let trigger of triggers) {
-            if (trigger === Triggers.PRESSURE) {
+            if (trigger === Triggers.PRESSURE && global.display.supports_extended_barriers()) {
                 continue;
             }
             answer = answer || (this._corner.getAction(trigger) !== 'disabled');
@@ -319,10 +321,15 @@ class CustomHotCorner extends Layout.HotCorner {
     // Overridden to allow running custom actions
     _onCornerEntered() {
         if (!this._entered) {
+            this._setActionVars(Triggers.PRESSURE);
             this._entered = true;
             this._runAction();
         }
         return Clutter.EVENT_PROPAGATE;
+    }
+
+    _onEnvironsLeft() {
+        this._entered = false;
     }
 
     _setActionVars(trigger) {
@@ -338,7 +345,6 @@ class CustomHotCorner extends Layout.HotCorner {
     _onPressureTriggerd (actor, event) {
         this._setActionVars(Triggers.PRESSURE);
         this._runAction();
-
     }
 
     _onCornerClicked(actor, event) {
@@ -468,6 +474,9 @@ function _togleShowDesktop() {
 }
 
 function _switchWorkspace(direction) {
+        if (_actionTimeoutActive(direction)) {
+            return
+        }
         let lastWsIndex =  global.workspaceManager.n_workspaces - (_wsSwitchIgnoreLast ? 2 : 1);
         let motion;
         switch (direction) {
@@ -547,9 +556,6 @@ function _updatePanelScrollWS(active) {
 
 function _onPanelScrolled(actor, event) {
     let direction = event.get_scroll_direction();
-    if (_actionTimeoutActive(direction)) {
-        return
-    }
     if (event.get_source() !== actor) {
         return Clutter.EVENT_PROPAGATE;
     }
