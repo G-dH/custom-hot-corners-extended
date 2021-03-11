@@ -439,35 +439,37 @@ class CustomHotCorner extends Layout.HotCorner {
 });
 
 let _minimizedWindows = [];
-
 function _togleShowDesktop() {
+    if (Main.overview.visible) return;
     let metaWorkspace = global.workspace_manager.get_active_workspace();
     let windows = metaWorkspace.list_windows();
-    if (Main.overview.visible) {
-        return;
-    }
-    if (!_minimizedWindows.length) {
-        for ( let win of windows) {
+    let wins=[];
+    for (let win of windows) {
+        let wm_class = win.wm_class ? win.wm_class.toLowerCase() : 'null';
+        let window_type = win.window_type ? win.window_type : 'null';
+        let title = win.title ? win.title : 'null';
+        if (  !(win.minimized ||
+                window_type === Meta.WindowType.DESKTOP ||
+                window_type === Meta.WindowType.DOCK ||
+                title.startsWith('DING') ||
+                wm_class.endsWith('notejot') ||
+                wm_class === 'conky' ||
+                ( title.startsWith('@!') && title.endsWith('BDH') ) )) {
 
-            let wm_class = win.wm_class ? win.wm_class.toLowerCase() : 'null';
-            let window_type = win.window_type ? win.window_type : 'null';
-            let title = win.title ? win.title : 'null';
-
-            if (  !(win.minimized ||
-                    window_type == Meta.WindowType.DESKTOP ||
-                    window_type == Meta.WindowType.DOCK ||
-                    title.startsWith('DING') ||
-                    wm_class.endsWith('notejot') ||
-                    wm_class == 'conky' ||
-                    ( title.startsWith('@!') && title.endsWith('BDH') ) )) {
-
-                win.minimize();
-                _minimizedWindows.push(win);
-            }
+            wins.push(win);
         }
-    } else {
-        for ( let win of _minimizedWindows ) {
-            win.unminimize();
+    }
+    if (wins.length !== 0) {
+        for (let win of wins) {
+            win.minimize();
+        }
+        _minimizedWindows = wins;
+    }
+    else if (_minimizedWindows !== 0) {
+        for (let win of _minimizedWindows) {
+            if (win) {
+                win.unminimize();
+            }
         }
         _minimizedWindows = [];
     }
