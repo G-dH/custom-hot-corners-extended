@@ -64,6 +64,21 @@ var MscOptions = class MscOptions {
         return getSettings(schema, path);
     }
 
+    get fiX11() {
+        return this._gsettings.get_boolean('fix11');
+    }
+
+    set fiX11(bool_val) {
+        this._gsettings.set_boolean('fix11', bool_val);
+    }
+
+    get fullscreenGlobal() {
+        return this._gsettings.get_boolean('fullscreen-global');
+    }
+
+    set fullscreenGlobal(bool_val) {
+        this._gsettings.set_boolean('fullscreen-global', bool_val);
+    }
 
     get scrollPanel() {
         return this._gsettings.get_boolean('panel-scroll');
@@ -165,11 +180,11 @@ var Corner = class Corner {
     }
 
     getFullscreen(trigger) {
-        return this._gsettings.get_boolean('fullscreen');
+        return this._gsettings[trigger].get_boolean('fullscreen');
     }
 
     setFullscreen(trigger, bool_val) {
-        this._gsettings.set_boolean('fullscreen', bool_val);
+        this._gsettings[trigger].set_boolean('fullscreen', bool_val);
     }
 
     getWorkspaceIndex(trigger) {

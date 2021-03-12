@@ -22,6 +22,12 @@
     </key>
   </schema>
   <schema id='org.gnome.shell.extensions.custom-hot-corners.misc'>
+    <key name='fix11' type='b'>
+      <default>true</default>
+    </key>
+    <key name='fullscreen-global' type='b'>
+      <default>false</default>
+    </key>
     <key name='panel-scroll' type='b'>
       <default>false</default>
     </key>

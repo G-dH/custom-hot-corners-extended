@@ -37,25 +37,28 @@ const Triggers = Settings.Triggers;
 
 let _origUpdateHotCorners = Main.layoutManager._updateHotCorners;
 let _collector = [];
+let _spacers = [];
 
 let _mscOptions;
 let _wsSwitchIgnoreLast;
 let _wsSwitchWrap;
 let _scrollEventDelay;
 let _wsSwitchIndicator;
+let _fullscreenGlobal;
 
 function init() {
 }
 
 function enable() {
+    _initMscOptions();
     Main.layoutManager._updateHotCorners = _updateHotCorners;
     Main.layoutManager._updateHotCorners();
-    _initMscOptions();
 }
 
 function disable() {
     // This restores the original hot corners
     _removeHotCorners();
+    _removeSpacers();
     Main.layoutManager._updateHotCorners = _origUpdateHotCorners;
     Main.layoutManager._updateHotCorners();
     if (_panelConnection !== null) {
@@ -67,6 +70,7 @@ function disable() {
 function _initMscOptions() {
     _mscOptions = new Settings.MscOptions();
     _mscOptions.connect('changed::panel-scroll', () => _updatePanelScrollWS(_mscOptions.scrollPanel));
+    _mscOptions.connect('changed::fix11', () => _fiX11());
     _mscOptions.connect('changed', _updateMscOptions);
     _updatePanelScrollWS(_mscOptions.scrollPanel);
     _updateMscOptions();
@@ -86,23 +90,23 @@ function _updateMscOptions() {
     _wsSwitchWrap = _mscOptions.wsSwitchWrap;
     _scrollEventDelay = _mscOptions.scrollEventDelay;
     _wsSwitchIndicator = _mscOptions.wsSwitchIndicator;
+    _fullscreenGlobal = _mscOptions.fullscreenGlobal;
 }
 
 function _updateHotCorners() {
     _removeHotCorners();
+    _fiX11();
     Main.layoutManager.hotCorners=[];
+
     for (let i = 0; i < Main.layoutManager.monitors.length; ++i) {
         const corners = Settings.Corner.forMonitor(i, global.display.get_monitor_geometry(i));
-        if (! Meta.is_wayland_compositor()) {
-            // workaround for unclickable corners above focused windows under X11 session:
-            //  add 1px high rectangle at the bottom of the monitor to move windows up
-            _fiX11(global.display.get_monitor_geometry(i))
-        }
+
         for (let corner of corners) {
             _collector.push(corner);
+
             for (let trigger of triggers) {
                 // Update hot corner if something changes
-                corner.connect('changed', () => _updateCorner(corner, trigger), trigger);
+                corner.connect('changed', () => _updateCorner(corner), trigger);
             }
             if (_shouldCreateCorner(corner)) {
                 Main.layoutManager.hotCorners.push(new CustomHotCorner(corner));
@@ -119,7 +123,7 @@ function _shouldCreateCorner(corner) {
     return answer;
 }
 
-function _updateCorner(corner, trigger) {
+function _updateCorner(corner) {
     _destroyCorner(corner);
     if (_shouldCreateCorner(corner)) {
         Main.layoutManager.hotCorners.push(new CustomHotCorner(corner));
@@ -131,37 +135,70 @@ function _destroyCorner(corner) {
     for (let i = 0; i < hc.length; i++) {
         if (hc[i]._corner.top === corner.top &&
             hc[i]._corner.left === corner.left &&
-            hc[i]._corner.monitorIndex === corner.monitorIndex)  {
+            hc[i]._corner.monitorIndex === corner.monitorIndex) {
                 if (Main.layoutManager.hotCorners[i]._actor) {
                     Main.layoutManager.hotCorners[i]._actor.destroy();
                 }
                 Main.layoutManager.hotCorners[i].destroy();
-                Main.layoutManager.hotCorners.splice(i,1);
+                Main.layoutManager.hotCorners.splice(i, 1);
                 break;
         }
     }
 }
 
-function _fiX11(geometry) {
-    let bottomSpacer = new Clutter.Rectangle({
-        name: 'bottom-spacer',
-        // affectsStruts property works when object touches the edge of the screen
-        // but scale_x/y property cannot be -1
-        x: geometry.x, y: geometry.y + geometry.height - 1,
-        width: geometry.width,
-        height: 1,
-        reactive: false,
-        color: new Clutter.Color({
-            red:0,
-            green:0,
-            blue:0,
-            alpha:255
-        })
-    });
-    _collector.push(bottomSpacer);
-    Main.layoutManager.addChrome(bottomSpacer, {
-            affectsStruts: true
+function _removeSpacers() {
+    for (let spacer of _spacers) {
+        spacer.destroy();
+    }
+    _spacers=[];
+}
+
+function _fiX11() {
+    // workaround for insensitive corners above active windows under X11 session:
+    // add 1px high rectangle at the sides of the monitor to move windows from the corners
+    _removeSpacers();
+    if (! _mscOptions.fiX11 || Meta.is_wayland_compositor()) return;
+    for (let i = 0; i < Main.layoutManager.monitors.length; ++i) {
+        let geometry = global.display.get_monitor_geometry(i);
+        let leftSpacer = new Clutter.Rectangle({
+            name: 'left-spacer',
+            // "affectsStruts" property works when object touches the edge of the screen
+            // but scale_x/y property cannot be -1
+            x: geometry.x,
+            y: geometry.y,
+            width: 1,
+            height: geometry.height,
+            reactive: false,
+            color: new Clutter.Color({
+                red:0,
+                green:0,
+                blue:0,
+                alpha:255
+            })
         });
+        let rightSpacer = new Clutter.Rectangle({
+            name: 'right-spacer',
+            x: geometry.x + geometry.width - 1,
+            y: geometry.y,
+            width: 1,
+            height: geometry.height,
+            reactive: false,
+            color: new Clutter.Color({
+                red:0,
+                green:0,
+                blue:0,
+                alpha:255
+            })
+        });
+        _spacers.push(leftSpacer);
+        _spacers.push(rightSpacer);
+        Main.layoutManager.addChrome(leftSpacer, {
+                affectsStruts: true
+            });
+        Main.layoutManager.addChrome(rightSpacer, {
+                affectsStruts: true
+            });
+    }
 }
 
 const CustomHotCorner = GObject.registerClass(
@@ -340,6 +377,7 @@ class CustomHotCorner extends Layout.HotCorner {
         } else if (action === 'runCommand') {
             this._command = this._corner.getCommand(trigger);
         }
+        this._fullscreen = this._corner.getFullscreen(trigger);
     }
 
     _onPressureTriggerd (actor, event) {
@@ -383,7 +421,7 @@ class CustomHotCorner extends Layout.HotCorner {
     }
 
     _runAction() {
-        if (this._monitor.inFullscreen && this._corner.fullscreen) {
+        if (this._monitor.inFullscreen && (this._fullscreen || _fullscreenGlobal)) {
             this._actionFunction();
         } else if (!this._monitor.inFullscreen) {
             this._actionFunction();

@@ -45,12 +45,23 @@ function buildPrefsWidget() {
     let mscOptions = new Settings.MscOptions();
     let msUI = _loadUI('misc-settings-widget.ui');
     let miscUI = msUI.get_object('miscOptions');
+    let fiX11Switch = msUI.get_object('fiX11Switch');
+    let fullscreenGlobalSwitch = msUI.get_object('fullscreenGlobalSwitch');
     let scrollPanelSwitch = msUI.get_object('scrollPanelSwitch');
     let ignoreLastWsSwitch = msUI.get_object('ignoreLastWsSwitch');
     let wrapWsSwitch = msUI.get_object('wrapWsSwitch');
     let wsIndicatorSwitch = msUI.get_object('wsIndicatorSwitch');
     let scrollEventsDelaySpinBtn = msUI.get_object('scrollEventsDelaySpinBtn');
 
+    fiX11Switch.active = mscOptions.fiX11;
+    fiX11Switch.connect('notify::active', () => {
+                mscOptions.fiX11 = fiX11Switch.active;
+    })
+
+    fullscreenGlobalSwitch.active = mscOptions.fullscreenGlobal;
+    fullscreenGlobalSwitch.connect('notify::active', () => {
+                mscOptions.fullscreenGlobal = fullscreenGlobalSwitch.active;
+    })
     scrollPanelSwitch.active = mscOptions.scrollPanel;
     scrollPanelSwitch.connect('notify::active', () => {
                 mscOptions.scrollPanel = scrollPanelSwitch.active;
@@ -138,9 +149,9 @@ function _buildCornerWidget(corner, trigger) {
     let workspaceIndexSpinButton = cwUI.get_object('workspaceIndex');
 
 
-    fullscreenSwitch.active = corner.fullscreen;
+    fullscreenSwitch.active = corner.getFullscreen(trigger);
     fullscreenSwitch.connect('notify::active', () => {
-        corner.fullscreen = fullscreenSwitch.active;
+        corner.setFullscreen(trigger, fullscreenSwitch.active);
     });
     
     actionCombo.active_id = corner.getAction(trigger);
