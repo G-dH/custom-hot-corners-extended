@@ -72,6 +72,14 @@ var MscOptions = class MscOptions {
         this._gsettings.set_boolean('fix11', bool_val);
     }
 
+    get delayStart() {
+        return this._gsettings.get_boolean('delay-start');
+    }
+
+    set delayStart(bool_val) {
+        this._gsettings.set_boolean('delay-start', bool_val);
+    }
+
     get fullscreenGlobal() {
         return this._gsettings.get_boolean('fullscreen-global');
     }

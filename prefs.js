@@ -46,6 +46,7 @@ function buildPrefsWidget() {
     let msUI = _loadUI('misc-settings-widget.ui');
     let miscUI = msUI.get_object('miscOptions');
     let fiX11Switch = msUI.get_object('fiX11Switch');
+    let delayStartSwitch = msUI.get_object('delayStartSwitch');
     let fullscreenGlobalSwitch = msUI.get_object('fullscreenGlobalSwitch');
     let scrollPanelSwitch = msUI.get_object('scrollPanelSwitch');
     let ignoreLastWsSwitch = msUI.get_object('ignoreLastWsSwitch');
@@ -56,6 +57,11 @@ function buildPrefsWidget() {
     fiX11Switch.active = mscOptions.fiX11;
     fiX11Switch.connect('notify::active', () => {
                 mscOptions.fiX11 = fiX11Switch.active;
+    })
+
+    delayStartSwitch.active = mscOptions.delayStart;
+    delayStartSwitch.connect('notify::active', () => {
+                mscOptions.delayStart = delayStartSwitch.active;
     })
 
     fullscreenGlobalSwitch.active = mscOptions.fullscreenGlobal;

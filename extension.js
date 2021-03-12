@@ -51,8 +51,19 @@ function init() {
 
 function enable() {
     _initMscOptions();
-    Main.layoutManager._updateHotCorners = _updateHotCorners;
-    Main.layoutManager._updateHotCorners();
+    if (_mscOptions.delayStart) {
+        GLib.timeout_add(
+            GLib.PRIORITY_DEFAULT,
+            5000,
+            () => {
+                Main.layoutManager._updateHotCorners = _updateHotCorners;
+                Main.layoutManager._updateHotCorners();
+            }
+        )
+    } else {
+        Main.layoutManager._updateHotCorners = _updateHotCorners;
+        Main.layoutManager._updateHotCorners();
+    }
 }
 
 function disable() {
@@ -405,6 +416,7 @@ class CustomHotCorner extends Layout.HotCorner {
     }
 
     _onCornerScrolled(actor, event) {
+        if (event.get_scroll_direction === Clutter.ScrollDirection.SMOOTH) return;
         let direction = event.get_scroll_direction();
         switch (direction) {
             case Clutter.ScrollDirection.UP:
@@ -421,6 +433,7 @@ class CustomHotCorner extends Layout.HotCorner {
     }
 
     _runAction() {
+        if (_actionTimeoutActive()) return;
         if (this._monitor.inFullscreen && (this._fullscreen || _fullscreenGlobal)) {
             this._actionFunction();
         } else if (!this._monitor.inFullscreen) {
@@ -514,9 +527,6 @@ function _togleShowDesktop() {
 }
 
 function _switchWorkspace(direction) {
-        if (_actionTimeoutActive(direction)) {
-            return
-        }
         let lastWsIndex =  global.workspaceManager.n_workspaces - (_wsSwitchIgnoreLast ? 2 : 1);
         let motion;
         switch (direction) {
@@ -570,8 +580,8 @@ function _switchWorkspace(direction) {
 }
 
 let _actionTimeoutId = null;
-function _actionTimeoutActive(direction) {
-    if (_actionTimeoutId || direction === Clutter.ScrollDirection.SMOOTH) {
+function _actionTimeoutActive() {
+    if (_actionTimeoutId) {
         return true;
     }
    _actionTimeoutId = GLib.timeout_add(
@@ -595,6 +605,7 @@ function _updatePanelScrollWS(active) {
 }
 
 function _onPanelScrolled(actor, event) {
+    if (event.get_scroll_direction === Clutter.ScrollDirection.SMOOTH) return;
     let direction = event.get_scroll_direction();
     if (event.get_source() !== actor) {
         return Clutter.EVENT_PROPAGATE;

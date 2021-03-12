@@ -25,6 +25,9 @@
     <key name='fix11' type='b'>
       <default>true</default>
     </key>
+    <key name='delay-start' type='b'>
+      <default>false</default>
+    </key>
     <key name='fullscreen-global' type='b'>
       <default>false</default>
     </key>
