@@ -117,7 +117,7 @@ function buildPrefsWidget() {
 
         const monitor = display.get_monitor(monitorIndex);
         const geometry = monitor.get_geometry();
-        const corners = Settings.Corner.forMonitor(monitorIndex, geometry);
+        const corners = Settings.Corner.forMonitor(loadIndex=monitorIndex, monitorIndex, geometry);
 
         for (let corner of corners) {
             for (let trigger of triggers) {
