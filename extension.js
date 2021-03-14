@@ -234,7 +234,8 @@ class CustomHotCorner extends Layout.HotCorner {
             ['runCommand', this._runCommand],
             ['moveToWorkspace', this._moveToWorkspace],
             ['prevWorkspace', this._prevWorkspace],
-            ['nextWorkspace', this._nextWorkspace]
+            ['nextWorkspace', this._nextWorkspace],
+            ['screenLock', this._lockScreen]
         ]);
         //this._actionFunction = m.get(this._corner.action) || function () {};
 
@@ -491,6 +492,10 @@ class CustomHotCorner extends Layout.HotCorner {
 
     _nextWorkspace() {
         _switchWorkspace(Clutter.ScrollDirection.DOWN);
+    }
+
+    _lockScreen() {
+        Main.screenShield.lock(true);
     }
 });
 

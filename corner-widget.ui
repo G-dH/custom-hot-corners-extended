@@ -145,6 +145,7 @@
               <item id="nextWorkspace" translatable="yes">Next Workspace</item>
               <item id="prevWorkspace" translatable="yes">Previous Workspace</item>
               <item id="moveToWorkspace" translatable="yes">Move to Workspace</item>
+              <item id="screenLock" translatable="yes">Lock Screen</item>
             </items>
           </object>
           <packing>
