@@ -108,10 +108,14 @@ function _updateHotCorners() {
     _removeHotCorners();
     _fiX11();
     Main.layoutManager.hotCorners=[];
+    let primaryIndex = Main.layoutManager.primaryIndex;
+    let monIndexes = [...Main.layoutManager.monitors.keys()];
+    // index of primary monitor to the first possition
+    monIndexes.splice(0, 0, monIndexes.splice(primaryIndex, 1)[0]);
 
     for (let i = 0; i < Main.layoutManager.monitors.length; ++i) {
-        const corners = Settings.Corner.forMonitor(i, global.display.get_monitor_geometry(i));
-
+        // Monitor 1 in preferences will allways refer to primary monitor
+        const corners = Settings.Corner.forMonitor(i, monIndexes[i], global.display.get_monitor_geometry(monIndexes[i]));
         for (let corner of corners) {
             _collector.push(corner);
 
@@ -252,7 +256,7 @@ class CustomHotCorner extends Layout.HotCorner {
             Layout.HOT_CORNER_PRESSURE_TIMEOUT,
             Shell.ActionMode.NORMAL | Shell.ActionMode.OVERVIEW
         );
-            this.setBarrierSize(corner.barrierSize);
+        this.setBarrierSize(corner.barrierSize);
 
         if (this._corner.getAction(Triggers.PRESSURE) !== 'disabled') {
             this._pressureBarrier.connect('trigger', this._onPressureTriggerd.bind(this));
@@ -279,8 +283,8 @@ class CustomHotCorner extends Layout.HotCorner {
             const BD = Meta.BarrierDirection;
             this._verticalBarrier = new Meta.Barrier({
                 display: global.display,
-                x1: this._corner.x,
-                x2: this._corner.x,
+                x1: this._corner.x + (Meta.is_wayland_compositor() ? (this._corner.left ? 1 : -1) : 0 ),  // move barier 1px horizontaly because of wayland
+                x2: this._corner.x + (Meta.is_wayland_compositor() ? (this._corner.left ? 1 : -1) : 0 ),
                 y1: this._corner.y,
                 y2: this._corner.top ? this._corner.y + size : this._corner.y - size,
                 directions: this._corner.left ? BD.POSITIVE_X : BD.NEGATIVE_X
@@ -289,8 +293,8 @@ class CustomHotCorner extends Layout.HotCorner {
                 display: global.display,
                 x1: this._corner.x,
                 x2: this._corner.left ? this._corner.x + size : this._corner.x - size,
-                y1: this._corner.y,
-                y2: this._corner.y,
+                y1: this._corner.y + (Meta.is_wayland_compositor() ? (this._corner.top ? 1 : -1) : 0 ), // move barier 1px verticaly to be sure
+                y2: this._corner.y + (Meta.is_wayland_compositor() ? (this._corner.top ? 1 : -1) : 0 ),
                 directions: this._corner.top ? BD.POSITIVE_Y : BD.NEGATIVE_Y
             });
 
@@ -309,7 +313,7 @@ class CustomHotCorner extends Layout.HotCorner {
             name: 'hot-corner-environs',
             x: this._corner.x,
             y: this._corner.y,
-            width: 3, height: 3,
+            width: 4, height: 4,
             reactive: true,
             scale_x: this._corner.left ? 1 : -1,
             scale_y: this._corner.top ? 1 : -1

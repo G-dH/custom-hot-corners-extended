@@ -127,9 +127,10 @@ var MscOptions = class MscOptions {
 }
 
 var Corner = class Corner {
-    constructor(monitorIndex, top, left, x, y) {
+    constructor(loadIndex, monitorIndex, top, left, x, y) {
         this._gsettings = {};
         this.monitorIndex = monitorIndex;
+        this.loadIndex = loadIndex;
         this.top = top;
         this.left = left;
         this.x = x;
@@ -138,13 +139,13 @@ var Corner = class Corner {
         this._connectionIds = [];
     }
 
-    static forMonitor(index, geometry) {
+    static forMonitor(loadIndex, index, geometry) {
         let corners = [];
         for (let top of [true, false]) {
             for (let left of [true, false]) {
                 let x = left ? geometry.x : geometry.x + geometry.width;
                 let y = top ? geometry.y : geometry.y + geometry.height;
-                let c = new Corner(index, top, left, x, y);
+                let c = new Corner(loadIndex, index, top, left, x, y);
                 corners.push(c);
             }
         }
@@ -225,7 +226,7 @@ var Corner = class Corner {
         let v = this.top ? 'top' : 'bottom';
         let h = this.left ? 'left' : 'right';
         let path = '/org/gnome/shell/extensions/custom-hot-corners/';
-        path += `monitor-${this.monitorIndex}-${v}-${h}-${label}/`;
+        path += `monitor-${this.loadIndex}-${v}-${h}-${label}/`;
         return getSettings(schema, path);
     }
 }
