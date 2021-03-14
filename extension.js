@@ -174,6 +174,7 @@ function _fiX11() {
     _removeSpacers();
     if (! _mscOptions.fiX11 || Meta.is_wayland_compositor()) return;
     for (let i = 0; i < Main.layoutManager.monitors.length; ++i) {
+        if (i !== Main.layoutManager.primaryIndex) continue;
         let geometry = global.display.get_monitor_geometry(i);
         let leftSpacer = new Clutter.Rectangle({
             name: 'left-spacer',

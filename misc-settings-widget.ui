@@ -23,7 +23,7 @@
         <property name="halign">start</property>
         <property name="valign">start</property>
         <property name="label" translatable="yes">Fix insensitive corners when covered by the active window
-&lt;small&gt;(X11 only - reduces desktop area by 1px on each side of each screen)&lt;/small&gt;</property>
+&lt;small&gt;(X11 only - reduces desktop area by 1px on each side of the primary monitor)&lt;/small&gt;</property>
         <property name="use_markup">True</property>
       </object>
       <packing>
@@ -194,7 +194,7 @@
         <property name="halign">start</property>
         <property name="valign">start</property>
         <property name="label" translatable="yes">Enable all corners triggers in &lt;b&gt;fullscreen&lt;/b&gt; mode
-&lt;small&gt;(when off, each corner trigger can be set independently)&lt;/small&gt;</property>
+&lt;small&gt;(when off, each trigger can be set independently)&lt;/small&gt;</property>
         <property name="use_markup">True</property>
       </object>
       <packing>
