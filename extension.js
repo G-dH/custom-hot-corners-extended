@@ -31,6 +31,7 @@ const ExtensionUtils = imports.misc.extensionUtils;
 const Me = ExtensionUtils.getCurrentExtension();
 const Settings = Me.imports.settings;
 const WorkspaceSwitcherPopup = imports.ui.workspaceSwitcherPopup;
+const SystemActions = imports.misc.systemActions;
 
 const triggers = Settings.listTriggers();
 const Triggers = Settings.Triggers;
@@ -235,7 +236,11 @@ class CustomHotCorner extends Layout.HotCorner {
             ['moveToWorkspace', this._moveToWorkspace],
             ['prevWorkspace', this._prevWorkspace],
             ['nextWorkspace', this._nextWorkspace],
-            ['screenLock', this._lockScreen]
+            ['screenLock', this._lockScreen],
+            ['suspend', this._suspendToRam],
+            ['powerOff', this._powerOff],
+            ['logout', this._logOut],
+            ['switchUser', this._switchUser]
         ]);
         //this._actionFunction = m.get(this._corner.action) || function () {};
 
@@ -495,7 +500,24 @@ class CustomHotCorner extends Layout.HotCorner {
     }
 
     _lockScreen() {
-        Main.screenShield.lock(true);
+        //Main.screenShield.lock(true);
+        SystemActions.getDefault().activateLockScreen();
+    }
+
+    _suspendToRam () {
+        SystemActions.getDefault().activateSuspend();
+    }
+
+    _powerOff() {
+        SystemActions.getDefault().activatePowerOff();
+    }
+
+    _logOut() {
+        SystemActions.getDefault().activateLogout();
+    }
+
+    _switchUser() {
+        SystemActions.getDefault().activateSwitchUser();
     }
 });
 

@@ -146,6 +146,10 @@
               <item id="prevWorkspace" translatable="yes">Previous Workspace</item>
               <item id="moveToWorkspace" translatable="yes">Move to Workspace</item>
               <item id="screenLock" translatable="yes">Lock Screen</item>
+              <item id="suspend" translatable="yes">Suspend to RAM</item>
+              <item id="powerOff" translatable="yes">Power Off Dialog</item>
+              <item id="logout" translatable="yes">Log Out Dialog</item>
+              <item id="switchUser" translatable="yes">Switch User</item>
             </items>
           </object>
           <packing>
