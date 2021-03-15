@@ -20,7 +20,8 @@ const ExtensionUtils = imports.misc.extensionUtils;
 const Me = ExtensionUtils.getCurrentExtension();
 const Settings = Me.imports.settings;
 let triggers = Settings.listTriggers();
-let triggerLabels = Settings.triggerLabels;
+let triggerLabels = Settings.TriggerLabels;
+let notebook;
 
 function _loadUI(file) {
     let path = Me.dir.get_child(file).get_path();
@@ -33,7 +34,7 @@ function init() {
 
 function buildPrefsWidget() {
     let prefsWidget = new Gtk.Grid();
-    let notebook = new Gtk.Notebook;
+    notebook = new Gtk.Notebook;
     notebook.tab_pos = Gtk.POS_LEFT;
     prefsWidget.attach(notebook,0,0,1,1);
 
@@ -117,7 +118,7 @@ function buildPrefsWidget() {
 
         const monitor = display.get_monitor(monitorIndex);
         const geometry = monitor.get_geometry();
-        const corners = Settings.Corner.forMonitor(loadIndex=monitorIndex, monitorIndex, geometry);
+        const corners = Settings.Corner.forMonitor(monitorIndex, monitorIndex, geometry);
 
         for (let corner of corners) {
             for (let trigger of triggers) {
@@ -153,7 +154,7 @@ function _buildCornerWidget(corner, trigger) {
     let commandEntryRevealer = cwUI.get_object('commandEntryRevealer');
     let wsIndexRevealer = cwUI.get_object('wsIndexRevealer');
     let workspaceIndexSpinButton = cwUI.get_object('workspaceIndex');
-
+    let appButton = cwUI.get_object('appButton');
 
     fullscreenSwitch.active = corner.getFullscreen(trigger);
     fullscreenSwitch.connect('notify::active', () => {
@@ -165,8 +166,24 @@ function _buildCornerWidget(corner, trigger) {
         corner.setAction(trigger, actionCombo.active_id);
         commandEntryRevealer.reveal_child = corner.getAction(trigger) === 'runCommand';
         wsIndexRevealer.reveal_child = corner.getAction(trigger) === 'moveToWorkspace';
-
     });
+    //if (commandEntryRevealer.reveal_child) {
+    appButton.connect('clicked', () => {
+        let dialog = _chooseAppDialog();
+        dialog.connect('response', (dlg, id) => {
+            if (id !== Gtk.ResponseType.OK) {
+                dialog.destroy();
+                return;
+            }
+
+            appInfo = dialog._appChooser.get_app_info();
+            if (!appInfo) return;
+            commandEntry.text = appInfo.get_commandline();
+
+            dialog.destroy();
+        });
+    });
+    //}
     wsIndexRevealer.reveal_child = corner.getAction(trigger) === 'moveToWorkspace';
 
     commandEntry.text = corner.getCommand(trigger);
@@ -251,3 +268,30 @@ function _buildCornerWidget(corner, trigger) {
     });
     return cw;
 }
+
+function _chooseAppDialog() {
+        let dialog = new Gtk.Dialog({
+            title: ('Choose Application'),
+            transient_for: notebook.get_toplevel(),
+            use_header_bar: true,
+            modal: true,
+        });
+
+        dialog.add_button(Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL);
+        let addButton = dialog.add_button('Select', Gtk.ResponseType.OK);
+        dialog.set_default_response(Gtk.ResponseType.OK);
+
+        let grid = new Gtk.Grid({
+            column_spacing: 10,
+            row_spacing: 15,
+            margin: 10,
+        });
+
+        dialog._appChooser = new Gtk.AppChooserWidget({ show_all: true });
+        let appInfo = dialog._appChooser.get_app_info();
+        grid.attach(dialog._appChooser, 0, 0, 2, 1);
+        dialog.get_content_area().add(grid);
+
+        dialog.show_all();
+        return dialog;
+    }
