@@ -82,7 +82,6 @@ function disable() {
 function _initMscOptions() {
     _mscOptions = new Settings.MscOptions();
     _mscOptions.connect('changed::panel-scroll', () => _updatePanelScrollWS(_mscOptions.scrollPanel));
-    _mscOptions.connect('changed::fix11', () => _fiX11());
     _mscOptions.connect('changed', _updateMscOptions);
     _updatePanelScrollWS(_mscOptions.scrollPanel);
     _updateMscOptions();
@@ -107,7 +106,6 @@ function _updateMscOptions() {
 
 function _updateHotCorners() {
     _removeHotCorners();
-    _fiX11();
     Main.layoutManager.hotCorners=[];
     let primaryIndex = Main.layoutManager.primaryIndex;
     let monIndexes = [...Main.layoutManager.monitors.keys()];
@@ -167,55 +165,6 @@ function _removeSpacers() {
         spacer.destroy();
     }
     _spacers=[];
-}
-
-function _fiX11() {
-    // workaround for insensitive corners above active windows under X11 session:
-    // add 1px high rectangle at the sides of the monitor to move windows from the corners
-    _removeSpacers();
-    if (! _mscOptions.fiX11 || Meta.is_wayland_compositor()) return;
-    for (let i = 0; i < Main.layoutManager.monitors.length; ++i) {
-        if (i !== Main.layoutManager.primaryIndex) continue;
-        let geometry = global.display.get_monitor_geometry(i);
-        let leftSpacer = new Clutter.Rectangle({
-            name: 'left-spacer',
-            // "affectsStruts" property works when object touches the edge of the screen
-            // but scale_x/y property cannot be -1
-            x: geometry.x,
-            y: geometry.y,
-            width: 1,
-            height: geometry.height,
-            reactive: false,
-            color: new Clutter.Color({
-                red:0,
-                green:0,
-                blue:0,
-                alpha:255
-            })
-        });
-        let rightSpacer = new Clutter.Rectangle({
-            name: 'right-spacer',
-            x: geometry.x + geometry.width - 1,
-            y: geometry.y,
-            width: 1,
-            height: geometry.height,
-            reactive: false,
-            color: new Clutter.Color({
-                red:0,
-                green:0,
-                blue:0,
-                alpha:255
-            })
-        });
-        _spacers.push(leftSpacer);
-        _spacers.push(rightSpacer);
-        Main.layoutManager.addChrome(leftSpacer, {
-                affectsStruts: true
-            });
-        Main.layoutManager.addChrome(rightSpacer, {
-                affectsStruts: true
-            });
-    }
 }
 
 const CustomHotCorner = GObject.registerClass(
@@ -316,14 +265,18 @@ class CustomHotCorner extends Layout.HotCorner {
             return;
         }
 
+        let aSize = 4;
         this._actor = new Clutter.Actor({
             name: 'hot-corner-environs',
-            x: this._corner.x,
-            y: this._corner.y,
-            width: 4, height: 4,
-            reactive: true,
-            scale_x: this._corner.left ? 1 : -1,
-            scale_y: this._corner.top ? 1 : -1
+            x: this._corner.x + (this._corner.left ? 0 : - aSize),
+            y: this._corner.y + (this._corner.top  ? 0 : - aSize),
+            width: aSize, height: aSize,
+            reactive: true
+            // when negative scale is used, such actors are acting weirdly under X11 (tested on GS 3.36 Ubunru 20.04):
+            //  - no events catched when overlayed by active window
+            //  - affectsStruts propertie doesn't work
+            //scale_x: this._corner.left ? 1 : -1,
+            //scale_y: this._corner.top ? 1 : -1
         });
 
         if (! global.display.supports_extended_barriers()) {

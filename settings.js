@@ -64,14 +64,6 @@ var MscOptions = class MscOptions {
         return getSettings(schema, path);
     }
 
-    get fiX11() {
-        return this._gsettings.get_boolean('fix11');
-    }
-
-    set fiX11(bool_val) {
-        this._gsettings.set_boolean('fix11', bool_val);
-    }
-
     get delayStart() {
         return this._gsettings.get_boolean('delay-start');
     }

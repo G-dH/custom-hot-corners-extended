@@ -22,8 +22,8 @@
         <property name="can_focus">False</property>
         <property name="halign">start</property>
         <property name="valign">start</property>
-        <property name="label" translatable="yes">Fix insensitive corners when covered by the active window
-&lt;small&gt;(X11 only - reduces desktop area by 1px on each side of the primary monitor)&lt;/small&gt;</property>
+        <property name="label" translatable="yes">Try to avoid potential hot corner overrides from other extensions
+&lt;small&gt;(delays activation of this extension to be the last which customize hot corners)&lt;/small&gt;</property>
         <property name="use_markup">True</property>
       </object>
       <packing>
@@ -32,7 +32,7 @@
       </packing>
     </child>
     <child>
-      <object class="GtkSwitch" id="fiX11Switch">
+      <object class="GtkSwitch" id="delayStartSwitch">
         <property name="visible">True</property>
         <property name="can_focus">True</property>
         <property name="halign">center</property>
@@ -48,69 +48,18 @@
         <property name="visible">True</property>
         <property name="can_focus">False</property>
         <property name="halign">start</property>
-        <property name="valign">center</property>
-        <property name="label" translatable="yes">        Scroll over main panel to switch workspace</property>
-      </object>
-      <packing>
-        <property name="left_attach">0</property>
-        <property name="top_attach">8</property>
-      </packing>
-    </child>
-    <child>
-      <object class="GtkLabel">
-        <property name="visible">True</property>
-        <property name="can_focus">False</property>
-        <property name="halign">start</property>
-        <property name="valign">center</property>
-        <property name="label" translatable="yes">        Show workspace indicator while switching</property>
-      </object>
-      <packing>
-        <property name="left_attach">0</property>
-        <property name="top_attach">7</property>
-      </packing>
-    </child>
-    <child>
-      <object class="GtkLabel">
-        <property name="visible">True</property>
-        <property name="can_focus">False</property>
-        <property name="halign">start</property>
-        <property name="valign">center</property>
-        <property name="label" translatable="yes">        Wraparound</property>
-      </object>
-      <packing>
-        <property name="left_attach">0</property>
-        <property name="top_attach">6</property>
-      </packing>
-    </child>
-    <child>
-      <object class="GtkLabel">
-        <property name="visible">True</property>
-        <property name="can_focus">False</property>
-        <property name="halign">start</property>
-        <property name="valign">center</property>
-        <property name="label" translatable="yes">        Ignore last (empty) workspace</property>
-      </object>
-      <packing>
-        <property name="left_attach">0</property>
-        <property name="top_attach">5</property>
-      </packing>
-    </child>
-    <child>
-      <object class="GtkLabel">
-        <property name="visible">True</property>
-        <property name="can_focus">False</property>
-        <property name="halign">start</property>
-        <property name="valign">center</property>
-        <property name="label" translatable="yes">&lt;b&gt;Workspace navigation options:&lt;/b&gt;</property>
+        <property name="valign">start</property>
+        <property name="label" translatable="yes">Enable all corner triggers in fullscreen mode
+&lt;small&gt;(when off, each trigger can be set independently)&lt;/small&gt;</property>
         <property name="use_markup">True</property>
       </object>
       <packing>
         <property name="left_attach">0</property>
-        <property name="top_attach">4</property>
+        <property name="top_attach">1</property>
       </packing>
     </child>
     <child>
-      <object class="GtkSwitch" id="scrollPanelSwitch">
+      <object class="GtkSwitch" id="fullscreenGlobalSwitch">
         <property name="visible">True</property>
         <property name="can_focus">True</property>
         <property name="halign">center</property>
@@ -118,58 +67,7 @@
       </object>
       <packing>
         <property name="left_attach">1</property>
-        <property name="top_attach">8</property>
-      </packing>
-    </child>
-    <child>
-      <object class="GtkSwitch" id="wsIndicatorSwitch">
-        <property name="visible">True</property>
-        <property name="can_focus">True</property>
-        <property name="halign">center</property>
-        <property name="valign">center</property>
-      </object>
-      <packing>
-        <property name="left_attach">1</property>
-        <property name="top_attach">7</property>
-      </packing>
-    </child>
-    <child>
-      <object class="GtkSwitch" id="wrapWsSwitch">
-        <property name="visible">True</property>
-        <property name="can_focus">True</property>
-        <property name="halign">center</property>
-        <property name="valign">center</property>
-      </object>
-      <packing>
-        <property name="left_attach">1</property>
-        <property name="top_attach">6</property>
-      </packing>
-    </child>
-    <child>
-      <object class="GtkSwitch" id="ignoreLastWsSwitch">
-        <property name="visible">True</property>
-        <property name="can_focus">True</property>
-        <property name="halign">center</property>
-        <property name="valign">center</property>
-      </object>
-      <packing>
-        <property name="left_attach">1</property>
-        <property name="top_attach">5</property>
-      </packing>
-    </child>
-    <child>
-      <object class="GtkLabel">
-        <property name="visible">True</property>
-        <property name="can_focus">False</property>
-        <property name="halign">start</property>
-        <property name="valign">center</property>
-        <property name="label" translatable="yes">Minimum delay between trigger events (ms)
-&lt;small&gt;(prevents accidental double-action)&lt;/small&gt;</property>
-        <property name="use_markup">True</property>
-      </object>
-      <packing>
-        <property name="left_attach">0</property>
-        <property name="top_attach">3</property>
+        <property name="top_attach">1</property>
       </packing>
     </child>
     <child>
@@ -184,6 +82,83 @@
       </object>
       <packing>
         <property name="left_attach">1</property>
+        <property name="top_attach">2</property>
+      </packing>
+    </child>
+    <child>
+      <object class="GtkSwitch" id="ignoreLastWsSwitch">
+        <property name="visible">True</property>
+        <property name="can_focus">True</property>
+        <property name="halign">center</property>
+        <property name="valign">center</property>
+      </object>
+      <packing>
+        <property name="left_attach">1</property>
+        <property name="top_attach">4</property>
+      </packing>
+    </child>
+    <child>
+      <object class="GtkSwitch" id="wrapWsSwitch">
+        <property name="visible">True</property>
+        <property name="can_focus">True</property>
+        <property name="halign">center</property>
+        <property name="valign">center</property>
+      </object>
+      <packing>
+        <property name="left_attach">1</property>
+        <property name="top_attach">5</property>
+      </packing>
+    </child>
+    <child>
+      <object class="GtkSwitch" id="wsIndicatorSwitch">
+        <property name="visible">True</property>
+        <property name="can_focus">True</property>
+        <property name="halign">center</property>
+        <property name="valign">center</property>
+      </object>
+      <packing>
+        <property name="left_attach">1</property>
+        <property name="top_attach">6</property>
+      </packing>
+    </child>
+    <child>
+      <object class="GtkSwitch" id="scrollPanelSwitch">
+        <property name="visible">True</property>
+        <property name="can_focus">True</property>
+        <property name="halign">center</property>
+        <property name="valign">center</property>
+      </object>
+      <packing>
+        <property name="left_attach">1</property>
+        <property name="top_attach">7</property>
+      </packing>
+    </child>
+    <child>
+      <object class="GtkLabel">
+        <property name="visible">True</property>
+        <property name="can_focus">False</property>
+        <property name="halign">start</property>
+        <property name="valign">center</property>
+        <property name="label" translatable="yes">Minimum delay between trigger events (ms)
+&lt;small&gt;(prevents accidental double-action)&lt;/small&gt;</property>
+        <property name="use_markup">True</property>
+      </object>
+      <packing>
+        <property name="left_attach">0</property>
+        <property name="top_attach">2</property>
+      </packing>
+    </child>
+    <child>
+      <object class="GtkLabel">
+        <property name="visible">True</property>
+        <property name="can_focus">False</property>
+        <property name="halign">start</property>
+        <property name="valign">center</property>
+        <property name="label" translatable="yes">&lt;b&gt;Workspace navigation options:&lt;/b&gt;</property>
+        <property name="use_markup">True</property>
+      </object>
+      <packing>
+        <property name="left_attach">0</property>
         <property name="top_attach">3</property>
       </packing>
     </child>
@@ -192,26 +167,12 @@
         <property name="visible">True</property>
         <property name="can_focus">False</property>
         <property name="halign">start</property>
-        <property name="valign">start</property>
-        <property name="label" translatable="yes">Enable all corners triggers in &lt;b&gt;fullscreen&lt;/b&gt; mode
-&lt;small&gt;(when off, each trigger can be set independently)&lt;/small&gt;</property>
-        <property name="use_markup">True</property>
+        <property name="valign">center</property>
+        <property name="label" translatable="yes">        Ignore last (empty) workspace</property>
       </object>
       <packing>
         <property name="left_attach">0</property>
-        <property name="top_attach">2</property>
-      </packing>
-    </child>
-    <child>
-      <object class="GtkSwitch" id="fullscreenGlobalSwitch">
-        <property name="visible">True</property>
-        <property name="can_focus">True</property>
-        <property name="halign">center</property>
-        <property name="valign">center</property>
-      </object>
-      <packing>
-        <property name="left_attach">1</property>
-        <property name="top_attach">2</property>
+        <property name="top_attach">4</property>
       </packing>
     </child>
     <child>
@@ -219,26 +180,38 @@
         <property name="visible">True</property>
         <property name="can_focus">False</property>
         <property name="halign">start</property>
-        <property name="valign">start</property>
-        <property name="label" translatable="yes">Try to avoid potential hot corner overrides from other extensions
-&lt;small&gt;(delay activation of this extension to be the last who customize hot corners)&lt;/small&gt;</property>
-        <property name="use_markup">True</property>
+        <property name="valign">center</property>
+        <property name="label" translatable="yes">        Wraparound</property>
       </object>
       <packing>
         <property name="left_attach">0</property>
-        <property name="top_attach">1</property>
+        <property name="top_attach">5</property>
       </packing>
     </child>
     <child>
-      <object class="GtkSwitch" id="delayStartSwitch">
+      <object class="GtkLabel">
         <property name="visible">True</property>
-        <property name="can_focus">True</property>
-        <property name="halign">center</property>
+        <property name="can_focus">False</property>
+        <property name="halign">start</property>
         <property name="valign">center</property>
+        <property name="label" translatable="yes">        Show workspace indicator while switching</property>
       </object>
       <packing>
-        <property name="left_attach">1</property>
-        <property name="top_attach">1</property>
+        <property name="left_attach">0</property>
+        <property name="top_attach">6</property>
+      </packing>
+    </child>
+    <child>
+      <object class="GtkLabel">
+        <property name="visible">True</property>
+        <property name="can_focus">False</property>
+        <property name="halign">start</property>
+        <property name="valign">center</property>
+        <property name="label" translatable="yes">        Scroll over main panel to switch workspace</property>
+      </object>
+      <packing>
+        <property name="left_attach">0</property>
+        <property name="top_attach">7</property>
       </packing>
     </child>
     <child>

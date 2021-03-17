@@ -139,7 +139,7 @@
                   <object class="GtkImage">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
-                    <property name="stock">gtk-find</property>
+                    <property name="icon_name">find-location-symbolic</property>
                   </object>
                 </child>
               </object>
