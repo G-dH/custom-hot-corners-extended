@@ -155,47 +155,52 @@ function _buildCornerWidget(corner, trigger) {
         corner.setFullscreen(trigger, fullscreenSwitch.active);
     });
     
-    actionCombo.active_id = corner.getAction(trigger);
+    let cmdConnected = false;
     actionCombo.connect('changed', () => {
         corner.setAction(trigger, actionCombo.active_id);
         commandEntryRevealer.reveal_child = corner.getAction(trigger) === 'runCommand';
         wsIndexRevealer.reveal_child = corner.getAction(trigger) === 'moveToWorkspace';
-    });
-    //if (commandEntryRevealer.reveal_child) {
-    appButton.connect('clicked', () => {
-        let dialog = _chooseAppDialog();
-        dialog.connect('response', (dlg, id) => {
-            if (id !== Gtk.ResponseType.OK) {
-                dialog.destroy();
-                return;
-            }
+        if (corner.getAction(trigger) === 'runCommand' && ! cmdConnected) {
 
-            appInfo = dialog._appChooser.get_app_info();
-            if (!appInfo) return;
-            commandEntry.text = appInfo.get_commandline();
-
-            dialog.destroy();
-        });
+            appButton.connect('clicked', () => {
+                let dialog = _chooseAppDialog();
+                dialog._appChooser.connect('application-activated', () => dialog._addButton.clicked() );
+                dialog.connect('response', (dlg, id) => {
+                    if (id !== Gtk.ResponseType.OK) {
+                        dialog.destroy();
+                        return;
+                    }
+    
+                    appInfo = dialog._appChooser.get_app_info();
+                    if (!appInfo) return;
+                    commandEntry.text = appInfo.get_commandline();
+    
+                    dialog.destroy();
+                });
+            });
+            commandEntry.text = corner.getCommand(trigger);
+            commandEntryRevealer.reveal_child = corner.getAction(trigger) === 'runCommand';
+            commandEntry.timeout_id = null;
+            commandEntry.connect('changed', () => {
+                if (commandEntry.timeout_id) {
+                    GLib.Source.remove(commandEntry.timeout_id);
+                }
+                commandEntry.timeout_id = GLib.timeout_add(
+                    GLib.PRIORITY_DEFAULT,
+                    1000,
+                    () => {
+                        corner.setCommand(trigger, commandEntry.text);
+                        commandEntry.timeout_id = null;
+                    }
+                );
+            });
+            cmdConnected = true;
+        }
     });
-    //}
+
     wsIndexRevealer.reveal_child = corner.getAction(trigger) === 'moveToWorkspace';
 
-    commandEntry.text = corner.getCommand(trigger);
-    commandEntryRevealer.reveal_child = corner.getAction(trigger) === 'runCommand';
-    commandEntry.timeout_id = null;
-    commandEntry.connect('changed', () => {
-        if (commandEntry.timeout_id) {
-            GLib.Source.remove(commandEntry.timeout_id);
-        }
-        commandEntry.timeout_id = GLib.timeout_add(
-            GLib.PRIORITY_DEFAULT,
-            1000,
-            () => {
-                corner.setCommand(trigger, commandEntry.text);
-                commandEntry.timeout_id = null;
-            }
-        );
-    });
+    actionCombo.active_id = corner.getAction(trigger);
 
     if (trigger === Settings.Triggers.PRESSURE) {
         let barrierLabel = cwUI.get_object('barrierLabel');
@@ -268,11 +273,11 @@ function _chooseAppDialog() {
             title: ('Choose Application'),
             transient_for: notebook.get_toplevel(),
             use_header_bar: true,
-            modal: true,
+            modal: true
         });
 
         dialog.add_button(Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL);
-        let addButton = dialog.add_button('Select', Gtk.ResponseType.OK);
+        dialog._addButton = dialog.add_button(Gtk.STOCK_ADD, Gtk.ResponseType.OK);
         dialog.set_default_response(Gtk.ResponseType.OK);
 
         let grid = new Gtk.Grid({
@@ -281,11 +286,21 @@ function _chooseAppDialog() {
             margin: 10,
         });
 
-        dialog._appChooser = new Gtk.AppChooserWidget({ show_all: true });
+        dialog._appChooser = new Gtk.AppChooserWidget({
+            show_all: true
+        });
         let appInfo = dialog._appChooser.get_app_info();
         grid.attach(dialog._appChooser, 0, 0, 2, 1);
+        let cmdLabel = new Gtk.Label({
+            label:"",
+            wrap: true
+        });
+        grid.attach(cmdLabel, 0, 1, 2, 1);
         dialog.get_content_area().add(grid);
-
+        dialog._appChooser.connect('application-selected', (w, appInfo) => {
+                cmdLabel.set_text(appInfo.get_commandline());
+            }
+        );
         dialog.show_all();
         return dialog;
     }
