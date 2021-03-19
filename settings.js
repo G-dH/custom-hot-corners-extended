@@ -20,12 +20,12 @@ const ExtensionUtils = imports.misc.extensionUtils;
 const Me = ExtensionUtils.getCurrentExtension();
 
 var Triggers ={
-    PRESSURE: 0,
-    BUTTON_PRIMARY: 1,
+    PRESSURE:         0,
+    BUTTON_PRIMARY:   1,
     BUTTON_SECONDARY: 2,
-    BUTTON_MIDDLE: 3,
-    SCROLL_UP: 4,
-    SCROLL_DOWN:5
+    BUTTON_MIDDLE:    3,
+    SCROLL_UP:        4,
+    SCROLL_DOWN:      5
 }
 Object.freeze(Triggers);
 
@@ -109,12 +109,12 @@ var MscOptions = class MscOptions {
     set wsSwitchIndicator(bool_val) {
         this._gsettings.set_boolean('ws-switch-indicator', bool_val);
     }
-    get scrollEventDelay() {
-        return this._gsettings.get_int('scroll-event-delay');
+    get actionEventDelay() {
+        return this._gsettings.get_int('action-event-delay');
     }
 
-    set scrollEventDelay(delay) {
-        this._gsettings.set_int('scroll-event-delay', delay);
+    set actionEventDelay(delay) {
+        this._gsettings.set_int('action-event-delay', delay);
     }
 }
 
@@ -122,13 +122,25 @@ var Corner = class Corner {
     constructor(loadIndex, monitorIndex, top, left, x, y) {
         this._gsettings = {};
         this.monitorIndex = monitorIndex;
-        this.loadIndex = loadIndex;
+        this._loadIndex = loadIndex;
         this.top = top;
         this.left = left;
         this.x = x;
         this.y = y;
         this._gsettings = this._loadSettingsForTrigges();
         this._connectionIds = [];
+        this.hotCornerExists = false;
+
+        this.action = {};
+        this.command = {};
+        this.fullscreen = {};
+        this.workspaceIndex = {};
+        for (let trigger of listTriggers()) {
+            this.action[trigger] = this.getAction(trigger);
+            this.command[trigger] = this.getCommand(trigger);
+            this.fullscreen[trigger] = this.getFullscreen(trigger);
+            this.workspaceIndex[trigger] = this.getWorkspaceIndex(trigger);
+        }
     }
 
     static forMonitor(loadIndex, index, geometry) {
@@ -151,6 +163,7 @@ var Corner = class Corner {
     }
 
     destroy() {
+        //log(`[${Me.metadata.name}] Settings.Corner.destroy: Disconnecting corner gsettings..`);
         this._connectionIds.forEach(id => id[0].disconnect(id[1]));
     }
 
@@ -213,12 +226,11 @@ var Corner = class Corner {
     }
 
     _loadSettings(trigger) {
-        let label = (TriggerLabels[trigger].replace(' ', '-')).toLowerCase();
         let schema = 'org.gnome.shell.extensions.custom-hot-corners.corner';
         let v = this.top ? 'top' : 'bottom';
         let h = this.left ? 'left' : 'right';
         let path = '/org/gnome/shell/extensions/custom-hot-corners/';
-        path += `monitor-${this.loadIndex}-${v}-${h}-${label}/`;
+        path += `monitor-${this._loadIndex}-${v}-${h}-${trigger}/`;
         return getSettings(schema, path);
     }
 }

@@ -79,7 +79,7 @@ function buildPrefsWidget() {
     wsIndicatorSwitch.connect('notify::active', () =>{
                 mscOptions.wsSwitchIndicator = wsIndicatorSwitch.active;
             });
-    scrollEventsDelaySpinBtn.value = mscOptions.scrollEventDelay;
+    scrollEventsDelaySpinBtn.value = mscOptions.actionEventDelay;
     scrollEventsDelaySpinBtn.timeout_id = null;
     scrollEventsDelaySpinBtn.connect('changed', () => {
                 scrollEventsDelaySpinBtn.update();
@@ -90,8 +90,9 @@ function buildPrefsWidget() {
                     GLib.PRIORITY_DEFAULT,
                     1000,
                     () => {
-                        mscOptions.scrollEventDelay = scrollEventsDelaySpinBtn.value;
+                        mscOptions.actionEventDelay = scrollEventsDelaySpinBtn.value;
                         scrollEventsDelaySpinBtn.timeout_id = null;
+                        return false;
                     }
                 );
             });
@@ -171,7 +172,7 @@ function _buildCornerWidget(corner, trigger) {
                         return;
                     }
     
-                    appInfo = dialog._appChooser.get_app_info();
+                    let appInfo = dialog._appChooser.get_app_info();
                     if (!appInfo) return;
                     commandEntry.text = appInfo.get_commandline();
     
@@ -191,6 +192,7 @@ function _buildCornerWidget(corner, trigger) {
                     () => {
                         corner.setCommand(trigger, commandEntry.text);
                         commandEntry.timeout_id = null;
+                        return false;
                     }
                 );
             });
@@ -226,6 +228,7 @@ function _buildCornerWidget(corner, trigger) {
                 () => {
                     corner.barrierSize = barrierSizeSpinButton.value;
                     barrierSizeSpinButton.timeout_id = null;
+                    return false;
                 }
             );
         });
@@ -243,6 +246,7 @@ function _buildCornerWidget(corner, trigger) {
                 () => {
                     corner.pressureThreshold = pressureThresholdSpinButton.value;
                     pressureThresholdSpinButton.timeout_id = null;
+                    return false;
                 }
             );
         });
@@ -262,6 +266,7 @@ function _buildCornerWidget(corner, trigger) {
                 () => {
                     corner.setWorkspaceIndex(trigger, workspaceIndexSpinButton.value);
                     workspaceIndexSpinButton.timeout_id = null;
+                    return false;
                 }
         );
     });

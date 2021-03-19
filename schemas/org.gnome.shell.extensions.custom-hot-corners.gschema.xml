@@ -40,7 +40,7 @@
     <key name='ws-switch-indicator' type='b'>
       <default>false</default>
     </key>
-    <key name='scroll-event-delay' type='i'>
+    <key name='action-event-delay' type='i'>
       <default>50</default>
     </key>
   </schema>

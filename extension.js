@@ -14,8 +14,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-const Workspace = imports.ui.workspace;
-
 const Clutter = imports.gi.Clutter;
 const St = imports.gi.St;
 const Meta = imports.gi.Meta;
@@ -23,54 +21,71 @@ const Shell = imports.gi.Shell;
 const GObject = imports.gi.GObject;
 const GLib = imports.gi.GLib;
 
+const ExtensionUtils = imports.misc.extensionUtils;
+const Me = ExtensionUtils.getCurrentExtension();
+const Settings = Me.imports.settings;
+const Workspace = imports.ui.workspace;
 const Main = imports.ui.main;
 const Layout = imports.ui.layout;
 const Ripples = imports.ui.ripples;
 const Util = imports.misc.util;
-const ExtensionUtils = imports.misc.extensionUtils;
-const Me = ExtensionUtils.getCurrentExtension();
-const Settings = Me.imports.settings;
 const WorkspaceSwitcherPopup = imports.ui.workspaceSwitcherPopup;
 const SystemActions = imports.misc.systemActions;
 
-const triggers = Settings.listTriggers();
+const listTriggers = Settings.listTriggers();
 const Triggers = Settings.Triggers;
 
 let _origUpdateHotCorners = Main.layoutManager._updateHotCorners;
-let _collector = [];
-let _spacers = [];
+let _collector;
+let _timeouts;
 
 let _mscOptions;
 let _wsSwitchIgnoreLast;
 let _wsSwitchWrap;
-let _scrollEventDelay;
+let _actionEventDelay;
 let _wsSwitchIndicator;
 let _fullscreenGlobal;
+let _panelConnection;
+let _actionTimeoutId;
+
 
 function init() {
+    _timeouts = [];
+    _collector = [];
+    _actionTimeoutId = null;
+    _panelConnection = null;
 }
 
 function enable() {
     _initMscOptions();
+    _removeActionTimeout();
     if (_mscOptions.delayStart) {
-        GLib.timeout_add(
+        let delayID = GLib.timeout_add(
             GLib.PRIORITY_DEFAULT,
             5000,
             () => {
-                Main.layoutManager._updateHotCorners = _updateHotCorners;
-                Main.layoutManager._updateHotCorners();
+                _replaceLayoutManager();
+                _timeouts.splice(_timeouts.indexOf(delayID));
+                delayID = null;
+                return false;
             }
-        )
+        );
+        _timeouts.push(delayID);
     } else {
-        Main.layoutManager._updateHotCorners = _updateHotCorners;
-        Main.layoutManager._updateHotCorners();
+        _replaceLayoutManager();
     }
+}
+
+function _replaceLayoutManager() {
+    Main.layoutManager._updateHotCorners = _updateHotCorners;
+    Main.layoutManager._updateHotCorners();
 }
 
 function disable() {
     // This restores the original hot corners
+    _timeouts.forEach( c => GLib.Source.remove(c));
+    _timeouts=[];
     _removeHotCorners();
-    _removeSpacers();
     Main.layoutManager._updateHotCorners = _origUpdateHotCorners;
     Main.layoutManager._updateHotCorners();
     if (_panelConnection !== null) {
@@ -88,9 +103,9 @@ function _initMscOptions() {
 }
 
 function _removeHotCorners() {
+    // hot corners might be null
     _collector.forEach(c => c.destroy());
     _collector = [];
-    // hot corners might be null
     Main.layoutManager.hotCorners.filter(Boolean).forEach(c => c.destroy());
     Main.layoutManager.hotCorners = [];
 }
@@ -99,7 +114,7 @@ function _removeHotCorners() {
 function _updateMscOptions() {
     _wsSwitchIgnoreLast = _mscOptions.wsSwitchIgnoreLast;
     _wsSwitchWrap = _mscOptions.wsSwitchWrap;
-    _scrollEventDelay = _mscOptions.scrollEventDelay;
+    _actionEventDelay = _mscOptions.actionEventDelay;
     _wsSwitchIndicator = _mscOptions.wsSwitchIndicator;
     _fullscreenGlobal = _mscOptions.fullscreenGlobal;
 }
@@ -118,33 +133,58 @@ function _updateHotCorners() {
         for (let corner of corners) {
             _collector.push(corner);
 
-            for (let trigger of triggers) {
+            for (let trigger of listTriggers) {
                 // Update hot corner if something changes
-                corner.connect('changed', () => _updateCorner(corner), trigger);
+                // corner has own connect method defined in settings, this is not direct gsettings connect
+                corner.connect('changed', (settings, key) => _updateCorner(corner, key, trigger), trigger);
             }
-            if (_shouldCreateCorner(corner)) {
+            if (_shouldExistHotCorner(corner)) {
                 Main.layoutManager.hotCorners.push(new CustomHotCorner(corner));
             }
         }
     }
 }
 
-function _shouldCreateCorner(corner) {
-    let answer = null;
-    for (let trigger of triggers) {
-        answer = answer || (corner.getAction(trigger) !== 'disabled');
+function _shouldExistHotCorner(corner) {
+    let answer = false;
+    for (let trigger of listTriggers) {
+        answer = answer || (corner.action[trigger] !== 'disabled');
     }
     return answer;
 }
 
-function _updateCorner(corner) {
-    _destroyCorner(corner);
-    if (_shouldCreateCorner(corner)) {
+function _updateCorner(corner, key, trigger) {
+    switch (key) {
+        case 'action':
+            corner.action[trigger] = corner.getAction(trigger);
+            _updateHotCorner(corner);
+            break;
+        case 'command':
+            corner.command[trigger] = corner.getCommand(trigger);
+            break;
+        case 'fullscreen':
+            corner.fullscreen[trigger] = corner.getFullscreen(trigger);
+            break;
+        case 'barrier-size':
+            _updateHotCorner(corner);
+            break;
+        case 'pressure-threshold':
+            _updateHotCorner(corner);
+            break;
+        case 'workspace-index':
+            corner.workspaceIndex[trigger] = corner.getWorkspaceIndex(trigger);
+            break;
+    }
+}
+
+function _updateHotCorner(corner) {
+    _destroyHotCorner(corner);
+    if (_shouldExistHotCorner(corner)) {
         Main.layoutManager.hotCorners.push(new CustomHotCorner(corner));
     }
 }
 
-function _destroyCorner(corner) {
+function _destroyHotCorner(corner) {
     let hc=Main.layoutManager.hotCorners;
     for (let i = 0; i < hc.length; i++) {
         if (hc[i]._corner.top === corner.top &&
@@ -155,16 +195,10 @@ function _destroyCorner(corner) {
                 }
                 Main.layoutManager.hotCorners[i].destroy();
                 Main.layoutManager.hotCorners.splice(i, 1);
+                corner.hotCornerExists = false;
                 break;
         }
     }
-}
-
-function _removeSpacers() {
-    for (let spacer of _spacers) {
-        spacer.destroy();
-    }
-    _spacers=[];
 }
 
 const CustomHotCorner = GObject.registerClass(
@@ -174,8 +208,7 @@ class CustomHotCorner extends Layout.HotCorner {
         super._init(Main.layoutManager, monitor, corner.x, corner.y);
         this._corner = corner;
         this._monitor = monitor;
-        this._command = '';
-        this._wsIndex = 0
+        this._corner.hotCornerExists = true;
 
         this.m = new Map([
             ['toggleOverview', this._toggleOverview],
@@ -214,7 +247,7 @@ class CustomHotCorner extends Layout.HotCorner {
         );
         this.setBarrierSize(corner.barrierSize);
 
-        if (this._corner.getAction(Triggers.PRESSURE) !== 'disabled') {
+        if (this._corner.action[Triggers.PRESSURE] !== 'disabled') {
             this._pressureBarrier.connect('trigger', this._onPressureTriggerd.bind(this));
 
         } 
@@ -234,7 +267,6 @@ class CustomHotCorner extends Layout.HotCorner {
         // Use code of parent class to remove old barriers but new barriers
         // must be created here since the properties are construct only.
         super.setBarrierSize(0);
-
         if (size > 0) {
             const BD = Meta.BarrierDirection;
             this._verticalBarrier = new Meta.Barrier({
@@ -264,7 +296,6 @@ class CustomHotCorner extends Layout.HotCorner {
          if (!(this._shouldCreateActor() || global.display.supports_extended_barriers())) {
             return;
         }
-
         let aSize = 4;
         this._actor = new Clutter.Actor({
             name: 'hot-corner-environs',
@@ -280,10 +311,9 @@ class CustomHotCorner extends Layout.HotCorner {
         });
 
         if (! global.display.supports_extended_barriers()) {
-
             this._cornerActor = new Clutter.Actor({
                 name: 'hot-corner',
-                x: 0, y: 0,
+                x: 0 + (this._corner.left ? 0 : aSize), y: 0 + (this._corner.top ? 0 : aSize),
                 width: 1, height: 1,
                 reactive: true
             });
@@ -292,6 +322,7 @@ class CustomHotCorner extends Layout.HotCorner {
             this._cornerActor.connect('enter-event', this._onCornerEntered.bind(this));
             //this._cornerActor.connect('leave-event', this._onCornerLeft.bind(this));
             this._actor.connect('leave-event', this._onEnvironsLeft.bind(this));
+            _collector.push(_cornerActor);
         }
 
         layoutManager.addChrome(this._actor);
@@ -307,20 +338,20 @@ class CustomHotCorner extends Layout.HotCorner {
 
     _shouldCreateActor() {
         let answer = null;
-        for (let trigger of triggers) {
+        for (let trigger of listTriggers) {
             if (trigger === Triggers.PRESSURE && global.display.supports_extended_barriers()) {
                 continue;
             }
-            answer = answer || (this._corner.getAction(trigger) !== 'disabled');
+            answer = answer || (this._corner.action[trigger] !== 'disabled');
         }
         return answer;
     }
 
     _shouldConnect(signals) {
         let answer = null;
-        for (let trigger of triggers) {
+        for (let trigger of listTriggers) {
             if (signals.includes(trigger)) {
-            answer = answer || (this._corner.getAction(trigger) !== 'disabled');
+            answer = answer || (this._corner.action[trigger] !== 'disabled');
             }
         }
         return answer;
@@ -344,66 +375,56 @@ class CustomHotCorner extends Layout.HotCorner {
         this._entered = false;
     }
 
-    _setActionVars(trigger) {
-        let action = this._corner.getAction(trigger);
-        this._actionFunction = this.m.get(action) || function () {};
-        if (action === 'moveToWorkspace'){
-            this._wsIndex = this._corner.getWorkspaceIndex(trigger);
-        } else if (action === 'runCommand') {
-            this._command = this._corner.getCommand(trigger);
-        }
-        this._fullscreen = this._corner.getFullscreen(trigger);
-    }
-
     _onPressureTriggerd (actor, event) {
-        this._setActionVars(Triggers.PRESSURE);
-        this._runAction();
+        this._runAction(Triggers.PRESSURE);
     }
 
     _onCornerClicked(actor, event) {
         let button = event.get_button();
+        let trigger;
         switch (button) {
             case Clutter.BUTTON_PRIMARY:
-                this._setActionVars(Triggers.BUTTON_PRIMARY);
+                trigger = Triggers.BUTTON_PRIMARY;
                 break;
             case Clutter.BUTTON_SECONDARY:
-                this._setActionVars(Triggers.BUTTON_SECONDARY);
+                trigger = Triggers.BUTTON_SECONDARY;
                 break;
             case Clutter.BUTTON_MIDDLE:
-                this._setActionVars(Triggers.BUTTON_MIDDLE);
+                trigger = Triggers.BUTTON_MIDDLE;
                 break;
             default:
                 return Clutter.EVENT_PROPAGATE;
         }
-        this._runAction();
+        this._runAction(trigger);
         return Clutter.EVENT_STOP;
     }
 
     _onCornerScrolled(actor, event) {
-        if (event.get_scroll_direction === Clutter.ScrollDirection.SMOOTH) return;
         let direction = event.get_scroll_direction();
+        if (_notValidScroll(direction)) return;
+        let trigger;
         switch (direction) {
             case Clutter.ScrollDirection.UP:
-                this._setActionVars(Triggers.SCROLL_UP);
+                trigger = Triggers.SCROLL_UP;
                 break;
             case Clutter.ScrollDirection.DOWN:
-                this._setActionVars(Triggers.SCROLL_DOWN);
+                trigger = Triggers.SCROLL_DOWN;
                 break;
             default:
                 return Clutter.EVENT_PROPAGATE;
         }
-        this._runAction();
+        this._runAction(trigger);
         return Clutter.EVENT_STOP;
     }
 
-    _runAction() {
-        if (_actionTimeoutActive()) return;
-        if (this._monitor.inFullscreen && (this._fullscreen || _fullscreenGlobal)) {
-            this._actionFunction();
+    _runAction(trigger) {
+        if (_actionTimeoutActive(trigger)) return;
+        this._actionFunction = this.m.get(this._corner.action[trigger]) || function () {};
+        if (this._monitor.inFullscreen && (this._corner.fullscreen || _fullscreenGlobal)) {
+            this._actionFunction(trigger);
         } else if (!this._monitor.inFullscreen) {
-            this._actionFunction();
+            this._actionFunction(trigger);
         }
-        this._actionFunction = null;
     }
 
     _toggleOverview() {
@@ -427,18 +448,17 @@ class CustomHotCorner extends Layout.HotCorner {
         }
     }
 
-    _runCommand() {
+    _runCommand(trigger) {
         this._rippleAnimation();
-        Util.spawnCommandLine(this._command);
+        Util.spawnCommandLine(this._corner.command[trigger]);
     }
 
-    _moveToWorkspace () {
+    _moveToWorkspace (trigger) {
         this._rippleAnimation();
-        let idx = this._wsIndex-1;
-        let maxIndex = global.workspaceManager.n_workspaces-1;
+        let idx = this._corner.workspaceIndex[trigger] - 1;
+        let maxIndex = global.workspaceManager.n_workspaces - 1;
         if (maxIndex < idx) {
-            // last not empty workspace
-            idx = maxIndex-1;
+            idx = maxIndex;
         }
         let ws = global.workspaceManager.get_workspace_by_index(idx);
         Main.wm.actionMoveWorkspace(ws);
@@ -521,12 +541,6 @@ function _switchWorkspace(direction) {
         case Clutter.ScrollDirection.DOWN:
             motion = Meta.MotionDirection.DOWN;
             break;
-        case Clutter.ScrollDirection.LEFT:
-            motion = Meta.MotionDirection.LEFT;
-            break;
-        case Clutter.ScrollDirection.RIGHT:
-            motion = Meta.MotionDirection.RIGHT;
-            break;
         default:
             return Clutter.EVENT_PROPAGATE;
         }
@@ -552,7 +566,7 @@ function _switchWorkspace(direction) {
             if (Main.wm._workspaceSwitcherPopup == null)
                 Main.wm._workspaceSwitcherPopup = new WorkspaceSwitcherPopup.WorkspaceSwitcherPopup();
                 Main.wm._workspaceSwitcherPopup.reactive = false;
-                Main.wm._workspaceSwitcherPopup.connect('destroy', function() {
+                Main.wm._workspaceSwitcherPopup.connect('destroy', () => {
                     Main.wm._workspaceSwitcherPopup = null;
                 });
             // Do not show wokspaceSwithcer in overview
@@ -564,22 +578,25 @@ function _switchWorkspace(direction) {
         return Clutter.EVENT_STOP;
 }
 
-let _actionTimeoutId = null;
 function _actionTimeoutActive() {
     if (_actionTimeoutId) {
         return true;
     }
    _actionTimeoutId = GLib.timeout_add(
             GLib.PRIORITY_DEFAULT,
-            _scrollEventDelay,
-            () => {
-                _actionTimeoutId = null;
-            }
+            _actionEventDelay,
+            _removeActionTimeout
         );
+    _timeouts.push(_actionTimeoutId);
     return false;
 }
 
-let _panelConnection = null;
+function _removeActionTimeout() {
+    _timeouts.splice(_timeouts.indexOf(_actionTimeoutId));
+    _actionTimeoutId = null;
+    return false;
+}
+
 function _updatePanelScrollWS(active) {
     if (active && _panelConnection === null) {
         _panelConnection = Main.panel.connect('scroll-event', _onPanelScrolled);
@@ -590,11 +607,16 @@ function _updatePanelScrollWS(active) {
 }
 
 function _onPanelScrolled(actor, event) {
-    if (event.get_scroll_direction === Clutter.ScrollDirection.SMOOTH) return;
     let direction = event.get_scroll_direction();
+    if (_notValidScroll(direction)) return;
     if (event.get_source() !== actor) {
         return Clutter.EVENT_PROPAGATE;
     }
     _switchWorkspace(direction);
     return Clutter.EVENT_STOP;
+}
+
+function _notValidScroll(direction) {
+    if (direction === Clutter.ScrollDirection.SMOOTH) return true;
+    return false;
 }
