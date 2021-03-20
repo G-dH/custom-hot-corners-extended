@@ -12,7 +12,9 @@
     <property name="halign">start</property>
     <property name="valign">start</property>
     <property name="margin_left">10</property>
-    <property name="margin_top">16</property>
+    <property name="margin_right">14</property>
+    <property name="margin_top">10</property>
+    <property name="margin_bottom">10</property>
     <property name="row_spacing">8</property>
     <property name="column_spacing">10</property>
     <property name="row_homogeneous">True</property>
@@ -35,7 +37,7 @@
       <object class="GtkSwitch" id="delayStartSwitch">
         <property name="visible">True</property>
         <property name="can_focus">True</property>
-        <property name="halign">center</property>
+        <property name="halign">end</property>
         <property name="valign">center</property>
       </object>
       <packing>
@@ -62,7 +64,7 @@
       <object class="GtkSwitch" id="fullscreenGlobalSwitch">
         <property name="visible">True</property>
         <property name="can_focus">True</property>
-        <property name="halign">center</property>
+        <property name="halign">end</property>
         <property name="valign">center</property>
       </object>
       <packing>
@@ -74,7 +76,7 @@
       <object class="GtkSpinButton" id="scrollEventsDelaySpinBtn">
         <property name="visible">True</property>
         <property name="can_focus">True</property>
-        <property name="halign">center</property>
+        <property name="halign">end</property>
         <property name="valign">center</property>
         <property name="adjustment">scrollEventsDelayAdjustment</property>
         <property name="climb_rate">10</property>
@@ -89,7 +91,7 @@
       <object class="GtkSwitch" id="ignoreLastWsSwitch">
         <property name="visible">True</property>
         <property name="can_focus">True</property>
-        <property name="halign">center</property>
+        <property name="halign">end</property>
         <property name="valign">center</property>
       </object>
       <packing>
@@ -101,7 +103,7 @@
       <object class="GtkSwitch" id="wrapWsSwitch">
         <property name="visible">True</property>
         <property name="can_focus">True</property>
-        <property name="halign">center</property>
+        <property name="halign">end</property>
         <property name="valign">center</property>
       </object>
       <packing>
@@ -113,7 +115,7 @@
       <object class="GtkSwitch" id="wsIndicatorSwitch">
         <property name="visible">True</property>
         <property name="can_focus">True</property>
-        <property name="halign">center</property>
+        <property name="halign">end</property>
         <property name="valign">center</property>
       </object>
       <packing>
@@ -125,7 +127,7 @@
       <object class="GtkSwitch" id="scrollPanelSwitch">
         <property name="visible">True</property>
         <property name="can_focus">True</property>
-        <property name="halign">center</property>
+        <property name="halign">end</property>
         <property name="valign">center</property>
       </object>
       <packing>

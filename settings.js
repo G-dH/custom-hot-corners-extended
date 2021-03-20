@@ -30,7 +30,7 @@ var Triggers ={
 Object.freeze(Triggers);
 
 var TriggerLabels = [   
-    'Pressure',
+    'Hot Corner',
     'Primary Button',
     'Secondary Button',
     'Middle Button',

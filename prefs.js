@@ -98,35 +98,45 @@ function buildPrefsWidget() {
             });
 
     for (let monitorIndex = 0; monitorIndex < num_monitors; ++monitorIndex) {
+        const monitor = display.get_monitor(monitorIndex);
+        const geometry = monitor.get_geometry();
+        const corners = Settings.Corner.forMonitor(monitorIndex, monitorIndex, geometry);
         let grid = {};
-        for (let trigger of triggers) {
-
-            grid[trigger] = new Gtk.Grid({
+        //for (let trigger of triggers) {
+        for (let i =0; i < corners.length; i++) {
+            grid[i] = new Gtk.Grid({
                 expand: true,
                 margin: 10,
-                row_spacing: 20,
+                row_spacing: 8,
                 column_spacing: 20
             });
         }
 
         let triggersBook = new Gtk.Notebook();
 
-        const monitor = display.get_monitor(monitorIndex);
-        const geometry = monitor.get_geometry();
-        const corners = Settings.Corner.forMonitor(monitorIndex, monitorIndex, geometry);
 
-        for (let corner of corners) {
+        for (let i =0; i < corners.length; i++) {
             for (let trigger of triggers) {
-                let cw = _buildCornerWidget(corner, trigger);
-                cw.valign = corner.top ? Gtk.Align.START : Gtk.Align.END;
-                let x = corner.left ? 0 : 1;
-                let y = corner.top ? 0 : 1;
-                grid[trigger].attach(cw, x, y, 1, 1);
+                let cw = _buildCornerWidget(corners[i], trigger);
+                //cw.valign = corner.top ? Gtk.Align.START : Gtk.Align.END;
+                //let x = corner.left ? 0 : 1;
+                //let y = corner.top ? 0 : 1;
+                let trgLabel = new Gtk.Label({
+                    label: `${triggerLabels[trigger]}`,
+                    halign: Gtk.Align.START,
+                    valign: Gtk.Align.START,
+                    margin_top: 8
+                    //use_markup: true
+                });
+                //grid[i].attach(trgLabel, 0, trigger*2, 8, 1);
+                //grid[i].attach(cw, 2, trigger*2+1, 4, 1);
+                grid[i].attach(trgLabel, 0, trigger, 2, 1);
+                grid[i].attach(cw, 2, trigger, 2, 1);
             }
         }
-        for (let trigger of triggers){
-            let label = new Gtk.Label({ label: Settings.TriggerLabels[trigger]});
-            triggersBook.append_page(grid[trigger], label);
+        for (let i =0; i < corners.length; i++){
+            let label = new Gtk.Label({ label: (corners[i].top ? "Top " : "Bottom ") + (corners[i].left ? "left" : "right") });
+            triggersBook.append_page(grid[i], label);
 
 
         }
