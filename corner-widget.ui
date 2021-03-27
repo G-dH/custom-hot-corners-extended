@@ -8,6 +8,103 @@
     <property name="step_increment">1</property>
     <property name="page_increment">10</property>
   </object>
+  <object class="GtkGrid" id="disableCornerGrid">
+    <property name="visible">True</property>
+    <property name="can_focus">False</property>
+    <property name="valign">center</property>
+    <child>
+      <object class="GtkLabel">
+        <property name="visible">True</property>
+        <property name="can_focus">False</property>
+        <property name="label" translatable="yes">Disable Corner</property>
+      </object>
+      <packing>
+        <property name="left_attach">0</property>
+        <property name="top_attach">0</property>
+      </packing>
+    </child>
+    <child>
+      <object class="GtkSwitch" id="disableCornerSwitch">
+        <property name="can_focus">True</property>
+        <property name="halign">end</property>
+        <property name="valign">center</property>
+      </object>
+      <packing>
+        <property name="left_attach">1</property>
+        <property name="top_attach">0</property>
+      </packing>
+    </child>
+  </object>
+  <object class="GtkGrid" id="expandGrid">
+    <property name="name">expandGrid</property>
+    <property name="visible">True</property>
+    <property name="can_focus">False</property>
+    <property name="valign">center</property>
+    <property name="row_spacing">10</property>
+    <property name="column_spacing">20</property>
+    <child>
+      <object class="GtkLabel" id="hExpandLabel">
+        <property name="can_focus">False</property>
+        <property name="halign">start</property>
+        <property name="valign">center</property>
+        <property name="margin_left">10</property>
+        <property name="label" translatable="yes">Horizonataly:</property>
+      </object>
+      <packing>
+        <property name="left_attach">0</property>
+        <property name="top_attach">1</property>
+      </packing>
+    </child>
+    <child>
+      <object class="GtkSwitch" id="hExpandSwitch">
+        <property name="can_focus">True</property>
+        <property name="halign">end</property>
+        <property name="valign">center</property>
+      </object>
+      <packing>
+        <property name="left_attach">1</property>
+        <property name="top_attach">1</property>
+      </packing>
+    </child>
+    <child>
+      <object class="GtkLabel" id="vExpandLabel">
+        <property name="can_focus">False</property>
+        <property name="halign">start</property>
+        <property name="valign">center</property>
+        <property name="margin_left">10</property>
+        <property name="label" translatable="yes">Verticaly:</property>
+      </object>
+      <packing>
+        <property name="left_attach">2</property>
+        <property name="top_attach">1</property>
+      </packing>
+    </child>
+    <child>
+      <object class="GtkSwitch" id="vExpandSwitch">
+        <property name="can_focus">True</property>
+        <property name="halign">end</property>
+        <property name="valign">center</property>
+      </object>
+      <packing>
+        <property name="left_attach">3</property>
+        <property name="top_attach">1</property>
+      </packing>
+    </child>
+    <child>
+      <object class="GtkLabel">
+        <property name="visible">True</property>
+        <property name="can_focus">False</property>
+        <property name="label" translatable="yes">Expand corner reactive area for clicks / scrolls :
+&lt;small&gt;(For visualisation activate 'Make active corners visible' option)&lt;/small&gt;</property>
+        <property name="use_markup">True</property>
+      </object>
+      <packing>
+        <property name="left_attach">0</property>
+        <property name="top_attach">0</property>
+        <property name="width">4</property>
+      </packing>
+    </child>
+  </object>
   <object class="GtkAdjustment" id="pressureThresholdAdjustment">
     <property name="upper">800</property>
     <property name="step_increment">1</property>
@@ -56,14 +153,25 @@
           </packing>
         </child>
         <child>
-          <object class="GtkLabel" id="pressureLabel">
+          <object class="GtkSpinButton" id="barrierSize">
+            <property name="can_focus">True</property>
+            <property name="adjustment">barrierAdjustment</property>
+            <property name="numeric">True</property>
+          </object>
+          <packing>
+            <property name="left_attach">1</property>
+            <property name="top_attach">1</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkLabel" id="barrierLabel">
             <property name="can_focus">False</property>
             <property name="halign">start</property>
-            <property name="label" translatable="yes">Pressure Threshold</property>
+            <property name="label" translatable="yes">Barrier size</property>
           </object>
           <packing>
             <property name="left_attach">0</property>
-            <property name="top_attach">2</property>
+            <property name="top_attach">1</property>
           </packing>
         </child>
         <child>
@@ -79,25 +187,14 @@
           </packing>
         </child>
         <child>
-          <object class="GtkLabel" id="barrierLabel">
+          <object class="GtkLabel" id="pressureLabel">
             <property name="can_focus">False</property>
             <property name="halign">start</property>
-            <property name="label" translatable="yes">Barrier size</property>
+            <property name="label" translatable="yes">Pressure Threshold</property>
           </object>
           <packing>
             <property name="left_attach">0</property>
-            <property name="top_attach">1</property>
-          </packing>
-        </child>
-        <child>
-          <object class="GtkSpinButton" id="barrierSize">
-            <property name="can_focus">True</property>
-            <property name="adjustment">barrierAdjustment</property>
-            <property name="numeric">True</property>
-          </object>
-          <packing>
-            <property name="left_attach">1</property>
-            <property name="top_attach">1</property>
+            <property name="top_attach">2</property>
           </packing>
         </child>
       </object>
@@ -106,6 +203,7 @@
   <object class="GtkGrid" id="cornerWidget">
     <property name="visible">True</property>
     <property name="can_focus">False</property>
+    <property name="valign">start</property>
     <property name="vexpand">True</property>
     <child>
       <object class="GtkRevealer" id="commandEntryRevealer">
@@ -170,18 +268,35 @@
             <property name="active">0</property>
             <items>
               <item id="disabled" translatable="yes">-</item>
-              <item id="toggleOverview" translatable="yes">Toggle Overview</item>
+              <item id="toggleOverview" translatable="yes">Show Activities (Overview)</item>
               <item id="showApplications" translatable="yes">Show Applications</item>
               <item id="showDesktop" translatable="yes">Show Desktop</item>
               <item id="runCommand" translatable="yes">Run Command</item>
-              <item id="nextWorkspace" translatable="yes">Next Workspace</item>
               <item id="prevWorkspace" translatable="yes">Previous Workspace</item>
-              <item id="moveToWorkspace" translatable="yes">Move to Workspace</item>
+              <item id="nextWorkspace" translatable="yes">Next Workspace</item>
+              <item id="recentWS" translatable="yes">Move to recent Workspace</item>
+              <item id="moveToWorkspace" translatable="yes">Move to Workspace #</item>
+              <item id="recentWin" translatable="yes">Recent Window (Alt+Tab)</item>
+              <item id="prevWinWS" translatable="yes">Previous Window (current WS)</item>
+              <item id="nextWinWS" translatable="yes">Next Window (current WS)</item>
+              <item id="prevWinAll" translatable="yes">Previous Window (all)</item>
+              <item id="nextWinAll" translatable="yes">Next Window (all)</item>
+              <item id="closeWin" translatable="yes">Close Active Window</item>
+              <item id="maximizeWin" translatable="yes">Toggle Maximize Active Window</item>
+              <item id="minimizeWin" translatable="yes">Minimize Active Window</item>
+              <item id="blackScreen" translatable="yes">Black Screen</item>
               <item id="screenLock" translatable="yes">Lock Screen</item>
               <item id="suspend" translatable="yes">Suspend to RAM</item>
               <item id="powerOff" translatable="yes">Power Off Dialog</item>
               <item id="logout" translatable="yes">Log Out Dialog</item>
-              <item id="switchUser" translatable="yes">Switch User</item>
+              <item id="switchUser" translatable="yes">Switch User (if exist)</item>
+              <item id="volumeUp" translatable="yes">Volume Up</item>
+              <item id="volumeDown" translatable="yes">Volume Down</item>
+              <item id="muteAudio" translatable="yes">Mute Audio</item>
+              <item id="brightnessInvert" translatable="yes">True Color Invert</item>
+              <item id="prefs" translatable="yes">Show Preferences</item>
+              <item id="lookingGlass" translatable="yes">Looking Glass (debuger)</item>
+              <item id="restartShell" translatable="yes">Restart Gnome Shell (X11 only)</item>
             </items>
           </object>
           <packing>
@@ -194,6 +309,7 @@
             <property name="visible">True</property>
             <property name="can_focus">True</property>
             <property name="receives_default">True</property>
+            <property name="valign">center</property>
             <property name="margin_left">4</property>
             <property name="popover">cornerSettings</property>
             <child>

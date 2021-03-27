@@ -24,24 +24,12 @@
         <property name="can_focus">False</property>
         <property name="halign">start</property>
         <property name="valign">start</property>
-        <property name="label" translatable="yes">Try to avoid potential hot corner overrides from other extensions
-&lt;small&gt;(delays activation of this extension to be the last which customize hot corners)&lt;/small&gt;</property>
+        <property name="label" translatable="yes">Delay extension activation
+&lt;small&gt;(Try to avoid potential hot corners overrides from other extensions)&lt;/small&gt;</property>
         <property name="use_markup">True</property>
       </object>
       <packing>
         <property name="left_attach">0</property>
-        <property name="top_attach">0</property>
-      </packing>
-    </child>
-    <child>
-      <object class="GtkSwitch" id="delayStartSwitch">
-        <property name="visible">True</property>
-        <property name="can_focus">True</property>
-        <property name="halign">end</property>
-        <property name="valign">center</property>
-      </object>
-      <packing>
-        <property name="left_attach">1</property>
         <property name="top_attach">0</property>
       </packing>
     </child>
@@ -61,6 +49,18 @@
       </packing>
     </child>
     <child>
+      <object class="GtkSwitch" id="delayStartSwitch">
+        <property name="visible">True</property>
+        <property name="can_focus">True</property>
+        <property name="halign">end</property>
+        <property name="valign">center</property>
+      </object>
+      <packing>
+        <property name="left_attach">1</property>
+        <property name="top_attach">0</property>
+      </packing>
+    </child>
+    <child>
       <object class="GtkSwitch" id="fullscreenGlobalSwitch">
         <property name="visible">True</property>
         <property name="can_focus">True</property>
@@ -70,69 +70,6 @@
       <packing>
         <property name="left_attach">1</property>
         <property name="top_attach">1</property>
-      </packing>
-    </child>
-    <child>
-      <object class="GtkSpinButton" id="scrollEventsDelaySpinBtn">
-        <property name="visible">True</property>
-        <property name="can_focus">True</property>
-        <property name="halign">end</property>
-        <property name="valign">center</property>
-        <property name="adjustment">scrollEventsDelayAdjustment</property>
-        <property name="climb_rate">10</property>
-        <property name="numeric">True</property>
-      </object>
-      <packing>
-        <property name="left_attach">1</property>
-        <property name="top_attach">2</property>
-      </packing>
-    </child>
-    <child>
-      <object class="GtkSwitch" id="ignoreLastWsSwitch">
-        <property name="visible">True</property>
-        <property name="can_focus">True</property>
-        <property name="halign">end</property>
-        <property name="valign">center</property>
-      </object>
-      <packing>
-        <property name="left_attach">1</property>
-        <property name="top_attach">4</property>
-      </packing>
-    </child>
-    <child>
-      <object class="GtkSwitch" id="wrapWsSwitch">
-        <property name="visible">True</property>
-        <property name="can_focus">True</property>
-        <property name="halign">end</property>
-        <property name="valign">center</property>
-      </object>
-      <packing>
-        <property name="left_attach">1</property>
-        <property name="top_attach">5</property>
-      </packing>
-    </child>
-    <child>
-      <object class="GtkSwitch" id="wsIndicatorSwitch">
-        <property name="visible">True</property>
-        <property name="can_focus">True</property>
-        <property name="halign">end</property>
-        <property name="valign">center</property>
-      </object>
-      <packing>
-        <property name="left_attach">1</property>
-        <property name="top_attach">6</property>
-      </packing>
-    </child>
-    <child>
-      <object class="GtkSwitch" id="scrollPanelSwitch">
-        <property name="visible">True</property>
-        <property name="can_focus">True</property>
-        <property name="halign">end</property>
-        <property name="valign">center</property>
-      </object>
-      <packing>
-        <property name="left_attach">1</property>
-        <property name="top_attach">7</property>
       </packing>
     </child>
     <child>
@@ -151,16 +88,44 @@
       </packing>
     </child>
     <child>
+      <object class="GtkSpinButton" id="scrollEventsDelaySpinBtn">
+        <property name="visible">True</property>
+        <property name="can_focus">True</property>
+        <property name="halign">end</property>
+        <property name="valign">center</property>
+        <property name="adjustment">scrollEventsDelayAdjustment</property>
+        <property name="climb_rate">10</property>
+        <property name="numeric">True</property>
+      </object>
+      <packing>
+        <property name="left_attach">1</property>
+        <property name="top_attach">2</property>
+      </packing>
+    </child>
+    <child>
       <object class="GtkLabel">
         <property name="visible">True</property>
         <property name="can_focus">False</property>
         <property name="halign">start</property>
         <property name="valign">center</property>
-        <property name="label" translatable="yes">&lt;b&gt;Workspace navigation options:&lt;/b&gt;</property>
+        <property name="label" translatable="yes">Make active corners / edges visible
+&lt;small&gt;Pressure barriers are not included&lt;/small&gt;</property>
         <property name="use_markup">True</property>
       </object>
       <packing>
         <property name="left_attach">0</property>
+        <property name="top_attach">3</property>
+      </packing>
+    </child>
+    <child>
+      <object class="GtkSwitch" id="cornersVisibleSwitch">
+        <property name="visible">True</property>
+        <property name="can_focus">True</property>
+        <property name="halign">end</property>
+        <property name="valign">center</property>
+      </object>
+      <packing>
+        <property name="left_attach">1</property>
         <property name="top_attach">3</property>
       </packing>
     </child>
@@ -170,7 +135,8 @@
         <property name="can_focus">False</property>
         <property name="halign">start</property>
         <property name="valign">center</property>
-        <property name="label" translatable="yes">        Ignore last (empty) workspace</property>
+        <property name="label" translatable="yes">Show ripple animations</property>
+        <property name="use_markup">True</property>
       </object>
       <packing>
         <property name="left_attach">0</property>
@@ -178,16 +144,15 @@
       </packing>
     </child>
     <child>
-      <object class="GtkLabel">
+      <object class="GtkSwitch" id="rippleAnimationSwitch">
         <property name="visible">True</property>
-        <property name="can_focus">False</property>
-        <property name="halign">start</property>
+        <property name="can_focus">True</property>
+        <property name="halign">end</property>
         <property name="valign">center</property>
-        <property name="label" translatable="yes">        Wraparound</property>
       </object>
       <packing>
-        <property name="left_attach">0</property>
-        <property name="top_attach">5</property>
+        <property name="left_attach">1</property>
+        <property name="top_attach">4</property>
       </packing>
     </child>
     <child>
@@ -200,6 +165,122 @@
       </object>
       <packing>
         <property name="left_attach">0</property>
+        <property name="top_attach">11</property>
+      </packing>
+    </child>
+    <child>
+      <object class="GtkSwitch" id="wsIndicatorSwitch">
+        <property name="visible">True</property>
+        <property name="can_focus">True</property>
+        <property name="halign">end</property>
+        <property name="valign">center</property>
+      </object>
+      <packing>
+        <property name="left_attach">1</property>
+        <property name="top_attach">11</property>
+      </packing>
+    </child>
+    <child>
+      <object class="GtkSwitch" id="wrapWsSwitch">
+        <property name="visible">True</property>
+        <property name="can_focus">True</property>
+        <property name="halign">end</property>
+        <property name="valign">center</property>
+      </object>
+      <packing>
+        <property name="left_attach">1</property>
+        <property name="top_attach">10</property>
+      </packing>
+    </child>
+    <child>
+      <object class="GtkSwitch" id="ignoreLastWsSwitch">
+        <property name="visible">True</property>
+        <property name="can_focus">True</property>
+        <property name="halign">end</property>
+        <property name="valign">center</property>
+      </object>
+      <packing>
+        <property name="left_attach">1</property>
+        <property name="top_attach">9</property>
+      </packing>
+    </child>
+    <child>
+      <object class="GtkLabel">
+        <property name="visible">True</property>
+        <property name="can_focus">False</property>
+        <property name="halign">start</property>
+        <property name="valign">center</property>
+        <property name="label" translatable="yes">        Wraparound</property>
+      </object>
+      <packing>
+        <property name="left_attach">0</property>
+        <property name="top_attach">10</property>
+      </packing>
+    </child>
+    <child>
+      <object class="GtkLabel">
+        <property name="visible">True</property>
+        <property name="can_focus">False</property>
+        <property name="halign">start</property>
+        <property name="valign">center</property>
+        <property name="label" translatable="yes">        Ignore last (empty) workspace</property>
+      </object>
+      <packing>
+        <property name="left_attach">0</property>
+        <property name="top_attach">9</property>
+      </packing>
+    </child>
+    <child>
+      <object class="GtkLabel">
+        <property name="visible">True</property>
+        <property name="can_focus">False</property>
+        <property name="halign">start</property>
+        <property name="valign">center</property>
+        <property name="label" translatable="yes">&lt;b&gt;Workspace switcher options:&lt;/b&gt;</property>
+        <property name="use_markup">True</property>
+      </object>
+      <packing>
+        <property name="left_attach">0</property>
+        <property name="top_attach">8</property>
+      </packing>
+    </child>
+    <child>
+      <object class="GtkLabel">
+        <property name="visible">True</property>
+        <property name="can_focus">False</property>
+        <property name="halign">start</property>
+        <property name="valign">center</property>
+        <property name="label" translatable="yes">&lt;b&gt;Window switcher options:&lt;/b&gt;</property>
+        <property name="use_markup">True</property>
+      </object>
+      <packing>
+        <property name="left_attach">0</property>
+        <property name="top_attach">5</property>
+      </packing>
+    </child>
+    <child>
+      <object class="GtkLabel">
+        <property name="visible">True</property>
+        <property name="can_focus">False</property>
+        <property name="halign">start</property>
+        <property name="valign">center</property>
+        <property name="label" translatable="yes">        Wraparound</property>
+        <property name="use_markup">True</property>
+      </object>
+      <packing>
+        <property name="left_attach">0</property>
+        <property name="top_attach">6</property>
+      </packing>
+    </child>
+    <child>
+      <object class="GtkSwitch" id="winWrapSwitch">
+        <property name="visible">True</property>
+        <property name="can_focus">True</property>
+        <property name="halign">end</property>
+        <property name="valign">center</property>
+      </object>
+      <packing>
+        <property name="left_attach">1</property>
         <property name="top_attach">6</property>
       </packing>
     </child>
@@ -209,12 +290,28 @@
         <property name="can_focus">False</property>
         <property name="halign">start</property>
         <property name="valign">center</property>
-        <property name="label" translatable="yes">        Scroll over main panel to switch workspace</property>
+        <property name="label" translatable="yes">        Skip minimized</property>
+        <property name="use_markup">True</property>
       </object>
       <packing>
         <property name="left_attach">0</property>
         <property name="top_attach">7</property>
       </packing>
+    </child>
+    <child>
+      <object class="GtkSwitch" id="winSkipMinimizedSwitch">
+        <property name="visible">True</property>
+        <property name="can_focus">True</property>
+        <property name="halign">end</property>
+        <property name="valign">center</property>
+      </object>
+      <packing>
+        <property name="left_attach">1</property>
+        <property name="top_attach">7</property>
+      </packing>
+    </child>
+    <child>
+      <placeholder/>
     </child>
     <child>
       <placeholder/>

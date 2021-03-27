@@ -1,4 +1,5 @@
 /* Copyright 2020 Jan Runge <janrunx@gmail.com>
+ * Copyright 2021 GdH <georgdh@gmail.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -38,6 +39,9 @@ var TriggerLabels = [
     'Scroll Down'
 ];
 
+const _schema = 'org.gnome.shell.extensions.custom-hot-corners-extended';
+const _path = '/org/gnome/shell/extensions/custom-hot-corners-extended';
+
 function listTriggers() {
     return Object.values(Triggers);
 }
@@ -49,7 +53,7 @@ var MscOptions = class MscOptions {
     }
 
     connect(name, callback) {
-        let id = this._gsettings.connect(name, callback);
+        const id = this._gsettings.connect(name, callback);
         this._connectionIds.push(id);
         return id;
     }
@@ -59,62 +63,69 @@ var MscOptions = class MscOptions {
     }
 
     _loadSettings() {
-        let schema = 'org.gnome.shell.extensions.custom-hot-corners.misc';
-        let path = '/org/gnome/shell/extensions/custom-hot-corners/misc/';
+        const schema = `${_schema}.misc`;
+        const path = `${_path}/misc/`;
         return getSettings(schema, path);
     }
-
     get delayStart() {
         return this._gsettings.get_boolean('delay-start');
     }
-
     set delayStart(bool_val) {
         this._gsettings.set_boolean('delay-start', bool_val);
     }
-
     get fullscreenGlobal() {
         return this._gsettings.get_boolean('fullscreen-global');
     }
-
     set fullscreenGlobal(bool_val) {
         this._gsettings.set_boolean('fullscreen-global', bool_val);
     }
-
-    get scrollPanel() {
-        return this._gsettings.get_boolean('panel-scroll');
+    get cornersVisible() {
+        return this._gsettings.get_boolean('corners-visible');
     }
-
-    set scrollPanel(bool_val) {
-        this._gsettings.set_boolean('panel-scroll', bool_val);
+    set cornersVisible(bool_val) {
+        this._gsettings.set_boolean('corners-visible', bool_val);
     }
-
+    get winSwitchWrap() {
+        return this._gsettings.get_boolean('win-switch-wrap');
+    }
+    set winSwitchWrap(bool_val) {
+        this._gsettings.set_boolean('win-switch-wrap', bool_val);
+    }
+    get winSkipMinimized() {
+        return this._gsettings.get_boolean('win-switch-skip-minimized');
+    }
+    set winSkipMinimized(bool_val) {
+        this._gsettings.set_boolean('win-switch-skip-minimized', bool_val);
+    }
     get wsSwitchIgnoreLast() {
         return this._gsettings.get_boolean('ws-switch-ignore-last');
     }
-
     set wsSwitchIgnoreLast(bool_val) {
         this._gsettings.set_boolean('ws-switch-ignore-last', bool_val);
     }
     get wsSwitchWrap() {
         return this._gsettings.get_boolean('ws-switch-wrap');
     }
-
     set wsSwitchWrap(bool_val) {
         this._gsettings.set_boolean('ws-switch-wrap', bool_val);
     }
     get wsSwitchIndicator() {
         return this._gsettings.get_boolean('ws-switch-indicator');
     }
-
     set wsSwitchIndicator(bool_val) {
         this._gsettings.set_boolean('ws-switch-indicator', bool_val);
     }
     get actionEventDelay() {
         return this._gsettings.get_int('action-event-delay');
     }
-
     set actionEventDelay(delay) {
         this._gsettings.set_int('action-event-delay', delay);
+    }
+    get rippleAnimation() {
+        return this._gsettings.get_boolean('ripple-animation');
+    }
+    set rippleAnimation(bool_val) {
+        this._gsettings.set_boolean('ripple-animation', bool_val);
     }
 }
 
@@ -130,6 +141,8 @@ var Corner = class Corner {
         this._gsettings = this._loadSettingsForTrigges();
         this._connectionIds = [];
         this.hotCornerExists = false;
+        this.fullExpandHorizontal = false;
+        this.fullExpandVertical = false;
 
         this.action = {};
         this.command = {};
@@ -157,7 +170,7 @@ var Corner = class Corner {
     }
 
     connect(name, callback, trigger) {
-        let id = this._gsettings[trigger].connect(name, callback);
+        const id = this._gsettings[trigger].connect(name, callback);
         this._connectionIds.push([this._gsettings[trigger],id]);
         return id;
     }
@@ -209,6 +222,32 @@ var Corner = class Corner {
         this._gsettings[trigger].set_int('workspace-index', index);
     }
 
+    getAccel(trigger) {
+        return this._gsettings[trigger].get_strv('accel');
+    }
+
+    setAccel(trigger, accel) {
+        this._gsettings[trigger].set_strv('accel', accel);
+    }
+
+    get hExpand() {
+        //log(`[${Me.metadata.name}.Settings] hExpand`);
+        return this._gsettings[Triggers.BUTTON_PRIMARY].get_boolean('h-expand');
+    }
+
+    set hExpand(bool_val) {
+        this._gsettings[Triggers.BUTTON_PRIMARY].set_boolean('h-expand', bool_val);
+    }
+
+    get vExpand() {
+        //log(`[${Me.metadata.name}.Settings] vExpand`);
+        return this._gsettings[Triggers.BUTTON_PRIMARY].get_boolean('v-expand');
+    }
+
+    set vExpand(bool_val) {
+        this._gsettings[Triggers.BUTTON_PRIMARY].set_boolean('v-expand', bool_val);
+    }
+
     get barrierSize() {
         return this._gsettings[Triggers.PRESSURE].get_int('barrier-size');
     }
@@ -226,10 +265,10 @@ var Corner = class Corner {
     }
 
     _loadSettings(trigger) {
-        let schema = 'org.gnome.shell.extensions.custom-hot-corners.corner';
-        let v = this.top ? 'top' : 'bottom';
-        let h = this.left ? 'left' : 'right';
-        let path = '/org/gnome/shell/extensions/custom-hot-corners/';
+        const schema = `${_schema}.corner`;
+        const v = this.top ? 'top' : 'bottom';
+        const h = this.left ? 'left' : 'right';
+        let path = `${_path}/`;
         path += `monitor-${this._loadIndex}-${v}-${h}-${trigger}/`;
         return getSettings(schema, path);
     }
@@ -240,7 +279,7 @@ var Corner = class Corner {
  * loading the setting with a specific path.
  */
 function getSettings(schema, path) {
-    let schemaDir = Me.dir.get_child('schemas');
+    const schemaDir = Me.dir.get_child('schemas');
     let schemaSource;
     if (schemaDir.query_exists(null)) {
         schemaSource = Gio.SettingsSchemaSource.new_from_directory(
@@ -252,7 +291,7 @@ function getSettings(schema, path) {
         schemaSource = Gio.SettingsSchemaSource.get_default();
     }
 
-    let schemaObj = schemaSource.lookup(schema, true);
+    const schemaObj = schemaSource.lookup(schema, true);
     if (!schemaObj) {
         throw new Error(
             'Schema' + schema + ' could not be found for extension ' +
@@ -260,7 +299,7 @@ function getSettings(schema, path) {
         );
     }
 
-    let args = { settings_schema: schemaObj };
+    const args = { settings_schema: schemaObj };
     if (path) {
         args.path = path;
     }

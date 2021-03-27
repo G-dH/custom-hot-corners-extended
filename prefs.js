@@ -1,4 +1,5 @@
 /* Copyright 2017 Jan Runge <janrunx@gmail.com>
+ * Copyright 2021 GdH <georgdh@gmail.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -14,17 +15,19 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-const {Gtk, Gdk, GLib} = imports.gi;
+const {Gtk, Gdk, GLib, GObject} = imports.gi;
 
+const Gettext = imports.gettext.domain('custom-hot-corners-extended');
+const _ = Gettext.gettext;
 const ExtensionUtils = imports.misc.extensionUtils;
 const Me = ExtensionUtils.getCurrentExtension();
 const Settings = Me.imports.settings;
-let triggers = Settings.listTriggers();
-let triggerLabels = Settings.TriggerLabels;
+const triggers = Settings.listTriggers();
+const triggerLabels = Settings.TriggerLabels;
 let notebook;
 
 function _loadUI(file) {
-    let path = Me.dir.get_child(file).get_path();
+    const path = Me.dir.get_child(file).get_path();
     return Gtk.Builder.new_from_file(path);
 }
 
@@ -33,7 +36,7 @@ function init() {
 }
 
 function buildPrefsWidget() {
-    let prefsWidget = new Gtk.Grid();
+    const prefsWidget = new Gtk.Grid();
     notebook = new Gtk.Notebook;
     notebook.tab_pos = Gtk.POS_LEFT;
     prefsWidget.attach(notebook,0,0,1,1);
@@ -43,29 +46,42 @@ function buildPrefsWidget() {
 
     const cornerWidgets = [];
 
-    let mscOptions = new Settings.MscOptions();
-    let msUI = _loadUI('misc-settings-widget.ui');
-    let miscUI = msUI.get_object('miscOptions');
-    let delayStartSwitch = msUI.get_object('delayStartSwitch');
-    let fullscreenGlobalSwitch = msUI.get_object('fullscreenGlobalSwitch');
-    let scrollPanelSwitch = msUI.get_object('scrollPanelSwitch');
-    let ignoreLastWsSwitch = msUI.get_object('ignoreLastWsSwitch');
-    let wrapWsSwitch = msUI.get_object('wrapWsSwitch');
-    let wsIndicatorSwitch = msUI.get_object('wsIndicatorSwitch');
-    let scrollEventsDelaySpinBtn = msUI.get_object('scrollEventsDelaySpinBtn');
+    const mscOptions = new Settings.MscOptions();
+    const msUI = _loadUI('misc-settings-widget.ui');
+    const miscUI = msUI.get_object('miscOptions');
+    const delayStartSwitch = msUI.get_object('delayStartSwitch');
+    const fullscreenGlobalSwitch = msUI.get_object('fullscreenGlobalSwitch');
+    const ignoreLastWsSwitch = msUI.get_object('ignoreLastWsSwitch');
+    const wrapWsSwitch = msUI.get_object('wrapWsSwitch');
+    const wsIndicatorSwitch = msUI.get_object('wsIndicatorSwitch');
+    const scrollEventsDelaySpinBtn = msUI.get_object('scrollEventsDelaySpinBtn');
+    const cornersVisibleSwitch = msUI.get_object('cornersVisibleSwitch');
+    const rippleAnimationSwitch = msUI.get_object('rippleAnimationSwitch');
+    const winWrapSwitch = msUI.get_object('winWrapSwitch');
+    const winSkipMinimizedSwitch = msUI.get_object('winSkipMinimizedSwitch');
 
     delayStartSwitch.active = mscOptions.delayStart;
     delayStartSwitch.connect('notify::active', () => {
                 mscOptions.delayStart = delayStartSwitch.active;
-    })
+    });
 
     fullscreenGlobalSwitch.active = mscOptions.fullscreenGlobal;
     fullscreenGlobalSwitch.connect('notify::active', () => {
                 mscOptions.fullscreenGlobal = fullscreenGlobalSwitch.active;
-    })
-    scrollPanelSwitch.active = mscOptions.scrollPanel;
-    scrollPanelSwitch.connect('notify::active', () => {
-                mscOptions.scrollPanel = scrollPanelSwitch.active;
+    });
+
+    cornersVisibleSwitch.active = mscOptions.cornersVisible;
+    cornersVisibleSwitch.connect('notify::active', () => {
+                mscOptions.cornersVisible = cornersVisibleSwitch.active;
+    });
+
+    winWrapSwitch.active = mscOptions.winSwitchWrap;
+    winWrapSwitch.connect('notify::active', () =>{
+                mscOptions.winSwitchWrap = winWrapSwitch.active;
+            });
+    winSkipMinimizedSwitch.active = mscOptions.winSkipMinimized;
+    winSkipMinimizedSwitch.connect('notify::active', () =>{
+                mscOptions.winSkipMinimized = winSkipMinimizedSwitch.active;
             });
     ignoreLastWsSwitch.active = mscOptions.wsSwitchIgnoreLast;
     ignoreLastWsSwitch.connect('notify::active', () =>{
@@ -97,69 +113,73 @@ function buildPrefsWidget() {
                 );
             });
 
+    rippleAnimationSwitch.active = mscOptions.rippleAnimation;
+    rippleAnimationSwitch.connect('notify::active', () =>{
+                mscOptions.rippleAnimation = rippleAnimationSwitch.active;
+            });
+
     for (let monitorIndex = 0; monitorIndex < num_monitors; ++monitorIndex) {
         const monitor = display.get_monitor(monitorIndex);
         const geometry = monitor.get_geometry();
         const corners = Settings.Corner.forMonitor(monitorIndex, monitorIndex, geometry);
         let grid = {};
-        //for (let trigger of triggers) {
         for (let i =0; i < corners.length; i++) {
             grid[i] = new Gtk.Grid({
                 expand: true,
+                column_homogeneous: true,
                 margin: 10,
                 row_spacing: 8,
                 column_spacing: 20
             });
         }
 
-        let triggersBook = new Gtk.Notebook();
-
+        const triggersBook = new Gtk.Notebook();
 
         for (let i =0; i < corners.length; i++) {
             for (let trigger of triggers) {
-                let cw = _buildCornerWidget(corners[i], trigger);
-                //cw.valign = corner.top ? Gtk.Align.START : Gtk.Align.END;
-                //let x = corner.left ? 0 : 1;
-                //let y = corner.top ? 0 : 1;
-                let trgLabel = new Gtk.Label({
+                const cw = _buildCornerWidget(corners[i], trigger);
+                const trgLabel = new Gtk.Label({
                     label: `${triggerLabels[trigger]}`,
                     halign: Gtk.Align.START,
                     valign: Gtk.Align.START,
                     margin_top: 8
                     //use_markup: true
                 });
-                //grid[i].attach(trgLabel, 0, trigger*2, 8, 1);
-                //grid[i].attach(cw, 2, trigger*2+1, 4, 1);
-                grid[i].attach(trgLabel, 0, trigger, 2, 1);
-                grid[i].attach(cw, 2, trigger, 2, 1);
+
+                grid[i].attach(trgLabel, 0, trigger, 1, 1);
+                grid[i].attach(cw, 1, trigger, 3, 1);
             }
+
+            const ew = _buildExpandWidget(corners[i]);
+            grid[i].attach(ew, 0, 6, 4, 1);
+
         }
         for (let i =0; i < corners.length; i++){
-            let label = new Gtk.Label({ label: (corners[i].top ? "Top " : "Bottom ") + (corners[i].left ? "left" : "right") });
+            const label = new Gtk.Label({ label: (corners[i].top ? _('Top') + ' ' : _('Bottom') +' ') + (corners[i].left ? _('Left') : _('Right')) });
             triggersBook.append_page(grid[i], label);
 
 
         }
-        let label = new Gtk.Label({ label: 'Monitor ' + (monitorIndex + 1) });
+        const label = new Gtk.Label({ label: _('Monitor') + ' ' + (monitorIndex + 1) });
         notebook.append_page(triggersBook, label);
         
     }
-    let label = new Gtk.Label({ label: 'Options', halign: Gtk.Align.START});
+    const label = new Gtk.Label({ label: _('Options'), halign: Gtk.Align.START});
     notebook.append_page(miscUI, label);
     prefsWidget.show_all();
     return prefsWidget;
 }
 
 function _buildCornerWidget(corner, trigger) {
-    let cwUI = _loadUI('corner-widget.ui');
-    let cw = cwUI.get_object('cornerWidget');
-    let fullscreenSwitch = cwUI.get_object('fullscreenSwitch');
-    let actionCombo = cwUI.get_object('actionCombo');
-    let commandEntry = cwUI.get_object('commandEntry');
-    let commandEntryRevealer = cwUI.get_object('commandEntryRevealer');
-    let wsIndexRevealer = cwUI.get_object('wsIndexRevealer');
-    let workspaceIndexSpinButton = cwUI.get_object('workspaceIndex');
-    let appButton = cwUI.get_object('appButton');
+    const cwUI = _loadUI('corner-widget.ui');
+    const cw = cwUI.get_object('cornerWidget');
+    const fullscreenSwitch = cwUI.get_object('fullscreenSwitch');
+    const actionCombo = cwUI.get_object('actionCombo');
+    const commandEntry = cwUI.get_object('commandEntry');
+    const commandEntryRevealer = cwUI.get_object('commandEntryRevealer');
+    const wsIndexRevealer = cwUI.get_object('wsIndexRevealer');
+    const workspaceIndexSpinButton = cwUI.get_object('workspaceIndex');
+    const appButton = cwUI.get_object('appButton');
 
     fullscreenSwitch.active = corner.getFullscreen(trigger);
     fullscreenSwitch.connect('notify::active', () => {
@@ -171,10 +191,10 @@ function _buildCornerWidget(corner, trigger) {
         corner.setAction(trigger, actionCombo.active_id);
         commandEntryRevealer.reveal_child = corner.getAction(trigger) === 'runCommand';
         wsIndexRevealer.reveal_child = corner.getAction(trigger) === 'moveToWorkspace';
-        if (corner.getAction(trigger) === 'runCommand' && ! cmdConnected) {
+        if (corner.getAction(trigger) === 'runCommand' && !cmdConnected) {
 
             appButton.connect('clicked', () => {
-                let dialog = _chooseAppDialog();
+                const dialog = _chooseAppDialog();
                 dialog._appChooser.connect('application-activated', () => dialog._addButton.clicked() );
                 dialog.connect('response', (dlg, id) => {
                     if (id !== Gtk.ResponseType.OK) {
@@ -215,10 +235,10 @@ function _buildCornerWidget(corner, trigger) {
     actionCombo.active_id = corner.getAction(trigger);
 
     if (trigger === Settings.Triggers.PRESSURE) {
-        let barrierLabel = cwUI.get_object('barrierLabel');
-        let pressureLabel = cwUI.get_object('pressureLabel');
-        let barrierSizeSpinButton = cwUI.get_object('barrierSize');
-        let pressureThresholdSpinButton = cwUI.get_object('pressureThreshold');
+        const barrierLabel = cwUI.get_object('barrierLabel');
+        const pressureLabel = cwUI.get_object('pressureLabel');
+        const barrierSizeSpinButton = cwUI.get_object('barrierSize');
+        const pressureThresholdSpinButton = cwUI.get_object('pressureThreshold');
         barrierLabel.show();
         barrierSizeSpinButton.show();
         pressureLabel.show();
@@ -280,12 +300,30 @@ function _buildCornerWidget(corner, trigger) {
                 }
         );
     });
+
     return cw;
 }
 
+function _buildExpandWidget (corner) {
+    const cwUI = _loadUI('corner-widget.ui');
+    const ew = cwUI.get_object('expandGrid');
+    const hExpandSwitch = cwUI.get_object('hExpandSwitch');
+    const vExpandSwitch = cwUI.get_object('vExpandSwitch');
+    hExpandSwitch.active = corner.hExpand;
+    vExpandSwitch.active = corner.vExpand;
+    hExpandSwitch.connect('notify::active', () => {
+        corner.hExpand = hExpandSwitch.active;
+    });
+    vExpandSwitch.connect('notify::active', () => {
+        corner.vExpand = vExpandSwitch.active;
+    });
+
+    return ew;
+}
+
 function _chooseAppDialog() {
-        let dialog = new Gtk.Dialog({
-            title: ('Choose Application'),
+        const dialog = new Gtk.Dialog({
+            title: (_('Choose Application')),
             transient_for: notebook.get_toplevel(),
             use_header_bar: true,
             modal: true
@@ -295,7 +333,7 @@ function _chooseAppDialog() {
         dialog._addButton = dialog.add_button(Gtk.STOCK_ADD, Gtk.ResponseType.OK);
         dialog.set_default_response(Gtk.ResponseType.OK);
 
-        let grid = new Gtk.Grid({
+        const grid = new Gtk.Grid({
             column_spacing: 10,
             row_spacing: 15,
             margin: 10,
@@ -306,7 +344,7 @@ function _chooseAppDialog() {
         });
         let appInfo = dialog._appChooser.get_app_info();
         grid.attach(dialog._appChooser, 0, 0, 2, 1);
-        let cmdLabel = new Gtk.Label({
+        const cmdLabel = new Gtk.Label({
             label:"",
             wrap: true
         });

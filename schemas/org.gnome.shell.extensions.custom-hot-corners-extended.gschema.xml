@@ -1,12 +1,15 @@
 <?xml version='1.0' encoding='utf-8'?>
 
 <schemalist>
-  <schema id='org.gnome.shell.extensions.custom-hot-corners.corner'>
+  <schema id='org.gnome.shell.extensions.custom-hot-corners-extended.corner'>
     <key name='action' type='s'>
       <default>'disabled'</default>
     </key>
     <key name='command' type='s'>
       <default>''</default>
+    </key>
+    <key name='accel' type='as'>
+      <default>[]</default>
     </key>
     <key name='fullscreen' type='b'>
       <default>false</default>
@@ -20,15 +23,27 @@
     <key name='workspace-index' type='i'>
       <default>1</default>
     </key>
+    <key name='h-expand' type='b'>
+      <default>false</default>
+    </key>
+    <key name='v-expand' type='b'>
+      <default>false</default>
+    </key>
   </schema>
-  <schema id='org.gnome.shell.extensions.custom-hot-corners.misc'>
+  <schema id='org.gnome.shell.extensions.custom-hot-corners-extended.misc'>
     <key name='delay-start' type='b'>
       <default>false</default>
     </key>
     <key name='fullscreen-global' type='b'>
       <default>false</default>
     </key>
-    <key name='panel-scroll' type='b'>
+    <key name='corners-visible' type='b'>
+      <default>false</default>
+    </key>
+    <key name='win-switch-wrap' type='b'>
+      <default>true</default>
+    </key>
+    <key name='win-switch-skip-minimized' type='b'>
       <default>false</default>
     </key>
     <key name='ws-switch-ignore-last' type='b'>
@@ -41,7 +56,10 @@
       <default>false</default>
     </key>
     <key name='action-event-delay' type='i'>
-      <default>50</default>
+      <default>100</default>
+    </key>
+    <key name='ripple-animation' type='b'>
+      <default>true</default>
     </key>
   </schema>
 </schemalist>
