@@ -14,6 +14,7 @@ Features:
 ![Extension configuration window](screenshot.png)
 ![Extension configuration window](screenshot1.png)
 ![Extension configuration window](screenshot2.png)
+![Extension configuration window](screenshot3.png)
 
 ## Installation
 
