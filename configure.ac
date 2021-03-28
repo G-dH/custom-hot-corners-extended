@@ -2,10 +2,10 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ([2.69])
-AC_INIT([custom-hot-corners], [0.9.1], [janrunx@gmail.com])
+AC_INIT([custom-hot-corners-extended], [0.1], [georgdh@mail.com])
 AM_INIT_AUTOMAKE([foreign])
 
-AC_SUBST([uuid], [$PACKAGE_NAME@janrunx.gmail.com])
+AC_SUBST([uuid], [$PACKAGE_NAME@georgdh.gmail.com])
 AC_SUBST([gschemaname], [org.gnome.shell.extensions.$PACKAGE_NAME.gschema.xml])
 
 # https://wiki.gnome.org/HowDoI/GSettings
