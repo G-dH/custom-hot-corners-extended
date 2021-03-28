@@ -906,7 +906,7 @@ function _toggleDimmMonitors(alpha, text) {
                 opacity: alpha,
                 reactive: true
             });
-            actor.connect('button-release-event', () => _destroyDimmerActors());
+            actor.connect('button-press-event', () => _destroyDimmerActors());
             Main.layoutManager.addChrome(actor);
             _dimmerActors.push(actor);
         }
