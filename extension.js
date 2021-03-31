@@ -44,6 +44,7 @@ let _origUpdateHotCorners = Main.layoutManager._updateHotCorners;
 let _cornersCollector;
 let _timeoutsCollector;
 let _signalsCollector;
+let _actorsCollector;
 
 let _mscOptions;
 let _wsSwitchIgnoreLast;
@@ -60,20 +61,24 @@ let _rippleAnimation;
 let _winSwitchWrap;
 let _winSkipMinimized;
 let _dimmerActors;
+let _extensionEnabled;
 
 
 function init() {
     _timeoutsCollector = [];
     _cornersCollector = [];
+    _actorsCollector = [];
     _actionTimeoutId = null;
     _minimizedWindows = [];
     _signalsCollector = [];
     _lastWorkspace = -1;
     _currentWorkspace = -1;
     _dimmerActors = [];
+    _extensionEnabled = false;
 }
 
 function enable() {
+    _extensionEnabled = true;
     _initMscOptions();
     if (_mscOptions.delayStart) {
         let delayID = GLib.timeout_add(
@@ -99,7 +104,6 @@ function _replaceLayoutManager() {
 }
 
 function disable() {
-    // This restores the original hot corners
     _timeoutsCollector.forEach( c => GLib.Source.remove(c));
     _timeoutsCollector=[];
     _removeActionTimeout();
@@ -108,6 +112,8 @@ function disable() {
     _mscOptions.destroy();
     _disableEffects();
     _destroyDimmerActors();
+    // This restores the original hot corners
+    _extensionEnabled = false;
     Main.layoutManager._updateHotCorners = _origUpdateHotCorners;
     Main.layoutManager._updateHotCorners();
 }
@@ -128,6 +134,9 @@ function _removeHotCorners() {
         _destroyHotCorner(hc[i]._corner);
     }
     Main.layoutManager.hotCorners = [];
+    // when some other extension steal my hot corners I still need to be able to destroy all actors I made
+    _actorsCollector.filter(a => a !== null).forEach(a => a.destroy());
+    _actorsCollector = [];
 }
 
 
@@ -150,6 +159,9 @@ function _updateHotCorners() {
     _removeHotCorners();
     Main.layoutManager.hotCorners=[];
     let primaryIndex = Main.layoutManager.primaryIndex;
+    // avoid creating new corners if this extension is disabled...
+    // ...since this method overrides the original one in GS and something can store pointer to this replacement
+    if (!_extensionEnabled) return;
     let monIndexes = [...Main.layoutManager.monitors.keys()];
     // index of primary monitor to the first possition
     monIndexes.splice(0, 0, monIndexes.splice(primaryIndex, 1)[0]);
@@ -157,7 +169,7 @@ function _updateHotCorners() {
     for (let i = 0; i < Main.layoutManager.monitors.length; ++i) {
         // Monitor 1 in preferences will allways refer to primary monitor
         const corners = Settings.Corner.forMonitor(i, monIndexes[i], global.display.get_monitor_geometry(monIndexes[i]));
-        _setExpansionMeasures(corners);
+        _setExpansionLimits(corners);
         for (let corner of corners) {
             _cornersCollector.push(corner);
 
@@ -173,7 +185,7 @@ function _updateHotCorners() {
     }
 }
 
-function _setExpansionMeasures(corners) {
+function _setExpansionLimits(corners) {
     const cornerOrder = [0,1,3,2];
     for (let i = 0; i < corners.length; i++) {
         let prevCorner = (i + corners.length-1) % corners.length;
@@ -243,7 +255,11 @@ function _destroyHotCorner(corner) {
         if (hc[i]._corner.top === corner.top &&
             hc[i]._corner.left === corner.left &&
             hc[i]._corner.monitorIndex === corner.monitorIndex) {
-                Main.layoutManager.hotCorners[i]._actors.forEach( a => a.destroy() );
+                for (let a of Main.layoutManager.hotCorners[i]._actors) {
+                    _actorsCollector.splice(_actorsCollector.indexOf(a));
+                    a.destroy();
+                }
+                Main.layoutManager.hotCorners[i]._actors = [];
                 hc[i].setBarrierSize(0, false);
                 Main.layoutManager.hotCorners[i].destroy();
                 Main.layoutManager.hotCorners.splice(i, 1);
@@ -294,20 +310,6 @@ class CustomHotCorner extends Layout.HotCorner {
             ['brightnessInvert',this._toggleBrightnessInvert  ],
             ['blackScreen',     this._toggleBlackScreen       ]
         ]);
-        //this._actionFunction = m.get(this._corner.action) || function () {};
-
-        // Avoid pointer barriers that are at the same position
-        // but block opposite directions. Neither with X nor with Wayland
-        // such barriers work.
-        for (let c of Main.layoutManager.hotCorners) {
-            if (this._corner.x === c._corner.x && this._corner.y === c._corner.y) {
-                if (this._corner.top === c._corner.top) {
-                    this._corner.x += this._corner.left ? 1 : -1;
-                } else if (this._corner.left === c._corner.left) {
-                    this._corner.y += this._corner.top ? 1 : -1;
-                }
-            }
-        }
 
         this._enterd = false;
         this._pressureBarrier = new Layout.PressureBarrier(
@@ -340,20 +342,27 @@ class CustomHotCorner extends Layout.HotCorner {
         super.setBarrierSize(0);
         if (size > 0) {
             const BD = Meta.BarrierDirection;
+            // workaround for bug in GS 3.36/X11 session:
+            // right vertical and bottom horizontal pointer barriers must be 1px further to match the screen edge
+            // but avoid barriers that are at the same position
+            // and block opposite directions. Neither with X nor with Wayland
+            // such barriers work.
+            let x = this._corner.x + (Meta.is_wayland_compositor() ? 0: ((!this._corner.left && !this._barrierCollision()['x']) ? 1 : 0)); // workaround for GS 3.36 bug
             this._verticalBarrier = new Meta.Barrier({
                 display: global.display,
-                x1: this._corner.x, //+ (Meta.is_wayland_compositor() ? (this._corner.left ? 1 : -1) : 0 ),  // move barier 1px horizontaly because of wayland
-                x2: this._corner.x, //+ (Meta.is_wayland_compositor() ? (this._corner.left ? 1 : -1) : 0 ),
+                x1: x,
+                x2: x,
                 y1: this._corner.y,
                 y2: this._corner.top ? this._corner.y + size : this._corner.y - size,
                 directions: this._corner.left ? BD.POSITIVE_X : BD.NEGATIVE_X
             });
+            let y = this._corner.y + (Meta.is_wayland_compositor() ? 0: ((!this._corner.top && !this._barrierCollision()['y']) ? 1 : 0)); // workaround for GS 3.36 bug
             this._horizontalBarrier = new Meta.Barrier({
                 display: global.display,
                 x1: this._corner.x,
                 x2: this._corner.left ? this._corner.x + size : this._corner.x - size,
-                y1: this._corner.y, //+ (Meta.is_wayland_compositor() ? (this._corner.top ? 1 : -1) : 0 ), // move barier 1px verticaly to be sure
-                y2: this._corner.y, //+ (Meta.is_wayland_compositor() ? (this._corner.top ? 1 : -1) : 0 ),
+                y1: y,
+                y2: y,
                 directions: this._corner.top ? BD.POSITIVE_Y : BD.NEGATIVE_Y
             });
 
@@ -362,10 +371,27 @@ class CustomHotCorner extends Layout.HotCorner {
         }
     }
 
+    _barrierCollision() {
+        // workaround for stupid bug in GS 3.36/X11 session
+        let x = false;
+        let y = false;
+        for (let c of Main.layoutManager.hotCorners) {
+            if (this._corner.x + 1 === c._corner.x) {
+                x =  true;
+                break;
+            }
+            if (this._corner.y + 1 === c._corner.y) {
+                y =  true;
+                break;
+            }
+        }
+        return {'x': x,'y': y};
+    }
+
     // Overridden to allow all 4 monitor corners
     _setupCornerActorsIfNeeded(layoutManager) {
         let shouldCreateActor = this._shouldCreateActor();
-         if (!(shouldCreateActor || this._corner.hExpand || this._corner.vExpand || global.display.supports_extended_barriers())) {
+        if (!(shouldCreateActor || this._corner.hExpand || this._corner.vExpand || global.display.supports_extended_barriers())) {
             return;
         }
         let aSize = 3;
@@ -390,8 +416,8 @@ class CustomHotCorner extends Layout.HotCorner {
         // base clickable actor, normal size or expanded
         this._actor = new Clutter.Rectangle({
             name: 'hot-corner-h',
-            x: this._corner.x + (this._corner.left ? 0 : - hSize),
-            y: this._corner.y + (this._corner.top  ? 0 : - aSize),
+            x: this._corner.x + (this._corner.left ? 0 : - (hSize - 1)),
+            y: this._corner.y + (this._corner.top  ? 0 : - (aSize - 1)),
             width: hSize,
             height: aSize,
             reactive: true,
@@ -400,20 +426,24 @@ class CustomHotCorner extends Layout.HotCorner {
                 green: 120,
                 blue:  0,
                 //alpha: _cornersVisible ? ((h || v) ? 50 : 120) : 0
-                alpha: _cornersVisible ? 150 : 0
+                alpha: _cornersVisible ? 255 : 0
             })
 
         });
         this._connectActorEvents(this._actor);
+        this._actor.connect('destroy', () => {
+                    this._actor = null;
+        });
         layoutManager.addChrome(this._actor);
+        _actorsCollector.push(this._actor);
         this._actors.push(this._actor);
 
         // to expand clickable area in both axes make second actor
         if (v && h) {
             this._actorV = new Clutter.Rectangle ({
                 name: 'hot-corner-v',
-                x: this._corner.x + (this._corner.left ? 1 : - aSize +1),
-                y: this._corner.y + (this._corner.top  ? 1 : - vSize +1),
+                x: this._corner.x + (this._corner.left ? 0 : - (aSize - 1)),
+                y: this._corner.y + (this._corner.top  ? 0 : - (vSize - 1)),
                 width: aSize,
                 height: vSize,
                 reactive: true,
@@ -422,11 +452,15 @@ class CustomHotCorner extends Layout.HotCorner {
                     green: 120,
                     blue:  0,
                     //alpha: _cornersVisible ? ((h || v) ? 50 : 120) : 0
-                    alpha: _cornersVisible ? 150 : 0
+                    alpha: _cornersVisible ? 255 : 0
                 })
             });
             this._connectActorEvents(this._actorV);
+            this._actorV.connect('destroy', () => {
+                    this._actorV = null;
+            });
             layoutManager.addChrome(this._actorV);
+            _actorsCollector.push(this._actorV);
             this._actors.push(this._actorV);
         }
 
