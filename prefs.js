@@ -59,6 +59,7 @@ function buildPrefsWidget() {
     const rippleAnimationSwitch = msUI.get_object('rippleAnimationSwitch');
     const winWrapSwitch = msUI.get_object('winWrapSwitch');
     const winSkipMinimizedSwitch = msUI.get_object('winSkipMinimizedSwitch');
+    const barrierFallbackSwitch = msUI.get_object('barrierFallbackSwitch');
 
     delayStartSwitch.active = mscOptions.delayStart;
     delayStartSwitch.connect('notify::active', () => {
@@ -94,6 +95,10 @@ function buildPrefsWidget() {
     wsIndicatorSwitch.active = mscOptions.wsSwitchIndicator;
     wsIndicatorSwitch.connect('notify::active', () =>{
                 mscOptions.wsSwitchIndicator = wsIndicatorSwitch.active;
+            });
+    barrierFallbackSwitch.active = mscOptions.barrierFallback;
+    barrierFallbackSwitch.connect('notify::active', () =>{
+                mscOptions.barrierFallback = barrierFallbackSwitch.active;
             });
     scrollEventsDelaySpinBtn.value = mscOptions.actionEventDelay;
     scrollEventsDelaySpinBtn.timeout_id = null;

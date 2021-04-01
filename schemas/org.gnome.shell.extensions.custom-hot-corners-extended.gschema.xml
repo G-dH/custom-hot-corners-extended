@@ -61,5 +61,8 @@
     <key name='ripple-animation' type='b'>
       <default>true</default>
     </key>
+    <key name='barrier-fallback' type='b'>
+      <default>false</default>
+    </key>
   </schema>
 </schemalist>

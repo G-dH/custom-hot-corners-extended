@@ -127,6 +127,12 @@ var MscOptions = class MscOptions {
     set rippleAnimation(bool_val) {
         this._gsettings.set_boolean('ripple-animation', bool_val);
     }
+    get barrierFallback() {
+        return this._gsettings.get_boolean('barrier-fallback');
+    }
+    set barrierFallback(bool_val) {
+        this._gsettings.set_boolean('barrier-fallback', bool_val);
+    }
 }
 
 var Corner = class Corner {
