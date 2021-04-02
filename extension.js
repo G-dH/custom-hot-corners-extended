@@ -584,10 +584,8 @@ class CustomHotCorner extends Layout.HotCorner {
             !(['volumeUp','volumeDown'].includes(this._corner.action[trigger]))
             ) return;
         this._actionFunction = this.m.get(this._corner.action[trigger]) || function () {};
-        if (this._monitor.inFullscreen && (this._corner.fullscreen || _fullscreenGlobal)) {
-            if (_rippleAnimation) this._rippleAnimation();
-            this._actionFunction(trigger);
-        } else if (!this._monitor.inFullscreen) {
+        if (    (!this._monitor.inFullscreen) ||
+                ( this._monitor.inFullscreen  && (this._corner.fullscreen[trigger] || _fullscreenGlobal))) {
             if (_rippleAnimation) this._rippleAnimation();
             this._actionFunction(trigger);
         }
