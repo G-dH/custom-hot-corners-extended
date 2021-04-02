@@ -488,12 +488,11 @@ class CustomHotCorner extends Layout.HotCorner {
                     //alpha: _cornersVisible ? ((h || v) ? 50 : 120) : 0
                     alpha: _cornersVisible ? 255 : 0})
             });
-            //this._cornerActor._delegate = this;
             this._actor.add_child(this._cornerActor);
             this._cornerActor.connect('enter-event', this._onCornerEntered.bind(this));
             this._cornerActor.connect('button-press-event', () => {return Clutter.EVENT_PROPAGATE});
             this._cornerActor.connect('scroll-event', () => {return Clutter.EVENT_PROPAGATE});
-            //this._actors.push(this._cornerActor);
+            this._actors.push(this._cornerActor);
             _actorsCollector.push(this._cornerActor);
         }
     }
@@ -535,16 +534,10 @@ class CustomHotCorner extends Layout.HotCorner {
 
     // Overridden to allow running custom actions
     _onCornerEntered() {
-        //if (!this._entered) {
-            //this._entered = true;
             this._runAction(Triggers.PRESSURE);
-        //}
         return Clutter.EVENT_PROPAGATE;
     }
 
-        this._entered = false;
-    }
-*/
     _onPressureTriggerd (actor, event) {
         this._runAction(Triggers.PRESSURE);
     }
