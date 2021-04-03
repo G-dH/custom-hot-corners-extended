@@ -94,7 +94,7 @@
       <object class="GtkLabel">
         <property name="visible">True</property>
         <property name="can_focus">False</property>
-        <property name="label" translatable="yes">Expand corner reactive area for clicks / scrolls :
+        <property name="label" translatable="yes">Expand corner along edge (for clicks and scrolls only):
 &lt;small&gt;(For visualisation activate 'Make active corners visible' option)&lt;/small&gt;</property>
         <property name="use_markup">True</property>
       </object>
@@ -272,9 +272,10 @@
               <item id="showApplications" translatable="yes">Show Applications</item>
               <item id="showDesktop" translatable="yes">Show Desktop</item>
               <item id="runCommand" translatable="yes">Run Command</item>
+              <item id="runCommandNotify" translatable="yes">Run Command - output to notification</item>
               <item id="prevWorkspace" translatable="yes">Previous Workspace</item>
               <item id="nextWorkspace" translatable="yes">Next Workspace</item>
-              <item id="recentWS" translatable="yes">Move to recent Workspace</item>
+              <item id="recentWS" translatable="yes">Recent Workspace</item>
               <item id="moveToWorkspace" translatable="yes">Move to Workspace #</item>
               <item id="recentWin" translatable="yes">Recent Window (Alt+Tab)</item>
               <item id="prevWinWS" translatable="yes">Previous Window (current WS)</item>
@@ -290,13 +291,13 @@
               <item id="powerOff" translatable="yes">Power Off Dialog</item>
               <item id="logout" translatable="yes">Log Out Dialog</item>
               <item id="switchUser" translatable="yes">Switch User (if exist)</item>
-              <item id="volumeUp" translatable="yes">Volume Up</item>
-              <item id="volumeDown" translatable="yes">Volume Down</item>
-              <item id="muteAudio" translatable="yes">Mute Audio</item>
-              <item id="brightnessInvert" translatable="yes">True Color Invert</item>
-              <item id="prefs" translatable="yes">Show Preferences</item>
-              <item id="lookingGlass" translatable="yes">Looking Glass (debuger)</item>
+              <item id="volumeUp" translatable="yes">Volume Up (Sound)</item>
+              <item id="volumeDown" translatable="yes">Volume Down (Sound)</item>
+              <item id="muteAudio" translatable="yes">Mute (Sound)</item>
+              <item id="brightnessInvert" translatable="yes">Invert Window (True Color Invert)</item>
+              <item id="lookingGlass" translatable="yes">Looking Glass (GS debuger)</item>
               <item id="restartShell" translatable="yes">Restart Gnome Shell (X11 only)</item>
+              <item id="prefs" translatable="yes">Open Preferences</item>
             </items>
           </object>
           <packing>

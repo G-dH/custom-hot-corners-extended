@@ -134,7 +134,8 @@ function _removeHotCorners() {
     const hc = Main.layoutManager.hotCorners;
     // reverse iteration, objects are being removed from the source during destruction
     for (let i = hc.length-1; i >= 0; i--) {
-        _destroyHotCorner(hc[i]._corner);
+        if (hc[i]._corner)
+            _destroyHotCorner(hc[i]._corner);
     }
     Main.layoutManager.hotCorners = [];
     // when some other extension steal my hot corners I still need to be able to destroy all actors I made
@@ -349,8 +350,11 @@ class CustomHotCorner extends Layout.HotCorner {
         super.setBarrierSize(0);
         if (size > 0) {
             const BD = Meta.BarrierDirection;
-            // workaround for bug in GS 3.36/X11 session:
-            // right vertical and bottom horizontal pointer barriers must be 1px further to match the screen edge
+            // for X11 session:
+            //  right vertical and bottom horizontal pointer barriers must be 1px further to match the screen edge
+            //  because barriers are actually placed between pixels, along the top/left edge of the addressed pixels
+            // Wayland behave different and place the barrier on the top/bottom / left/right edge of the pixels
+            //  depending on direction set to block
             // but avoid barriers that are at the same position
             // and block opposite directions. Neither with X nor with Wayland
             // such barriers work.
@@ -379,7 +383,7 @@ class CustomHotCorner extends Layout.HotCorner {
     }
 
     _barrierCollision() {
-        // workaround for stupid bug in GS 3.36/X11 session
+        // avoid barrier collisions on multimonitor system under X11 session
         let x = false;
         let y = false;
         for (let c of Main.layoutManager.hotCorners) {
@@ -471,7 +475,7 @@ class CustomHotCorner extends Layout.HotCorner {
             _actorsCollector.push(this._actorV);
             this._actors.push(this._actorV);
         }
-
+        // Fallback hot corners as a part of base actor
         if (! global.display.supports_extended_barriers() || _barrierFallback) {
             let fSize = 2;
             this._cornerActor = new Clutter.Actor({
@@ -493,7 +497,7 @@ class CustomHotCorner extends Layout.HotCorner {
             this._cornerActor.connect('button-press-event', () => {return Clutter.EVENT_PROPAGATE});
             this._cornerActor.connect('scroll-event', () => {return Clutter.EVENT_PROPAGATE});
             this._actors.push(this._cornerActor);
-            _actorsCollector.push(this._cornerActor);
+            //_actorsCollector.push(this._cornerActor);
         }
     }
 
@@ -508,9 +512,9 @@ class CustomHotCorner extends Layout.HotCorner {
     }
 
     _shouldCreateActor() {
-        let answer = null;
+        let answer = false;
         for (let trigger of listTriggers) {
-            if (trigger === Triggers.PRESSURE && global.display.supports_extended_barriers()) {
+            if (trigger === Triggers.PRESSURE && (global.display.supports_extended_barriers() && ! _barrierFallback)) {
                 continue;
             }
             answer = answer || (this._corner.action[trigger] !== 'disabled');
@@ -580,8 +584,8 @@ class CustomHotCorner extends Layout.HotCorner {
     }
 
     _runAction(trigger) {
-        if (_actionTimeoutActive(trigger) && 
-            !(['volumeUp','volumeDown'].includes(this._corner.action[trigger]))
+        if ( (_actionTimeoutActive(trigger) && !(['volumeUp','volumeDown'].includes(this._corner.action[trigger])))
+            || this._corner.action[trigger] == 'disabled'
             ) return;
         this._actionFunction = this.m.get(this._corner.action[trigger]) || function () {};
         if (    (!this._monitor.inFullscreen) ||
@@ -682,7 +686,12 @@ class CustomHotCorner extends Layout.HotCorner {
         global.display.get_tab_list(0, null)[0].minimize();
     }
     _restartGnomeShell() {
-        Meta.restart(_('Restarting Gnome Shell ...'));
+        if (!Meta.is_wayland_compositor()) {
+            Meta.restart(_('Restarting Gnome Shell ...'));
+        }
+        else {
+            Main.notify(Me.metadata.name, _('Gnome Shell - Restart is unavailable in Wayland session'));
+        }
     }
     _volumeUp() {
         let volumeControl = Volume.getMixerControl();

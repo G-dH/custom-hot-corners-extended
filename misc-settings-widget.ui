@@ -25,7 +25,7 @@
         <property name="halign">start</property>
         <property name="valign">start</property>
         <property name="label" translatable="yes">Enable all corner triggers in fullscreen mode
-&lt;small&gt;(when off, each trigger can be set independently)&lt;/small&gt;</property>
+&lt;small&gt;(When off, each trigger can be set independently)&lt;/small&gt;</property>
         <property name="use_markup">True</property>
       </object>
       <packing>
@@ -51,8 +51,8 @@
         <property name="can_focus">False</property>
         <property name="halign">start</property>
         <property name="valign">center</property>
-        <property name="label" translatable="yes">Minimum delay between trigger events (ms)
-&lt;small&gt;(prevents accidental double-action)&lt;/small&gt;</property>
+        <property name="label" translatable="yes">Minimum delay between actions (ms)
+&lt;small&gt;(Prevents accidental double-action. Ignored by volume control)&lt;/small&gt;</property>
         <property name="use_markup">True</property>
       </object>
       <packing>
@@ -160,7 +160,7 @@
         <property name="halign">start</property>
         <property name="valign">start</property>
         <property name="label" translatable="yes">Delay extension activation
-&lt;small&gt;(try to avoid potential hot corners overrides from other extensions)&lt;/small&gt;</property>
+&lt;small&gt;(Try to avoid potential hot corners overrides from other extensions)&lt;/small&gt;</property>
         <property name="use_markup">True</property>
       </object>
       <packing>
@@ -187,7 +187,7 @@
         <property name="halign">start</property>
         <property name="valign">center</property>
         <property name="label" translatable="yes">Make active corners / edges visible
-&lt;small&gt;(pressure barriers are not included)&lt;/small&gt;</property>
+&lt;small&gt;(Pressure barriers are not included)&lt;/small&gt;</property>
         <property name="use_markup">True</property>
       </object>
       <packing>
@@ -214,7 +214,7 @@
         <property name="halign">start</property>
         <property name="valign">center</property>
         <property name="label" translatable="yes">Use fallback hot corner triggers
-&lt;small&gt;(when pressure barriers don't work, on VBox guest for example)&lt;/small&gt;</property>
+&lt;small&gt;(When pressure barriers don't work, on VBox guest for example)&lt;/small&gt;</property>
         <property name="use_markup">True</property>
       </object>
       <packing>

@@ -32,7 +32,7 @@
   </schema>
   <schema id='org.gnome.shell.extensions.custom-hot-corners-extended.misc'>
     <key name='delay-start' type='b'>
-      <default>false</default>
+      <default>true</default>
     </key>
     <key name='fullscreen-global' type='b'>
       <default>false</default>
