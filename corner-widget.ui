@@ -8,33 +8,6 @@
     <property name="step_increment">1</property>
     <property name="page_increment">10</property>
   </object>
-  <object class="GtkGrid" id="disableCornerGrid">
-    <property name="visible">True</property>
-    <property name="can_focus">False</property>
-    <property name="valign">center</property>
-    <child>
-      <object class="GtkLabel">
-        <property name="visible">True</property>
-        <property name="can_focus">False</property>
-        <property name="label" translatable="yes">Disable Corner</property>
-      </object>
-      <packing>
-        <property name="left_attach">0</property>
-        <property name="top_attach">0</property>
-      </packing>
-    </child>
-    <child>
-      <object class="GtkSwitch" id="disableCornerSwitch">
-        <property name="can_focus">True</property>
-        <property name="halign">end</property>
-        <property name="valign">center</property>
-      </object>
-      <packing>
-        <property name="left_attach">1</property>
-        <property name="top_attach">0</property>
-      </packing>
-    </child>
-  </object>
   <object class="GtkGrid" id="expandGrid">
     <property name="name">expandGrid</property>
     <property name="visible">True</property>
@@ -272,7 +245,6 @@
               <item id="showApplications" translatable="yes">Show Applications</item>
               <item id="showDesktop" translatable="yes">Show Desktop</item>
               <item id="runCommand" translatable="yes">Run Command</item>
-              <item id="runCommandNotify" translatable="yes">Run Command - output to notification</item>
               <item id="prevWorkspace" translatable="yes">Previous Workspace</item>
               <item id="nextWorkspace" translatable="yes">Next Workspace</item>
               <item id="recentWS" translatable="yes">Recent Workspace</item>

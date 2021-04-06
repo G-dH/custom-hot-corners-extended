@@ -214,7 +214,7 @@
         <property name="halign">start</property>
         <property name="valign">center</property>
         <property name="label" translatable="yes">Use fallback hot corner triggers
-&lt;small&gt;(When pressure barriers don't work, on VBox guest for example)&lt;/small&gt;</property>
+&lt;small&gt;(When pressure barriers don't work, on virtual systems for example)&lt;/small&gt;</property>
         <property name="use_markup">True</property>
       </object>
       <packing>

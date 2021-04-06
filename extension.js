@@ -15,30 +15,31 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-const Clutter = imports.gi.Clutter;
-const St = imports.gi.St;
-const Meta = imports.gi.Meta;
-const Shell = imports.gi.Shell;
-const GObject = imports.gi.GObject;
-const GLib = imports.gi.GLib;
-const Lang = imports.lang;
+const Clutter                = imports.gi.Clutter;
+const St                     = imports.gi.St;
+const Meta                   = imports.gi.Meta;
+const Shell                  = imports.gi.Shell;
+const GObject                = imports.gi.GObject;
+const GLib                   = imports.gi.GLib;
 
-const ExtensionUtils = imports.misc.extensionUtils;
-const Me = ExtensionUtils.getCurrentExtension();
-const Settings = Me.imports.settings;
-const Prefs = Me.imports.prefs;
-const Workspace = imports.ui.workspace;
-const Main = imports.ui.main;
-const Layout = imports.ui.layout;
-const Ripples = imports.ui.ripples;
-const Util = imports.misc.util;
+const Workspace              = imports.ui.workspace;
+const Main                   = imports.ui.main;
+const Layout                 = imports.ui.layout;
+const Ripples                = imports.ui.ripples;
 const WorkspaceSwitcherPopup = imports.ui.workspaceSwitcherPopup;
-const SystemActions = imports.misc.systemActions;
-const Volume = imports.ui.status.volume;
-const ExtManager = Main.extensionManager;
+const Volume                 = imports.ui.status.volume;
 
-const listTriggers = Settings.listTriggers();
-const Triggers = Settings.Triggers;
+const ExtensionUtils         = imports.misc.extensionUtils;
+const SystemActions          = imports.misc.systemActions;
+const Util                   = imports.misc.util;
+
+const ExtManager             = Main.extensionManager;
+const Me                     = ExtensionUtils.getCurrentExtension();
+const Settings               = Me.imports.settings;
+const Prefs                  = Me.imports.prefs;
+
+const listTriggers           = Settings.listTriggers();
+const Triggers               = Settings.Triggers;
 
 let _origUpdateHotCorners;
 let _cornersCollector;
@@ -67,17 +68,17 @@ let _barrierFallback;
 
 function init() {
     _origUpdateHotCorners = Main.layoutManager._updateHotCorners;
-    _timeoutsCollector = [];
-    _cornersCollector = [];
-    _actorsCollector = [];
-    _actionTimeoutId = null;
-    _minimizedWindows = [];
-    _signalsCollector = [];
-    _lastWorkspace = -1;
-    _currentWorkspace = -1;
-    _dimmerActors = [];
-    _extensionEnabled = false;
-    _barrierFallback = false;
+    _timeoutsCollector    = [];
+    _cornersCollector     = [];
+    _actorsCollector      = [];
+    _actionTimeoutId      = null;
+    _minimizedWindows     = [];
+    _signalsCollector     = [];
+    _lastWorkspace        = -1;
+    _currentWorkspace     = -1;
+    _dimmerActors         = [];
+    _extensionEnabled     = false;
+    _barrierFallback      = false;
 }
 
 function enable() {
@@ -198,8 +199,8 @@ function _setExpansionLimits(corners) {
     for (let i = 0; i < corners.length; i++) {
         let prevCorner = (i + corners.length-1) % corners.length;
         let nextCorner = (i + 1) % corners.length;
-        prevCorner = corners[cornerOrder[prevCorner]];
-        nextCorner = corners[cornerOrder[nextCorner]];
+            prevCorner = corners[cornerOrder[prevCorner]];
+            nextCorner = corners[cornerOrder[nextCorner]];
         let corner = corners[cornerOrder[i]];
         if ((corner.left && prevCorner.left) || (!corner.left && !prevCorner.left)) {
             corner.fullExpandVertical   = (prevCorner.vExpand) ? false : true;
@@ -260,7 +261,7 @@ function _rebuildHotCorner(corner) {
 function _destroyHotCorner(corner) {
     let hc=Main.layoutManager.hotCorners;
     for (let i = 0; i < hc.length; i++) {
-        if (hc[i]._corner.top === corner.top &&
+        if (hc[i]._corner.top  === corner.top &&
             hc[i]._corner.left === corner.left &&
             hc[i]._corner.monitorIndex === corner.monitorIndex) {
                 for (let a of Main.layoutManager.hotCorners[i]._actors) {
@@ -282,10 +283,10 @@ class CustomHotCorner extends Layout.HotCorner {
     _init(corner) {
         let monitor = Main.layoutManager.monitors[corner.monitorIndex];
         super._init(Main.layoutManager, monitor, corner.x, corner.y);
-        this._corner = corner;
+        this._corner  = corner;
         this._monitor = monitor;
+        this._actors  = [];
         this._corner.hotCornerExists = true;
-        this._actors = [];
 
         this.m = new Map([
             ['toggleOverview',  this._toggleOverview          ],
@@ -328,7 +329,7 @@ class CustomHotCorner extends Layout.HotCorner {
         this.setBarrierSize(corner.barrierSize, false);
 
         if (this._corner.action[Triggers.PRESSURE] !== 'disabled' && !_barrierFallback) {
-            this._pressureBarrier.connect('trigger', this._onPressureTriggerd.bind(this));
+            this._pressureBarrier.connect('trigger', this._onPressureTriggered.bind(this));
 
         } 
         this._setupCornerActorsIfNeeded(Main.layoutManager);
@@ -389,17 +390,15 @@ class CustomHotCorner extends Layout.HotCorner {
         for (let c of Main.layoutManager.hotCorners) {
             if (this._corner.x + 1 === c._corner.x) {
                 x =  true;
-                break;
             }
             if (this._corner.y + 1 === c._corner.y) {
                 y =  true;
-                break;
             }
         }
         return {'x': x,'y': y};
     }
 
-    // Overridden to allow all 4 monitor corners
+    // Overridden original function
     _setupCornerActorsIfNeeded(layoutManager) {
         let shouldCreateActor = this._shouldCreateActor();
         if (!(shouldCreateActor || this._corner.hExpand || this._corner.vExpand)) {
@@ -416,8 +415,8 @@ class CustomHotCorner extends Layout.HotCorner {
             hSize = this._corner.fullExpandHorizontal ? geometry.width / 8 * 7 : geometry.width / 2 - 5;
             vSize = this._corner.fullExpandVertical ? geometry.height / 8 * 7 : geometry.height / 2 - 5;
         }
-        // the corner's reactive area can be expanded to the half of the display horizontaly and/or verticaly
-        // if only vertical expansion needed, only one actor will be created
+        // the corner's reactive area can be expanded horizontaly and/or verticaly
+        // if only one expansion is needed, only one actor will be created
         if (v && !h) {
             hSize = aSize;
             aSize = vSize;
@@ -449,7 +448,7 @@ class CustomHotCorner extends Layout.HotCorner {
         _actorsCollector.push(this._actor);
         this._actors.push(this._actor);
 
-        // to expand clickable area in both axes make second actor
+        // to expand clickable area in both axis make second actor
         if (v && h) {
             this._actorV = new Clutter.Actor ({
                 name: 'hot-corner-v',
@@ -476,7 +475,8 @@ class CustomHotCorner extends Layout.HotCorner {
             this._actors.push(this._actorV);
         }
         // Fallback hot corners as a part of base actor
-        if (! global.display.supports_extended_barriers() || _barrierFallback) {
+        if ( this._corner.action[Triggers.PRESSURE] !== 'disabled' &&
+             (! global.display.supports_extended_barriers() || _barrierFallback) ) {
             let fSize = 2;
             this._cornerActor = new Clutter.Actor({
                 name: 'hot-corner',
@@ -500,7 +500,6 @@ class CustomHotCorner extends Layout.HotCorner {
             //_actorsCollector.push(this._cornerActor);
         }
     }
-
     _connectActorEvents(actor) {
         if (this._shouldConnect([Triggers.BUTTON_PRIMARY, Triggers.BUTTON_SECONDARY, Triggers.BUTTON_MIDDLE])) {
             actor.connect('button-press-event', this._onCornerClicked.bind(this));
@@ -510,7 +509,6 @@ class CustomHotCorner extends Layout.HotCorner {
         }
 
     }
-
     _shouldCreateActor() {
         let answer = false;
         for (let trigger of listTriggers) {
@@ -521,7 +519,6 @@ class CustomHotCorner extends Layout.HotCorner {
         }
         return answer;
     }
-
     _shouldConnect(signals) {
         let answer = null;
         for (let trigger of listTriggers) {
@@ -531,21 +528,17 @@ class CustomHotCorner extends Layout.HotCorner {
         }
         return answer;
     }
-
     _rippleAnimation() {
         this._ripples.playAnimation(this._corner.x, this._corner.y);
     }
-
     // Overridden to allow running custom actions
     _onCornerEntered() {
-            this._runAction(Triggers.PRESSURE);
+        this._runAction(Triggers.PRESSURE);
         return Clutter.EVENT_PROPAGATE;
     }
-
-    _onPressureTriggerd (actor, event) {
+    _onPressureTriggered (actor, event) {
         this._runAction(Triggers.PRESSURE);
     }
-
     _onCornerClicked(actor, event) {
         let button = event.get_button();
         let trigger;
@@ -582,7 +575,6 @@ class CustomHotCorner extends Layout.HotCorner {
         this._runAction(trigger);
         return Clutter.EVENT_STOP;
     }
-
     _runAction(trigger) {
         if ( (_actionTimeoutActive(trigger) && !(['volumeUp','volumeDown'].includes(this._corner.action[trigger])))
             || this._corner.action[trigger] == 'disabled'
@@ -690,29 +682,17 @@ class CustomHotCorner extends Layout.HotCorner {
             Meta.restart(_('Restarting Gnome Shell ...'));
         }
         else {
-            Main.notify(Me.metadata.name, _('Gnome Shell - Restart is unavailable in Wayland session'));
+            Main.notify(Me.metadata.name, _('Gnome Shell - Restart is unavailable in Wayland session' ));
         }
     }
     _volumeUp() {
-        let volumeControl = Volume.getMixerControl();
-        let volume = volumeControl.get_default_sink().volume;
-        let max = volumeControl.get_vol_max_norm();
-        let step = 2048;
-        volume = volume + step > max ? max : volume + step;
-        volumeControl.get_default_sink().volume = volume;
-        volumeControl.get_default_sink().push_volume();
+        _adjustVolume(1);
     }
     _volumeDown() {
-        let volumeControl = Volume.getMixerControl();
-        let volume = volumeControl.get_default_sink().volume;
-        let step = 2048;
-        volume = volume - step ? volume - step : 0;
-        volumeControl.get_default_sink().volume = volume;
-        volumeControl.get_default_sink().push_volume();
+        _adjustVolume(-1);
     }
     _toggleMute() {
-        let sink = Volume.getMixerControl().get_default_sink();
-        sink.change_is_muted(!sink.is_muted);
+        _adjustVolume(0);
     }
     _showPrefs() {
         ExtManager.openExtensionPrefs(Me.metadata.uuid, '', {});
@@ -727,6 +707,41 @@ class CustomHotCorner extends Layout.HotCorner {
     }
 });
 
+function _removeActionTimeout() {
+    _timeoutsCollector.splice(_timeoutsCollector.indexOf(_actionTimeoutId));
+    _actionTimeoutId = null;
+    return false;
+}
+
+function _notValidScroll(direction) {
+    if (direction === Clutter.ScrollDirection.SMOOTH) return true;
+    return false;
+}
+
+function _connectRecentWorkspace() {
+    _signalsCollector.push((global.workspace_manager).connect('workspace-switched', function(display, prev, current, direction) {
+        if (current !== _currentWorkspace) {
+            _lastWorkspace = _currentWorkspace;
+            _currentWorkspace = current;
+    }
+  }));
+}
+
+function _actionTimeoutActive(trigger) {
+    if (_actionTimeoutId)
+        return true;
+
+   _actionTimeoutId = GLib.timeout_add(
+            GLib.PRIORITY_DEFAULT,
+            _actionEventDelay,
+            _removeActionTimeout
+        );
+    _timeoutsCollector.push(_actionTimeoutId);
+    return false;
+}
+
+// Action functions
+//////////////////////////////////////////////////////////////////////////////////////////
 
 function _togleShowDesktop() {
     if (Main.overview.visible) return;
@@ -801,38 +816,6 @@ function _switchWorkspace(direction) {
         return Clutter.EVENT_STOP;
 }
 
-function _actionTimeoutActive(trigger) {
-    if (_actionTimeoutId)
-        return true;
-
-   _actionTimeoutId = GLib.timeout_add(
-            GLib.PRIORITY_DEFAULT,
-            _actionEventDelay,
-            _removeActionTimeout
-        );
-    _timeoutsCollector.push(_actionTimeoutId);
-    return false;
-}
-
-function _removeActionTimeout() {
-    _timeoutsCollector.splice(_timeoutsCollector.indexOf(_actionTimeoutId));
-    _actionTimeoutId = null;
-    return false;
-}
-
-function _notValidScroll(direction) {
-    if (direction === Clutter.ScrollDirection.SMOOTH) return true;
-    return false;
-}
-
-function _connectRecentWorkspace() {
-    _signalsCollector.push((global.workspace_manager).connect('workspace-switched', function(display, prev, current, direction) {
-        if (current !== _currentWorkspace) {
-            _lastWorkspace = _currentWorkspace;
-            _currentWorkspace = current;
-    }
-  }));
-}
 
 function _switchWindow(direction, wsOnly=true) {
     let workspaceManager = global.workspace_manager;
@@ -869,15 +852,28 @@ function _switchWindow(direction, wsOnly=true) {
     windows[targetIdx].activate(global.get_current_time());
 }
 
-function _setMonitorsContrast(direction) {
-
+function _adjustVolume(direction) {
+    let mixerControl = Volume.getMixerControl();
+    let sink = mixerControl.get_default_sink();
+    if (direction === 0) {
+        sink.change_is_muted(!sink.is_muted);
+    }
+    else {
+        let volume = sink.volume;
+        let max = mixerControl.get_vol_max_norm();
+        let step = direction * 2048;
+        volume = volume + step;
+        if (volume > max) volume = max;
+        if (volume <   0) volume = 0;
+        sink.volume = volume;
+        sink.push_volume();
+    }
 }
 
-//Code taken from True color invert extension
-//***********************************************************
-const TrueInvertEffect = new Lang.Class({
-    Name: 'TrueInvertEffect',
-    Extends: Clutter.ShaderEffect,
+//Code taken from (and compatible with) True color invert extension
+/////////////////////////////////////////////////////////////////////
+const TrueInvertEffect = GObject.registerClass(
+class TrueInvertEffect extends Clutter.ShaderEffect {
 
     vfunc_get_static_shader_source() {
         return `
@@ -909,11 +905,11 @@ const TrueInvertEffect = new Lang.Class({
                 cogl_color_out = c;
             }
         `;
-    },
+    }
 
     vfunc_paint_target(paint_context) {
         this.set_uniform_value("tex", 0);
-        this.parent(paint_context);
+        super.vfunc_paint_target(paint_context);
     }
 });
 
@@ -939,7 +935,7 @@ function _disableEffects() {
             actor.remove_effect_by_name('invert-color');
         });
 }
-//***********************************************************
+/////////////////////////////////////////////////////////
 
 function _toggleDimmMonitors(alpha, text) {
     if (!_dimmerActors.length) {
@@ -957,18 +953,20 @@ function _toggleDimmMonitors(alpha, text) {
                 reactive: true
             });
             actor.connect('button-press-event', () => _destroyDimmerActors());
+            //global.stage.add_actor(actor);  // actor added like this is transparent for the mouse pointer events
             Main.layoutManager.addChrome(actor);
             _dimmerActors.push(actor);
         }
     }
     else {
         _destroyDimmerActors();
+    }
+
 }
 
-    }
 function _destroyDimmerActors() {
     for (let actor of _dimmerActors) {
         actor.destroy();
     }
-    _dimmerActors = [];   
+    _dimmerActors = [];
 }
