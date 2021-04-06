@@ -1,6 +1,6 @@
 {
-    "description": "Customizable hot corners/edges.",
-    "shell-version": ["3.36"],
+    "description": "Extended version of Customizable hot corners can expand corners along the monitor's edges, use mouse buttons and wheel, and provides a lots of actions.",
+    "shell-version": ["3.36", "3.38"],
     "name": "Custom Hot Corners - Extended",
     "uuid": "@uuid@",
     "settings-schema": "org.gnome.shell.extensions.@PACKAGE_NAME@",
