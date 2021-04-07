@@ -250,6 +250,8 @@
               <item id="recentWS" translatable="yes">Recent Workspace</item>
               <item id="moveToWorkspace" translatable="yes">Move to Workspace #</item>
               <item id="recentWin" translatable="yes">Recent Window (Alt+Tab)</item>
+              <item id="prevWinWsMon" translatable="yes">Previous Window (current WS &amp; monitor)</item>
+              <item id="nextWinWsMon" translatable="yes">Next Window (current WS &amp; monitor)</item>
               <item id="prevWinWS" translatable="yes">Previous Window (current WS)</item>
               <item id="nextWinWS" translatable="yes">Next Window (current WS)</item>
               <item id="prevWinAll" translatable="yes">Previous Window (all)</item>
@@ -263,9 +265,9 @@
               <item id="powerOff" translatable="yes">Power Off Dialog</item>
               <item id="logout" translatable="yes">Log Out Dialog</item>
               <item id="switchUser" translatable="yes">Switch User (if exists)</item>
-              <item id="volumeUp" translatable="yes">Volume Up (Sound)</item>
-              <item id="volumeDown" translatable="yes">Volume Down (Sound)</item>
-              <item id="muteAudio" translatable="yes">Mute (Sound)</item>
+              <item id="volumeUp" translatable="yes">Volume Up</item>
+              <item id="volumeDown" translatable="yes">Volume Down</item>
+              <item id="muteAudio" translatable="yes">Mute</item>
               <item id="brightnessInvert" translatable="yes">Invert Window (True Color Invert)</item>
               <item id="lookingGlass" translatable="yes">Looking Glass (GS debugger)</item>
               <item id="restartShell" translatable="yes">Restart Gnome Shell (X11 only)</item>
@@ -315,7 +317,7 @@
             <property name="can_focus">True</property>
             <property name="valign">center</property>
             <property name="margin_top">8</property>
-            <property name="text" translatable="yes">1</property>
+            <property name="text">1</property>
             <property name="xalign">0.5</property>
             <property name="input_purpose">digits</property>
             <property name="adjustment">workspaceIndexAdjustment</property>

@@ -305,6 +305,8 @@ class CustomHotCorner extends Layout.HotCorner {
             ['recentWS',        this._moveToRecentWorkspace   ],
             ['prevWinWS',       this._switchPrevWindowWS      ],
             ['nextWinWS',       this._switchNextWindowWS      ],
+            ['prevWinWsMon',    this._switchPrevWinWsMonitor  ],
+            ['nextWinWsMon',    this._switchNextWinWsMonitor  ],
             ['prevWinAll',      this._switchPrevWindow        ],
             ['nextWinAll',      this._switchNextWindow        ],
             ['recentWin',       this._recentWindow            ],
@@ -662,6 +664,13 @@ class CustomHotCorner extends Layout.HotCorner {
     _switchNextWindowWS() {
         _switchWindow(1, true);
     }
+    _switchPrevWinWsMonitor() {
+        _switchWindow(-1, true, this._corner.monitorIndex);
+    }
+
+    _switchNextWinWsMonitor() {
+        _switchWindow(1, true, this._corner.monitorIndex);
+    }
     _recentWindow() {
         global.display.get_tab_list(0, null)[1].activate(global.get_current_time());
     }
@@ -817,11 +826,12 @@ function _switchWorkspace(direction) {
 }
 
 
-function _switchWindow(direction, wsOnly=true) {
+function _switchWindow(direction, wsOnly=true, monitorIndex=null) {
     let workspaceManager = global.workspace_manager;
     let workspace = wsOnly ? workspaceManager.get_active_workspace() : null;
     // get all windows, skip-taskbar included
     let windows = global.display.get_tab_list(Meta.TabList.NORMAL_ALL, workspace);
+    if (monitorIndex !== null) windows = windows.filter(w => w.get_monitor() === monitorIndex);
     // when window with attached modal window is activated, focus shifts to modal window
     //  and switcher can stuck trying to activate same window again
     //  when these windows are next to each other in window list
@@ -830,7 +840,6 @@ function _switchWindow(direction, wsOnly=true) {
     let modals = windows.map(w => 
         w.get_transient_for() ? w.get_transient_for() : null
         ).filter((w, i, a) => w !==null && a.indexOf(w) == i);
-
     // filter out skip_taskbar windows and windows with modals
     // top modal windows should stay
     windows = windows.filter( w => modals.indexOf(w) && !w.is_skip_taskbar());
