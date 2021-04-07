@@ -17,15 +17,15 @@
 
 const {Gtk, Gdk, GLib, GObject} = imports.gi;
 
-const Gettext = imports.gettext.domain('custom-hot-corners-extended');
-const _ = Gettext.gettext;
-
 const ExtensionUtils = imports.misc.extensionUtils;
 const Me = ExtensionUtils.getCurrentExtension();
 const Settings = Me.imports.settings;
 const triggers = Settings.listTriggers();
 const triggerLabels = Settings.TriggerLabels;
 let notebook;
+
+const Gettext = imports.gettext.domain(Me.metadata['gettext-domain']);
+const _ = Gettext.gettext;
 
 function _loadUI(file) {
     const path = Me.dir.get_child(file).get_path();

@@ -20,6 +20,9 @@ const {GLib, Gio} = imports.gi;
 const ExtensionUtils = imports.misc.extensionUtils;
 const Me = ExtensionUtils.getCurrentExtension();
 
+const Gettext = imports.gettext.domain(Me.metadata['gettext-domain']);
+const _ = Gettext.gettext;
+
 var Triggers ={
     PRESSURE:         0,
     BUTTON_PRIMARY:   1,
@@ -31,12 +34,12 @@ var Triggers ={
 Object.freeze(Triggers);
 
 var TriggerLabels = [   
-    'Hot Corner',
-    'Primary Button',
-    'Secondary Button',
-    'Middle Button',
-    'Scroll Up',
-    'Scroll Down'
+    _('Hot Corner'),
+    _('Primary Button'),
+    _('Secondary Button'),
+    _('Middle Button'),
+    _('Scroll Up'),
+    _('Scroll Down')
 ];
 
 const _schema = 'org.gnome.shell.extensions.custom-hot-corners-extended';

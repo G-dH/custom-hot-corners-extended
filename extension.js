@@ -38,6 +38,9 @@ const Me                     = ExtensionUtils.getCurrentExtension();
 const Settings               = Me.imports.settings;
 const Prefs                  = Me.imports.prefs;
 
+const Gettext                = imports.gettext.domain(Me.metadata['gettext-domain']);
+const _                      = Gettext.gettext;
+
 const listTriggers           = Settings.listTriggers();
 const Triggers               = Settings.Triggers;
 
