@@ -19,6 +19,7 @@ const {Gtk, Gdk, GLib, GObject} = imports.gi;
 
 const Gettext = imports.gettext.domain('custom-hot-corners-extended');
 const _ = Gettext.gettext;
+
 const ExtensionUtils = imports.misc.extensionUtils;
 const Me = ExtensionUtils.getCurrentExtension();
 const Settings = Me.imports.settings;
@@ -28,7 +29,9 @@ let notebook;
 
 function _loadUI(file) {
     const path = Me.dir.get_child(file).get_path();
-    return Gtk.Builder.new_from_file(path);
+    let builder = Gtk.Builder.new_from_file(path);
+        builder.set_translation_domain(Me.metadata['gettext-domain']);
+    return builder;
 }
 
 function init() {
