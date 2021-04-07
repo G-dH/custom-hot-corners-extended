@@ -262,12 +262,12 @@
               <item id="suspend" translatable="yes">Suspend to RAM</item>
               <item id="powerOff" translatable="yes">Power Off Dialog</item>
               <item id="logout" translatable="yes">Log Out Dialog</item>
-              <item id="switchUser" translatable="yes">Switch User (if exist)</item>
+              <item id="switchUser" translatable="yes">Switch User (if exists)</item>
               <item id="volumeUp" translatable="yes">Volume Up (Sound)</item>
               <item id="volumeDown" translatable="yes">Volume Down (Sound)</item>
               <item id="muteAudio" translatable="yes">Mute (Sound)</item>
               <item id="brightnessInvert" translatable="yes">Invert Window (True Color Invert)</item>
-              <item id="lookingGlass" translatable="yes">Looking Glass (GS debuger)</item>
+              <item id="lookingGlass" translatable="yes">Looking Glass (GS debugger)</item>
               <item id="restartShell" translatable="yes">Restart Gnome Shell (X11 only)</item>
               <item id="prefs" translatable="yes">Open Preferences</item>
             </items>
