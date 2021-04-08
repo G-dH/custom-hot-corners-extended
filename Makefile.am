@@ -1,6 +1,6 @@
 ACLOCAL_AMFLAGS = -I m4
 
-SUBDIRS = schemas po
+SUBDIRS = schemas po icons
 EXTRA_DIST = settings.js extension.js metadata.json prefs.js corner-widget.ui misc-settings-widget.ui
 
 topextensiondir = $(datadir)/gnome-shell/extensions
