@@ -1,0 +1,310 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: \n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2021-04-07 21:22+0200\n"
+"PO-Revision-Date: 2021-04-08 17:19+0200\n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Poedit 2.3\n"
+"Last-Translator: \n"
+"Plural-Forms: nplurals=3; plural=(n==1 ? 0 : n>=2 && n<=4 ? 1 : 2);\n"
+"Language: cs_CZ\n"
+
+#: settings.js:37
+msgid "Hot Corner"
+msgstr "Tlak ukazatele myši"
+
+#: settings.js:38
+msgid "Primary Button"
+msgstr "Primární tlačítko"
+
+#: settings.js:39
+msgid "Secondary Button"
+msgstr "Sekundární tlačítko"
+
+#: settings.js:40
+msgid "Middle Button"
+msgstr "Prostřední tlačítko"
+
+#: settings.js:41
+msgid "Scroll Up"
+msgstr "Rolování nahoru"
+
+#: settings.js:42
+msgid "Scroll Down"
+msgstr "Rolování dolu"
+
+#: extension.js:787
+msgid "Restarting Gnome Shell ..."
+msgstr "Restartuji Gnome Shell ..."
+
+#: extension.js:790
+msgid "Gnome Shell - Restart is unavailable in Wayland session"
+msgstr "Gnome Shell - restart není pod Waylandem možný"
+
+#: misc-settings-widget.ui.h:1
+msgid ""
+"Enable all corner triggers in fullscreen mode\n"
+"<small>(When off, each trigger can be set independently)</small>"
+msgstr ""
+"Povolit všechny rohy v celoobrazovkovém režimu\n"
+"<small>(Pokud ne, každý spouštěč může být nastaven zvlášť)</small>"
+
+#: misc-settings-widget.ui.h:3
+msgid ""
+"Minimum delay between actions (ms)\n"
+"<small>(Prevents accidental double-action. Ignored by volume control)</small>"
+msgstr ""
+"Minimální prodleva mezi akcemi (ms)\n"
+"<small>(Předchází náhodné vícenásobné aktivaci. Ignorováno ovládáním "
+"hlasitosti)</small>"
+
+#: misc-settings-widget.ui.h:5
+msgid "Show ripple animations"
+msgstr "Zobrazovat vlnité animace při spuštění akce"
+
+#: misc-settings-widget.ui.h:6
+msgid "        Skip minimized"
+msgstr "        Vynechávat minimalizované"
+
+#: misc-settings-widget.ui.h:7
+msgid "        Wraparound"
+msgstr "        Cyklovat"
+
+#: misc-settings-widget.ui.h:8
+msgid ""
+"Delay extension activation\n"
+"<small>(Try to avoid potential hot corners overrides from other extensions)</"
+"small>"
+msgstr ""
+"Zpozdit aktivaci rozšíření\n"
+"<small>(Pokusit se vyhnout potenciálnímu přepsání nastavení rohů jiným "
+"rozšířením při startu GS)</small>"
+
+#: misc-settings-widget.ui.h:10
+msgid ""
+"Make active corners / edges visible\n"
+"<small>(Pressure barriers are not included)</small>"
+msgstr ""
+"Ukázat aktivní rohy a okraje\n"
+"<small>(Nezobrazuje tlakové bariéry)</small>"
+
+#: misc-settings-widget.ui.h:12
+msgid ""
+"Use fallback hot corner triggers\n"
+"<small>(When pressure barriers don't work, on virtual systems for example)</"
+"small>"
+msgstr ""
+"Použít záložní horké rohy\n"
+"<small>(Pro případ, že tlakové bariéry nefungují, například na "
+"virtualizovaných systémech)</small>"
+
+#: misc-settings-widget.ui.h:14
+msgid "<b>Window switcher:</b>"
+msgstr "<b>Přepínač oken:</b>"
+
+#: misc-settings-widget.ui.h:15
+msgid "<b>Workspace switcher:</b>"
+msgstr "<b>Přepínač pracovních ploch:</b>"
+
+#: misc-settings-widget.ui.h:16
+msgid "        Ignore last (empty) workspace"
+msgstr "        Ignorovat poslední (prázdnou) plochu"
+
+#: misc-settings-widget.ui.h:17
+msgid "        Show workspace indicator while switching"
+msgstr "        Zobrazovat indikátor ploch při přepínání"
+
+#: prefs.js:166
+msgid "Top"
+msgstr "Horní"
+
+#: prefs.js:166
+msgid "Bottom"
+msgstr "Dolní"
+
+#: prefs.js:166
+msgid "Left"
+msgstr "Levý"
+
+#: prefs.js:166
+msgid "Right"
+msgstr "Pravý"
+
+#: prefs.js:171
+msgid "Monitor"
+msgstr "Monitor"
+
+#: prefs.js:175
+msgid "Options"
+msgstr "Volby"
+
+#: prefs.js:334
+msgid "Choose Application"
+msgstr "Vyber aplikaci"
+
+#: corner-widget.ui.h:1
+msgid "Horizonataly:"
+msgstr "Horizontálně:"
+
+#: corner-widget.ui.h:2
+msgid "Verticaly:"
+msgstr "Vertikálně:"
+
+#: corner-widget.ui.h:3
+msgid ""
+"Expand corner along edge (for clicks and scrolls only):\n"
+"<small>(For visualisation activate 'Make active corners / edges visible' "
+"option)</small>"
+msgstr ""
+"Roztáhnout rohy podél okraje monitoru\n"
+"<small>(Pro vizualizaci můžete aktivovat volbu 'Ukázat aktivní rohy a "
+"okraje'</small>"
+
+#: corner-widget.ui.h:5
+msgid "Enable in fullscreen mode"
+msgstr "Povolit v celoobrazovkovém režimu"
+
+#: corner-widget.ui.h:6
+msgid "Barrier size"
+msgstr "Velikost tlakové bariéry"
+
+#: corner-widget.ui.h:7
+msgid "Pressure Threshold"
+msgstr "Práh tlaku"
+
+#: corner-widget.ui.h:8
+msgid "-"
+msgstr ""
+
+#: corner-widget.ui.h:9
+msgid "Show Activities (Overview)"
+msgstr "Zobrazit Činnosti"
+
+#: corner-widget.ui.h:10
+msgid "Show Applications"
+msgstr "Nabídka aplikací"
+
+#: corner-widget.ui.h:11
+msgid "Show Desktop"
+msgstr "Ukázat pracovní plochu"
+
+#: corner-widget.ui.h:12
+msgid "Run Command"
+msgstr "Spustit příkaz"
+
+#: corner-widget.ui.h:13
+msgid "Previous Workspace"
+msgstr "Předchozí pracovní plocha"
+
+#: corner-widget.ui.h:14
+msgid "Next Workspace"
+msgstr "Následující pracovní plocha"
+
+#: corner-widget.ui.h:15
+msgid "Recent Workspace"
+msgstr "Nedávná pracovní plocha"
+
+#: corner-widget.ui.h:16
+msgid "Move to Workspace #"
+msgstr "Aktivovat pracovní plochu číslo"
+
+#: corner-widget.ui.h:17
+msgid "Recent Window (Alt+Tab)"
+msgstr "Předešlé aktivní okno (Alt+Tab)"
+
+#: corner-widget.ui.h:18
+msgid "Previous Window (current WS & monitor)"
+msgstr "Předchozí okno (aktuální plocha a monitor)"
+
+#: corner-widget.ui.h:19
+msgid "Next Window (current WS & monitor)"
+msgstr "Následující okno (aktuální plocha a monitor)"
+
+#: corner-widget.ui.h:20
+msgid "Previous Window (current WS)"
+msgstr "Předchozí okno (aktuální plocha)"
+
+#: corner-widget.ui.h:21
+msgid "Next Window (current WS)"
+msgstr "Následující okno (aktuální plocha)"
+
+#: corner-widget.ui.h:22
+msgid "Previous Window (all)"
+msgstr "Předchozí okno (všechna)"
+
+#: corner-widget.ui.h:23
+msgid "Next Window (all)"
+msgstr "Následující okno (všechna)"
+
+#: corner-widget.ui.h:24
+msgid "Close Active Window"
+msgstr "Zavřít aktivní okno"
+
+#: corner-widget.ui.h:25
+msgid "Toggle Maximize Active Window"
+msgstr "Přepnout maximalizaci aktivního okna"
+
+#: corner-widget.ui.h:26
+msgid "Minimize Active Window"
+msgstr "Minimalizovat aktivní okno"
+
+#: corner-widget.ui.h:27
+msgid "Black Screen"
+msgstr "Černá obrazovka"
+
+#: corner-widget.ui.h:28
+msgid "Lock Screen"
+msgstr "Zamknout obrazovku"
+
+#: corner-widget.ui.h:29
+msgid "Suspend to RAM"
+msgstr "Uspat systém do paměti"
+
+#: corner-widget.ui.h:30
+msgid "Power Off Dialog"
+msgstr "Dialog vypnutí systému"
+
+#: corner-widget.ui.h:31
+msgid "Log Out Dialog"
+msgstr "Dialog odhlášení uživatele"
+
+#: corner-widget.ui.h:32
+msgid "Switch User (if exists)"
+msgstr "Přepnout uživatele (pokud existuje)"
+
+#: corner-widget.ui.h:33
+msgid "Volume Up"
+msgstr "Zvýšit hlasitost"
+
+#: corner-widget.ui.h:34
+msgid "Volume Down"
+msgstr "Snížit hlasitost"
+
+#: corner-widget.ui.h:35
+msgid "Mute"
+msgstr "Vypnout zvuk"
+
+#: corner-widget.ui.h:36
+msgid "Invert Window (True Color Invert)"
+msgstr "Invertovat jas okna (True Color Invert)"
+
+#: corner-widget.ui.h:37
+msgid "Looking Glass (GS debugger)"
+msgstr ""
+
+#: corner-widget.ui.h:38
+msgid "Restart Gnome Shell (X11 only)"
+msgstr "Restartovat Gnome Shell (pouze v X11 sezení)"
+
+#: corner-widget.ui.h:39
+msgid "Open Preferences"
+msgstr "Otevřít okno nastavení"
