@@ -20,7 +20,9 @@ const {GLib, Gio} = imports.gi;
 const ExtensionUtils = imports.misc.extensionUtils;
 const Me = ExtensionUtils.getCurrentExtension();
 
-const Gettext = imports.gettext.domain(Me.metadata['gettext-domain']);
+const Gettext = imports.gettext
+      Gettext.textdomain(Me.metadata['gettext-domain']);
+      Gettext.bindtextdomain(Me.metadata['gettext-domain'], Me.dir.get_child('locale').get_path());
 const _ = Gettext.gettext;
 
 var Triggers ={

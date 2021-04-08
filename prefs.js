@@ -18,19 +18,21 @@
 const {Gtk, Gdk, GLib, GObject} = imports.gi;
 
 const ExtensionUtils = imports.misc.extensionUtils;
-const Me = ExtensionUtils.getCurrentExtension();
-const Settings = Me.imports.settings;
-const triggers = Settings.listTriggers();
-const triggerLabels = Settings.TriggerLabels;
+const Me             = ExtensionUtils.getCurrentExtension();
+const Settings       = Me.imports.settings;
+const triggers       = Settings.listTriggers();
+const triggerLabels  = Settings.TriggerLabels;
 let notebook;
 
-const Gettext = imports.gettext.domain(Me.metadata['gettext-domain']);
+const Gettext = imports.gettext;
+      Gettext.textdomain(Me.metadata['gettext-domain']);
+      Gettext.bindtextdomain(Me.metadata['gettext-domain'], Me.dir.get_child('locale').get_path());
 const _ = Gettext.gettext;
+const N_ = function(e) { return e };
 
 function _loadUI(file) {
     const path = Me.dir.get_child(file).get_path();
     let builder = Gtk.Builder.new_from_file(path);
-        builder.set_translation_domain(Me.metadata['gettext-domain']);
     return builder;
 }
 
@@ -50,19 +52,19 @@ function buildPrefsWidget() {
     const cornerWidgets = [];
 
     const mscOptions = new Settings.MscOptions();
-    const msUI = _loadUI('misc-settings-widget.ui');
-    const miscUI = msUI.get_object('miscOptions');
-    const delayStartSwitch = msUI.get_object('delayStartSwitch');
-    const fullscreenGlobalSwitch = msUI.get_object('fullscreenGlobalSwitch');
-    const ignoreLastWsSwitch = msUI.get_object('ignoreLastWsSwitch');
-    const wrapWsSwitch = msUI.get_object('wrapWsSwitch');
-    const wsIndicatorSwitch = msUI.get_object('wsIndicatorSwitch');
+    const msUI       = _loadUI('misc-settings-widget.ui');
+    const miscUI                   = msUI.get_object('miscOptions');
+    const delayStartSwitch         = msUI.get_object('delayStartSwitch');
+    const fullscreenGlobalSwitch   = msUI.get_object('fullscreenGlobalSwitch');
+    const ignoreLastWsSwitch       = msUI.get_object('ignoreLastWsSwitch');
+    const wrapWsSwitch             = msUI.get_object('wrapWsSwitch');
+    const wsIndicatorSwitch        = msUI.get_object('wsIndicatorSwitch');
     const scrollEventsDelaySpinBtn = msUI.get_object('scrollEventsDelaySpinBtn');
-    const cornersVisibleSwitch = msUI.get_object('cornersVisibleSwitch');
-    const rippleAnimationSwitch = msUI.get_object('rippleAnimationSwitch');
-    const winWrapSwitch = msUI.get_object('winWrapSwitch');
-    const winSkipMinimizedSwitch = msUI.get_object('winSkipMinimizedSwitch');
-    const barrierFallbackSwitch = msUI.get_object('barrierFallbackSwitch');
+    const cornersVisibleSwitch     = msUI.get_object('cornersVisibleSwitch');
+    const rippleAnimationSwitch    = msUI.get_object('rippleAnimationSwitch');
+    const winWrapSwitch            = msUI.get_object('winWrapSwitch');
+    const winSkipMinimizedSwitch   = msUI.get_object('winSkipMinimizedSwitch');
+    const barrierFallbackSwitch    = msUI.get_object('barrierFallbackSwitch');
 
     delayStartSwitch.active = mscOptions.delayStart;
     delayStartSwitch.connect('notify::active', () => {
@@ -136,7 +138,7 @@ function buildPrefsWidget() {
                 expand: true,
                 column_homogeneous: true,
                 margin: 10,
-                row_spacing: 8,
+                row_spacing: 4,
                 column_spacing: 20
             });
         }
@@ -146,15 +148,25 @@ function buildPrefsWidget() {
         for (let i =0; i < corners.length; i++) {
             for (let trigger of triggers) {
                 const cw = _buildCornerWidget(corners[i], trigger);
-                const trgLabel = new Gtk.Label({
-                    label: `${triggerLabels[trigger]}`,
+                const trgIcon = new Gtk.Image({
+                    //label: `${triggerLabels[trigger]}`,
                     halign: Gtk.Align.START,
                     valign: Gtk.Align.START,
-                    margin_top: 8
+                    vexpand: true,
+                    hexpand: true,
+                    //pixel_size: 32
+                    margin_left: 10
                     //use_markup: true
                 });
-
-                grid[i].attach(trgLabel, 0, trigger, 1, 1);
+                let iconPath;
+                if (trigger === 0) {
+                    iconPath = `${Me.dir.get_path()}/icons/${corners[i].top ? 'Top':'Bottom'}${corners[i].left ? 'Left':'Right'}.svg`
+                } else {
+                    iconPath = `${Me.dir.get_path()}/icons/Mouse-${trigger}.svg`;
+                }
+                trgIcon.set_from_file(iconPath);
+                trgIcon.set_tooltip_text(triggerLabels[trigger]);
+                grid[i].attach(trgIcon, 0, trigger, 1, 1);
                 grid[i].attach(cw, 1, trigger, 3, 1);
             }
 
@@ -163,7 +175,9 @@ function buildPrefsWidget() {
 
         }
         for (let i =0; i < corners.length; i++){
-            const label = new Gtk.Label({ label: (corners[i].top ? _('Top') + ' ' : _('Bottom') +' ') + (corners[i].left ? _('Left') : _('Right')) });
+            //const label = new Gtk.Label({ label: (corners[i].top ? _('Top') + ' ' : _('Bottom') +' ') + (corners[i].left ? _('Left') : _('Right')) });
+            const label = new Gtk.Image();
+            label.set_from_file(`${Me.dir.get_path()}/icons/${corners[i].top ? 'Top':'Bottom'}${corners[i].left ? 'Left':'Right'}.svg`);
             triggersBook.append_page(grid[i], label);
 
 

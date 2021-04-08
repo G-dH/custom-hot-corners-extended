@@ -1,7 +1,27 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Generated with glade 3.22.2 -->
-<interface domain="custom-hot-corners">
+<!-- Generated with glade 3.22.2 
+
+Copyright (C) 
+
+This file is part of .
+
+ is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+ is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with .  If not, see <http://www.gnu.org/licenses/>.
+
+-->
+<interface domain="custom-hot-corners-extended">
   <requires lib="gtk+" version="3.20"/>
+  <!-- interface-license-type gplv3 -->
   <object class="GtkAdjustment" id="barrierAdjustment">
     <property name="lower">1</property>
     <property name="upper">500</property>
