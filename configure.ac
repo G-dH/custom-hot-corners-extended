@@ -19,5 +19,5 @@ AM_GNU_GETTEXT_VERSION([0.19])
 # Checks for typedefs, structures, and compiler characteristics.
 # Checks for library functions.
 
-AC_CONFIG_FILES([Makefile metadata.json schemas/Makefile po/Makefile.in])
+AC_CONFIG_FILES([Makefile metadata.json schemas/Makefile po/Makefile.in icons/Makefile])
 AC_OUTPUT
