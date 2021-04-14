@@ -1,7 +1,14 @@
 ACLOCAL_AMFLAGS = -I m4
 
 SUBDIRS = schemas po icons
-EXTRA_DIST = settings.js extension.js metadata.json prefs.js corner-widget.ui misc-settings-widget.ui
+EXTRA_DIST = settings.js \
+             extension.js \
+             metadata.json \
+             prefs.js \
+             corner-widget.ui \
+             misc-settings-widget.ui \
+             corner-widget-40.ui \
+             misc-settings-widget-40.ui
 
 topextensiondir = $(datadir)/gnome-shell/extensions
 extensiondir = $(topextensiondir)/$(uuid)
@@ -11,6 +18,8 @@ extension_DATA = settings.js \
                  prefs.js \
                  corner-widget.ui \
                  misc-settings-widget.ui \
+                 corner-widget-40.ui \
+                 misc-settings-widget-40.ui \
                  README.md \
                  LICENSE
 
