@@ -28,7 +28,6 @@ along with .  If not, see <http://www.gnu.org/licenses/>.
     <property name="page_increment">10</property>
   </object>
   <object class="GtkGrid" id="miscOptions">
-    <property name="can_focus">False</property>
     <property name="halign">start</property>
     <property name="valign">start</property>
     <property name="margin_left">10</property>

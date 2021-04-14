@@ -103,6 +103,14 @@ along with .  If not, see <http://www.gnu.org/licenses/>.
     <property name="step_increment">1</property>
     <property name="page_increment">10</property>
   </object>
+  <object class="GtkTreeStore" id="treestore">
+    <columns>
+      <!-- column-name actionID -->
+      <column type="gchararray"/>
+      <!-- column-name actionText -->
+      <column type="gchararray"/>
+    </columns>
+  </object>
   <object class="GtkAdjustment" id="workspaceIndexAdjustment">
     <property name="lower">1</property>
     <property name="upper">256</property>
@@ -253,53 +261,6 @@ along with .  If not, see <http://www.gnu.org/licenses/>.
         <property name="can_focus">False</property>
         <property name="valign">center</property>
         <child>
-          <object class="GtkComboBoxText" id="actionCombo">
-            <property name="visible">True</property>
-            <property name="can_focus">False</property>
-            <property name="valign">center</property>
-            <property name="hexpand">True</property>
-            <property name="active">0</property>
-            <items>
-              <item id="disabled" translatable="yes">-</item>
-              <item id="toggleOverview" translatable="yes">Show Activities (Overview)</item>
-              <item id="showApplications" translatable="yes">Show Applications</item>
-              <item id="showDesktop" translatable="yes">Show Desktop</item>
-              <item id="runCommand" translatable="yes">Run Command</item>
-              <item id="prevWorkspace" translatable="yes">Previous Workspace</item>
-              <item id="nextWorkspace" translatable="yes">Next Workspace</item>
-              <item id="recentWS" translatable="yes">Recent Workspace</item>
-              <item id="moveToWorkspace" translatable="yes">Move to Workspace #</item>
-              <item id="recentWin" translatable="yes">Recent Window (Alt+Tab)</item>
-              <item id="prevWinWsMon" translatable="yes">Previous Window (current WS &amp; monitor)</item>
-              <item id="nextWinWsMon" translatable="yes">Next Window (current WS &amp; monitor)</item>
-              <item id="prevWinWS" translatable="yes">Previous Window (current WS)</item>
-              <item id="nextWinWS" translatable="yes">Next Window (current WS)</item>
-              <item id="prevWinAll" translatable="yes">Previous Window (all)</item>
-              <item id="nextWinAll" translatable="yes">Next Window (all)</item>
-              <item id="closeWin" translatable="yes">Close Active Window</item>
-              <item id="maximizeWin" translatable="yes">Toggle Maximize Active Window</item>
-              <item id="minimizeWin" translatable="yes">Minimize Active Window</item>
-              <item id="blackScreen" translatable="yes">Black Screen</item>
-              <item id="screenLock" translatable="yes">Lock Screen</item>
-              <item id="suspend" translatable="yes">Suspend to RAM</item>
-              <item id="powerOff" translatable="yes">Power Off Dialog</item>
-              <item id="logout" translatable="yes">Log Out Dialog</item>
-              <item id="switchUser" translatable="yes">Switch User (if exists)</item>
-              <item id="volumeUp" translatable="yes">Volume Up</item>
-              <item id="volumeDown" translatable="yes">Volume Down</item>
-              <item id="muteAudio" translatable="yes">Mute</item>
-              <item id="brightnessInvert" translatable="yes">Invert Window (True Color Invert)</item>
-              <item id="lookingGlass" translatable="yes">Looking Glass (GS debugger)</item>
-              <item id="restartShell" translatable="yes">Restart Gnome Shell (X11 only)</item>
-              <item id="prefs" translatable="yes">Open Preferences</item>
-            </items>
-          </object>
-          <packing>
-            <property name="left_attach">0</property>
-            <property name="top_attach">0</property>
-          </packing>
-        </child>
-        <child>
           <object class="GtkMenuButton" id="settingsButton">
             <property name="visible">True</property>
             <property name="can_focus">True</property>
@@ -317,6 +278,20 @@ along with .  If not, see <http://www.gnu.org/licenses/>.
           </object>
           <packing>
             <property name="left_attach">1</property>
+            <property name="top_attach">0</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkComboBox" id="actionCombo">
+            <property name="visible">True</property>
+            <property name="can_focus">False</property>
+            <property name="hexpand">True</property>
+            <property name="model">treestore</property>
+            <property name="active">0</property>
+            <property name="id_column">0</property>
+          </object>
+          <packing>
+            <property name="left_attach">0</property>
             <property name="top_attach">0</property>
           </packing>
         </child>

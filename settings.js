@@ -20,10 +20,13 @@ const {GLib, Gio} = imports.gi;
 const ExtensionUtils = imports.misc.extensionUtils;
 const Me = ExtensionUtils.getCurrentExtension();
 
+const Config = imports.misc.config;
+var   shellVersion = Config.PACKAGE_VERSION;
+
 const Gettext = imports.gettext
       Gettext.textdomain(Me.metadata['gettext-domain']);
       Gettext.bindtextdomain(Me.metadata['gettext-domain'], Me.dir.get_child('locale').get_path());
-const _ = Gettext.gettext;
+var _ = Gettext.gettext;
 
 var Triggers ={
     PRESSURE:         0,

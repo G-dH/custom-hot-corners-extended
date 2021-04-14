@@ -1,0 +1,282 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<interface domain="custom-hot-corners-extended">
+  <requires lib="gtk" version="4.0"/>
+  <object class="GtkAdjustment" id="barrierAdjustment">
+    <property name="lower">1</property>
+    <property name="upper">500</property>
+    <property name="step_increment">1</property>
+    <property name="page_increment">10</property>
+  </object>
+  <object class="GtkGrid" id="expandGrid">
+    <property name="name">expandGrid</property>
+    <property name="valign">center</property>
+    <property name="margin-start">10</property>
+    <property name="margin-top">10</property>
+    <property name="margin-end">10</property>
+    <property name="margin-bottom">10</property>
+    <property name="row_spacing">4</property>
+    <property name="column_spacing">20</property>
+    <child>
+      <object class="GtkLabel" id="hExpandLabel">
+        <property name="can_focus">0</property>
+        <property name="halign">start</property>
+        <property name="valign">center</property>
+        <property name="margin_start">10</property>
+        <property name="label" translatable="yes">Horizonataly:</property>
+        <layout>
+          <property name="column">0</property>
+          <property name="row">1</property>
+        </layout>
+      </object>
+    </child>
+    <child>
+      <object class="GtkSwitch" id="hExpandSwitch">
+        <property name="halign">end</property>
+        <property name="valign">center</property>
+        <layout>
+          <property name="column">1</property>
+          <property name="row">1</property>
+        </layout>
+      </object>
+    </child>
+    <child>
+      <object class="GtkLabel" id="vExpandLabel">
+        <property name="can_focus">0</property>
+        <property name="halign">start</property>
+        <property name="valign">center</property>
+        <property name="margin-start">10</property>
+        <property name="label" translatable="yes">Verticaly:</property>
+        <layout>
+          <property name="column">2</property>
+          <property name="row">1</property>
+        </layout>
+      </object>
+    </child>
+    <child>
+      <object class="GtkSwitch" id="vExpandSwitch">
+        <property name="halign">end</property>
+        <property name="valign">center</property>
+        <layout>
+          <property name="column">3</property>
+          <property name="row">1</property>
+        </layout>
+      </object>
+    </child>
+    <child>
+      <object class="GtkLabel">
+        <property name="can_focus">0</property>
+        <property name="label" translatable="yes">Expand corner along edge (for clicks and scrolls only):
+&lt;small&gt;(For visualisation activate &apos;Make active corners / edges visible&apos; option)&lt;/small&gt;</property>
+        <property name="use_markup">1</property>
+        <layout>
+          <property name="column">0</property>
+          <property name="row">0</property>
+          <property name="column-span">4</property>
+        </layout>
+      </object>
+    </child>
+  </object>
+  <object class="GtkAdjustment" id="pressureThresholdAdjustment">
+    <property name="upper">800</property>
+    <property name="step_increment">1</property>
+    <property name="page_increment">10</property>
+  </object>
+  <object class="GtkAdjustment" id="workspaceIndexAdjustment">
+    <property name="lower">1</property>
+    <property name="upper">256</property>
+    <property name="step_increment">1</property>
+    <property name="page_increment">10</property>
+  </object>
+  <object class="GtkTreeStore" id="treestore">
+    <columns>
+      <!-- column-name actionID -->
+      <column type="gchararray"/>
+      <!-- column-name actionText -->
+      <column type="gchararray"/>
+    </columns>
+  </object>
+  <object class="GtkPopover" id="cornerSettings">
+    <property name="child">
+      <object class="GtkGrid" id="popUpGrid">
+        <property name="margin-start">8</property>
+        <property name="margin-end">8</property>
+        <property name="margin_top">8</property>
+        <property name="margin_bottom">8</property>
+        <property name="row_spacing">8</property>
+        <property name="column_spacing">12</property>
+        <child>
+          <object class="GtkSwitch" id="fullscreenSwitch">
+            <property name="halign">end</property>
+            <layout>
+              <property name="column">1</property>
+              <property name="row">0</property>
+            </layout>
+          </object>
+        </child>
+        <child>
+          <object class="GtkLabel">
+            <property name="can_focus">0</property>
+            <property name="halign">start</property>
+            <property name="label" translatable="yes">Enable in fullscreen mode</property>
+            <layout>
+              <property name="column">0</property>
+              <property name="row">0</property>
+            </layout>
+          </object>
+        </child>
+        <child>
+          <object class="GtkSpinButton" id="barrierSize">
+            <property name="visible">0</property>
+            <property name="adjustment">barrierAdjustment</property>
+            <property name="numeric">1</property>
+            <layout>
+              <property name="column">1</property>
+              <property name="row">1</property>
+            </layout>
+          </object>
+        </child>
+        <child>
+          <object class="GtkLabel" id="barrierLabel">
+            <property name="visible">0</property>
+            <property name="can_focus">0</property>
+            <property name="halign">start</property>
+            <property name="label" translatable="yes">Barrier size</property>
+            <layout>
+              <property name="column">0</property>
+              <property name="row">1</property>
+            </layout>
+          </object>
+        </child>
+        <child>
+          <object class="GtkSpinButton" id="pressureThreshold">
+            <property name="visible">0</property>
+            <property name="halign">end</property>
+            <property name="adjustment">pressureThresholdAdjustment</property>
+            <property name="numeric">1</property>
+            <layout>
+              <property name="column">1</property>
+              <property name="row">2</property>
+            </layout>
+          </object>
+        </child>
+        <child>
+          <object class="GtkLabel" id="pressureLabel">
+            <property name="visible">0</property>
+            <property name="can_focus">0</property>
+            <property name="halign">start</property>
+            <property name="label" translatable="yes">Pressure Threshold</property>
+            <layout>
+              <property name="column">0</property>
+              <property name="row">2</property>
+            </layout>
+          </object>
+        </child>
+      </object>
+    </property>
+  </object>
+  <object class="GtkGrid" id="cornerWidget">
+    <property name="valign">start</property>
+    <property name="vexpand">1</property>
+    <child>
+      <object class="GtkRevealer" id="commandEntryRevealer">
+        <property name="child">
+          <object class="GtkGrid">
+            <property name="margin_top">8</property>
+            <child>
+              <object class="GtkEntry" id="commandEntry">
+                <property name="hexpand">1</property>
+		<layout>
+                  <property name="column">0</property>
+                  <property name="row">0</property>
+                </layout>
+              </object>
+            </child>
+            <child>
+              <object class="GtkButton" id="appButton">
+                <property name="receives_default">1</property>
+                <property name="valign">end</property>
+                <property name="margin-start">4</property>
+                <child>
+                  <object class="GtkImage">
+                    <property name="can_focus">0</property>
+                    <property name="icon_name">find-location-symbolic</property>
+                  </object>
+                </child>
+                <layout>
+                  <property name="column">1</property>
+                  <property name="row">0</property>
+                </layout>
+              </object>
+            </child>
+          </object>
+        </property>
+        <layout>
+          <property name="column">0</property>
+          <property name="row">1</property>
+        </layout>
+      </object>
+    </child>
+    <child>
+      <object class="GtkGrid">
+        <property name="valign">center</property>
+        <child>
+          <object class="GtkComboBox" id="actionCombo">
+            <property name="visible">True</property>
+            <property name="can_focus">False</property>
+            <property name="hexpand">True</property>
+            <property name="model">treestore</property>
+            <property name="active">0</property>
+            <property name="id_column">0</property>
+            <layout>
+              <property name="column">0</property>
+              <property name="row">0</property>
+            </layout>
+          </object>
+        </child>
+        <child>
+          <object class="GtkMenuButton" id="settingsButton">
+            <property name="receives_default">1</property>
+            <property name="valign">center</property>
+            <property name="margin-start">4</property>
+            <property name="popover">cornerSettings</property>
+            <child>
+              <object class="GtkImage">
+                <property name="can_focus">0</property>
+                <property name="icon_name">emblem-system-symbolic</property>
+              </object>
+            </child>
+            <layout>
+              <property name="column">1</property>
+              <property name="row">0</property>
+            </layout>
+          </object>
+        </child>
+        <layout>
+          <property name="column">0</property>
+          <property name="row">0</property>
+        </layout>
+      </object>
+    </child>
+    <child>
+      <object class="GtkRevealer" id="wsIndexRevealer">
+        <property name="transition_type">slide-up</property>
+        <property name="child">
+          <object class="GtkSpinButton" id="workspaceIndex">
+            <property name="valign">center</property>
+            <property name="margin_top">8</property>
+            <property name="text">1</property>
+            <property name="xalign">0.5</property>
+            <property name="digits">0</property>
+            <property name="adjustment">workspaceIndexAdjustment</property>
+            <property name="numeric">1</property>
+            <property name="value">1</property>
+          </object>
+        </property>
+        <layout>
+          <property name="column">0</property>
+          <property name="row">2</property>
+        </layout>
+      </object>
+    </child>
+  </object>
+</interface>

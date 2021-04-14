@@ -22,13 +22,13 @@ const Me             = ExtensionUtils.getCurrentExtension();
 const Settings       = Me.imports.settings;
 const triggers       = Settings.listTriggers();
 const triggerLabels  = Settings.TriggerLabels;
-let notebook;
+let   notebook;
 
-const Gettext = imports.gettext;
-      Gettext.textdomain(Me.metadata['gettext-domain']);
-      Gettext.bindtextdomain(Me.metadata['gettext-domain'], Me.dir.get_child('locale').get_path());
-const _ = Gettext.gettext;
-const N_ = function(e) { return e };
+// gettext
+const _  = Settings._;
+
+let   GNOME40;
+
 
 function _loadUI(file) {
     const path = Me.dir.get_child(file).get_path();
@@ -38,21 +38,28 @@ function _loadUI(file) {
 
 function init() {
     log(`initializing ${Me.metadata.name} Preferences`);
+    if (Settings.shellVersion.startsWith("40"))
+        GNOME40 = true;
+    else GNOME40 = false;
 }
 
 function buildPrefsWidget() {
     const prefsWidget = new Gtk.Grid();
-    notebook = new Gtk.Notebook;
+    notebook = new Gtk.Notebook();
     notebook.tab_pos = Gtk.POS_LEFT;
     prefsWidget.attach(notebook,0,0,1,1);
 
     const display = Gdk.Display.get_default();
-    const num_monitors = display.get_n_monitors();
+    const num_monitors = GNOME40 ?
+                            display.get_monitors().get_n_items() :
+                            display.get_n_monitors();
 
     const cornerWidgets = [];
 
     const mscOptions = new Settings.MscOptions();
-    const msUI       = _loadUI('misc-settings-widget.ui');
+    const msUI       = GNOME40 ?
+                        _loadUI('misc-settings-widget-40.ui') :
+                        _loadUI('misc-settings-widget.ui');
     const miscUI                   = msUI.get_object('miscOptions');
     const delayStartSwitch         = msUI.get_object('delayStartSwitch');
     const fullscreenGlobalSwitch   = msUI.get_object('fullscreenGlobalSwitch');
@@ -129,17 +136,22 @@ function buildPrefsWidget() {
             });
 
     for (let monitorIndex = 0; monitorIndex < num_monitors; ++monitorIndex) {
-        const monitor = display.get_monitor(monitorIndex);
+        const monitor = GNOME40 ?
+                            display.get_monitors().get_item(monitorIndex) :
+                            display.get_monitor(monitorIndex);
         const geometry = monitor.get_geometry();
         const corners = Settings.Corner.forMonitor(monitorIndex, monitorIndex, geometry);
         let grid = {};
         for (let i =0; i < corners.length; i++) {
             grid[i] = new Gtk.Grid({
-                expand: true,
+                //expand: true,
                 column_homogeneous: true,
-                margin: 10,
-                row_spacing: 4,
-                column_spacing: 20
+                margin_start:   10,
+                margin_end:     10,
+                margin_top:     10,
+                margin_bottom:  10,
+                //row_spacing: 4,
+                //column_spacing: 20
             });
         }
 
@@ -149,14 +161,12 @@ function buildPrefsWidget() {
             for (let trigger of triggers) {
                 const cw = _buildCornerWidget(corners[i], trigger);
                 const trgIcon = new Gtk.Image({
-                    //label: `${triggerLabels[trigger]}`,
                     halign: Gtk.Align.START,
                     valign: Gtk.Align.START,
+                    margin_start: 10,
                     vexpand: true,
                     hexpand: true,
-                    //pixel_size: 32
-                    margin_left: 10
-                    //use_markup: true
+                    pixel_size: 40
                 });
                 let iconPath;
                 if (trigger === 0) {
@@ -176,7 +186,14 @@ function buildPrefsWidget() {
         }
         for (let i =0; i < corners.length; i++){
             //const label = new Gtk.Label({ label: (corners[i].top ? _('Top') + ' ' : _('Bottom') +' ') + (corners[i].left ? _('Left') : _('Right')) });
-            const label = new Gtk.Image();
+            const label = new Gtk.Image({
+                    halign: Gtk.Align.CENTER,
+                    valign: Gtk.Align.START,
+                    margin_start: 10,
+                    vexpand: true,
+                    hexpand: true,
+                    pixel_size: 40
+                });
             label.set_from_file(`${Me.dir.get_path()}/icons/${corners[i].top ? 'Top':'Bottom'}${corners[i].left ? 'Left':'Right'}.svg`);
             triggersBook.append_page(grid[i], label);
 
@@ -188,15 +205,18 @@ function buildPrefsWidget() {
     }
     const label = new Gtk.Label({ label: _('Options'), halign: Gtk.Align.START});
     notebook.append_page(miscUI, label);
-    prefsWidget.show_all();
+    if (!GNOME40) prefsWidget.show_all();
     return prefsWidget;
 }
 
 function _buildCornerWidget(corner, trigger) {
-    const cwUI = _loadUI('corner-widget.ui');
+    const cwUI = GNOME40 ?
+                    _loadUI('corner-widget-40.ui') :
+                    _loadUI('corner-widget.ui');
     const cw = cwUI.get_object('cornerWidget');
     const fullscreenSwitch = cwUI.get_object('fullscreenSwitch');
     const actionCombo = cwUI.get_object('actionCombo');
+    const actionTreeStore = cwUI.get_object('treestore');
     const commandEntry = cwUI.get_object('commandEntry');
     const commandEntryRevealer = cwUI.get_object('commandEntryRevealer');
     const wsIndexRevealer = cwUI.get_object('wsIndexRevealer');
@@ -209,26 +229,94 @@ function _buildCornerWidget(corner, trigger) {
     });
     
     let cmdConnected = false;
+    const actions = [
+        [null, 'disabled'        ,   _('-')],
+        [null, 'toggleOverview'  ,   _('Show Activities (Overview)')],
+        [null, 'showApplications',   _('Show Applications')],
+        [null, 'showDesktop'     ,   _('Show Desktop')],
+        [null, 'runCommand'      ,   _('Run Command')],
+        [null, ''                ,   _('Workspaces') + (GNOME40 ? '   >' : '')],
+        [   1, 'prevWorkspace'   ,   _('Previous Workspace')],
+        [   1, 'nextWorkspace'   ,   _('Next Workspace')],
+        [   1, 'recentWS'        ,   _('Recent Workspace')],
+        [   1, 'moveToWorkspace' ,   _('Move to Workspace #')],
+        [null, ''                ,   _('Windows - Navigation') + (GNOME40 ? '   >' : '')],
+        [   1, 'recentWin'       ,   _('Recent Window (Alt+Tab)')],
+        [   1, 'prevWinWsMon'    ,   _('Previous Window (current WS & monitor)')],
+        [   1, 'prevWinWS'       ,   _('Previous Window (current WS)')],
+        [   1, 'prevWinAll'      ,   _('Previous Window (all)')],
+        [   1, 'nextWinWsMon'    ,   _('Next Window (current WS & monitor)')],
+        [   1, 'nextWinWS'       ,   _('Next Window (current WS)')],
+        [   1, 'nextWinAll'      ,   _('Next Window (all)')],
+        [null, ''                ,   _('Windows - Control') + (GNOME40 ? '   >' : '')],
+        [   1, 'closeWin'        ,   _('Close Window')],
+        [   1, 'maximizeWin'     ,   _('Toggle Maximize')],
+        [   1, 'minimizeWin'     ,   _('Minimize')],
+        [   1, 'fullscreenWin'   ,   _('Toggle Fullscreen Mode')],
+        [   1, 'aboveWin'        ,   _('Always on Top')],
+        [   1, 'stickWin'        ,   _('Always on Visible Workspace')],
+        [   1, 'brightnessInvert',   _('Invert Window (True Color Invert)')],
+        [null, ''                ,   _('System') + (GNOME40 ? '   >' : '')],
+        [   1, 'screenLock'      ,   _('Lock Screen')],
+        [   1, 'suspend'         ,   _('Suspend to RAM')],
+        [   1, 'powerOff'        ,   _('Power Off Dialog')],
+        [   1, 'logout'          ,   _('Log Out Dialog')],
+        [   1, 'switchUser'      ,   _('Switch User (if exists)')],
+        [null, ''                ,   _('Sound') + (GNOME40 ? '   >' : '')],
+        [   1, 'volumeUp'        ,   _('Volume Up')],
+        [   1, 'volumeDown'      ,   _('Volume Down')],
+        [   1, 'muteAudio'       ,   _('Mute')],
+        [null, 'blackScreen'     ,   _('Black Screen')],
+        [null, ''                ,   _('Debug') + (GNOME40 ? '   >' : '')],
+        [   1, 'lookingGlass'    ,   _('Looking Glass (GS debugger)')],
+        [   1, 'restartShell'    ,   _('Restart Gnome Shell (X11 only)')],
+        [null, 'prefs'           ,   _('Open Preferences')],
+    ]
+    let comboRenderer = new Gtk.CellRendererText();
+    actionCombo.pack_start(comboRenderer, false);
+    actionCombo.add_attribute(comboRenderer, "text", 1);
+    let iterDict = {};
+    let iter, iter2;
+    for (let i = 0; i < actions.length; i++){
+        let item = actions[i];
+        if (GNOME40 && item[1] === 'brightnessInvert') continue;
+        if (item[0] === null){
+            iter  = actionTreeStore.append(null);
+            actionTreeStore.set(iter, [0], [item[1]]);
+            actionTreeStore.set(iter, [1], [item[2]]);
+            iterDict[item[1]] = iter;
+        } else {
+            iter2  = actionTreeStore.append(iter);
+            actionTreeStore.set(iter2, [0], [item[1]]);
+            actionTreeStore.set(iter2, [1], [item[2]]);
+            iterDict[item[1]] = iter2;
+        }
+    }
+    if (iterDict[corner.getAction(trigger)]) actionCombo.set_active_iter(iterDict[corner.getAction(trigger)]);
+    actionCombo.active_id = corner.getAction(trigger);
+
     actionCombo.connect('changed', () => {
-        corner.setAction(trigger, actionCombo.active_id);
+        corner.setAction(trigger, actionCombo.get_active_id());
         commandEntryRevealer.reveal_child = corner.getAction(trigger) === 'runCommand';
         wsIndexRevealer.reveal_child = corner.getAction(trigger) === 'moveToWorkspace';
         if (corner.getAction(trigger) === 'runCommand' && !cmdConnected) {
-
             appButton.connect('clicked', () => {
+                function fillCmdEntry () {
+                    let appInfo = dialog._appChooser.get_app_info();
+                        if (!appInfo) return;
+                        commandEntry.text = appInfo.get_commandline().replace(/ %.$/, '');
+                        dialog.destroy();
+                }
                 const dialog = _chooseAppDialog();
-                dialog._appChooser.connect('application-activated', () => dialog._addButton.clicked() );
+                dialog._appChooser.connect('application-activated', () => {
+                    fillCmdEntry(dialog, commandEntry);
+                });
                 dialog.connect('response', (dlg, id) => {
                     if (id !== Gtk.ResponseType.OK) {
                         dialog.destroy();
                         return;
                     }
-    
-                    let appInfo = dialog._appChooser.get_app_info();
-                    if (!appInfo) return;
-                    commandEntry.text = appInfo.get_commandline();
-    
-                    dialog.destroy();
+                    fillCmdEntry();
                 });
             });
             commandEntry.text = corner.getCommand(trigger);
@@ -254,7 +342,6 @@ function _buildCornerWidget(corner, trigger) {
 
     wsIndexRevealer.reveal_child = corner.getAction(trigger) === 'moveToWorkspace';
 
-    actionCombo.active_id = corner.getAction(trigger);
 
     if (trigger === Settings.Triggers.PRESSURE) {
         const barrierLabel = cwUI.get_object('barrierLabel');
@@ -327,7 +414,9 @@ function _buildCornerWidget(corner, trigger) {
 }
 
 function _buildExpandWidget (corner) {
-    const cwUI = _loadUI('corner-widget.ui');
+    const cwUI = GNOME40 ?
+                    _loadUI('corner-widget-40.ui') :
+                    _loadUI('corner-widget.ui')
     const ew = cwUI.get_object('expandGrid');
     const hExpandSwitch = cwUI.get_object('hExpandSwitch');
     const vExpandSwitch = cwUI.get_object('vExpandSwitch');
@@ -346,21 +435,25 @@ function _buildExpandWidget (corner) {
 function _chooseAppDialog() {
         const dialog = new Gtk.Dialog({
             title: (_('Choose Application')),
-            transient_for: notebook.get_toplevel(),
+            transient_for: GNOME40 ?
+                                notebook.get_root() :
+                                notebook.get_toplevel(),
             use_header_bar: true,
             modal: true
         });
 
-        dialog.add_button(Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL);
-        dialog._addButton = dialog.add_button(Gtk.STOCK_ADD, Gtk.ResponseType.OK);
+        dialog.add_button(_('_Cancel'), Gtk.ResponseType.CANCEL);
+        dialog._addButton = dialog.add_button(_('_Add'), Gtk.ResponseType.OK);
         dialog.set_default_response(Gtk.ResponseType.OK);
 
         const grid = new Gtk.Grid({
+            margin_start:   10,
+            margin_end:     10,
+            margin_top:     10,
+            margin_bottom:  10,
             column_spacing: 10,
-            row_spacing: 15,
-            margin: 10,
+            row_spacing:    15
         });
-
         dialog._appChooser = new Gtk.AppChooserWidget({
             show_all: true
         });
@@ -371,11 +464,14 @@ function _chooseAppDialog() {
             wrap: true
         });
         grid.attach(cmdLabel, 0, 1, 2, 1);
-        dialog.get_content_area().add(grid);
+        GNOME40 ?
+            dialog.get_content_area().append(grid) :
+            dialog.get_content_area().add(grid);
         dialog._appChooser.connect('application-selected', (w, appInfo) => {
                 cmdLabel.set_text(appInfo.get_commandline());
             }
         );
-        dialog.show_all();
+        GNOME40 ? dialog.show()
+                : dialog.show_all();
         return dialog;
     }
