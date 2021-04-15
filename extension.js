@@ -67,8 +67,6 @@ let _dimmerActors;
 let _extensionEnabled;
 let _barrierFallback;
 
-//let LOG = log;
-let LOG = function() {return;};
 
 function init() {
     _origUpdateHotCorners = Main.layoutManager._updateHotCorners;
@@ -86,16 +84,13 @@ function init() {
 }
 
 function enable() {
-        LOG(`[${Me.metadata.name}] enable`);
     _extensionEnabled = true;
     _initMscOptions();
-        LOG(`[${Me.metadata.name}]     enable: Delayed start: ` + _mscOptions.delayStart);
     if (_mscOptions.delayStart) {
         let delayID = GLib.timeout_add(
             GLib.PRIORITY_DEFAULT,
             5000,
             () => {
-                    LOG(`[${Me.metadata.name}]     enable: Entering delay timeout callback`);
                 _replaceLayoutManager();
                 _timeoutsCollector.splice(_timeoutsCollector.indexOf(delayID));
                 delayID = null;
@@ -104,28 +99,22 @@ function enable() {
         );
         _timeoutsCollector.push(delayID);
     } else {
-            LOG(`[${Me.metadata.name}]     enable: Creating hot corners now..`);
         _replaceLayoutManager();
     }
     _connectRecentWorkspace();
 }
 
 function _replaceLayoutManager() {
-        LOG(`[${Me.metadata.name}] _replaceLayoutManager`);
     Main.layoutManager._updateHotCorners = _updateHotCorners;
     Main.layoutManager._updateHotCorners();
 }
 
 function disable() {
-        LOG(`[${Me.metadata.name}] disable`);
-        LOG(`[${Me.metadata.name}]     disable: ${_timeoutsCollector.length} timeouts are being destroyed..`);
     _timeoutsCollector.forEach( c => GLib.Source.remove(c));
     _timeoutsCollector=[];
     _removeActionTimeout();
-        LOG(`[${Me.metadata.name}]     disable: ${_signalsCollector.length} signals are being disconnected..`);
     global.workspace_manager.disconnect(_signalsCollector.pop());
     _removeHotCorners();
-        LOG(`[${Me.metadata.name}]     disable: Updating hot corners from original backup`);
     _mscOptions.destroy();
     _disableEffects();
     _destroyDimmerActors();
@@ -133,22 +122,17 @@ function disable() {
     _extensionEnabled = false;
     Main.layoutManager._updateHotCorners = _origUpdateHotCorners;
     Main.layoutManager._updateHotCorners();
-        LOG(`[${Me.metadata.name}] disable: Extension disabled`);
 }
 
 function _initMscOptions() {
-        LOG(`[${Me.metadata.name}] _initMscOptions`);
     _mscOptions = new Settings.MscOptions();
     _mscOptions.connect('changed', ()=> _updateMscOptions());
     _updateMscOptions(true);
 }
 
 function _removeHotCorners() {
-        LOG(`[${Me.metadata.name}] _removeHotCorners`);
-        LOG(`[${Me.metadata.name}]     ${_cornersCollector.length} collected corners are being destroyed`);
     _cornersCollector.forEach(c => c.destroy());
     _cornersCollector = [];
-        LOG(`[${Me.metadata.name}]     ${Main.layoutManager.hotCorners.length} Hot Corners are being destroyed`);
 
     const hc = Main.layoutManager.hotCorners;
     // reverse iteration, objects are being removed from the source during destruction
@@ -158,14 +142,12 @@ function _removeHotCorners() {
     }
     Main.layoutManager.hotCorners = [];
     // when some other extension steal my hot corners I still need to be able to destroy all actors I made
-    LOG(`[${Me.metadata.name}]     _removeHotCorners: ${_actorsCollector.length} untracked actors are being destroyed`);
     _actorsCollector.filter(a => a !== null).forEach(a => a.destroy());
     _actorsCollector = [];
 }
 
 
 function _updateMscOptions(doNotUpdateHC = false) {
-        LOG(`[${Me.metadata.name}] _updateMscOptions`);
     _wsSwitchIgnoreLast = _mscOptions.wsSwitchIgnoreLast;
     _wsSwitchWrap       = _mscOptions.wsSwitchWrap;
     _actionEventDelay   = _mscOptions.actionEventDelay;
@@ -186,13 +168,11 @@ function _updateMscOptions(doNotUpdateHC = false) {
 
 function _updateHotCorners() {
     _removeHotCorners();
-        LOG(`[${Me.metadata.name}]     _updateHotCorners: Updating all hot corners..`);
     Main.layoutManager.hotCorners=[];
     let primaryIndex = Main.layoutManager.primaryIndex;
     // avoid creating new corners if this extension is disabled...
     // ...since this method overrides the original one in GS and something can store pointer to this replacement
     if (!_extensionEnabled) return;
-        LOG(`[${Me.metadata.name}] _updateHotCorners`);
     let monIndexes = [...Main.layoutManager.monitors.keys()];
     // index of primary monitor to the first possition
     monIndexes.splice(0, 0, monIndexes.splice(primaryIndex, 1)[0]);
@@ -202,17 +182,14 @@ function _updateHotCorners() {
         const corners = Settings.Corner.forMonitor(i, monIndexes[i], global.display.get_monitor_geometry(monIndexes[i]));
         _setExpansionLimits(corners);
         for (let corner of corners) {
-                LOG(`\n[${Me.metadata.name}]     _updateHotCorners: Updating corner x:${corner.x}, y:${corner.y}, Monitor:${corner.monitorIndex}`);
             _cornersCollector.push(corner);
 
-                LOG(`[${Me.metadata.name}]     _updateHotCorners: Connecting triggers to gsettings..`);
             for (let trigger of listTriggers) {
                 // Update hot corner if something changes
                 // corner has it's own connect method defined in settings, this is not direct gsettings connect
                 corner.connect('changed', (settings, key) => _updateCorner(corner, key, trigger), trigger);
             }
             if (_shouldExistHotCorner(corner)) {
-                    LOG(`[${Me.metadata.name}]     _updateHotCorners: Creating corner..`);
                 Main.layoutManager.hotCorners.push(new CustomHotCorner(corner));
             }
         }
@@ -220,7 +197,6 @@ function _updateHotCorners() {
 }
 
 function _setExpansionLimits(corners) {
-    LOG(`[${Me.metadata.name}] _setExpansionLimits`);
     const cornerOrder = [0,1,3,2];
     for (let i = 0; i < corners.length; i++) {
         let prevCorner = (i + corners.length-1) % corners.length;
@@ -228,9 +204,6 @@ function _setExpansionLimits(corners) {
             prevCorner = corners[cornerOrder[prevCorner]];
             nextCorner = corners[cornerOrder[nextCorner]];
         let corner = corners[cornerOrder[i]];
-        //LOG(`[${Me.metadata.name}]     _setExpansionLimits: Corner: ${corner.top ? 'Top ':'Bottom '}${corner.left ? 'Left':'Right'}`);
-        //LOG(`[${Me.metadata.name}]     _setExpansionLimits:     Prev Corner: ${prevCorner.top ? 'Top ':'Bottom '}${prevCorner.left ? 'Left':'Right'}: H: ${prevCorner.hExpand} V: ${prevCorner.vExpand}`);
-        //LOG(`[${Me.metadata.name}]     _setExpansionLimits:     Next Corner: ${nextCorner.top ? 'Top ':'Bottom '}${nextCorner.left ? 'Left':'Right'}: H: ${nextCorner.hExpand} V: ${nextCorner.vExpand}`);
         if ((corner.left && prevCorner.left) || (!corner.left && !prevCorner.left)) {
             corner.fullExpandVertical   = (prevCorner.vExpand) ? false : true;
             corner.fullExpandHorizontal = (nextCorner.hExpand) ? false : true;
@@ -239,23 +212,18 @@ function _setExpansionLimits(corners) {
             corner.fullExpandVertical   = (nextCorner.vExpand) ? false : true;
             corner.fullExpandHorizontal = (prevCorner.hExpand) ? false : true;          
         }
-        LOG(`[${Me.metadata.name}]     _setExpansionLimits:   Corner: ${corner.top ? 'Top ':'Bottom '}${corner.left ? 'Left':'Right'}, V: ${corner.fullExpandVertical}, H: ${corner.fullExpandHorizontal}`);
     }
 }
 
 function _shouldExistHotCorner(corner) {
-        LOG(`[${Me.metadata.name}] _shouldExistHotCorner`);
     let answer = false;
     for (let trigger of listTriggers) {
         answer = answer || (corner.action[trigger] !== 'disabled');
     }
-        LOG(`[${Me.metadata.name}]     This corner should${answer ? ' ' : ' not'} exist`);
     return answer;
 }
 
 function _updateCorner(corner, key, trigger) {
-        LOG(`[${Me.metadata.name}] _updateCorner`);
-        LOG(`[${Me.metadata.name}]     Updating corner: x:${corner.x}, y:${corner.y}, Monitor:${corner.monitorIndex}, key: ${key}, trigger: ${Settings.TriggerLabels[trigger]}`);
     if (key === 'h-expand' || key === 'v-expand') {
         _updateHotCorners();
         return;
@@ -286,29 +254,23 @@ function _updateCorner(corner, key, trigger) {
 }
 
 function _rebuildHotCorner(corner) {
-        LOG(`[${Me.metadata.name}] _rebuildHotCorner`);
-        LOG(`[${Me.metadata.name}]     _rebuildHotCorner: Updating corner: x:${corner.x}, y:${corner.y}, Monitor:${corner.monitorIndex}`);
     _destroyHotCorner(corner);
     if (_shouldExistHotCorner(corner)) {
-            LOG(`[${Me.metadata.name}]     _rebuildHotCorner: Creating new corner: x:${corner.x}, y:${corner.y}, Monitor:${corner.monitorIndex}`);
         Main.layoutManager.hotCorners.push(new CustomHotCorner(corner));
     }
 }
 
 function _destroyHotCorner(corner) {
-        LOG(`[${Me.metadata.name}] _destroyHotCorner: x:${corner.x}, y:${corner.y}, Monitor:${corner.monitorIndex}`);
     let hc=Main.layoutManager.hotCorners;
     for (let i = 0; i < hc.length; i++) {
         if (hc[i]._corner.top  === corner.top &&
             hc[i]._corner.left === corner.left &&
             hc[i]._corner.monitorIndex === corner.monitorIndex) {
-                    LOG(`[${Me.metadata.name}]     _destroyHotCorner: Destroying ${Main.layoutManager.hotCorners[i]._actors.length} actors`);
                 for (let a of Main.layoutManager.hotCorners[i]._actors) {
                     _actorsCollector.splice(_actorsCollector.indexOf(a));
                     a.destroy();
                 }
                 Main.layoutManager.hotCorners[i]._actors = [];
-                    LOG(`[${Me.metadata.name}]     _destroyHotCorner: Destroying corner`);
                 hc[i].setBarrierSize(0, false);
                 Main.layoutManager.hotCorners[i].destroy();
                 Main.layoutManager.hotCorners.splice(i, 1);
@@ -321,7 +283,6 @@ function _destroyHotCorner(corner) {
 const CustomHotCorner = GObject.registerClass(
 class CustomHotCorner extends Layout.HotCorner {
     _init(corner) {
-            LOG(`[${Me.metadata.name}] CustomHotCorner._init`);
         let monitor = Main.layoutManager.monitors[corner.monitorIndex];
         super._init(Main.layoutManager, monitor, corner.x, corner.y);
         this._corner  = corner;
@@ -375,7 +336,6 @@ class CustomHotCorner extends Layout.HotCorner {
         this.setBarrierSize(corner.barrierSize, false);
 
         if (this._corner.action[Triggers.PRESSURE] !== 'disabled' && !_barrierFallback) {
-                LOG(`[${Me.metadata.name}]     _init: Connecting barrier trigger..`);
             this._pressureBarrier.connect('trigger', this._onPressureTriggered.bind(this));
 
         } 
@@ -392,14 +352,11 @@ class CustomHotCorner extends Layout.HotCorner {
 
     // Overridden to allow all 4 monitor corners
     setBarrierSize(size, forignAccess=true) {
-            LOG(`[${Me.metadata.name}]   setBarrierSize: ${size}`);
         if (forignAccess) return;
-            LOG(`[${Me.metadata.name}]     setBarrierSize: Setting barrier size: ${size}`);
         // Use code of parent class to remove old barriers but new barriers
         // must be created here since the properties are construct only.
         super.setBarrierSize(0);
         if (size > 0) {
-                LOG(`[${Me.metadata.name}]     setBarrierSize: X11 correction: ${!Meta.is_wayland_compositor()}`);
             const BD = Meta.BarrierDirection;
             // for X11 session:
             //  right vertical and bottom horizontal pointer barriers must be 1px further to match the screen edge
@@ -410,7 +367,6 @@ class CustomHotCorner extends Layout.HotCorner {
             // and block opposite directions. Neither with X nor with Wayland
             // such barriers work.
             let x = this._corner.x + (Meta.is_wayland_compositor() ? 0: ((!this._corner.left && !this._barrierCollision()['x']) ? 1 : 0)); // workaround for GS 3.36 bug
-                LOG(`[${Me.metadata.name}]     setBarrierSize: Vertical barrier: x1: ${x}, x2: ${x}, y1: ${this._corner.y}, y2: ${this._corner.top ? this._corner.y + size : this._corner.y - size}`);
             this._verticalBarrier = new Meta.Barrier({
                 display: global.display,
                 x1: x,
@@ -420,7 +376,6 @@ class CustomHotCorner extends Layout.HotCorner {
                 directions: this._corner.left ? BD.POSITIVE_X : BD.NEGATIVE_X
             });
             let y = this._corner.y + (Meta.is_wayland_compositor() ? 0: ((!this._corner.top && !this._barrierCollision()['y']) ? 1 : 0)); // workaround for GS 3.36 bug
-                LOG(`[${Me.metadata.name}]     setBarrierSize: Horizontal barrier: x1: ${this._corner.x}, x2: ${this._corner.left ? this._corner.x + size : this._corner.x - size}, y1: ${y}, y2: ${y}`);
             this._horizontalBarrier = new Meta.Barrier({
                 display: global.display,
                 x1: this._corner.x,
@@ -452,12 +407,10 @@ class CustomHotCorner extends Layout.HotCorner {
 
     // Overridden original function
     _setupCornerActorsIfNeeded(layoutManager) {
-            LOG(`[${Me.metadata.name}]   _setupCornerActorsIfNeeded`);
         let shouldCreateActor = this._shouldCreateActor();
         if (!(shouldCreateActor || this._corner.hExpand || this._corner.vExpand)) {
             return;
         }
-            LOG(`[${Me.metadata.name}]     _setupCornerActorsIfNeeded: Creating main corner actor..`);
         let aSize = 3;
         let h = this._corner.hExpand;
         let v = this._corner.vExpand;
@@ -476,8 +429,6 @@ class CustomHotCorner extends Layout.HotCorner {
             aSize = vSize;
         }
 
-            LOG(`[${Me.metadata.name}]   _setupCornerActorsIfNeeded: Expand: h: ${h}, v: ${v}`);
-            LOG(`[${Me.metadata.name}]   _setupCornerActorsIfNeeded: Base actor expansions: h: ${hSize}, v: ${vSize}`);
         
         // base clickable actor, normal size or expanded
         this._actor = new Clutter.Actor({
@@ -506,7 +457,6 @@ class CustomHotCorner extends Layout.HotCorner {
 
         // to expand clickable area in both axis make second actor
         if (v && h) {
-                LOG(`[${Me.metadata.name}]   _setupCornerActorsIfNeeded: Secondary actor size: h: ${aSize}, v: ${vSize}`);
             this._actorV = new Clutter.Actor ({
                 name: 'hot-corner-v',
                 x: this._corner.x + (this._corner.left ? 0 : - (aSize - 1)),
@@ -534,7 +484,6 @@ class CustomHotCorner extends Layout.HotCorner {
         // Fallback hot corners as a part of base actor
         if ( this._corner.action[Triggers.PRESSURE] !== 'disabled' &&
              (! global.display.supports_extended_barriers() || _barrierFallback) ) {
-                LOG(`[${Me.metadata.name}]     _setupCornerActorsIfNeeded: Creating fallback hot actor`);
             let fSize = 3;
             this._cornerActor = new Clutter.Actor({
                 name: 'hot-corner',
@@ -557,19 +506,15 @@ class CustomHotCorner extends Layout.HotCorner {
         }
     }
     _connectActorEvents(actor) {
-            LOG(`[${Me.metadata.name}]   _connectActorEvents`);
         if (this._shouldConnect([Triggers.BUTTON_PRIMARY, Triggers.BUTTON_SECONDARY, Triggers.BUTTON_MIDDLE])) {
-                LOG(`[${Me.metadata.name}]     _setupCornerActorsIfNeeded: Connecting button-press-event`);
             actor.connect('button-press-event', this._onCornerClicked.bind(this));
         }
         if (this._shouldConnect([Triggers.SCROLL_UP, Triggers.SCROLL_DOWN])) {
-                LOG(`[${Me.metadata.name}]     _setupCornerActorsIfNeeded: Connecting scroll-event`);
             actor.connect('scroll-event', this._onCornerScrolled.bind(this));
         }
 
     }
     _shouldCreateActor() {
-            LOG(`[${Me.metadata.name}]   _shouldCreateActor`);
         let answer = false;
         for (let trigger of listTriggers) {
             if (trigger === Triggers.PRESSURE && (global.display.supports_extended_barriers() && ! _barrierFallback)) {
@@ -577,38 +522,29 @@ class CustomHotCorner extends Layout.HotCorner {
             }
             answer = answer || (this._corner.action[trigger] !== 'disabled');
         }
-            LOG(`[${Me.metadata.name}]     This actor should ${answer ? '' : 'not'} be created`);
         return answer;
     }
     _shouldConnect(signals) {
-            LOG(`[${Me.metadata.name}]   _shouldConnect`);
         let answer = null;
         for (let trigger of listTriggers) {
             if (signals.includes(trigger)) {
             answer = answer || (this._corner.action[trigger] !== 'disabled');
             }
         }
-            LOG(`[${Me.metadata.name}]     This signal should ${answer ? '' : 'not'} be connected`);
         return answer;
     }
     _rippleAnimation() {
-            LOG(`[${Me.metadata.name}]   _rippleAnimation`);
         this._ripples.playAnimation(this._corner.x, this._corner.y);
     }
     // Overridden to allow running custom actions
     _onCornerEntered() {
-            LOG(`[${Me.metadata.name}]   _onCornerEntered`);
-            LOG(`[${Me.metadata.name}]     Mouse entered corner actor: ${this._corner.x} ${this._corner.y}, ${this._corner.monitorIndex}`);
-            LOG(`[${Me.metadata.name}]     Triggering pressure action..`);
         this._runAction(Triggers.PRESSURE);
         return Clutter.EVENT_PROPAGATE;
     }
     _onPressureTriggered (actor, event) {
-            LOG(`[${Me.metadata.name}]   _onPressureTriggered`);
         this._runAction(Triggers.PRESSURE);
     }
     _onCornerClicked(actor, event) {
-            LOG(`[${Me.metadata.name}]   _onCornerClicked`);
         let button = event.get_button();
         let trigger;
         switch (button) {
@@ -628,7 +564,6 @@ class CustomHotCorner extends Layout.HotCorner {
         return Clutter.EVENT_STOP;
     }
     _onCornerScrolled(actor, event) {
-            LOG(`[${Me.metadata.name}]   _onCornerScrolled`);
         let direction = event.get_scroll_direction();
         if (_notValidScroll(direction)) return;
         let trigger;
@@ -646,11 +581,9 @@ class CustomHotCorner extends Layout.HotCorner {
         return Clutter.EVENT_STOP;
     }
     _runAction(trigger) {
-            LOG(`[${Me.metadata.name}]   _runAction: timeout ${_actionTimeoutId}`);
         if ( (_actionTimeoutActive(trigger) && !(['volumeUp','volumeDown'].includes(this._corner.action[trigger])))
             || this._corner.action[trigger] == 'disabled'
             ) return;
-            LOG(`[${Me.metadata.name}]     _runAction: Action: ${this._corner.action[trigger]}`);
         this._actionFunction = this.m.get(this._corner.action[trigger]) || function () {};
         if (    (!this._monitor.inFullscreen) ||
                 ( this._monitor.inFullscreen  && (this._corner.fullscreen[trigger] || _fullscreenGlobal))) {
@@ -660,15 +593,12 @@ class CustomHotCorner extends Layout.HotCorner {
     }
 
     _toggleOverview() {
-            LOG(`[${Me.metadata.name}]   _toggleOverview`);
             Main.overview.toggle();
     }
     _showDesktop() {
-            LOG(`[${Me.metadata.name}]   _showDesktop`);
         _togleShowDesktop()
     }
     _showApplications() {
-            LOG(`[${Me.metadata.name}]   _showApplications`);
         if (Main.overview.dash.showAppsButton.checked)
             Main.overview.hide();
         else {
@@ -680,102 +610,81 @@ class CustomHotCorner extends Layout.HotCorner {
         }
     }
     _runCommand(trigger) {
-            LOG(`[${Me.metadata.name}]   _runCommand`);
         Util.spawnCommandLine(this._corner.command[trigger]);
     }
     _moveToWorkspace (trigger) {
-            LOG(`[${Me.metadata.name}]   _moveToWorkspace`);
         let idx = this._corner.workspaceIndex[trigger] - 1;
         let maxIndex = global.workspaceManager.n_workspaces - 1;
         if (maxIndex < idx) {
             idx = maxIndex;
         }
-            LOG(`[${Me.metadata.name}]   _moveToWorkspace: moving to ${idx}`);
         let ws = global.workspaceManager.get_workspace_by_index(idx);
         Main.wm.actionMoveWorkspace(ws);
     }
     _prevWorkspace() {
-            LOG(`[${Me.metadata.name}]   _prevWorkspace`);
         _switchWorkspace(Clutter.ScrollDirection.UP);
     }
     _nextWorkspace() {
-            LOG(`[${Me.metadata.name}]   _nextWorkspace`);
         _switchWorkspace(Clutter.ScrollDirection.DOWN);
     }
     _lockScreen() {
-            LOG(`[${Me.metadata.name}]   _lockScreen`);
         //Main.screenShield.lock(true);
         SystemActions.getDefault().activateLockScreen();
     }
     _suspendToRam () {
-            LOG(`[${Me.metadata.name}]   _suspendToRam`);
         SystemActions.getDefault().activateSuspend();
     }
     _powerOff() {
-            LOG(`[${Me.metadata.name}]   _powerOff`);
         SystemActions.getDefault().activatePowerOff();
     }
     _logOut() {
-            LOG(`[${Me.metadata.name}]   _logOut`);
         SystemActions.getDefault().activateLogout();
     }
     _switchUser() {
-            LOG(`[${Me.metadata.name}]   _switchUser`);
         SystemActions.getDefault().activateSwitchUser();
 
     }
     _toggleLookingGlass() {
-            LOG(`[${Me.metadata.name}]   _toggleLookingGlass`);
         if (Main.lookingGlass === null)
             Main.createLookingGlass();
         if (Main.lookingGlass !== null)
             Main.lookingGlass.toggle();
     }
     _moveToRecentWorkspace() {
-            LOG(`[${Me.metadata.name}]   _moveToRecentWorkspace`);
         if (_lastWorkspace < 0)  return;
         let ws = (global.workspace_manager).get_workspace_by_index(_lastWorkspace);
         ws.activate(global.get_current_time());
     }
     _switchPrevWindow() {
-            LOG(`[${Me.metadata.name}]   _switchPrevWindow`);
         _switchWindow(-1, false);
     }
 
     _switchNextWindow() {
-            LOG(`[${Me.metadata.name}]   _switchNextWindow`);
         _switchWindow(1, false);
     }
     _switchPrevWindowWS() {
-            LOG(`[${Me.metadata.name}]   _switchPrevWindowWS`);
         _switchWindow(-1, true);
     }
 
     _switchNextWindowWS() {
-            LOG(`[${Me.metadata.name}]   _switchNextWindowWS`);
         _switchWindow(1, true);
     }
     _switchPrevWinWsMonitor() {
-            LOG(`[${Me.metadata.name}]   _switchPrevWinWsMonitor`);
         _switchWindow(-1, true, this._corner.monitorIndex);
     }
 
     _switchNextWinWsMonitor() {
-            LOG(`[${Me.metadata.name}]   _switchNextWinWsMonitor`);
         _switchWindow(1, true, this._corner.monitorIndex);
     }
     _recentWindow() {
-            LOG(`[${Me.metadata.name}]   _recentWindow`);
         global.display.get_tab_list(0, null)[1].activate(global.get_current_time());
     }
     _closeWindow() {
-            LOG(`[${Me.metadata.name}]   _closeWindow`);
         let win = _getFocusedWindow();
         if (!win) return;
         win.kill();
     }
     _maximizeWindow() {
-            LOG(`[${Me.metadata.name}]   _maximizeWindow`);
         let win = _getFocusedWindow();
         if (!win) return;
         if (win.maximized_horizontally && win.maximized_vertically)
@@ -783,18 +692,15 @@ class CustomHotCorner extends Layout.HotCorner {
         else win.maximize(Meta.MaximizeFlags.BOTH);
     }
     _minimizeWindow() {
-            LOG(`[${Me.metadata.name}]   _minimizeWindow`);
         global.display.get_tab_list(0, null)[0].minimize();
     }
     _toggleFullscreenWindow() {
-            LOG(`[${Me.metadata.name}]   _maximizeWindow`);
         let win = _getFocusedWindow();
         if (!win) return;
         if (win.fullscreen) win.unmake_fullscreen();
         else win.make_fullscreen();
     }
     _aboveWindow() {
-            LOG(`[${Me.metadata.name}]   _aboveWindow`);
         let win = _getFocusedWindow();
         if (!win) return;
         if (win.above) {
@@ -807,7 +713,6 @@ class CustomHotCorner extends Layout.HotCorner {
         }
     }
     _stickWindow() {
-            LOG(`[${Me.metadata.name}]   _stickWindow`);
         let win = _getFocusedWindow();
         if (!win) return;
         if (win.is_on_all_workspaces()){
@@ -820,7 +725,6 @@ class CustomHotCorner extends Layout.HotCorner {
         }
     }
     _restartGnomeShell() {
-            LOG(`[${Me.metadata.name}]   _restartGnomeShell`);
         if (!Meta.is_wayland_compositor()) {
             Meta.restart(_('Restarting Gnome Shell ...'));
         }
@@ -829,26 +733,21 @@ class CustomHotCorner extends Layout.HotCorner {
         }
     }
     _volumeUp() {
-            LOG(`[${Me.metadata.name}]   _volumeUp`);
         _adjustVolume(1);
     }
     _volumeDown() {
-            LOG(`[${Me.metadata.name}]   _volumeDown`);
         _adjustVolume(-1);
     }
     _toggleMute() {
-            LOG(`[${Me.metadata.name}]   _toggleMute`);
         _adjustVolume(0);
     }
     _showPrefs() {
         ExtManager.openExtensionPrefs(Me.metadata.uuid, '', {});
     }
     _toggleBrightnessInvert() {
-            LOG(`[${Me.metadata.name}]   _toggleBrightnessInvert`);
         _toggleBrightnessInvert();
     }
     _toggleBlackScreen() {
-            LOG(`[${Me.metadata.name}]   _toggleBlackScreen`);
         let opacity = 255;
         let note = Me.metadata.name;
         _toggleDimmMonitors(opacity, note);
@@ -856,23 +755,19 @@ class CustomHotCorner extends Layout.HotCorner {
 });
 
 function _removeActionTimeout() {
-        LOG(`[${Me.metadata.name}]     _removeActionTimeout: Removing _actionTimeoutId from _timeoutsCollector: ${_actionTimeoutId}`);
     _timeoutsCollector.splice(_timeoutsCollector.indexOf(_actionTimeoutId));
     _actionTimeoutId = null;
     return false;
 }
 
 function _notValidScroll(direction) {
-        LOG(`[${Me.metadata.name}] _notValidScroll`);
     if (direction === Clutter.ScrollDirection.SMOOTH) return true;
     return false;
 }
 
 function _connectRecentWorkspace() {
-        LOG(`[${Me.metadata.name}] _connectRecentWorkspace`);
     _signalsCollector.push((global.workspace_manager).connect('workspace-switched', function(display, prev, current, direction) {
         if (current !== _currentWorkspace) {
-                LOG(`[${Me.metadata.name}]     _connectRecentWorkspace callback: setting new recent WS`);
             _lastWorkspace = _currentWorkspace;
             _currentWorkspace = current;
     }
@@ -880,11 +775,9 @@ function _connectRecentWorkspace() {
 }
 
 function _actionTimeoutActive(trigger) {
-        LOG(`[${Me.metadata.name}] _actionTimeoutActive`);
     if (_actionTimeoutId)
         return true;
 
-        LOG(`[${Me.metadata.name}]     Creating _actionTimeout..`);
    _actionTimeoutId = GLib.timeout_add(
             GLib.PRIORITY_DEFAULT,
             _actionEventDelay,
@@ -898,7 +791,6 @@ function _actionTimeoutActive(trigger) {
 //////////////////////////////////////////////////////////////////////////////////////////
 
 function _togleShowDesktop() {
-        LOG(`[${Me.metadata.name}] _togleShowDesktop`);
     if (Main.overview.visible) return;
     let metaWorkspace = global.workspace_manager.get_active_workspace();
     let windows = metaWorkspace.list_windows();
@@ -937,7 +829,6 @@ function _togleShowDesktop() {
 }
 
 function _switchWorkspace(direction) {
-            LOG(`[${Me.metadata.name}] _switchWorkspace`);
         let n_workspaces = global.workspaceManager.n_workspaces;
         let lastWsIndex =  n_workspaces - (_wsSwitchIgnoreLast ? 2 : 1);
         let motion;
@@ -985,7 +876,6 @@ function _getFocusedWindow() {
 }
 
 function _switchWindow(direction, wsOnly=true, monitorIndex=null) {
-        LOG(`[${Me.metadata.name}] _switchWindow`);
     let workspaceManager = global.workspace_manager;
     let workspace = wsOnly ? workspaceManager.get_active_workspace() : null;
     // get all windows, skip-taskbar included
@@ -999,11 +889,9 @@ function _switchWindow(direction, wsOnly=true, monitorIndex=null) {
     let modals = windows.map(w => 
         w.get_transient_for() ? w.get_transient_for() : null
         ).filter((w, i, a) => w !==null && a.indexOf(w) == i);
-                                                                                LOG(`[${Me.metadata.name}]     _switchWindow: Modals Parents: ${modals.map(w => w ? w.wm_class:w)}`);
     // filter out skip_taskbar windows and windows with modals
     // top modal windows should stay
     windows = windows.filter( w => modals.indexOf(w) && !w.is_skip_taskbar());
-                                                                                LOG(`[${Me.metadata.name}]     _switchWindow: Windows: ${windows.map(w => w ? w.title:w)}`);
     if (_winSkipMinimized)
         windows = windows.filter(win => !win.minimized);
 
@@ -1019,13 +907,10 @@ function _switchWindow(direction, wsOnly=true, monitorIndex=null) {
     let targetIdx = currentIdx + direction;
     if (targetIdx > windows.length - 1) targetIdx = _winSwitchWrap ? 0 : currentIdx;
     else if (targetIdx < 0) targetIdx = _winSwitchWrap ? windows.length - 1 : currentIdx;
-        LOG(`[${Me.metadata.name}]     _switchWindow: Current win: ${windows[currentIdx].title} -> Target win: ${windows[targetIdx].title}`);
-        LOG(`[${Me.metadata.name}]     _switchWindow: Current idx: ${currentIdx} -> Target idx: ${targetIdx}`);
     windows[targetIdx].activate(global.get_current_time());
 }
 
 function _adjustVolume(direction) {
-        LOG(`[${Me.metadata.name}] _adjustVolume`);
     let mixerControl = Volume.getMixerControl();
     let sink = mixerControl.get_default_sink();
     if (direction === 0) {
@@ -1038,7 +923,6 @@ function _adjustVolume(direction) {
         volume = volume + step;
         if (volume > max) volume = max;
         if (volume <   0) volume = 0;
-        LOG(`[${Me.metadata.name}]     _adjustVolume: Adjusting Volume to: ${volume}`);
         sink.volume = volume;
         sink.push_volume();
     }
@@ -1105,7 +989,6 @@ function _toggleBrightnessInvert() {
 }
 
 function _disableEffects() {
-    LOG(`[${Me.metadata.name}] _disableEffects`);
     global.get_window_actors().forEach(function(actor) {
             actor.remove_effect_by_name('invert-color');
         });
@@ -1113,7 +996,6 @@ function _disableEffects() {
 /////////////////////////////////////////////////////////
 
 function _toggleDimmMonitors(alpha, text) {
-    LOG(`[${Me.metadata.name}] _toggleDimmMonitors`);
     if (!_dimmerActors.length) {
         let monitors = [...Main.layoutManager.monitors.keys()];
         for (let monitor of monitors) {
