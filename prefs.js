@@ -228,19 +228,18 @@ function _buildCornerWidget(corner, trigger) {
         corner.setFullscreen(trigger, fullscreenSwitch.active);
     });
     
-    let cmdConnected = false;
     const actions = [
         [null, 'disabled'        ,   _('-')],
         [null, 'toggleOverview'  ,   _('Show Activities (Overview)')],
         [null, 'showApplications',   _('Show Applications')],
         [null, 'showDesktop'     ,   _('Show Desktop')],
         [null, 'runCommand'      ,   _('Run Command')],
-        [null, ''                ,   _('Workspaces') + (GNOME40 ? '   >' : '')],
+        [null, ''                ,   _('Workspaces') + (GNOME40 ? '   \t\t\t\t>' : '')],
         [   1, 'prevWorkspace'   ,   _('Previous Workspace')],
         [   1, 'nextWorkspace'   ,   _('Next Workspace')],
         [   1, 'recentWS'        ,   _('Recent Workspace')],
         [   1, 'moveToWorkspace' ,   _('Move to Workspace #')],
-        [null, ''                ,   _('Windows - Navigation') + (GNOME40 ? '   >' : '')],
+        [null, ''                ,   _('Windows - Navigation') + (GNOME40 ? '   \t>' : '')],
         [   1, 'recentWin'       ,   _('Recent Window (Alt+Tab)')],
         [   1, 'prevWinWsMon'    ,   _('Previous Window (current WS & monitor)')],
         [   1, 'prevWinWS'       ,   _('Previous Window (current WS)')],
@@ -248,33 +247,49 @@ function _buildCornerWidget(corner, trigger) {
         [   1, 'nextWinWsMon'    ,   _('Next Window (current WS & monitor)')],
         [   1, 'nextWinWS'       ,   _('Next Window (current WS)')],
         [   1, 'nextWinAll'      ,   _('Next Window (all)')],
-        [null, ''                ,   _('Windows - Control') + (GNOME40 ? '   >' : '')],
+        [null, ''                ,   _('Windows - Control') + (GNOME40 ? '   \t\t>' : '')],
         [   1, 'closeWin'        ,   _('Close Window')],
-        [   1, 'maximizeWin'     ,   _('Toggle Maximize')],
+        [   1, 'maximizeWin'     ,   _('Maximize')],
         [   1, 'minimizeWin'     ,   _('Minimize')],
-        [   1, 'fullscreenWin'   ,   _('Toggle Fullscreen Mode')],
+        [   1, 'fullscreenWin'   ,   _('Fullscreen')],
         [   1, 'aboveWin'        ,   _('Always on Top')],
         [   1, 'stickWin'        ,   _('Always on Visible Workspace')],
-        [   1, 'brightnessInvert',   _('Invert Window (True Color Invert)')],
-        [null, ''                ,   _('System') + (GNOME40 ? '   >' : '')],
+        [   1, 'invertLightness' ,   _('Invert Lightness (True Color Invert)')],
+        [null, ''                ,   _('Universal Access') + (GNOME40 ? '   \t\t\t>' : '')],
+        [   1, 'toggleZoom'      ,   _('Toggle Zoom')],
+        [   1, 'zoomIn'          ,   _('Zoom In')],
+        [   1, 'zoomOut'         ,   _('Zoom Out')],
+        [   1, 'screenReader'    ,   _('Screen Reader')],
+        [   1, 'largeText'       ,   _('Large Text')],
+        [   1, 'keyboard'        ,   _('Screen Keyboard')],
+        [null, ''                ,   _('Gnome Shell') + (GNOME40 ? '   \t\t\t\t>' : '')],
+        [   1, 'hidePanel'       ,   _('Hide/Show Main Panel')],
+        [   1, 'runDialog'       ,   _('Run Dialog')],
+        [null, ''                ,   _('System') + (GNOME40 ? '   \t\t\t\t\t>' : '')],
         [   1, 'screenLock'      ,   _('Lock Screen')],
+        [   1, 'blackScreen'     ,   _('Black Screen')],
         [   1, 'suspend'         ,   _('Suspend to RAM')],
         [   1, 'powerOff'        ,   _('Power Off Dialog')],
         [   1, 'logout'          ,   _('Log Out Dialog')],
         [   1, 'switchUser'      ,   _('Switch User (if exists)')],
-        [null, ''                ,   _('Sound') + (GNOME40 ? '   >' : '')],
+        [null, ''                ,   _('Sound') + (GNOME40 ? '   \t\t\t\t\t>' : '')],
         [   1, 'volumeUp'        ,   _('Volume Up')],
         [   1, 'volumeDown'      ,   _('Volume Down')],
         [   1, 'muteAudio'       ,   _('Mute')],
-        [null, 'blackScreen'     ,   _('Black Screen')],
-        [null, ''                ,   _('Debug') + (GNOME40 ? '   >' : '')],
+        [null, ''                ,   _('Debug') + (GNOME40 ? '   \t\t\t\t\t>' : '')],
         [   1, 'lookingGlass'    ,   _('Looking Glass (GS debugger)')],
         [   1, 'restartShell'    ,   _('Restart Gnome Shell (X11 only)')],
-        [null, 'prefs'           ,   _('Open Preferences')],
+        [null, 'prefs'           ,   _('Open Preferences')]
     ]
     let comboRenderer = new Gtk.CellRendererText();
-    actionCombo.pack_start(comboRenderer, false);
+    actionCombo.pack_start(comboRenderer, true);
     actionCombo.add_attribute(comboRenderer, "text", 1);
+    actionCombo.set_cell_data_func(comboRenderer,
+        (clayout, cell, model, iter) => {
+            let sensitive = !model.iter_has_child(iter);
+            cell.set_sensitive(sensitive);
+        }
+    );
     let iterDict = {};
     let iter, iter2;
     for (let i = 0; i < actions.length; i++){
@@ -284,6 +299,7 @@ function _buildCornerWidget(corner, trigger) {
             iter  = actionTreeStore.append(null);
             actionTreeStore.set(iter, [0], [item[1]]);
             actionTreeStore.set(iter, [1], [item[2]]);
+            // map items on iters to find them for activation
             iterDict[item[1]] = iter;
         } else {
             iter2  = actionTreeStore.append(iter);
@@ -294,6 +310,10 @@ function _buildCornerWidget(corner, trigger) {
     }
     if (iterDict[corner.getAction(trigger)]) actionCombo.set_active_iter(iterDict[corner.getAction(trigger)]);
     actionCombo.active_id = corner.getAction(trigger);
+
+    let cmdConnected = false;
+    commandEntryRevealer.reveal_child = corner.getAction(trigger) === 'runCommand';
+    commandEntry.text = corner.getCommand(trigger);
 
     actionCombo.connect('changed', () => {
         corner.setAction(trigger, actionCombo.get_active_id());

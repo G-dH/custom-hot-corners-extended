@@ -66,6 +66,7 @@ let _winSkipMinimized;
 let _dimmerActors;
 let _extensionEnabled;
 let _barrierFallback;
+let _mainPanelVisible;
 
 
 function init() {
@@ -81,6 +82,7 @@ function init() {
     _dimmerActors         = [];
     _extensionEnabled     = false;
     _barrierFallback      = false;
+    _mainPanelVisible     = Main.panel.is_visible();
 }
 
 function enable() {
@@ -122,6 +124,9 @@ function disable() {
     _extensionEnabled = false;
     Main.layoutManager._updateHotCorners = _origUpdateHotCorners;
     Main.layoutManager._updateHotCorners();
+    _mainPanelVisible ?
+            Main.panel.show() :
+            Main.panel.hide();
 }
 
 function _initMscOptions() {
@@ -323,8 +328,17 @@ class CustomHotCorner extends Layout.HotCorner {
             ['volumeDown',      this._volumeDown              ],
             ['muteAudio',       this._toggleMute              ],
             ['prefs',           this._showPrefs               ],
-            ['brightnessInvert',this._toggleBrightnessInvert  ],
-            ['blackScreen',     this._toggleBlackScreen       ]
+            ['invertLightness', this._toggleLightnessInvert   ],
+            ['blackScreen',     this._toggleBlackScreen       ],
+            ['toggleZoom',      this._toggleZoom              ],
+            ['zoomIn',          this._zoomIn                  ],
+            ['zoomOut',         this._zoomOut                 ],
+            ['keyboard',        this._toggleKeyboard          ],
+            ['largeText',       this._largeText               ],
+            ['screenReader',    this._screenReader            ],
+            ['hidePanel',       this._togglePanel             ],
+            ['runDialog',       this._runDialog               ]
+
         ]);
 
         this._enterd = false;
@@ -744,13 +758,58 @@ class CustomHotCorner extends Layout.HotCorner {
     _showPrefs() {
         ExtManager.openExtensionPrefs(Me.metadata.uuid, '', {});
     }
-    _toggleBrightnessInvert() {
-        _toggleBrightnessInvert();
+    _toggleLightnessInvert() {
+        _toggleLightnessInvert();
     }
     _toggleBlackScreen() {
         let opacity = 255;
         let note = Me.metadata.name;
         _toggleDimmMonitors(opacity, note);
+    }
+    _toggleZoom() {
+        _zoom(0);
+    }
+    _zoomIn(){
+        _zoom(0.25);
+    }
+    _zoomOut(){
+        _zoom(-0.25);
+    }
+    _toggleKeyboard() {
+        let visible = Main.keyboard.visible;
+        let settings = Settings.getSettings(
+            'org.gnome.desktop.a11y.applications',
+            '/org/gnome/desktop/a11y/applications/');
+        if (visible)
+            settings.set_boolean('screen-keyboard-enabled', false);
+        else {
+            if (!settings.get_boolean('screen-keyboard-enabled')) {
+                settings.set_boolean('screen-keyboard-enabled', true);
+            }
+            Main.keyboard.open(this._corner.monitorIndex);
+        }
+    }
+    _screenReader() {
+        _toggleGSettingsBoolean(
+            'org.gnome.desktop.a11y.applications',
+            '/org/gnome/desktop/a11y/applications/',
+            'screen-reader-enabled');
+    }
+    _largeText() {
+        let settings = Settings.getSettings(
+            'org.gnome.desktop.interface',
+            '/org/gnome/desktop/interface/');
+        if (settings.get_double('text-scaling-factor') > 1)
+            settings.reset('text-scaling-factor');
+        else settings.set_double('text-scaling-factor', 1.25);
+    }
+    _togglePanel() {
+        Main.panel.is_visible() ?
+            Main.panel.hide()   :
+            Main.panel.show();
+    }
+    _runDialog() {
+        Main.openRunDialog();
     }
 });
 
@@ -971,7 +1030,7 @@ class TrueInvertEffect extends Clutter.ShaderEffect {
     }
 });
 
-function _toggleBrightnessInvert() {
+function _toggleLightnessInvert() {
     global.get_window_actors().forEach(function(actor) {
         let meta_window = actor.get_meta_window();
         if(meta_window.has_focus()) {
@@ -1027,3 +1086,41 @@ function _destroyDimmerActors() {
     }
     _dimmerActors = [];
 }
+
+function _toggleGSettingsBoolean(schema, path, key) {
+    let gSettings = Settings.getSettings(schema, path);
+    gSettings.set_boolean(key, !gSettings.get_boolean(key))
+    return gSettings.get_boolean(key);
+}
+
+function _zoom(step = 0) {
+    let a11Settings = Settings.getSettings(
+        'org.gnome.desktop.a11y.applications',
+        '/org/gnome/desktop/a11y/applications/');
+    if (!step) {
+        a11Settings.set_boolean('screen-magnifier-enabled',
+        !a11Settings.get_boolean('screen-magnifier-enabled'));
+    } else {
+        let magSettings = Settings.getSettings(
+            'org.gnome.desktop.a11y.magnifier',
+            '/org/gnome/desktop/a11y/magnifier/');
+
+        if (!a11Settings.get_boolean('screen-magnifier-enabled')) {
+           magSettings.set_double('mag-factor', 1);
+           a11Settings.set_boolean('screen-magnifier-enabled', true);
+        }
+
+        let value = magSettings.get_double('mag-factor') + step;
+        if (value <= 1) {
+            value = 1;
+            // when Zoom = 1 enabled, graphics artefacts might follow mouse pointer
+            a11Settings.set_boolean('screen-magnifier-enabled', false);
+        }
+
+        if (value > 5) value = 5;
+        magSettings.set_double('mag-factor', value);
+    }
+        //Main.magnifier.setActive(true);
+    a11Settings = null;
+}
+
