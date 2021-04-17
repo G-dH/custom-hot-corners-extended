@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-
+"use strict"
 const {Gtk, Gdk, GLib, GObject} = imports.gi;
 
 const ExtensionUtils = imports.misc.extensionUtils;
@@ -121,7 +121,7 @@ function buildPrefsWidget() {
                 }
                 scrollEventsDelaySpinBtn.timeout_id = GLib.timeout_add(
                     GLib.PRIORITY_DEFAULT,
-                    1000,
+                    500,
                     () => {
                         mscOptions.actionEventDelay = scrollEventsDelaySpinBtn.value;
                         scrollEventsDelaySpinBtn.timeout_id = null;
@@ -232,8 +232,14 @@ function _buildCornerWidget(corner, trigger) {
         [null, 'disabled'        ,   _('-')],
         [null, 'toggleOverview'  ,   _('Show Activities (Overview)')],
         [null, 'showApplications',   _('Show Applications')],
-        [null, 'showDesktop'     ,   _('Show Desktop')],
-        [null, 'runCommand'      ,   _('Run Command')],
+        [null, ''                ,   _('Show / Hide Desktop') + (GNOME40 ? ' \t\t\t\t>' : '')],
+        [   1, 'showDesktop'     ,   _('Show Desktop (all monitors)')],
+        [   1, 'showDesktopMon'  ,   _('Show Desktop (this monitor)')],
+        [   1, 'blackScreen'     ,   _('Black Screen (all monitors)')],
+        [   1, 'blackScreenMon'  ,   _('Black Screen (this monitor)')],
+        [null, ''                ,   _('Run Command') + (GNOME40 ? '  \t\t\t\t>' : '')],
+        [   1, 'runCommand'      ,   _('Run Command')],
+        [   1, 'runDialog'       ,   _('Open "Run a Command" Dialog')],
         [null, ''                ,   _('Workspaces') + (GNOME40 ? '   \t\t\t\t>' : '')],
         [   1, 'prevWorkspace'   ,   _('Previous Workspace')],
         [   1, 'nextWorkspace'   ,   _('Next Workspace')],
@@ -264,10 +270,8 @@ function _buildCornerWidget(corner, trigger) {
         [   1, 'keyboard'        ,   _('Screen Keyboard')],
         [null, ''                ,   _('Gnome Shell') + (GNOME40 ? '   \t\t\t\t>' : '')],
         [   1, 'hidePanel'       ,   _('Hide/Show Main Panel')],
-        [   1, 'runDialog'       ,   _('Run Dialog')],
         [null, ''                ,   _('System') + (GNOME40 ? '   \t\t\t\t\t>' : '')],
         [   1, 'screenLock'      ,   _('Lock Screen')],
-        [   1, 'blackScreen'     ,   _('Black Screen')],
         [   1, 'suspend'         ,   _('Suspend to RAM')],
         [   1, 'powerOff'        ,   _('Power Off Dialog')],
         [   1, 'logout'          ,   _('Log Out Dialog')],
@@ -294,12 +298,12 @@ function _buildCornerWidget(corner, trigger) {
     let iter, iter2;
     for (let i = 0; i < actions.length; i++){
         let item = actions[i];
-        if (GNOME40 && item[1] === 'invertLightness') continue;
+        if (GNOME40 && item[1] === 'brightnessInvert') continue;
         if (item[0] === null){
             iter  = actionTreeStore.append(null);
             actionTreeStore.set(iter, [0], [item[1]]);
             actionTreeStore.set(iter, [1], [item[2]]);
-            // map items on iters to find them for activation
+            // map items on iters
             iterDict[item[1]] = iter;
         } else {
             iter2  = actionTreeStore.append(iter);
@@ -348,7 +352,7 @@ function _buildCornerWidget(corner, trigger) {
                 }
                 commandEntry.timeout_id = GLib.timeout_add(
                     GLib.PRIORITY_DEFAULT,
-                    1000,
+                    500,
                     () => {
                         corner.setCommand(trigger, commandEntry.text);
                         commandEntry.timeout_id = null;
@@ -383,7 +387,7 @@ function _buildCornerWidget(corner, trigger) {
             }
             barrierSizeSpinButton.timeout_id = GLib.timeout_add(
                 GLib.PRIORITY_DEFAULT,
-                1000,
+                500,
                 () => {
                     corner.barrierSize = barrierSizeSpinButton.value;
                     barrierSizeSpinButton.timeout_id = null;
@@ -401,7 +405,7 @@ function _buildCornerWidget(corner, trigger) {
             }
             pressureThresholdSpinButton.timeout_id = GLib.timeout_add(
                 GLib.PRIORITY_DEFAULT,
-                1000,
+                500,
                 () => {
                     corner.pressureThreshold = pressureThresholdSpinButton.value;
                     pressureThresholdSpinButton.timeout_id = null;
@@ -421,7 +425,7 @@ function _buildCornerWidget(corner, trigger) {
         }
         workspaceIndexSpinButton.timeout_id = GLib.timeout_add(
             GLib.PRIORITY_DEFAULT,
-                1000,
+                500,
                 () => {
                     corner.setWorkspaceIndex(trigger, workspaceIndexSpinButton.value);
                     workspaceIndexSpinButton.timeout_id = null;

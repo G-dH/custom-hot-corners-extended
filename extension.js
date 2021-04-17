@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-
+"use strict"
 const Clutter                = imports.gi.Clutter;
 const St                     = imports.gi.St;
 const Meta                   = imports.gi.Meta;
@@ -298,6 +298,7 @@ class CustomHotCorner extends Layout.HotCorner {
         this.m = new Map([
             ['toggleOverview',  this._toggleOverview          ],
             ['showDesktop',     this._showDesktop             ],
+            ['showDesktopMon',  this._showDesktopMonitor      ],
             ['showApplications',this._showApplications        ],
             ['runCommand',      this._runCommand              ],
             ['moveToWorkspace', this._moveToWorkspace         ],
@@ -330,6 +331,7 @@ class CustomHotCorner extends Layout.HotCorner {
             ['prefs',           this._showPrefs               ],
             ['invertLightness', this._toggleLightnessInvert   ],
             ['blackScreen',     this._toggleBlackScreen       ],
+            ['blackScreenMon',  this._toggleBlackScreenMonitor],
             ['toggleZoom',      this._toggleZoom              ],
             ['zoomIn',          this._zoomIn                  ],
             ['zoomOut',         this._zoomOut                 ],
@@ -612,6 +614,9 @@ class CustomHotCorner extends Layout.HotCorner {
     _showDesktop() {
         _togleShowDesktop()
     }
+    _showDesktopMonitor() {
+        _togleShowDesktop(this._corner.monitorIndex);
+    }
     _showApplications() {
         if (Main.overview.dash.showAppsButton.checked)
             Main.overview.hide();
@@ -766,6 +771,11 @@ class CustomHotCorner extends Layout.HotCorner {
         let note = Me.metadata.name;
         _toggleDimmMonitors(opacity, note);
     }
+    _toggleBlackScreenMonitor() {
+        let opacity = 255;
+        let note = Me.metadata.name;
+        _toggleDimmMonitors(opacity, note, this._corner.monitorIndex);
+    }
     _toggleZoom() {
         _zoom(0);
     }
@@ -849,7 +859,7 @@ function _actionTimeoutActive(trigger) {
 // Action functions
 //////////////////////////////////////////////////////////////////////////////////////////
 
-function _togleShowDesktop() {
+function _togleShowDesktop(monitorIdx = -1) {
     if (Main.overview.visible) return;
     let metaWorkspace = global.workspace_manager.get_active_workspace();
     let windows = metaWorkspace.list_windows();
@@ -858,15 +868,18 @@ function _togleShowDesktop() {
         let wm_class = win.wm_class ? win.wm_class.toLowerCase() : 'null';
         let window_type = win.window_type ? win.window_type : 'null';
         let title = win.title ? win.title : 'null';
-        if (  !(win.minimized ||
+        // if monitorIdx has default value don't filter by monitor
+        if ( (monitorIdx < 0 ? true : win.get_monitor() === monitorIdx) &&
+            (!(win.minimized ||
                 window_type === Meta.WindowType.DESKTOP ||
                 window_type === Meta.WindowType.DOCK ||
                 // DING is GS extenson providing desktop icons
                 title.startsWith('DING') ||
                 wm_class.endsWith('notejot') ||
-                // conky is system monitor for Desktop, but not allways has it's window WindowType.DESKTOP hint
+                // conky is a system monitor for Desktop, but not always is its window of type WindowType.DESKTOP
                 wm_class === 'conky' ||
-                ( title.startsWith('@!') && title.endsWith('BDH') ) )) {
+                ( title.startsWith('@!') && title.endsWith('BDH') ) ))
+            ) {
 
             wins.push(win);
         }
@@ -1054,29 +1067,50 @@ function _disableEffects() {
 }
 /////////////////////////////////////////////////////////
 
-function _toggleDimmMonitors(alpha, text) {
-    if (!_dimmerActors.length) {
-        let monitors = [...Main.layoutManager.monitors.keys()];
-        for (let monitor of monitors) {
-            let geometry = global.display.get_monitor_geometry([monitor]);
-            let actor = new St.Label ({
-                text: text,
-                x: geometry.x,
-                y: geometry.y,
-                width: geometry.width,
-                height: geometry.height,
-                style: 'background-color: #000000; color: #444444; font-size: 1em;',
-                opacity: alpha,
-                reactive: true
-            });
-            actor.connect('button-press-event', () => _destroyDimmerActors());
-            //global.stage.add_actor(actor);  // actor added like this is transparent for the mouse pointer events
-            Main.layoutManager.addChrome(actor);
-            _dimmerActors.push(actor);
+function _toggleDimmMonitors(alpha, text, monitorIdx = -1) {
+    // reverse order to avoid conflicts after dimmer removed
+    let createNew = true;
+    if (monitorIdx === -1 && (_dimmerActors.length === Main.layoutManager.monitors.length)) {
+            _destroyDimmerActors();
+            createNew = false;
+    }
+    for (let i = _dimmerActors.length - 1; i > -1;  i--) {
+
+        if (_dimmerActors[i].name === `${monitorIdx}`) {
+
+            let idx = _dimmerActors.indexOf(_dimmerActors[i]);
+            if (idx > -1) {
+                _dimmerActors[i].destroy();
+                _dimmerActors.splice(idx, 1);
+                createNew = false;
+            }
         }
     }
-    else {
-        _destroyDimmerActors();
+    if (createNew) {
+        if (monitorIdx === -1) _destroyDimmerActors();
+        let monitors = [...Main.layoutManager.monitors.keys()];
+
+        for (let monitor of monitors) {
+
+            if ( (monitorIdx < 0 ? true : monitor === monitorIdx)) {
+                let geometry = global.display.get_monitor_geometry(monitor);
+                let actor = new St.Label ({
+                    name: `${monitor}`,
+                    text: text,
+                    x: geometry.x,
+                    y: geometry.y,
+                    width: geometry.width,
+                    height: geometry.height,
+                    style: 'background-color: #000000; color: #444444; font-size: 1em;',
+                    opacity: alpha,
+                    reactive: true
+                });
+                actor.connect('button-press-event', () => _toggleDimmMonitors(null, null, monitorIdx));
+                //global.stage.add_actor(actor);  // actor added like this is transparent for the mouse pointer events
+                Main.layoutManager.addChrome(actor);
+                _dimmerActors.push(actor);
+            }
+        }
     }
 }
 
@@ -1107,20 +1141,22 @@ function _zoom(step = 0) {
 
         if (!a11Settings.get_boolean('screen-magnifier-enabled')) {
            magSettings.set_double('mag-factor', 1);
-           a11Settings.set_boolean('screen-magnifier-enabled', true);
         }
 
         let value = magSettings.get_double('mag-factor') + step;
         if (value <= 1) {
             value = 1;
             // when Zoom = 1 enabled, graphics artefacts might follow mouse pointer
-            a11Settings.set_boolean('screen-magnifier-enabled', false);
+            if (a11Settings.get_boolean('screen-magnifier-enabled'))
+                a11Settings.set_boolean('screen-magnifier-enabled', false);
+                return;
         }
 
         if (value > 5) value = 5;
         magSettings.set_double('mag-factor', value);
+        if (!a11Settings.get_boolean('screen-magnifier-enabled'))
+           a11Settings.set_boolean('screen-magnifier-enabled', true);
     }
         //Main.magnifier.setActive(true);
     a11Settings = null;
 }
-
