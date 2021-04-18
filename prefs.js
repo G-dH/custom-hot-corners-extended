@@ -303,7 +303,7 @@ function _buildCornerWidget(corner, trigger) {
     let iter, iter2;
     for (let i = 0; i < actions.length; i++){
         let item = actions[i];
-        if (GNOME40 && item[1] === 'brightnessInvert') continue;
+        if (GNOME40 && item[1] === 'invertLightness') continue;
         if (item[0] === null){
             iter  = actionTreeStore.append(null);
             actionTreeStore.set(iter, [0], [item[1]]);
