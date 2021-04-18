@@ -621,10 +621,14 @@ class CustomHotCorner extends Layout.HotCorner {
         if (Main.overview.dash.showAppsButton.checked)
             Main.overview.hide();
         else {
+            // Pressing the apps btn before overview activation avoids icons animation in GS 3.36/3.38
             Main.overview.dash.showAppsButton.checked = true;
-            // GS 40 needs the following command, 3.36/38 doesn't
-            if (Main.overview.showApps)  // GS 40 only
-                Main.overview.showApps();
+            // in 3.36 pressing the button is usualy enough to activate overview, but not always
+            Main.overview.show();
+            // pressing apps btn before overview has no effect in GS 40, so once again
+            Main.overview.dash.showAppsButton.checked = true;
+
+            // Main.overview.showApps()  // GS 40 only, can show app grid, but not when overview is already active
             // Main.overview.viewSelector._toggleAppsPage();  // GS 36/38
         }
     }
