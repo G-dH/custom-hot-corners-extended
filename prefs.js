@@ -222,6 +222,11 @@ function _buildCornerWidget(corner, trigger) {
     const wsIndexRevealer = cwUI.get_object('wsIndexRevealer');
     const workspaceIndexSpinButton = cwUI.get_object('workspaceIndex');
     const appButton = cwUI.get_object('appButton');
+    if (GNOME40) {
+        // Gtk3 implement button icon as added Gtk.Image child, Gtk4 does not
+        const settingsBtn = cwUI.get_object('settingsButton');
+              settingsBtn.set_icon_name('emblem-system-symbolic');
+    }
 
     fullscreenSwitch.active = corner.getFullscreen(trigger);
     fullscreenSwitch.connect('notify::active', () => {
@@ -237,15 +242,15 @@ function _buildCornerWidget(corner, trigger) {
         [   1, 'showDesktopMon'  ,   _('Show Desktop (this monitor)')],
         [   1, 'blackScreen'     ,   _('Black Screen (all monitors)')],
         [   1, 'blackScreenMon'  ,   _('Black Screen (this monitor)')],
-        [null, ''                ,   _('Run Command') + (GNOME40 ? '  \t\t\t\t>' : '')],
+        [null, ''                ,   _('Run Command') + (GNOME40 ? '  \t\t\t\t\t>' : '')],
         [   1, 'runCommand'      ,   _('Run Command')],
         [   1, 'runDialog'       ,   _('Open "Run a Command" Dialog')],
-        [null, ''                ,   _('Workspaces') + (GNOME40 ? '   \t\t\t\t>' : '')],
+        [null, ''                ,   _('Workspaces') + (GNOME40 ? '   \t\t\t\t\t\t>' : '')],
         [   1, 'prevWorkspace'   ,   _('Previous Workspace')],
         [   1, 'nextWorkspace'   ,   _('Next Workspace')],
         [   1, 'recentWS'        ,   _('Recent Workspace')],
         [   1, 'moveToWorkspace' ,   _('Move to Workspace #')],
-        [null, ''                ,   _('Windows - Navigation') + (GNOME40 ? '   \t>' : '')],
+        [null, ''                ,   _('Windows - Navigation') + (GNOME40 ? '   \t\t\t>' : '')],
         [   1, 'recentWin'       ,   _('Recent Window (Alt+Tab)')],
         [   1, 'prevWinWsMon'    ,   _('Previous Window (current WS & monitor)')],
         [   1, 'prevWinWS'       ,   _('Previous Window (current WS)')],
@@ -253,7 +258,7 @@ function _buildCornerWidget(corner, trigger) {
         [   1, 'nextWinWsMon'    ,   _('Next Window (current WS & monitor)')],
         [   1, 'nextWinWS'       ,   _('Next Window (current WS)')],
         [   1, 'nextWinAll'      ,   _('Next Window (all)')],
-        [null, ''                ,   _('Windows - Control') + (GNOME40 ? '   \t\t>' : '')],
+        [null, ''                ,   _('Windows - Control') + (GNOME40 ? '   \t\t\t\t>' : '')],
         [   1, 'closeWin'        ,   _('Close Window')],
         [   1, 'maximizeWin'     ,   _('Maximize')],
         [   1, 'minimizeWin'     ,   _('Minimize')],
@@ -261,26 +266,26 @@ function _buildCornerWidget(corner, trigger) {
         [   1, 'aboveWin'        ,   _('Always on Top')],
         [   1, 'stickWin'        ,   _('Always on Visible Workspace')],
         [   1, 'invertLightness' ,   _('Invert Lightness (True Color Invert)')],
-        [null, ''                ,   _('Universal Access') + (GNOME40 ? '   \t\t\t>' : '')],
+        [null, ''                ,   _('Universal Access') + (GNOME40 ? '   \t\t\t\t\t>' : '')],
         [   1, 'toggleZoom'      ,   _('Toggle Zoom')],
         [   1, 'zoomIn'          ,   _('Zoom In')],
         [   1, 'zoomOut'         ,   _('Zoom Out')],
         [   1, 'screenReader'    ,   _('Screen Reader')],
         [   1, 'largeText'       ,   _('Large Text')],
         [   1, 'keyboard'        ,   _('Screen Keyboard')],
-        [null, ''                ,   _('Gnome Shell') + (GNOME40 ? '   \t\t\t\t>' : '')],
+        [null, ''                ,   _('Gnome Shell') + (GNOME40 ? '   \t\t\t\t\t\t>' : '')],
         [   1, 'hidePanel'       ,   _('Hide/Show Main Panel')],
-        [null, ''                ,   _('System') + (GNOME40 ? '   \t\t\t\t\t>' : '')],
+        [null, ''                ,   _('System') + (GNOME40 ? '   \t\t\t\t\t\t\t>' : '')],
         [   1, 'screenLock'      ,   _('Lock Screen')],
         [   1, 'suspend'         ,   _('Suspend to RAM')],
         [   1, 'powerOff'        ,   _('Power Off Dialog')],
         [   1, 'logout'          ,   _('Log Out Dialog')],
         [   1, 'switchUser'      ,   _('Switch User (if exists)')],
-        [null, ''                ,   _('Sound') + (GNOME40 ? '   \t\t\t\t\t>' : '')],
+        [null, ''                ,   _('Sound') + (GNOME40 ? '   \t\t\t\t\t\t\t>' : '')],
         [   1, 'volumeUp'        ,   _('Volume Up')],
         [   1, 'volumeDown'      ,   _('Volume Down')],
         [   1, 'muteAudio'       ,   _('Mute')],
-        [null, ''                ,   _('Debug') + (GNOME40 ? '   \t\t\t\t\t>' : '')],
+        [null, ''                ,   _('Debug') + (GNOME40 ? '   \t\t\t\t\t\t\t>' : '')],
         [   1, 'lookingGlass'    ,   _('Looking Glass (GS debugger)')],
         [   1, 'restartShell'    ,   _('Restart Gnome Shell (X11 only)')],
         [null, 'prefs'           ,   _('Open Preferences')]
@@ -303,7 +308,7 @@ function _buildCornerWidget(corner, trigger) {
             iter  = actionTreeStore.append(null);
             actionTreeStore.set(iter, [0], [item[1]]);
             actionTreeStore.set(iter, [1], [item[2]]);
-            // map items on iters
+            // map items on iters to address them later
             iterDict[item[1]] = iter;
         } else {
             iter2  = actionTreeStore.append(iter);

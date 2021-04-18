@@ -239,12 +239,6 @@
             <property name="valign">center</property>
             <property name="margin-start">4</property>
             <property name="popover">cornerSettings</property>
-            <child>
-              <object class="GtkImage">
-                <property name="can_focus">0</property>
-                <property name="icon_name">emblem-system-symbolic</property>
-              </object>
-            </child>
             <layout>
               <property name="column">1</property>
               <property name="row">0</property>
