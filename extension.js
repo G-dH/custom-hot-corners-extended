@@ -21,6 +21,7 @@ const Meta                   = imports.gi.Meta;
 const Shell                  = imports.gi.Shell;
 const GObject                = imports.gi.GObject;
 const GLib                   = imports.gi.GLib;
+const Gdk                    = imports.gi.Gdk;
 
 const Workspace              = imports.ui.workspace;
 const Main                   = imports.ui.main;
@@ -70,7 +71,6 @@ let _mainPanelVisible;
 
 
 function init() {
-    _origUpdateHotCorners = Main.layoutManager._updateHotCorners;
     _timeoutsCollector    = [];
     _cornersCollector     = [];
     _actorsCollector      = [];
@@ -82,10 +82,11 @@ function init() {
     _dimmerActors         = [];
     _extensionEnabled     = false;
     _barrierFallback      = false;
-    _mainPanelVisible     = Main.panel.is_visible();
 }
 
 function enable() {
+    _origUpdateHotCorners = Main.layoutManager._updateHotCorners;
+    _mainPanelVisible     = Main.panel.is_visible();
     _extensionEnabled = true;
     _initMscOptions();
     if (_mscOptions.delayStart) {
@@ -229,14 +230,13 @@ function _shouldExistHotCorner(corner) {
 }
 
 function _updateCorner(corner, key, trigger) {
-    if (key === 'h-expand' || key === 'v-expand') {
-        _updateHotCorners();
-        return;
-    }
     switch (key) {
         case 'action':
             corner.action[trigger] = corner.getAction(trigger);
             _rebuildHotCorner(corner);
+            break;
+        case 'ctrl':
+            corner.ctrl[trigger] = corner.getCtrl(trigger);
             break;
         case 'command':
             corner.command[trigger] = corner.getCommand(trigger);
@@ -252,6 +252,12 @@ function _updateCorner(corner, key, trigger) {
             break;
         case 'workspace-index':
             corner.workspaceIndex[trigger] = corner.getWorkspaceIndex(trigger);
+            break;
+        case 'h-expand':
+            _updateHotCorners();
+            break;
+        case 'v-expand':
+            _updateHotCorners();
             break;
         default:
             _rebuildHotCorner(corner);
@@ -552,25 +558,45 @@ class CustomHotCorner extends Layout.HotCorner {
     _rippleAnimation() {
         this._ripples.playAnimation(this._corner.x, this._corner.y);
     }
+
+    _ctrlPressed(state) {
+        return (state & Clutter.ModifierType.CONTROL_MASK) != 0;
+    }
+
     // Overridden to allow running custom actions
-    _onCornerEntered() {
+    _onCornerEntered(actor, event) {
+        let keymap = Gdk.Keymap.get_default();
+        let state = keymap.get_modifier_state();
+        if (this._corner.ctrl[Triggers.PRESSURE] && !this._ctrlPressed(state))
+            return;
         this._runAction(Triggers.PRESSURE);
         return Clutter.EVENT_PROPAGATE;
     }
-    _onPressureTriggered (actor, event) {
+    _onPressureTriggered() {
+        let keymap = Gdk.Keymap.get_default();
+        let state = keymap.get_modifier_state();
+        if (this._corner.ctrl[Triggers.PRESSURE] && !this._ctrlPressed(state))
+            return;
         this._runAction(Triggers.PRESSURE);
     }
     _onCornerClicked(actor, event) {
         let button = event.get_button();
         let trigger;
+        let state = event.get_state();
         switch (button) {
             case Clutter.BUTTON_PRIMARY:
+                if (this._corner.ctrl[Triggers.BUTTON_PRIMARY] && !this._ctrlPressed(state))
+                    return;
                 trigger = Triggers.BUTTON_PRIMARY;
                 break;
             case Clutter.BUTTON_SECONDARY:
+                if (this._corner.ctrl[Triggers.BUTTON_SECONDARY] && !this._ctrlPressed(state))
+                    return;
                 trigger = Triggers.BUTTON_SECONDARY;
                 break;
             case Clutter.BUTTON_MIDDLE:
+                if (this._corner.ctrl[Triggers.BUTTON_MIDDLE] && !this._ctrlPressed(state))
+                    return;
                 trigger = Triggers.BUTTON_MIDDLE;
                 break;
             default:
@@ -581,13 +607,18 @@ class CustomHotCorner extends Layout.HotCorner {
     }
     _onCornerScrolled(actor, event) {
         let direction = event.get_scroll_direction();
+        let state = event.get_state();
         if (_notValidScroll(direction)) return;
         let trigger;
         switch (direction) {
             case Clutter.ScrollDirection.UP:
+                if (this._corner.ctrl[Triggers.SCROLL_UP] && !this._ctrlPressed(state))
+                    return;
                 trigger = Triggers.SCROLL_UP;
                 break;
             case Clutter.ScrollDirection.DOWN:
+                if (this._corner.ctrl[Triggers.SCROLL_DOWN] && !this._ctrlPressed(state))
+                    return;
                 trigger = Triggers.SCROLL_DOWN;
                 break;
             default:

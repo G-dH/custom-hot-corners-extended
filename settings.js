@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-
+"use strict"
 const {GLib, Gio} = imports.gi;
 
 const ExtensionUtils = imports.misc.extensionUtils;
@@ -159,11 +159,13 @@ var Corner = class Corner {
         this.fullExpandVertical = false;
 
         this.action = {};
+        this.ctrl ={};
         this.command = {};
         this.fullscreen = {};
         this.workspaceIndex = {};
         for (let trigger of listTriggers()) {
             this.action[trigger] = this.getAction(trigger);
+            this.ctrl[trigger] = this.getCtrl(trigger);
             this.command[trigger] = this.getCommand(trigger);
             this.fullscreen[trigger] = this.getFullscreen(trigger);
             this.workspaceIndex[trigger] = this.getWorkspaceIndex(trigger);
@@ -203,7 +205,6 @@ var Corner = class Corner {
     }
 
 
-
     getAction(trigger) {
         return this._gsettings[trigger].get_string('action');
     }
@@ -236,12 +237,12 @@ var Corner = class Corner {
         this._gsettings[trigger].set_int('workspace-index', index);
     }
 
-    getAccel(trigger) {
-        return this._gsettings[trigger].get_strv('accel');
+    getCtrl(trigger) {
+        return this._gsettings[trigger].get_boolean('ctrl');
     }
 
-    setAccel(trigger, accel) {
-        this._gsettings[trigger].set_strv('accel', accel);
+    setCtrl(trigger, ctrl) {
+        this._gsettings[trigger].set_boolean('ctrl', ctrl);
     }
 
     get hExpand() {

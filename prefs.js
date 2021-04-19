@@ -145,13 +145,14 @@ function buildPrefsWidget() {
         for (let i =0; i < corners.length; i++) {
             grid[i] = new Gtk.Grid({
                 //expand: true,
-                column_homogeneous: true,
+                column_homogeneous: false,
+                row_homogeneous: false,
                 margin_start:   10,
                 margin_end:     10,
                 margin_top:     10,
                 margin_bottom:  10,
                 //row_spacing: 4,
-                //column_spacing: 20
+                column_spacing: 10
             });
         }
 
@@ -159,6 +160,22 @@ function buildPrefsWidget() {
 
         for (let i =0; i < corners.length; i++) {
             for (let trigger of triggers) {
+
+                const ctrlBtn = new Gtk.CheckButton(
+                //const ctrlBtn = new Gtk.ToggleButton(
+                    {
+                        label: 'Ctrl',
+                        halign: Gtk.Align.START,
+                        valign: Gtk.Align.START,
+                        vexpand: false,
+                        hexpand: false,
+                        tooltip_text: _('When checked, pressed Ctrl key is needed to trigger the action'),
+                    });
+                ctrlBtn.active = corners[i].getCtrl(trigger);
+                    ctrlBtn.connect('notify::active', () =>{
+                    corners[i].setCtrl(trigger, ctrlBtn.active);
+                });
+
                 const cw = _buildCornerWidget(corners[i], trigger);
                 const trgIcon = new Gtk.Image({
                     halign: Gtk.Align.START,
@@ -176,12 +193,13 @@ function buildPrefsWidget() {
                 }
                 trgIcon.set_from_file(iconPath);
                 trgIcon.set_tooltip_text(triggerLabels[trigger]);
-                grid[i].attach(trgIcon, 0, trigger, 1, 1);
-                grid[i].attach(cw, 1, trigger, 3, 1);
+                grid[i].attach(ctrlBtn, 0, trigger, 1, 1);
+                grid[i].attach(trgIcon, 1, trigger, 1, 1);
+                grid[i].attach(cw, 2, trigger, 1, 1);
             }
 
             const ew = _buildExpandWidget(corners[i]);
-            grid[i].attach(ew, 0, 6, 4, 1);
+            grid[i].attach(ew, 0, 6, 3, 1);
 
         }
         for (let i =0; i < corners.length; i++){
@@ -317,8 +335,6 @@ function _buildCornerWidget(corner, trigger) {
             iterDict[item[1]] = iter2;
         }
     }
-    if (iterDict[corner.getAction(trigger)]) actionCombo.set_active_iter(iterDict[corner.getAction(trigger)]);
-    actionCombo.active_id = corner.getAction(trigger);
 
     let cmdConnected = false;
     commandEntryRevealer.reveal_child = corner.getAction(trigger) === 'runCommand';
@@ -369,8 +385,8 @@ function _buildCornerWidget(corner, trigger) {
         }
     });
 
+    if (iterDict[corner.getAction(trigger)]) actionCombo.set_active_iter(iterDict[corner.getAction(trigger)]);
     wsIndexRevealer.reveal_child = corner.getAction(trigger) === 'moveToWorkspace';
-
 
     if (trigger === Settings.Triggers.PRESSURE) {
         const barrierLabel = cwUI.get_object('barrierLabel');
@@ -504,3 +520,4 @@ function _chooseAppDialog() {
                 : dialog.show_all();
         return dialog;
     }
+
