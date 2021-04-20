@@ -1,5 +1,5 @@
 {
-    "description": "Extended version of Custom Hot Corners can expand corners along the monitor's edges, use mouse buttons and wheel and provides lots of actions for desktop navigation and control.",
+    "description": "The Extended version of Custom Hot Corners extension can use mouse buttons and a scroll wheel as triggers, expand corners along the monitor's edges and offers lots of actions for desktop navigation and control.",
     "shell-version": [
     	"3.36",
     	"3.38",
