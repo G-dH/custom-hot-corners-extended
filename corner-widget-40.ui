@@ -175,7 +175,7 @@
     </property>
   </object>
   <object class="GtkGrid" id="cornerWidget">
-    <property name="valign">start</property>
+    <property name="valign">center</property>
     <property name="vexpand">1</property>
     <child>
       <object class="GtkRevealer" id="commandEntryRevealer">

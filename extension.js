@@ -68,6 +68,7 @@ let _dimmerActors;
 let _extensionEnabled;
 let _barrierFallback;
 let _mainPanelVisible;
+let _systemHotCornersEnabled;
 
 
 function init() {
@@ -87,6 +88,11 @@ function init() {
 function enable() {
     _origUpdateHotCorners = Main.layoutManager._updateHotCorners;
     _mainPanelVisible     = Main.panel.is_visible();
+    let interfaceSettings = Settings.getSettings(
+        'org.gnome.desktop.interface',
+        '/org/gnome/desktop/interface/');
+    _systemHotCornersEnabled = interfaceSettings.get_boolean('enable-hot-corners');
+    interfaceSettings.set_boolean('enable-hot-corners', false);
     _extensionEnabled = true;
     _initMscOptions();
     if (_mscOptions.delayStart) {
@@ -128,6 +134,10 @@ function disable() {
     _mainPanelVisible ?
             Main.panel.show() :
             Main.panel.hide();
+    let interfaceSettings = Settings.getSettings(
+        'org.gnome.desktop.interface',
+        '/org/gnome/desktop/interface/');
+    interfaceSettings.set_boolean('enable-hot-corners', _systemHotCornersEnabled);
 }
 
 function _initMscOptions() {
@@ -522,7 +532,7 @@ class CustomHotCorner extends Layout.HotCorner {
                     alpha: _cornersVisible ? 255 : 0})
             });
             this._actor.add_child(this._cornerActor);
-            this._cornerActor.connect('enter-event', this._onCornerEntered.bind(this));
+            this._cornerActor.connect('enter-event', this._onPressureTriggered.bind(this));
             //this._actors.push(this._cornerActor);
             //_actorsCollector.push(this._cornerActor);
         }
@@ -564,19 +574,26 @@ class CustomHotCorner extends Layout.HotCorner {
     }
 
     // Overridden to allow running custom actions
-    _onCornerEntered(actor, event) {
-        let keymap = Gdk.Keymap.get_default();
+/*    _onCornerEntered(actor, event) {
+        let keymap = Gdk.Keymap.get_for_display(Gdk.Display.get_default());
         let state = keymap.get_modifier_state();
         if (this._corner.ctrl[Triggers.PRESSURE] && !this._ctrlPressed(state))
             return;
         this._runAction(Triggers.PRESSURE);
         return Clutter.EVENT_PROPAGATE;
-    }
+    }*/
     _onPressureTriggered() {
-        let keymap = Gdk.Keymap.get_default();
-        let state = keymap.get_modifier_state();
-        if (this._corner.ctrl[Triggers.PRESSURE] && !this._ctrlPressed(state))
-            return;
+        if (this._corner.ctrl[Triggers.PRESSURE]) {
+            if (!Meta.is_wayland_compositor()) {
+                let keymap = Gdk.Keymap.get_for_display(Gdk.Display.get_default());
+                let state = keymap.get_modifier_state();
+                if (!this._ctrlPressed(state))
+                    return;
+            } else {
+                Main.notify(Me.metadata.name, _(`'Ctrl' option is not compatible with Wayland` ));
+                return;
+            }
+        }
         this._runAction(Triggers.PRESSURE);
     }
     _onCornerClicked(actor, event) {

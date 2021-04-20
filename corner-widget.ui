@@ -204,7 +204,7 @@ along with .  If not, see <http://www.gnu.org/licenses/>.
   <object class="GtkGrid" id="cornerWidget">
     <property name="visible">True</property>
     <property name="can_focus">False</property>
-    <property name="valign">start</property>
+    <property name="valign">center</property>
     <property name="vexpand">True</property>
     <child>
       <object class="GtkRevealer" id="commandEntryRevealer">

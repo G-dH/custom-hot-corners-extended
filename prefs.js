@@ -27,7 +27,8 @@ let   notebook;
 // gettext
 const _  = Settings._;
 
-let   GNOME40;
+let GNOME40;
+let WAYLAND;
 
 
 function _loadUI(file) {
@@ -41,6 +42,7 @@ function init() {
     if (Settings.shellVersion.startsWith("40"))
         GNOME40 = true;
     else GNOME40 = false;
+    WAYLAND = GLib.getenv('XDG_SESSION_TYPE') === 'wayland';
 }
 
 function buildPrefsWidget() {
@@ -166,20 +168,23 @@ function buildPrefsWidget() {
                     {
                         label: 'Ctrl',
                         halign: Gtk.Align.START,
-                        valign: Gtk.Align.START,
+                        valign: Gtk.Align.CENTER,
                         vexpand: false,
                         hexpand: false,
                         tooltip_text: _('When checked, pressed Ctrl key is needed to trigger the action'),
                     });
-                ctrlBtn.active = corners[i].getCtrl(trigger);
-                    ctrlBtn.connect('notify::active', () =>{
+                if ((WAYLAND) && (trigger === Settings.Triggers.PRESSURE)) {
+                    ctrlBtn.tooltip_text = ('Doesn\'t work with Wayland for Hot triggers\n') + 
+                                            ctrlBtn.tooltip_text;
+                }
+                ctrlBtn.connect('notify::active', () =>{
                     corners[i].setCtrl(trigger, ctrlBtn.active);
                 });
+                ctrlBtn.set_active(corners[i].getCtrl(trigger));
 
                 const cw = _buildCornerWidget(corners[i], trigger);
                 const trgIcon = new Gtk.Image({
                     halign: Gtk.Align.START,
-                    valign: Gtk.Align.START,
                     margin_start: 10,
                     vexpand: true,
                     hexpand: true,
@@ -193,8 +198,8 @@ function buildPrefsWidget() {
                 }
                 trgIcon.set_from_file(iconPath);
                 trgIcon.set_tooltip_text(triggerLabels[trigger]);
-                grid[i].attach(ctrlBtn, 0, trigger, 1, 1);
-                grid[i].attach(trgIcon, 1, trigger, 1, 1);
+                grid[i].attach(trgIcon, 0, trigger, 1, 1);
+                grid[i].attach(ctrlBtn, 1, trigger, 1, 1);
                 grid[i].attach(cw, 2, trigger, 1, 1);
             }
 
@@ -203,7 +208,6 @@ function buildPrefsWidget() {
 
         }
         for (let i =0; i < corners.length; i++){
-            //const label = new Gtk.Label({ label: (corners[i].top ? _('Top') + ' ' : _('Bottom') +' ') + (corners[i].left ? _('Left') : _('Right')) });
             const label = new Gtk.Image({
                     halign: Gtk.Align.CENTER,
                     valign: Gtk.Align.START,
