@@ -246,7 +246,6 @@ var Corner = class Corner {
     }
 
     get hExpand() {
-        //log(`[${Me.metadata.name}.Settings] hExpand`);
         return this._gsettings[Triggers.BUTTON_PRIMARY].get_boolean('h-expand');
     }
 
@@ -255,7 +254,6 @@ var Corner = class Corner {
     }
 
     get vExpand() {
-        //log(`[${Me.metadata.name}.Settings] vExpand`);
         return this._gsettings[Triggers.BUTTON_PRIMARY].get_boolean('v-expand');
     }
 
@@ -263,12 +261,19 @@ var Corner = class Corner {
         this._gsettings[Triggers.BUTTON_PRIMARY].set_boolean('v-expand', bool_val);
     }
 
-    get barrierSize() {
-        return this._gsettings[Triggers.PRESSURE].get_int('barrier-size');
+    get barrierSizeH() {
+        return this._gsettings[Triggers.PRESSURE].get_int('barrier-size-h');
     }
 
-    set barrierSize(size) {
-        this._gsettings[Triggers.PRESSURE].set_int('barrier-size', size);
+    set barrierSizeH(size) {
+        this._gsettings[Triggers.PRESSURE].set_int('barrier-size-h', size);
+    }
+    get barrierSizeV() {
+        return this._gsettings[Triggers.PRESSURE].get_int('barrier-size-v');
+    }
+
+    set barrierSizeV(size) {
+        this._gsettings[Triggers.PRESSURE].set_int('barrier-size-v', size);
     }
 
     get pressureThreshold() {

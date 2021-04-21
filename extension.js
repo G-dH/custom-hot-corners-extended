@@ -365,7 +365,7 @@ class CustomHotCorner extends Layout.HotCorner {
             Layout.HOT_CORNER_PRESSURE_TIMEOUT,
             Shell.ActionMode.NORMAL | Shell.ActionMode.OVERVIEW
         );
-        this.setBarrierSize(corner.barrierSize, false);
+        this.setBarrierSize([corner.barrierSizeH, corner.barrierSizeV], false);
 
         if (this._corner.action[Triggers.PRESSURE] !== 'disabled' && !_barrierFallback) {
             this._pressureBarrier.connect('trigger', this._onPressureTriggered.bind(this));
@@ -388,30 +388,31 @@ class CustomHotCorner extends Layout.HotCorner {
         // Use code of parent class to remove old barriers but new barriers
         // must be created here since the properties are construct only.
         super.setBarrierSize(0);
-        if (size > 0) {
+        let sizeH = size[0];
+        let sizeV = size[1];
+        if (sizeH > 0 && sizeV > 0) {
             const BD = Meta.BarrierDirection;
             // for X11 session:
             //  right vertical and bottom horizontal pointer barriers must be 1px further to match the screen edge
-            //  because barriers are actually placed between pixels, along the top/left edge of the addressed pixels
-            // Wayland behave different and place the barrier on the top/bottom / left/right edge of the pixels
-            //  depending on direction set to block
+            // ...because barriers are actually placed between pixels, along the top/left edge of the addressed pixels
+            // ...Wayland behave differently and addressed pixel means the one behind which pointer can't go
             // but avoid barriers that are at the same position
-            // and block opposite directions. Neither with X nor with Wayland
+            // ...and block opposite directions. Neither with X nor with Wayland
             // such barriers work.
-            let x = this._corner.x + (Meta.is_wayland_compositor() ? 0: ((!this._corner.left && !this._barrierCollision()['x']) ? 1 : 0)); // workaround for GS 3.36 bug
+            let x = this._corner.x + (Meta.is_wayland_compositor() ? 0: ((!this._corner.left && !this._barrierCollision()['x']) ? 1 : 0)); 
             this._verticalBarrier = new Meta.Barrier({
                 display: global.display,
                 x1: x,
                 x2: x,
                 y1: this._corner.y,
-                y2: this._corner.top ? this._corner.y + size : this._corner.y - size,
+                y2: this._corner.top ? this._corner.y + sizeV : this._corner.y - sizeV,
                 directions: this._corner.left ? BD.POSITIVE_X : BD.NEGATIVE_X
             });
-            let y = this._corner.y + (Meta.is_wayland_compositor() ? 0: ((!this._corner.top && !this._barrierCollision()['y']) ? 1 : 0)); // workaround for GS 3.36 bug
+            let y = this._corner.y + (Meta.is_wayland_compositor() ? 0: ((!this._corner.top && !this._barrierCollision()['y']) ? 1 : 0));
             this._horizontalBarrier = new Meta.Barrier({
                 display: global.display,
                 x1: this._corner.x,
-                x2: this._corner.left ? this._corner.x + size : this._corner.x - size,
+                x2: this._corner.left ? this._corner.x + sizeH : this._corner.x - sizeH,
                 y1: y,
                 y2: y,
                 directions: this._corner.top ? BD.POSITIVE_Y : BD.NEGATIVE_Y
@@ -575,22 +576,21 @@ class CustomHotCorner extends Layout.HotCorner {
 
     // Overridden to allow running custom actions
 /*    _onCornerEntered(actor, event) {
-        let keymap = Gdk.Keymap.get_for_display(Gdk.Display.get_default());
-        let state = keymap.get_modifier_state();
-        if (this._corner.ctrl[Triggers.PRESSURE] && !this._ctrlPressed(state))
-            return;
         this._runAction(Triggers.PRESSURE);
         return Clutter.EVENT_PROPAGATE;
     }*/
+
     _onPressureTriggered() {
         if (this._corner.ctrl[Triggers.PRESSURE]) {
+            // neither the 'enter' nor pressure 'trigger' events contain modifier state
             if (!Meta.is_wayland_compositor()) {
+                // and default keymap modifier state is always 0 on Wayland
                 let keymap = Gdk.Keymap.get_for_display(Gdk.Display.get_default());
                 let state = keymap.get_modifier_state();
                 if (!this._ctrlPressed(state))
                     return;
             } else {
-                Main.notify(Me.metadata.name, _(`'Ctrl' option is not compatible with Wayland` ));
+                Main.notify(Me.metadata.name, _(`'Ctrl' option is not Wayland compatible` ));
                 return;
             }
         }

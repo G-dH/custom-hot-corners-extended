@@ -116,7 +116,7 @@ function buildPrefsWidget() {
             });
     scrollEventsDelaySpinBtn.value = mscOptions.actionEventDelay;
     scrollEventsDelaySpinBtn.timeout_id = null;
-    scrollEventsDelaySpinBtn.connect('changed', () => {
+    scrollEventsDelaySpinBtn.connect('value-changed', () => {
                 scrollEventsDelaySpinBtn.update();
                 if (scrollEventsDelaySpinBtn.timeout_id) {
                     GLib.Source.remove(scrollEventsDelaySpinBtn.timeout_id);
@@ -182,7 +182,7 @@ function buildPrefsWidget() {
                 });
                 ctrlBtn.set_active(corners[i].getCtrl(trigger));
 
-                const cw = _buildCornerWidget(corners[i], trigger);
+                const cw = _buildCornerWidget(corners[i], trigger, geometry);
                 const trgIcon = new Gtk.Image({
                     halign: Gtk.Align.START,
                     margin_start: 10,
@@ -231,7 +231,7 @@ function buildPrefsWidget() {
     return prefsWidget;
 }
 
-function _buildCornerWidget(corner, trigger) {
+function _buildCornerWidget(corner, trigger, geometry) {
     const cwUI = GNOME40 ?
                     _loadUI('corner-widget-40.ui') :
                     _loadUI('corner-widget.ui');
@@ -393,29 +393,54 @@ function _buildCornerWidget(corner, trigger) {
     wsIndexRevealer.reveal_child = corner.getAction(trigger) === 'moveToWorkspace';
 
     if (trigger === Settings.Triggers.PRESSURE) {
-        const barrierLabel = cwUI.get_object('barrierLabel');
+        const barrierLabelH = cwUI.get_object('barrierLabelH');
+        const barrierLabelV = cwUI.get_object('barrierLabelV');
+        cwUI.get_object('barrierAdjustmentH').set_upper(geometry.width);
+        cwUI.get_object('barrierAdjustmentV').set_upper(geometry.height);
+        const barrierAdjustmentV = cwUI.get_object('barrierAdjustmentV');
         const pressureLabel = cwUI.get_object('pressureLabel');
-        const barrierSizeSpinButton = cwUI.get_object('barrierSize');
+        const barrierSizeSpinButtonH = cwUI.get_object('barrierSizeH');
+        const barrierSizeSpinButtonV = cwUI.get_object('barrierSizeV');
         const pressureThresholdSpinButton = cwUI.get_object('pressureThreshold');
-        barrierLabel.show();
-        barrierSizeSpinButton.show();
+        barrierLabelH.show();
+        barrierLabelV.show();
+        barrierSizeSpinButtonH.show();
+        barrierSizeSpinButtonV.show();
         pressureLabel.show();
         pressureThresholdSpinButton.show();
 
-        barrierSizeSpinButton.value = corner.barrierSize;
-        barrierSizeSpinButton.timout_id = null;
-        barrierSizeSpinButton.connect('changed', () => {
-            barrierSizeSpinButton.update();
+        barrierSizeSpinButtonH.value = corner.barrierSizeH;
+        barrierSizeSpinButtonH.timout_id = null;
+        barrierSizeSpinButtonH.connect('value-changed', () => {
+            barrierSizeSpinButtonH.update();
             // Cancel previous timeout
-            if (barrierSizeSpinButton.timeout_id) {
-                GLib.Source.remove(barrierSizeSpinButton.timeout_id);
+            if (barrierSizeSpinButtonH.timeout_id) {
+                GLib.Source.remove(barrierSizeSpinButtonH.timeout_id);
             }
-            barrierSizeSpinButton.timeout_id = GLib.timeout_add(
+            barrierSizeSpinButtonH.timeout_id = GLib.timeout_add(
                 GLib.PRIORITY_DEFAULT,
                 500,
                 () => {
-                    corner.barrierSize = barrierSizeSpinButton.value;
-                    barrierSizeSpinButton.timeout_id = null;
+                    corner.barrierSizeH = barrierSizeSpinButtonH.value;
+                    barrierSizeSpinButtonH.timeout_id = null;
+                    return false;
+                }
+            );
+        });
+        barrierSizeSpinButtonV.value = corner.barrierSizeV;
+        barrierSizeSpinButtonV.timout_id = null;
+        barrierSizeSpinButtonV.connect('value-changed', () => {
+            barrierSizeSpinButtonV.update();
+            // Cancel previous timeout
+            if (barrierSizeSpinButtonV.timeout_id) {
+                GLib.Source.remove(barrierSizeSpinButtonV.timeout_id);
+            }
+            barrierSizeSpinButtonV.timeout_id = GLib.timeout_add(
+                GLib.PRIORITY_DEFAULT,
+                500,
+                () => {
+                    corner.barrierSizeV = barrierSizeSpinButtonV.value;
+                    barrierSizeSpinButtonV.timeout_id = null;
                     return false;
                 }
             );
@@ -423,7 +448,7 @@ function _buildCornerWidget(corner, trigger) {
     
         pressureThresholdSpinButton.value = corner.pressureThreshold;
         pressureThresholdSpinButton.timeout_id = null;
-        pressureThresholdSpinButton.connect('changed', () => {
+        pressureThresholdSpinButton.connect('value-changed', () => {
             pressureThresholdSpinButton.update();
             if (pressureThresholdSpinButton.timeout_id) {
                 GLib.Source.remove(pressureThresholdSpinButton.timeout_id);
@@ -443,7 +468,7 @@ function _buildCornerWidget(corner, trigger) {
 
     workspaceIndexSpinButton.value = corner.getWorkspaceIndex(trigger);
     workspaceIndexSpinButton.timeout_id = null;
-    workspaceIndexSpinButton.connect('changed', () => {
+    workspaceIndexSpinButton.connect('value-changed', () => {
         workspaceIndexSpinButton.update();
         if (workspaceIndexSpinButton.timeout_id) {
             GLib.Source.remove(workspaceIndexSpinButton.timeout_id);
@@ -524,4 +549,3 @@ function _chooseAppDialog() {
                 : dialog.show_all();
         return dialog;
     }
-

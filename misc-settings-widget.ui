@@ -24,7 +24,7 @@ along with .  If not, see <http://www.gnu.org/licenses/>.
   <!-- interface-license-type gplv3 -->
   <object class="GtkAdjustment" id="scrollEventsDelayAdjustment">
     <property name="upper">1000</property>
-    <property name="step_increment">1</property>
+    <property name="step_increment">10</property>
     <property name="page_increment">10</property>
   </object>
   <object class="GtkGrid" id="miscOptions">
