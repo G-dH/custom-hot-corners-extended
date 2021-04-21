@@ -14,7 +14,10 @@
     <key name='fullscreen' type='b'>
       <default>false</default>
     </key>
-    <key name='barrier-size' type='i'>
+    <key name='barrier-size-h' type='i'>
+      <default>20</default>
+    </key>
+    <key name='barrier-size-v' type='i'>
       <default>20</default>
     </key>
     <key name='pressure-threshold' type='i'>
