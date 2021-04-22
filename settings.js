@@ -23,9 +23,7 @@ const Me = ExtensionUtils.getCurrentExtension();
 const Config = imports.misc.config;
 var   shellVersion = Config.PACKAGE_VERSION;
 
-const Gettext = imports.gettext
-      Gettext.textdomain(Me.metadata['gettext-domain']);
-      Gettext.bindtextdomain(Me.metadata['gettext-domain'], Me.dir.get_child('locale').get_path());
+const Gettext = imports.gettext.domain(Me.metadata['gettext-domain']);
 var _ = Gettext.gettext;
 
 var Triggers ={
