@@ -72,6 +72,7 @@ let _systemHotCornersEnabled;
 
 
 function init() {
+    ExtensionUtils.initTranslations(Me.metadata['gettext-domain']);
     _timeoutsCollector    = [];
     _cornersCollector     = [];
     _actorsCollector      = [];

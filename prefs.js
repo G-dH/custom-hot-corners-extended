@@ -39,6 +39,7 @@ function _loadUI(file) {
 
 function init() {
     log(`initializing ${Me.metadata.name} Preferences`);
+    ExtensionUtils.initTranslations(Me.metadata['gettext-domain']);
     if (Settings.shellVersion.startsWith("40"))
         GNOME40 = true;
     else GNOME40 = false;
