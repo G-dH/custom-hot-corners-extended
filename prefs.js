@@ -161,6 +161,11 @@ function buildPrefsWidget() {
 
         const triggersBook = new Gtk.Notebook();
 
+        let mouseSettings = Settings.getSettings(
+                                    'org.gnome.desktop.peripherals.mouse',
+                                    '/org/gnome/desktop/peripherals/mouse/');
+        let leftHandMouse = mouseSettings.get_boolean('left-handed');
+
         for (let i =0; i < corners.length; i++) {
             for (let trigger of triggers) {
 
@@ -195,7 +200,12 @@ function buildPrefsWidget() {
                 if (trigger === 0) {
                     iconPath = `${Me.dir.get_path()}/icons/${corners[i].top ? 'Top':'Bottom'}${corners[i].left ? 'Left':'Right'}.svg`
                 } else {
-                    iconPath = `${Me.dir.get_path()}/icons/Mouse-${trigger}.svg`;
+                    let iconIdx = trigger;
+                    if (leftHandMouse) {
+                        if (trigger === 1) iconIdx = 2;
+                        if (trigger === 2) iconIdx = 1;
+                    }
+                    iconPath = `${Me.dir.get_path()}/icons/Mouse-${iconIdx}.svg`;
                 }
                 trgIcon.set_from_file(iconPath);
                 trgIcon.set_tooltip_text(triggerLabels[trigger]);
@@ -275,10 +285,10 @@ function _buildCornerWidget(corner, trigger, geometry) {
         [   1, 'moveToWorkspace' ,   _('Move to Workspace #')],
         [null, ''                ,   _('Windows - Navigation')],
         [   1, 'recentWin'       ,   _('Recent Window (Alt+Tab)')],
-        [   1, 'prevWinWsMon'    ,   _('Previous Window (current WS & monitor)')],
+        [   1, 'prevWinWsMon'    ,   _('Previous Window (current monitor)')],
         [   1, 'prevWinWS'       ,   _('Previous Window (current WS)')],
         [   1, 'prevWinAll'      ,   _('Previous Window (all)')],
-        [   1, 'nextWinWsMon'    ,   _('Next Window (current WS & monitor)')],
+        [   1, 'nextWinWsMon'    ,   _('Next Window (current monitor)')],
         [   1, 'nextWinWS'       ,   _('Next Window (current WS)')],
         [   1, 'nextWinAll'      ,   _('Next Window (all)')],
         [null, ''                ,   _('Windows - Control')],
@@ -288,7 +298,7 @@ function _buildCornerWidget(corner, trigger, geometry) {
         [   1, 'fullscreenWin'   ,   _('Fullscreen')],
         [   1, 'aboveWin'        ,   _('Always on Top')],
         [   1, 'stickWin'        ,   _('Always on Visible Workspace')],
-        [   1, 'invertLightness' ,   _('Invert Lightness (True Color Invert)')],
+        [   1, 'invertLightness' ,   _('Invert Lightness')],
         [null, ''                ,   _('Universal Access')],
         [   1, 'toggleZoom'      ,   _('Toggle Zoom')],
         [   1, 'zoomIn'          ,   _('Zoom In')],
