@@ -47,7 +47,7 @@ along with .  If not, see <http://www.gnu.org/licenses/>.
         <property name="halign">start</property>
         <property name="valign">center</property>
         <property name="margin_left">10</property>
-        <property name="label" translatable="yes">Horizonataly:</property>
+        <property name="label" translatable="yes">Horizontally:</property>
       </object>
       <packing>
         <property name="left_attach">0</property>
