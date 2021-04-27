@@ -28,7 +28,7 @@
         <property name="halign">start</property>
         <property name="valign">center</property>
         <property name="margin_start">10</property>
-        <property name="label" translatable="yes">Horizonataly:</property>
+        <property name="label" translatable="yes">Horizontally:</property>
         <layout>
           <property name="column">0</property>
           <property name="row">1</property>
@@ -51,7 +51,7 @@
         <property name="halign">start</property>
         <property name="valign">center</property>
         <property name="margin-start">10</property>
-        <property name="label" translatable="yes">Verticaly:</property>
+        <property name="label" translatable="yes">Vertically:</property>
         <layout>
           <property name="column">2</property>
           <property name="row">1</property>
