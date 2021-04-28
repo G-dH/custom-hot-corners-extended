@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-"use strict"
+'use strict'
 const {Gtk, Gdk, GLib, GObject} = imports.gi;
 
 const ExtensionUtils = imports.misc.extensionUtils;
@@ -36,7 +36,7 @@ function _loadUI(file) {
     let builder = Gtk.Builder.new_from_file(path);
     return builder;
 }
-
+let time;
 function init() {
     log(`initializing ${Me.metadata.name} Preferences`);
     ExtensionUtils.initTranslations(Me.metadata['gettext-domain']);
@@ -50,7 +50,7 @@ function buildPrefsWidget() {
     const prefsWidget = new Gtk.Grid();
     notebook = new Gtk.Notebook();
     notebook.tab_pos = Gtk.POS_LEFT;
-    prefsWidget.attach(notebook,0,0,1,1);
+    prefsWidget.attach(notebook, 0, 0, 1, 1);
 
     const display = Gdk.Display.get_default();
     const num_monitors = GNOME40 ?
@@ -60,25 +60,175 @@ function buildPrefsWidget() {
     const cornerWidgets = [];
 
     const mscOptions = new Settings.MscOptions();
-    const msUI       = GNOME40 ?
-                        _loadUI('misc-settings-widget-40.ui') :
-                        _loadUI('misc-settings-widget.ui');
-    const miscUI                   = msUI.get_object('miscOptions');
-    const delayStartSwitch         = msUI.get_object('delayStartSwitch');
-    const fullscreenGlobalSwitch   = msUI.get_object('fullscreenGlobalSwitch');
-    const ignoreLastWsSwitch       = msUI.get_object('ignoreLastWsSwitch');
-    const wrapWsSwitch             = msUI.get_object('wrapWsSwitch');
-    const wsIndicatorSwitch        = msUI.get_object('wsIndicatorSwitch');
-    const scrollEventsDelaySpinBtn = msUI.get_object('scrollEventsDelaySpinBtn');
-    const cornersVisibleSwitch     = msUI.get_object('cornersVisibleSwitch');
-    const rippleAnimationSwitch    = msUI.get_object('rippleAnimationSwitch');
-    const winWrapSwitch            = msUI.get_object('winWrapSwitch');
-    const winSkipMinimizedSwitch   = msUI.get_object('winSkipMinimizedSwitch');
-    const barrierFallbackSwitch    = msUI.get_object('barrierFallbackSwitch');
 
+    let miscUI = new Gtk.Box({
+        orientation: Gtk.Orientation.VERTICAL,
+        spacing:       10,
+        homogeneous: false,
+        margin_start:  12,
+        margin_end:    12,
+        margin_top:    12,
+        margin_bottom: 12
+    });
+
+    let optionsList = [];
+
+    optionsList.push(
+        _optionsItem(
+            _makeTitle(_('Global options:')),
+            null,
+            null));
+
+    let watchCornersSwitch = _newGtkSwitch();
+    optionsList.push(
+        _optionsItem(
+            _('Watch hot corners for external overrides'),
+            _('Update corners when something (usualy other extensions) change them'),
+            watchCornersSwitch)
+    );
+
+    let fullscreenGlobalSwitch = _newGtkSwitch();
+    optionsList.push(
+        _optionsItem(
+                _('Enable all corner triggers in fullscreen mode'),
+                _('When off, each trigger can be set independently'),
+                fullscreenGlobalSwitch)
+    );
+
+    let actionDelayAdjustment = new Gtk.Adjustment({
+            upper:          1000,
+            step_increment:   10,
+            page_increment:   10 });
+    let actionDelaySpinBtn = new Gtk.SpinButton({
+        halign: Gtk.Align.END,
+        hexpand: true
+    });
+        actionDelaySpinBtn.set_adjustment(actionDelayAdjustment);
+
+    optionsList.push(
+        _optionsItem(
+            _('Minimum delay between actions (ms)'),
+            _('Prevents accidental double-action. Ignored by volume control'),
+            actionDelaySpinBtn));
+
+    let rippleAnimationSwitch = _newGtkSwitch();
+    optionsList.push(
+        _optionsItem(
+            _('Show ripple animations'),
+            _('When you trigger an action, ripples are animated in the corner'),
+            rippleAnimationSwitch));
+
+    let barrierFallbackSwitch = _newGtkSwitch();
+    optionsList.push(
+        _optionsItem(
+            _('Use fallback hot corner triggers'),
+            _('When pressure barriers don`t work, on virtual systems for example'),
+            barrierFallbackSwitch));
+    
+    let cornersVisibleSwitch = _newGtkSwitch();
+    optionsList.push(
+        _optionsItem(
+            _('Make active corners / edges visible'),
+            _('Pressure barriers are not included'),
+            cornersVisibleSwitch));
+
+    optionsList.push(
+        _optionsItem(
+            _makeTitle(_('Workspace switcher:')),
+            null,
+            null));
+
+    let wrapWsSwitch = _newGtkSwitch();
+    optionsList.push(
+        _optionsItem(
+            _('Wraparound'),
+            null,
+            wrapWsSwitch));
+
+    let ignoreLastWsSwitch = _newGtkSwitch();
+    optionsList.push(
+        _optionsItem(
+            _('Ignore last (empty) workspace'),
+            null,
+            ignoreLastWsSwitch));
+
+    let wsIndicatorSwitch = _newGtkSwitch();
+    optionsList.push(
+        _optionsItem(
+            _('Show workspace indicator while switching'),
+            null,
+            wsIndicatorSwitch));
+
+    optionsList.push(
+        _optionsItem(
+            _makeTitle(_('Window switcher:')),
+            null,
+            null));
+
+    let winWrapSwitch = _newGtkSwitch();
+    optionsList.push(
+        _optionsItem(
+            _('Wraparound'),
+            null,
+            winWrapSwitch));
+
+    let winSkipMinimizedSwitch = _newGtkSwitch();
+    optionsList.push(
+        _optionsItem(
+            _('Skip minimized'),
+            null,
+            winSkipMinimizedSwitch));
+    let frame;
+    let frameBox;
+    for (let item of optionsList) {
+        if (!item[0][1]) {
+            let lbl = new Gtk.Label();
+                lbl.set_markup(item[0][0]);
+            frame = new Gtk.Frame({
+                label_widget: lbl
+            });
+            frameBox = new Gtk.ListBox({
+                selection_mode: null,
+                can_focus: false,
+            });
+            if (GNOME40) {
+                miscUI.append(frame);
+                frame.set_child(frameBox);
+            } else {
+                miscUI.add(frame);
+                frame.add(frameBox);
+            }
+            continue;
+        }
+        let box = new Gtk.Box({
+            can_focus: false,
+            orientation: Gtk.Orientation.HORIZONTAL,
+            margin_start: 4,
+            margin_end:   4,
+            margin_top:   4,
+            margin_bottom:4,
+            hexpand: true,
+            spacing: 20,
+        });
+        for (let i of item[0]) {
+            GNOME40 ?
+                box.append(i) :
+                box.add(i);
+        }
+        if (item.length === 2) box.set_tooltip_text(item[1]);
+        GNOME40 ?
+            frameBox.append(box):
+            frameBox.add(box);
+    }
+/*
     delayStartSwitch.active = mscOptions.delayStart;
     delayStartSwitch.connect('notify::active', () => {
                 mscOptions.delayStart = delayStartSwitch.active;
+    });
+*/
+    watchCornersSwitch.active = mscOptions.watchCorners;
+    watchCornersSwitch.connect('notify::active', () => {
+                mscOptions.watchCorners = watchCornersSwitch.active;
     });
 
     fullscreenGlobalSwitch.active = mscOptions.fullscreenGlobal;
@@ -115,19 +265,19 @@ function buildPrefsWidget() {
     barrierFallbackSwitch.connect('notify::active', () =>{
                 mscOptions.barrierFallback = barrierFallbackSwitch.active;
             });
-    scrollEventsDelaySpinBtn.value = mscOptions.actionEventDelay;
-    scrollEventsDelaySpinBtn.timeout_id = null;
-    scrollEventsDelaySpinBtn.connect('value-changed', () => {
-                scrollEventsDelaySpinBtn.update();
-                if (scrollEventsDelaySpinBtn.timeout_id) {
-                    GLib.Source.remove(scrollEventsDelaySpinBtn.timeout_id);
+    actionDelaySpinBtn.value = mscOptions.actionEventDelay;
+    actionDelaySpinBtn.timeout_id = null;
+    actionDelaySpinBtn.connect('value-changed', () => {
+                actionDelaySpinBtn.update();
+                if (actionDelaySpinBtn.timeout_id) {
+                    GLib.Source.remove(actionDelaySpinBtn.timeout_id);
                 }
-                scrollEventsDelaySpinBtn.timeout_id = GLib.timeout_add(
+                actionDelaySpinBtn.timeout_id = GLib.timeout_add(
                     GLib.PRIORITY_DEFAULT,
                     500,
                     () => {
-                        mscOptions.actionEventDelay = scrollEventsDelaySpinBtn.value;
-                        scrollEventsDelaySpinBtn.timeout_id = null;
+                        mscOptions.actionEventDelay = actionDelaySpinBtn.value;
+                        actionDelaySpinBtn.timeout_id = null;
                         return false;
                     }
                 );
@@ -147,14 +297,12 @@ function buildPrefsWidget() {
         let grid = {};
         for (let i =0; i < corners.length; i++) {
             grid[i] = new Gtk.Grid({
-                //expand: true,
                 column_homogeneous: false,
                 row_homogeneous: false,
                 margin_start:   10,
                 margin_end:     10,
                 margin_top:     10,
                 margin_bottom:  10,
-                //row_spacing: 4,
                 column_spacing: 10
             });
         }
@@ -162,8 +310,8 @@ function buildPrefsWidget() {
         const triggersBook = new Gtk.Notebook();
 
         let mouseSettings = Settings.getSettings(
-                                    'org.gnome.desktop.peripherals.mouse',
-                                    '/org/gnome/desktop/peripherals/mouse/');
+                                'org.gnome.desktop.peripherals.mouse',
+                                '/org/gnome/desktop/peripherals/mouse/');
         let leftHandMouse = mouseSettings.get_boolean('left-handed');
 
         for (let i =0; i < corners.length; i++) {
@@ -243,29 +391,107 @@ function buildPrefsWidget() {
 }
 
 function _buildCornerWidget(corner, trigger, geometry) {
-    const cwUI = GNOME40 ?
-                    _loadUI('corner-widget-40.ui') :
-                    _loadUI('corner-widget.ui');
-    const cw = cwUI.get_object('cornerWidget');
-    const fullscreenSwitch = cwUI.get_object('fullscreenSwitch');
-    const actionCombo = cwUI.get_object('actionCombo');
-    const actionTreeStore = cwUI.get_object('treestore');
-    const commandEntry = cwUI.get_object('commandEntry');
-    const commandEntryRevealer = cwUI.get_object('commandEntryRevealer');
-    const wsIndexRevealer = cwUI.get_object('wsIndexRevealer');
-    const workspaceIndexSpinButton = cwUI.get_object('workspaceIndex');
-    const appButton = cwUI.get_object('appButton');
+
+    const cw = new Gtk.Grid({
+        valign: Gtk.Align.CENTER
+    });
+
+    const popupGrid = new Gtk.Grid({
+        margin_start:  10,
+        margin_end:    10,
+        margin_top:    10,
+        margin_bottom: 10,
+        column_spacing: 12,
+        row_spacing: 8
+    });
+
+    const comboGrid = new Gtk.Grid();
+    const cmdGrid = new Gtk.Grid({
+        margin_top: 8
+    });
+
+    const commandEntryRevealer = new Gtk.Revealer({
+        child: cmdGrid
+    });
+
+    const wsIndexAdjustment = new Gtk.Adjustment({
+        lower:           1,
+        upper:         256,
+        step_increment:  1,
+        page_increment: 10
+    });
+    const workspaceIndexSpinButton = new Gtk.SpinButton({
+        margin_top: 8,
+        xalign: 0.5
+    });
+    const wsIndexRevealer = new Gtk.Revealer({
+        child: workspaceIndexSpinButton
+    });
+    workspaceIndexSpinButton.set_adjustment(wsIndexAdjustment);
+    const commandEntry = new Gtk.Entry({
+        hexpand: true});
+    const appButton = new Gtk.Button({
+        valign: Gtk.Align.END,
+        margin_start: 4
+    });
+
+    const actionTreeStore = new Gtk.TreeStore();
+    actionTreeStore.set_column_types([
+            GObject.TYPE_STRING,
+            GObject.TYPE_STRING
+    ]);
+
+    const actionCombo = new Gtk.ComboBox({
+        model: actionTreeStore,
+        id_column: 0,
+        hexpand: true
+    });
+
+    const cornerPopover = new Gtk.Popover();
+    const settingsBtn = new Gtk.MenuButton({
+        popover: cornerPopover,
+        valign: Gtk.Align.CENTER,
+        margin_start: 4
+    });
+
+
     if (GNOME40) {
         // Gtk3 implement button icon as added Gtk.Image child, Gtk4 does not
-        const settingsBtn = cwUI.get_object('settingsButton');
-              settingsBtn.set_icon_name('emblem-system-symbolic');
+        settingsBtn.set_icon_name('emblem-system-symbolic');
+        appButton.set_icon_name('find-location-symbolic');
+    } else {
+        settingsBtn.add(Gtk.Image.new_from_icon_name('emblem-system-symbolic', Gtk.IconSize.BUTTON));
+        appButton.add(Gtk.Image.new_from_icon_name('find-location-symbolic', Gtk.IconSize.BUTTON));
     }
 
+    cmdGrid.attach(commandEntry, 0, 0, 1, 1);
+    cmdGrid.attach(appButton, 1, 0, 1, 1);
+
+    comboGrid.attach(actionCombo, 0, 0, 1, 1);
+    comboGrid.attach(settingsBtn, 1, 0, 1, 1);
+
+    const fullscreenLabel = new Gtk.Label({
+        label: _('Enable in fullscreen mode'),
+        halign: Gtk.Align.START
+    });
+    const fullscreenSwitch = _newGtkSwitch();
+
+    popupGrid.attach(fullscreenLabel, 0, 0, 1, 1);
+    popupGrid.attach(fullscreenSwitch, 1, 0, 1, 1);
+    if (!GNOME40) {
+        popupGrid.show_all();
+        cornerPopover.add(popupGrid);
+    } else cornerPopover.set_child(popupGrid);
     fullscreenSwitch.active = corner.getFullscreen(trigger);
     fullscreenSwitch.connect('notify::active', () => {
         corner.setFullscreen(trigger, fullscreenSwitch.active);
     });
-    
+
+    cw.attach(comboGrid, 0, 0, 1, 1);
+    cw.attach(commandEntryRevealer, 0, 1, 1, 1);
+    cw.attach(wsIndexRevealer, 0, 2, 1, 1);
+    if (!GNOME40) cw.show_all();
+
     const actions = [
         [null, 'disabled'        ,   _('-')],
         [null, 'toggleOverview'  ,   _('Show Activities (Overview)')],
@@ -285,10 +511,10 @@ function _buildCornerWidget(corner, trigger, geometry) {
         [   1, 'moveToWorkspace' ,   _('Move to Workspace #')],
         [null, ''                ,   _('Windows - Navigation')],
         [   1, 'recentWin'       ,   _('Recent Window (Alt+Tab)')],
-        [   1, 'prevWinWsMon'    ,   _('Previous Window (current monitor)')],
+        [   1, 'prevWinWsMon'    ,   _('Previous Window (this monitor)')],
         [   1, 'prevWinWS'       ,   _('Previous Window (current WS)')],
         [   1, 'prevWinAll'      ,   _('Previous Window (all)')],
-        [   1, 'nextWinWsMon'    ,   _('Next Window (current monitor)')],
+        [   1, 'nextWinWsMon'    ,   _('Next Window (this monitor)')],
         [   1, 'nextWinWS'       ,   _('Next Window (current WS)')],
         [   1, 'nextWinAll'      ,   _('Next Window (all)')],
         [null, ''                ,   _('Windows - Control')],
@@ -308,6 +534,7 @@ function _buildCornerWidget(corner, trigger, geometry) {
         [   1, 'keyboard'        ,   _('Screen Keyboard')],
         [null, ''                ,   _('Gnome Shell')],
         [   1, 'hidePanel'       ,   _('Hide/Show Main Panel')],
+        [   1, 'toggleTheme'     ,   _('Toggle Light/Dark Theme')],
         [null, ''                ,   _('System')],
         [   1, 'screenLock'      ,   _('Lock Screen')],
         [   1, 'suspend'         ,   _('Suspend to RAM')],
@@ -324,6 +551,7 @@ function _buildCornerWidget(corner, trigger, geometry) {
         [null, 'prefs'           ,   _('Open Preferences')]
     ]
     let comboRenderer = new Gtk.CellRendererText();
+
     actionCombo.pack_start(comboRenderer, true);
     actionCombo.add_attribute(comboRenderer, "text", 1);
     actionCombo.set_cell_data_func(comboRenderer,
@@ -404,21 +632,66 @@ function _buildCornerWidget(corner, trigger, geometry) {
     wsIndexRevealer.reveal_child = corner.getAction(trigger) === 'moveToWorkspace';
 
     if (trigger === Settings.Triggers.PRESSURE) {
-        const barrierLabelH = cwUI.get_object('barrierLabelH');
-        const barrierLabelV = cwUI.get_object('barrierLabelV');
-        cwUI.get_object('barrierAdjustmentH').set_upper(geometry.width);
-        cwUI.get_object('barrierAdjustmentV').set_upper(geometry.height);
-        const barrierAdjustmentV = cwUI.get_object('barrierAdjustmentV');
-        const pressureLabel = cwUI.get_object('pressureLabel');
-        const barrierSizeSpinButtonH = cwUI.get_object('barrierSizeH');
-        const barrierSizeSpinButtonV = cwUI.get_object('barrierSizeV');
-        const pressureThresholdSpinButton = cwUI.get_object('pressureThreshold');
-        barrierLabelH.show();
-        barrierLabelV.show();
-        barrierSizeSpinButtonH.show();
-        barrierSizeSpinButtonV.show();
-        pressureLabel.show();
-        pressureThresholdSpinButton.show();
+        const barrierLabelH = new Gtk.Label({
+            label: _('Barrier size - Horizontal'),
+            halign: Gtk.Align.START
+        });
+        const barrierLabelV = new Gtk.Label({
+            label: _('Barrier size - Vertical'),
+            halign: Gtk.Align.START
+        });
+        const pressureLabel = new Gtk.Label({
+            label: _('Pressure Threshold'),
+            halign: Gtk.Align.START
+        });
+        const barrierAdjustmentH = new Gtk.Adjustment({
+            lower: 1,
+            upper: geometry.width,
+            step_increment: 10,
+            page_increment: 100
+        });
+        const barrierAdjustmentV = new Gtk.Adjustment({
+            lower: 1,
+            upper: geometry.height,
+            step_increment: 10,
+            page_increment: 100
+        });
+        const pressureThresholdAdjustment = new Gtk.Adjustment({
+            lower: 0,
+            upper: 800,
+            step_increment: 10,
+            page_increment: 100
+        });
+        const barrierSizeSpinButtonH = new Gtk.SpinButton({
+            adjustment: barrierAdjustmentH,
+            numeric: true,
+            xalign: 0.5,
+            halign: Gtk.Align.END,
+            hexpand: true
+        });
+        const barrierSizeSpinButtonV = new Gtk.SpinButton({
+            adjustment: barrierAdjustmentV,
+            numeric: true,
+            xalign: 0.5,
+            halign: Gtk.Align.END,
+            hexpand: true
+        });
+        const pressureThresholdSpinButton = new Gtk.SpinButton({
+            adjustment: pressureThresholdAdjustment,
+            numeric: true,
+            xalign: 0.5,
+            halign: Gtk.Align.END,
+            hexpand: true
+        });
+        popupGrid.attach(barrierLabelH, 0, 1, 1, 1);
+        popupGrid.attach(barrierSizeSpinButtonH, 1, 1, 1, 1);
+        popupGrid.attach(barrierLabelV, 0, 2, 1, 1);
+        popupGrid.attach(barrierSizeSpinButtonV, 1, 2, 1, 1);
+        popupGrid.attach(pressureLabel, 0, 3, 1, 1);
+        popupGrid.attach(pressureThresholdSpinButton, 1, 3, 1, 1);
+
+        if (!GNOME40) popupGrid.show_all();
+
 
         barrierSizeSpinButtonH.value = corner.barrierSizeH;
         barrierSizeSpinButtonH.timout_id = null;
@@ -499,12 +772,55 @@ function _buildCornerWidget(corner, trigger, geometry) {
 }
 
 function _buildExpandWidget (corner) {
-    const cwUI = GNOME40 ?
-                    _loadUI('corner-widget-40.ui') :
-                    _loadUI('corner-widget.ui')
-    const ew = cwUI.get_object('expandGrid');
-    const hExpandSwitch = cwUI.get_object('hExpandSwitch');
-    const vExpandSwitch = cwUI.get_object('vExpandSwitch');
+    const ew = new Gtk.Grid({
+        row_spacing:     8,
+        column_spacing: 40,
+        margin_start:   10,
+        margin_end:     10,
+        margin_top:     10,
+        margin_bottom:  10,
+        halign: Gtk.Align.END
+    });
+    const expTitle = new Gtk.Label({
+        use_markup: true,
+        label: _makeTitle(_("Expand corner along edges:")),
+        tooltip_text: _('For clicks / scrolls only, pressure barriers can be set independently') + '\n'
+                     + _('When adjacent corners are set to expand along the same edge, each of them will allocate a half of the edge') + '\n'
+                     +_("Activate 'Make active corners/edges visible' option to see real picture")
+    });
+    const frame = new Gtk.Frame();
+          frame.set_label_widget(expTitle);
+    const hIcon = new Gtk.Image({
+                    halign: Gtk.Align.START,
+                    margin_start: 10,
+                    //vexpand: true,
+                    hexpand: true,
+                    pixel_size: 40
+                });
+          hIcon.set_from_file(`${Me.dir.get_path()}/icons/${corner.top ? 'Top':'Bottom'}${corner.left ? 'Left':'Right'}HE.svg`);
+    const vIcon = new Gtk.Image({
+                    halign: Gtk.Align.START,
+                    margin_start: 10,
+                    //vexpand: true,
+                    hexpand: true,
+                    pixel_size: 40
+                });
+    vIcon.set_from_file(`${Me.dir.get_path()}/icons/${corner.top ? 'Top':'Bottom'}${corner.left ? 'Left':'Right'}VE.svg`);
+
+    const hExpandSwitch = new Gtk.Switch({
+        tooltip_text: _('Expand horizonatally'),
+        halign: Gtk.Align.END,
+        valign: Gtk.Align.CENTER
+    });
+    const vExpandSwitch = new Gtk.Switch({
+        tooltip_text: _('Expand vertically'),
+        halign: Gtk.Align.END,
+        valign: Gtk.Align.CENTER
+    });
+    ew.attach(hIcon, 0, 1, 1, 1);
+    ew.attach(hExpandSwitch, 1, 1, 1, 1);
+    ew.attach(vIcon, 2, 1, 1, 1);
+    ew.attach(vExpandSwitch, 3, 1, 1, 1);
     hExpandSwitch.active = corner.hExpand;
     vExpandSwitch.active = corner.vExpand;
     hExpandSwitch.connect('notify::active', () => {
@@ -513,8 +829,10 @@ function _buildExpandWidget (corner) {
     vExpandSwitch.connect('notify::active', () => {
         corner.vExpand = vExpandSwitch.active;
     });
-
-    return ew;
+    GNOME40 ?
+        frame.set_child(ew):
+        frame.add(ew)
+    return frame;
 }
 
 function _chooseAppDialog() {
@@ -560,3 +878,46 @@ function _chooseAppDialog() {
                 : dialog.show_all();
         return dialog;
     }
+
+function _newGtkSwitch() {
+    return new Gtk.Switch({
+        halign: Gtk.Align.END,
+        valign: Gtk.Align.CENTER,
+        hexpand: true
+    });
+}
+
+function _optionsItem(text, tooltip, widget) {
+    let item = [[],];
+    let label;
+    if (widget) {
+        label = new Gtk.Label({
+                    halign: Gtk.Align.START
+        });
+        label.set_markup(text);
+    } else label = text;
+    item[0].push(label);
+    if (widget) item[0].push(widget);
+    if (tooltip) item.push(tooltip);
+
+    return item;
+}
+
+function _makeSmall(label) {
+  return '<small>'+label+'</small>';
+}
+function _makeTitle(label) {
+  return '<b>'+label+'</b>';
+}
+
+
+
+
+
+
+
+
+
+
+
+

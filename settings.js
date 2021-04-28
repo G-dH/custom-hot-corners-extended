@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-"use strict"
+'use strict'
 const {GLib, Gio} = imports.gi;
 
 const ExtensionUtils = imports.misc.extensionUtils;
@@ -73,11 +73,11 @@ var MscOptions = class MscOptions {
         const path = `${_path}/misc/`;
         return getSettings(schema, path);
     }
-    get delayStart() {
-        return this._gsettings.get_boolean('delay-start');
+    get watchCorners() {
+        return this._gsettings.get_boolean('watch-corners');
     }
-    set delayStart(bool_val) {
-        this._gsettings.set_boolean('delay-start', bool_val);
+    set watchCorners(bool_val) {
+        this._gsettings.set_boolean('watch-corners', bool_val);
     }
     get fullscreenGlobal() {
         return this._gsettings.get_boolean('fullscreen-global');
