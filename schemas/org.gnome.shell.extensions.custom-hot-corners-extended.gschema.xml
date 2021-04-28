@@ -34,7 +34,7 @@
     </key>
   </schema>
   <schema id='org.gnome.shell.extensions.custom-hot-corners-extended.misc'>
-    <key name='delay-start' type='b'>
+    <key name='watch-corners' type='b'>
       <default>true</default>
     </key>
     <key name='fullscreen-global' type='b'>
