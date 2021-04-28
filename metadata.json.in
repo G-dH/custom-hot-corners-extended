@@ -1,8 +1,5 @@
 {
-    "description": "Navigate and control your Gnome Shell environment by a mouse through the corners and edges of your monitors. Custom Hot Corners - Extended offers activities overview, app grid and show desktop actions as well as commands execution (with app chooser), customizable workspace and window switchers, window control (includes inverting brightness), volume control, universal access functions (includes zoom and on-screen keyboard), system control and more.
-
-Restart your Gnome Shell after each update of the extension to load new code.
-Please report bugs on GitHub linked below.",
+    "description": "Navigate and control the Gnome Shell environment by a mouse through the corners and edges of your monitors",
     "shell-version": [
     	"3.36",
     	"3.38",
