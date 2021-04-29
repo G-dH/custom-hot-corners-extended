@@ -101,7 +101,8 @@ function buildPrefsWidget() {
             page_increment:   10 });
     let actionDelaySpinBtn = new Gtk.SpinButton({
         halign: Gtk.Align.END,
-        hexpand: true
+        hexpand: true,
+        xalign: 0.5
     });
         actionDelaySpinBtn.set_adjustment(actionDelayAdjustment);
 
@@ -496,19 +497,23 @@ function _buildCornerWidget(corner, trigger, geometry) {
         [null, 'disabled'        ,   _('-')],
         [null, 'toggleOverview'  ,   _('Show Activities (Overview)')],
         [null, 'showApplications',   _('Show Applications')],
+
         [null, ''                ,   _('Show / Hide Desktop')],
         [   1, 'showDesktop'     ,   _('Show Desktop (all monitors)')],
         [   1, 'showDesktopMon'  ,   _('Show Desktop (this monitor)')],
         [   1, 'blackScreen'     ,   _('Black Screen (all monitors)')],
         [   1, 'blackScreenMon'  ,   _('Black Screen (this monitor)')],
+
         [null, ''                ,   _('Run Command')],
         [   1, 'runCommand'      ,   _('Run Command')],
         [   1, 'runDialog'       ,   _('Open "Run a Command" Dialog')],
+
         [null, ''                ,   _('Workspaces')],
         [   1, 'prevWorkspace'   ,   _('Previous Workspace')],
         [   1, 'nextWorkspace'   ,   _('Next Workspace')],
         [   1, 'recentWS'        ,   _('Recent Workspace')],
         [   1, 'moveToWorkspace' ,   _('Move to Workspace #')],
+
         [null, ''                ,   _('Windows - Navigation')],
         [   1, 'recentWin'       ,   _('Recent Window (Alt+Tab)')],
         [   1, 'prevWinWsMon'    ,   _('Previous Window (this monitor)')],
@@ -517,14 +522,35 @@ function _buildCornerWidget(corner, trigger, geometry) {
         [   1, 'nextWinWsMon'    ,   _('Next Window (this monitor)')],
         [   1, 'nextWinWS'       ,   _('Next Window (current WS)')],
         [   1, 'nextWinAll'      ,   _('Next Window (all)')],
+
         [null, ''                ,   _('Windows - Control')],
         [   1, 'closeWin'        ,   _('Close Window')],
-        [   1, 'maximizeWin'     ,   _('Maximize')],
-        [   1, 'minimizeWin'     ,   _('Minimize')],
-        [   1, 'fullscreenWin'   ,   _('Fullscreen')],
-        [   1, 'aboveWin'        ,   _('Always on Top')],
-        [   1, 'stickWin'        ,   _('Always on Visible Workspace')],
-        [   1, 'invertLightness' ,   _('Invert Lightness')],
+        [   1, 'maximizeWin'     ,   _('Maximize Window')],
+        [   1, 'minimizeWin'     ,   _('Minimize Window')],
+        [   1, 'fullscreenWin'   ,   _('Fullscreen Window')],
+        [   1, 'aboveWin'        ,   _('Win Always on Top')],
+        [   1, 'stickWin'        ,   _('Win Always on Visible WS')],
+
+        [null, ''                ,   _('Windows - Effects')],
+        [   1, 'invertLightWin'  ,   _('Invert Lightness (window)')],
+        [   1, 'desaturateWin'   ,   _('Desaturate (window)')],
+        [   1, 'brightUpWin'     ,   _('Brightness Up (SW,window)')],
+        [   1, 'brightDownWin'   ,   _('Brightness Down (SW,window)')],
+        [   1, 'contrastUpWin'   ,   _('Contrast Up (SW,window)')],
+        [   1, 'contrastDownWin' ,   _('Contrast Down (SW,window)')],
+        [   1, 'opacityUpWin'    ,   _('Opacity Up (window)')],
+        [   1, 'opacityDownWin'  ,   _('Opacity Down (window)')],
+        [   1, 'opacityToggleWin',   _('Toggle Transparency (window)')],
+
+        [null, ''                ,   _('Global Effects')],
+        [   1, 'invertLightAll'  ,   _('Invert Lightness (global)')],
+        [   1, 'desaturateAll'   ,   _('Desaturate (global)')],
+        [   1, 'brightUpAll'     ,   _('Brightness Up (SW,global)')],
+        [   1, 'brightDownAll'   ,   _('Brightness Down (SW,global)')],
+        [   1, 'contrastUpAll'   ,   _('Contrast Up (SW,global)')],
+        [   1, 'contrastDownAll' ,   _('Contrast Down (SW,global)')],
+        [   1, 'removeAllEffects',   _('Remove All Effects')],
+
         [null, ''                ,   _('Universal Access')],
         [   1, 'toggleZoom'      ,   _('Toggle Zoom')],
         [   1, 'zoomIn'          ,   _('Zoom In')],
@@ -532,22 +558,27 @@ function _buildCornerWidget(corner, trigger, geometry) {
         [   1, 'screenReader'    ,   _('Screen Reader')],
         [   1, 'largeText'       ,   _('Large Text')],
         [   1, 'keyboard'        ,   _('Screen Keyboard')],
+
         [null, ''                ,   _('Gnome Shell')],
         [   1, 'hidePanel'       ,   _('Hide/Show Main Panel')],
         [   1, 'toggleTheme'     ,   _('Toggle Light/Dark Theme')],
+
         [null, ''                ,   _('System')],
         [   1, 'screenLock'      ,   _('Lock Screen')],
         [   1, 'suspend'         ,   _('Suspend to RAM')],
         [   1, 'powerOff'        ,   _('Power Off Dialog')],
         [   1, 'logout'          ,   _('Log Out Dialog')],
         [   1, 'switchUser'      ,   _('Switch User (if exists)')],
+
         [null, ''                ,   _('Sound')],
         [   1, 'volumeUp'        ,   _('Volume Up')],
         [   1, 'volumeDown'      ,   _('Volume Down')],
         [   1, 'muteAudio'       ,   _('Mute')],
+
         [null, ''                ,   _('Debug')],
         [   1, 'lookingGlass'    ,   _('Looking Glass (GS debugger)')],
         [   1, 'restartShell'    ,   _('Restart Gnome Shell (X11 only)')],
+
         [null, 'prefs'           ,   _('Open Preferences')]
     ]
     let comboRenderer = new Gtk.CellRendererText();
@@ -683,11 +714,11 @@ function _buildCornerWidget(corner, trigger, geometry) {
             halign: Gtk.Align.END,
             hexpand: true
         });
-        popupGrid.attach(barrierLabelH, 0, 1, 1, 1);
-        popupGrid.attach(barrierSizeSpinButtonH, 1, 1, 1, 1);
-        popupGrid.attach(barrierLabelV, 0, 2, 1, 1);
-        popupGrid.attach(barrierSizeSpinButtonV, 1, 2, 1, 1);
-        popupGrid.attach(pressureLabel, 0, 3, 1, 1);
+        popupGrid.attach(barrierLabelH,               0, 1, 1, 1);
+        popupGrid.attach(barrierSizeSpinButtonH,      1, 1, 1, 1);
+        popupGrid.attach(barrierLabelV,               0, 2, 1, 1);
+        popupGrid.attach(barrierSizeSpinButtonV,      1, 2, 1, 1);
+        popupGrid.attach(pressureLabel,               0, 3, 1, 1);
         popupGrid.attach(pressureThresholdSpinButton, 1, 3, 1, 1);
 
         if (!GNOME40) popupGrid.show_all();
