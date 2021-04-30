@@ -24,12 +24,12 @@ const triggers       = Settings.listTriggers();
 const triggerLabels  = Settings.TriggerLabels;
 let   notebook;
 
+
 // gettext
 const _  = Settings._;
 
 let GNOME40;
 let WAYLAND;
-
 
 function _loadUI(file) {
     const path = Me.dir.get_child(file).get_path();
@@ -59,6 +59,124 @@ function buildPrefsWidget() {
 
     const cornerWidgets = [];
 
+    for (let monitorIndex = 0; monitorIndex < num_monitors; ++monitorIndex) {
+        const monitor = GNOME40 ?
+                            display.get_monitors().get_item(monitorIndex) :
+                            display.get_monitor(monitorIndex);
+        const geometry = monitor.get_geometry();
+
+        let mouseSettings = Settings.getSettings(
+                                'org.gnome.desktop.peripherals.mouse',
+                                '/org/gnome/desktop/peripherals/mouse/');
+        let leftHandMouse = mouseSettings.get_boolean('left-handed');
+
+        let corners = Settings.Corner.forMonitor(monitorIndex, monitorIndex, geometry);
+        let grid = [];
+        for (let i =0; i < corners.length; i++) {
+            grid[i] = new Gtk.Grid({
+                column_homogeneous: false,
+                row_homogeneous: false,
+                margin_start:   10,
+                margin_end:     10,
+                margin_top:     10,
+                margin_bottom:  10,
+                column_spacing: 10
+            });
+        }
+
+        const triggersBook = new Gtk.Notebook();
+
+        for (let i =0; i < corners.length; i++) {
+            // bacause of thousands of items total in combo boxes prefs window start is very slow
+            // therefore render just the first corner page before the window is shown to user
+            // the rest of pages will be rendered little bit later, but all the user will notice is 4 times faster start
+            GLib.timeout_add(
+                    GLib.PRIORITY_DEFAULT,
+                        i*300+(300*corners[i].monitorIndex),
+                () => {
+                    _buildCorner(corners[i], grid[i], geometry, leftHandMouse);
+                    return false;
+                });
+        }
+        for (let i = 0; i < corners.length; i++){
+            const label = new Gtk.Image({
+                    halign: Gtk.Align.CENTER,
+                    valign: Gtk.Align.START,
+                    margin_start: 10,
+                    vexpand: true,
+                    hexpand: true,
+                    pixel_size: 40
+                });
+            label.set_from_file(`${Me.dir.get_path()}/icons/${corners[i].top ? 'Top':'Bottom'}${corners[i].left ? 'Left':'Right'}.svg`);
+            triggersBook.append_page(grid[i], label);
+
+
+        }
+        const label = new Gtk.Label({ label: _('Monitor') + ' ' + (monitorIndex + 1) });
+        notebook.append_page(triggersBook, label);
+
+    }
+    const label = new Gtk.Label({ label: _('Options'), halign: Gtk.Align.START});
+    notebook.append_page(_buildMscOptions(), label);
+    if (!GNOME40) prefsWidget.show_all();
+    return prefsWidget;
+}
+
+function _buildCorner(corner, grid, geometry, leftHandMouse) {
+            for (let trigger of triggers) {
+
+                const ctrlBtn = new Gtk.CheckButton(
+                //const ctrlBtn = new Gtk.ToggleButton(
+                    {
+                        label: 'Ctrl',
+                        halign: Gtk.Align.START,
+                        valign: Gtk.Align.CENTER,
+                        vexpand: false,
+                        hexpand: false,
+                        tooltip_text: _('When checked, pressed Ctrl key is needed to trigger the action'),
+                    });
+                if (WAYLAND && (trigger === Settings.Triggers.PRESSURE)) {
+                    ctrlBtn.tooltip_text = ('Doesn\'t work with Wayland for Hot triggers\n') +
+                                            ctrlBtn.tooltip_text;
+                }
+                ctrlBtn.connect('notify::active', () =>{
+                    corner.setCtrl(trigger, ctrlBtn.active);
+                });
+                ctrlBtn.set_active(corner.getCtrl(trigger));
+
+                const cw = _buildCornerWidget(corner, trigger, geometry);
+                const trgIcon = new Gtk.Image({
+                    halign: Gtk.Align.START,
+                    margin_start: 10,
+                    vexpand: true,
+                    hexpand: true,
+                    pixel_size: 40
+                });
+                let iconPath;
+                if (trigger === 0) {
+                    iconPath = `${Me.dir.get_path()}/icons/${corner.top ? 'Top':'Bottom'}${corner.left ? 'Left':'Right'}.svg`
+                } else {
+                    let iconIdx = trigger;
+                    if (leftHandMouse) {
+                        if (trigger === 1) iconIdx = 2;
+                        if (trigger === 2) iconIdx = 1;
+                    }
+                    iconPath = `${Me.dir.get_path()}/icons/Mouse-${iconIdx}.svg`;
+                }
+                trgIcon.set_from_file(iconPath);
+                trgIcon.set_tooltip_text(triggerLabels[trigger]);
+                grid.attach(trgIcon, 0, trigger, 1, 1);
+                grid.attach(ctrlBtn, 1, trigger, 1, 1);
+                grid.attach(cw, 2, trigger, 1, 1);
+            }
+
+            const ew = _buildExpandWidget(corner);
+            grid.attach(ew, 0, 6, 3, 1);
+            if (!GNOME40) grid.show_all();
+
+}
+
+function _buildMscOptions() {
     const mscOptions = new Settings.MscOptions();
 
     let miscUI = new Gtk.Box({
@@ -221,12 +339,7 @@ function buildPrefsWidget() {
             frameBox.append(box):
             frameBox.add(box);
     }
-/*
-    delayStartSwitch.active = mscOptions.delayStart;
-    delayStartSwitch.connect('notify::active', () => {
-                mscOptions.delayStart = delayStartSwitch.active;
-    });
-*/
+
     watchCornersSwitch.active = mscOptions.watchCorners;
     watchCornersSwitch.connect('notify::active', () => {
                 mscOptions.watchCorners = watchCornersSwitch.active;
@@ -289,106 +402,7 @@ function buildPrefsWidget() {
                 mscOptions.rippleAnimation = rippleAnimationSwitch.active;
             });
 
-    for (let monitorIndex = 0; monitorIndex < num_monitors; ++monitorIndex) {
-        const monitor = GNOME40 ?
-                            display.get_monitors().get_item(monitorIndex) :
-                            display.get_monitor(monitorIndex);
-        const geometry = monitor.get_geometry();
-        const corners = Settings.Corner.forMonitor(monitorIndex, monitorIndex, geometry);
-        let grid = [];
-        for (let i =0; i < corners.length; i++) {
-            grid[i] = new Gtk.Grid({
-                column_homogeneous: false,
-                row_homogeneous: false,
-                margin_start:   10,
-                margin_end:     10,
-                margin_top:     10,
-                margin_bottom:  10,
-                column_spacing: 10
-            });
-        }
-
-        const triggersBook = new Gtk.Notebook();
-
-        let mouseSettings = Settings.getSettings(
-                                'org.gnome.desktop.peripherals.mouse',
-                                '/org/gnome/desktop/peripherals/mouse/');
-        let leftHandMouse = mouseSettings.get_boolean('left-handed');
-
-        for (let i =0; i < corners.length; i++) {
-            for (let trigger of triggers) {
-
-                const ctrlBtn = new Gtk.CheckButton(
-                //const ctrlBtn = new Gtk.ToggleButton(
-                    {
-                        label: 'Ctrl',
-                        halign: Gtk.Align.START,
-                        valign: Gtk.Align.CENTER,
-                        vexpand: false,
-                        hexpand: false,
-                        tooltip_text: _('When checked, pressed Ctrl key is needed to trigger the action'),
-                    });
-                if ((WAYLAND) && (trigger === Settings.Triggers.PRESSURE)) {
-                    ctrlBtn.tooltip_text = ('Doesn\'t work with Wayland for Hot triggers\n') + 
-                                            ctrlBtn.tooltip_text;
-                }
-                ctrlBtn.connect('notify::active', () =>{
-                    corners[i].setCtrl(trigger, ctrlBtn.active);
-                });
-                ctrlBtn.set_active(corners[i].getCtrl(trigger));
-
-                const cw = _buildCornerWidget(corners[i], trigger, geometry);
-                const trgIcon = new Gtk.Image({
-                    halign: Gtk.Align.START,
-                    margin_start: 10,
-                    vexpand: true,
-                    hexpand: true,
-                    pixel_size: 40
-                });
-                let iconPath;
-                if (trigger === 0) {
-                    iconPath = `${Me.dir.get_path()}/icons/${corners[i].top ? 'Top':'Bottom'}${corners[i].left ? 'Left':'Right'}.svg`
-                } else {
-                    let iconIdx = trigger;
-                    if (leftHandMouse) {
-                        if (trigger === 1) iconIdx = 2;
-                        if (trigger === 2) iconIdx = 1;
-                    }
-                    iconPath = `${Me.dir.get_path()}/icons/Mouse-${iconIdx}.svg`;
-                }
-                trgIcon.set_from_file(iconPath);
-                trgIcon.set_tooltip_text(triggerLabels[trigger]);
-                grid[i].attach(trgIcon, 0, trigger, 1, 1);
-                grid[i].attach(ctrlBtn, 1, trigger, 1, 1);
-                grid[i].attach(cw, 2, trigger, 1, 1);
-            }
-
-            const ew = _buildExpandWidget(corners[i]);
-            grid[i].attach(ew, 0, 6, 3, 1);
-
-        }
-        for (let i =0; i < corners.length; i++){
-            const label = new Gtk.Image({
-                    halign: Gtk.Align.CENTER,
-                    valign: Gtk.Align.START,
-                    margin_start: 10,
-                    vexpand: true,
-                    hexpand: true,
-                    pixel_size: 40
-                });
-            label.set_from_file(`${Me.dir.get_path()}/icons/${corners[i].top ? 'Top':'Bottom'}${corners[i].left ? 'Left':'Right'}.svg`);
-            triggersBook.append_page(grid[i], label);
-
-
-        }
-        const label = new Gtk.Label({ label: _('Monitor') + ' ' + (monitorIndex + 1) });
-        notebook.append_page(triggersBook, label);
-        
-    }
-    const label = new Gtk.Label({ label: _('Options'), halign: Gtk.Align.START});
-    notebook.append_page(miscUI, label);
-    if (!GNOME40) prefsWidget.show_all();
-    return prefsWidget;
+    return miscUI;
 }
 
 function _buildCornerWidget(corner, trigger, geometry) {
@@ -491,100 +505,14 @@ function _buildCornerWidget(corner, trigger, geometry) {
     cw.attach(comboGrid, 0, 0, 1, 1);
     cw.attach(commandEntryRevealer, 0, 1, 1, 1);
     cw.attach(wsIndexRevealer, 0, 2, 1, 1);
-    if (!GNOME40) cw.show_all();
 
-    const actions = [
-        [null, 'disabled'        ,   _('-')],
-        [null, 'toggleOverview'  ,   _('Show Activities (Overview)')],
-        [null, 'showApplications',   _('Show Applications')],
-
-        [null, ''                ,   _('Show / Hide Desktop')],
-        [   1, 'showDesktop'     ,   _('Show Desktop (all monitors)')],
-        [   1, 'showDesktopMon'  ,   _('Show Desktop (this monitor)')],
-        [   1, 'blackScreen'     ,   _('Black Screen (all monitors)')],
-        [   1, 'blackScreenMon'  ,   _('Black Screen (this monitor)')],
-
-        [null, ''                ,   _('Run Command')],
-        [   1, 'runCommand'      ,   _('Run Command')],
-        [   1, 'runDialog'       ,   _('Open "Run a Command" Dialog')],
-
-        [null, ''                ,   _('Workspaces')],
-        [   1, 'prevWorkspace'   ,   _('Previous Workspace')],
-        [   1, 'nextWorkspace'   ,   _('Next Workspace')],
-        [   1, 'recentWS'        ,   _('Recent Workspace')],
-        [   1, 'moveToWorkspace' ,   _('Move to Workspace #')],
-
-        [null, ''                ,   _('Windows - Navigation')],
-        [   1, 'recentWin'       ,   _('Recent Window (Alt+Tab)')],
-        [   1, 'prevWinWsMon'    ,   _('Previous Window (this monitor)')],
-        [   1, 'prevWinWS'       ,   _('Previous Window (current WS)')],
-        [   1, 'prevWinAll'      ,   _('Previous Window (all)')],
-        [   1, 'nextWinWsMon'    ,   _('Next Window (this monitor)')],
-        [   1, 'nextWinWS'       ,   _('Next Window (current WS)')],
-        [   1, 'nextWinAll'      ,   _('Next Window (all)')],
-
-        [null, ''                ,   _('Windows - Control')],
-        [   1, 'closeWin'        ,   _('Close Window')],
-        [   1, 'maximizeWin'     ,   _('Maximize Window')],
-        [   1, 'minimizeWin'     ,   _('Minimize Window')],
-        [   1, 'fullscreenWin'   ,   _('Fullscreen Window')],
-        [   1, 'aboveWin'        ,   _('Win Always on Top')],
-        [   1, 'stickWin'        ,   _('Win Always on Visible WS')],
-
-        [null, ''                ,   _('Windows - Effects')],
-        [   1, 'invertLightWin'  ,   _('Invert Lightness (window)')],
-        [   1, 'desaturateWin'   ,   _('Desaturate (window)')],
-        [   1, 'brightUpWin'     ,   _('Brightness Up (window)')],
-        [   1, 'brightDownWin'   ,   _('Brightness Down (window)')],
-        [   1, 'contrastUpWin'   ,   _('Contrast Up (window)')],
-        [   1, 'contrastDownWin' ,   _('Contrast Down (window)')],
-        [   1, 'opacityUpWin'    ,   _('Opacity Up (window)')],
-        [   1, 'opacityDownWin'  ,   _('Opacity Down (window)')],
-        [   1, 'opacityToggleWin',   _('Toggle Transparency (window)')],
-        [   1, 'tintRedToggleWin',   _('Red Tint Mono (window)')],
-        [   1, 'tintGreenToggleWin', _('Green Tint Mono (window)')],
-
-        [null, ''                ,   _('Global Effects')],
-        [   1, 'invertLightAll'  ,   _('Invert Lightness (global)')],
-        [   1, 'desaturateAll'   ,   _('Desaturate (global)')],
-        [   1, 'brightUpAll'     ,   _('Brightness Up (global)')],
-        [   1, 'brightDownAll'   ,   _('Brightness Down (global)')],
-        [   1, 'contrastUpAll'   ,   _('Contrast Up (global)')],
-        [   1, 'contrastDownAll' ,   _('Contrast Down (global)')],
-        [   1, 'tintRedToggleAll',   _('Red Tint Mono (global)')],
-        [   1, 'tintGreenToggleAll', _('Green Tint Mono (global)')],
-        [   1, 'removeAllEffects',   _('Remove All Effects')],
-
-        [null, ''                ,   _('Universal Access')],
-        [   1, 'toggleZoom'      ,   _('Toggle Zoom')],
-        [   1, 'zoomIn'          ,   _('Zoom In')],
-        [   1, 'zoomOut'         ,   _('Zoom Out')],
-        [   1, 'screenReader'    ,   _('Screen Reader')],
-        [   1, 'largeText'       ,   _('Large Text')],
-        [   1, 'keyboard'        ,   _('Screen Keyboard')],
-
-        [null, ''                ,   _('Gnome Shell')],
-        [   1, 'hidePanel'       ,   _('Hide/Show Main Panel')],
-        [   1, 'toggleTheme'     ,   _('Toggle Light/Dark Theme')],
-
-        [null, ''                ,   _('System')],
-        [   1, 'screenLock'      ,   _('Lock Screen')],
-        [   1, 'suspend'         ,   _('Suspend to RAM')],
-        [   1, 'powerOff'        ,   _('Power Off Dialog')],
-        [   1, 'logout'          ,   _('Log Out Dialog')],
-        [   1, 'switchUser'      ,   _('Switch User (if exists)')],
-
-        [null, ''                ,   _('Sound')],
-        [   1, 'volumeUp'        ,   _('Volume Up')],
-        [   1, 'volumeDown'      ,   _('Volume Down')],
-        [   1, 'muteAudio'       ,   _('Mute')],
-
-        [null, ''                ,   _('Debug')],
-        [   1, 'lookingGlass'    ,   _('Looking Glass (GS debugger)')],
-        [   1, 'restartShell'    ,   _('Restart Gnome Shell (X11 only)')],
-
-        [null, 'prefs'           ,   _('Open Preferences')]
-    ]
+                    _fillCombo(actionTreeStore, actionCombo, corner, trigger);
+    /*GLib.timeout_add(
+        GLib.PRIORITY_DEFAULT,
+                corners.indexOf(corner)*300+(300),
+                () => {
+                    return false;
+                });*/
     let comboRenderer = new Gtk.CellRendererText();
 
     actionCombo.pack_start(comboRenderer, true);
@@ -595,24 +523,6 @@ function _buildCornerWidget(corner, trigger, geometry) {
             cell.set_sensitive(sensitive);
         }
     );
-    let iterDict = {};
-    let iter, iter2;
-    for (let i = 0; i < actions.length; i++){
-        let item = actions[i];
-        if (GNOME40 && item[1] === 'invertLightness') continue;
-        if (item[0] === null){
-            iter  = actionTreeStore.append(null);
-            actionTreeStore.set(iter, [0], [item[1]]);
-            actionTreeStore.set(iter, [1], [item[2]]);
-            // map items on iters to address them later
-            iterDict[item[1]] = iter;
-        } else {
-            iter2  = actionTreeStore.append(iter);
-            actionTreeStore.set(iter2, [0], [item[1]]);
-            actionTreeStore.set(iter2, [1], [item[2]]);
-            iterDict[item[1]] = iter2;
-        }
-    }
 
     let cmdConnected = false;
     commandEntryRevealer.reveal_child = corner.getAction(trigger) === 'runCommand';
@@ -660,11 +570,9 @@ function _buildCornerWidget(corner, trigger, geometry) {
                 );
             });
             cmdConnected = true;
+            wsIndexRevealer.reveal_child = corner.getAction(trigger) === 'moveToWorkspace';
         }
     });
-
-    if (iterDict[corner.getAction(trigger)]) actionCombo.set_active_iter(iterDict[corner.getAction(trigger)]);
-    wsIndexRevealer.reveal_child = corner.getAction(trigger) === 'moveToWorkspace';
 
     if (trigger === Settings.Triggers.PRESSURE) {
         const barrierLabelH = new Gtk.Label({
@@ -803,7 +711,32 @@ function _buildCornerWidget(corner, trigger, geometry) {
         );
     });
 
+    if (!GNOME40) cw.show_all();
     return cw;
+}
+
+function _fillCombo(actionTreeStore, actionCombo, corner, trigger) {
+    let iterDict = {};
+    let iter, iter2;
+    for (let i = 0; i < _actions.length; i++){
+        let item = _actions[i];
+        if (GNOME40 && item[1] === 'invertLightness') continue;
+        if (item[0] === null){
+            iter  = actionTreeStore.append(null);
+            actionTreeStore.set(iter, [0], [item[1]]);
+            actionTreeStore.set(iter, [1], [item[2]]);
+            // map items on iters to address them later
+            iterDict[item[1]] = iter;
+        } else {
+            iter2  = actionTreeStore.append(iter);
+            actionTreeStore.set(iter2, [0], [item[1]]);
+            actionTreeStore.set(iter2, [1], [item[2]]);
+            iterDict[item[1]] = iter2;
+        }
+    }
+
+    if (iterDict[corner.getAction(trigger)]) actionCombo.set_active_iter(iterDict[corner.getAction(trigger)]);
+
 }
 
 function _buildExpandWidget (corner) {
@@ -948,8 +881,98 @@ function _makeTitle(label) {
   return '<b>'+label+'</b>';
 }
 
+const _actions = [
+        [null, 'disabled'        ,   _('-')],
+        [null, 'toggleOverview'  ,   _('Show Activities (Overview)')],
+        [null, 'showApplications',   _('Show Applications')],
 
+        [null, ''                ,   _('Show / Hide Desktop')],
+        [   1, 'showDesktop'     ,   _('Show Desktop (all monitors)')],
+        [   1, 'showDesktopMon'  ,   _('Show Desktop (this monitor)')],
+        [   1, 'blackScreen'     ,   _('Black Screen (all monitors)')],
+        [   1, 'blackScreenMon'  ,   _('Black Screen (this monitor)')],
 
+        [null, ''                ,   _('Run Command')],
+        [   1, 'runCommand'      ,   _('Run Command')],
+        [   1, 'runDialog'       ,   _('Open "Run a Command" Dialog')],
+
+        [null, ''                ,   _('Workspaces')],
+        [   1, 'prevWorkspace'   ,   _('Previous Workspace')],
+        [   1, 'nextWorkspace'   ,   _('Next Workspace')],
+        [   1, 'recentWS'        ,   _('Recent Workspace')],
+        [   1, 'moveToWorkspace' ,   _('Move to Workspace #')],
+
+        [null, ''                ,   _('Windows - Navigation')],
+        [   1, 'recentWin'       ,   _('Recent Window (Alt+Tab)')],
+        [   1, 'prevWinWsMon'    ,   _('Previous Window (this monitor)')],
+        [   1, 'prevWinWS'       ,   _('Previous Window (current WS)')],
+        [   1, 'prevWinAll'      ,   _('Previous Window (all)')],
+        [   1, 'nextWinWsMon'    ,   _('Next Window (this monitor)')],
+        [   1, 'nextWinWS'       ,   _('Next Window (current WS)')],
+        [   1, 'nextWinAll'      ,   _('Next Window (all)')],
+
+        [null, ''                ,   _('Windows - Control')],
+        [   1, 'closeWin'        ,   _('Close Window')],
+        [   1, 'maximizeWin'     ,   _('Maximize Window')],
+        [   1, 'minimizeWin'     ,   _('Minimize Window')],
+        [   1, 'fullscreenWin'   ,   _('Fullscreen Window')],
+        [   1, 'aboveWin'        ,   _('Win Always on Top')],
+        [   1, 'stickWin'        ,   _('Win Always on Visible WS')],
+
+        [null, ''                ,   _('Windows - Effects')],
+        [   1, 'invertLightWin'  ,   _('Invert Lightness (window)')],
+        [   1, 'desaturateWin'   ,   _('Desaturate (window)')],
+        [   1, 'brightUpWin'     ,   _('Brightness Up (window)')],
+        [   1, 'brightDownWin'   ,   _('Brightness Down (window)')],
+        [   1, 'contrastUpWin'   ,   _('Contrast Up (window)')],
+        [   1, 'contrastDownWin' ,   _('Contrast Down (window)')],
+        [   1, 'opacityUpWin'    ,   _('Opacity Up (window)')],
+        [   1, 'opacityDownWin'  ,   _('Opacity Down (window)')],
+        [   1, 'opacityToggleWin',   _('Toggle Transparency (window)')],
+        [   1, 'tintRedToggleWin',   _('Red Tint Mono (window)')],
+        [   1, 'tintGreenToggleWin', _('Green Tint Mono (window)')],
+
+        [null, ''                ,   _('Global Effects')],
+        [   1, 'invertLightAll'  ,   _('Invert Lightness (global)')],
+        [   1, 'desaturateAll'   ,   _('Desaturate (global)')],
+        [   1, 'brightUpAll'     ,   _('Brightness Up (global)')],
+        [   1, 'brightDownAll'   ,   _('Brightness Down (global)')],
+        [   1, 'contrastUpAll'   ,   _('Contrast Up (global)')],
+        [   1, 'contrastDownAll' ,   _('Contrast Down (global)')],
+        [   1, 'tintRedToggleAll',   _('Red Tint Mono (global)')],
+        [   1, 'tintGreenToggleAll', _('Green Tint Mono (global)')],
+        [   1, 'removeAllEffects',   _('Remove All Effects')],
+
+        [null, ''                ,   _('Universal Access')],
+        [   1, 'toggleZoom'      ,   _('Toggle Zoom')],
+        [   1, 'zoomIn'          ,   _('Zoom In')],
+        [   1, 'zoomOut'         ,   _('Zoom Out')],
+        [   1, 'screenReader'    ,   _('Screen Reader')],
+        [   1, 'largeText'       ,   _('Large Text')],
+        [   1, 'keyboard'        ,   _('Screen Keyboard')],
+
+        [null, ''                ,   _('Gnome Shell')],
+        [   1, 'hidePanel'       ,   _('Hide/Show Main Panel')],
+        [   1, 'toggleTheme'     ,   _('Toggle Light/Dark Theme')],
+
+        [null, ''                ,   _('System')],
+        [   1, 'screenLock'      ,   _('Lock Screen')],
+        [   1, 'suspend'         ,   _('Suspend to RAM')],
+        [   1, 'powerOff'        ,   _('Power Off Dialog')],
+        [   1, 'logout'          ,   _('Log Out Dialog')],
+        [   1, 'switchUser'      ,   _('Switch User (if exists)')],
+
+        [null, ''                ,   _('Sound')],
+        [   1, 'volumeUp'        ,   _('Volume Up')],
+        [   1, 'volumeDown'      ,   _('Volume Down')],
+        [   1, 'muteAudio'       ,   _('Mute')],
+
+        [null, ''                ,   _('Debug')],
+        [   1, 'lookingGlass'    ,   _('Looking Glass (GS debugger)')],
+        [   1, 'restartShell'    ,   _('Restart Gnome Shell (X11 only)')],
+
+        [null, 'prefs'           ,   _('Open Preferences')]
+    ]
 
 
 
