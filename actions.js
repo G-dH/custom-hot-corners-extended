@@ -16,7 +16,7 @@
 'use strict'
 
 const GObject                = imports.gi.GObject;
-//const GLib                   = imports.gi.GLib;
+const GLib                   = imports.gi.GLib;
 const Clutter                = imports.gi.Clutter;
 const St                     = imports.gi.St;
 const Main                   = imports.ui.main;
@@ -41,6 +41,7 @@ var Actions = class {
         this._a11yAppsSettings      = null;
         this._a11yMagnifierSettings = null;
         this._interfaceSettings     = null;
+        this._shellSettings         = null;
 
         this._wsSwitchIgnoreLast    = false;
         this._wsSwitchWrap          = false;
@@ -71,7 +72,39 @@ var Actions = class {
         this._a11yAppsSettings      = null;
         this._a11yMagnifierSettings = null;
         this._interfaceSettings     = null;
+        this._getShellSettings      = null;
 
+    }
+
+    removeEffects(removeFilters = false) {
+        this._getShellSettings();
+        let enabled = this._shellSettings.get_strv('enabled-extensions');
+        // if extension enabled don't reset filters
+        if (!removeFilters && enabled.indexOf(Me.metadata.uuid) > -1)
+            return;
+        let effects = [ 'brightness',
+                        'contrast',
+                        'color-invert',
+                        'desaturate',
+                        'color-tint' ];
+        for (let effect of effects) {
+            for (let actor of global.get_window_actors()) {
+                actor.remove_effect_by_name(effect);
+                let windowActor = actor.get_meta_window().get_compositor_private();
+                this._getWindowSurface(windowActor).opacity = 255;
+            }
+
+            Main.uiGroup.remove_effect_by_name(effect);
+        }
+    }
+
+    _getShellSettings() {
+        if (!this._shellSettings) {
+            this._shellSettings = Settings.getSettings(
+                            'org.gnome.shell',
+                            '/org/gnome/shell/');
+        }
+        return this._shellSettings;
     }
 
     _getA11yAppSettings() {
@@ -125,20 +158,6 @@ var Actions = class {
         }
         log (`[${Me.metadata.name}] Warning: no focused window found`);
         return null;
-    }
-    removeEffects() {
-        let effects = [ 'brightness',
-                        'color-invert',
-                        'desaturate' ];
-        for (let effect of effects) {
-            for (let actor of global.get_window_actors()) {
-                actor.remove_effect_by_name(effect);
-                let windowActor = actor.get_meta_window().get_compositor_private();
-                this._getWindowSurface(windowActor).opacity = 255;
-            }
-
-            Main.uiGroup.remove_effect_by_name(effect);
-        }
     }
 
     _getWindowSurface(windowActor) {
@@ -460,16 +479,18 @@ var Actions = class {
     }
 
     adjustSwBrightnessContrast(step = 0, window=false, brightness = true) {
-        // brightness range: -1 all black, 0 normal, 1 all white
+        // brightness/contrast range: -1 all black/gray, 0 normal, 1 all white/extreme contrast
         // step with +/- value from range
-        let name = 'brightness';
+        let name = brightness ?
+                        'brightness':
+                        'contrast';
         let brightnessContrast;
         if (window) {
             let actor = this._getFocusedActor();
-            if (!actor)
-                return;
-            if (!actor.get_effect(name))
+            if (!actor) return;
+            if (!actor.get_effect(name)) {
                 actor.add_effect_with_name(name, new Clutter.BrightnessContrastEffect());
+            }
             brightnessContrast = actor.get_effect(name);
         } else {
             if (!Main.uiGroup.get_effect(name)) {
@@ -477,24 +498,53 @@ var Actions = class {
             }
             brightnessContrast = Main.uiGroup.get_effect(name);
         }
-            let current = brightness ?
-                            brightnessContrast.get_brightness()[1] : // Clutter returns value in [r,g,b] format
-                            brightnessContrast.get_contrast()[1];
-            let value = current + step;
-            if (value > 0) value = 0;
-            if (value < -0.8) value = -0.8;
+            let value = brightness ?
+                            brightnessContrast.get_brightness()[0] : // Clutter returns value in [r,g,b] format
+                            brightnessContrast.get_contrast()[0];
+            // multiply to avoid value shifting
+            value = Math.round((value * 1000) + (step *1000));
+            let max = brightness ? 100 : 250;
+            if (value > max) value = max;
+            if (value < -750) value = -750;
+            value /= 1000;
             brightness ?
                 brightnessContrast.set_brightness(value) :
                 brightnessContrast.set_contrast(value);
+            // notify when normal contrast is reached
+            if (value === 0) {
+                brightness ?
+                    brightnessContrast.set_brightness(-0.3) :
+                    brightnessContrast.set_contrast(-0.1);
+                GLib.timeout_add(
+                    GLib.PRIORITY_DEFAULT,
+                    100,
+                    () => {
+                        brightness ?
+                            brightnessContrast.set_brightness(value) :
+                            brightnessContrast.set_contrast(value);
+                        return false;
+                    }
+                );
+            }
     }
     
     toggleDesaturateEffect(window = true) {
         let name = 'desaturate';
+        let effect = Clutter.DesaturateEffect;
         if (window)
-            this._toggleWindowEffect(name, Clutter.DesaturateEffect);
+            this._toggleWindowEffect(name, effect);
         else
-            this._toggleGlobalEffect(name, Clutter.DesaturateEffect);
+            this._toggleGlobalEffect(name, effect);
 
+    }
+
+    toggleRedTintEffect(color, window = true) {
+        let name = 'color-tint';
+        let effect = Clutter.ColorizeEffect;
+        if (window)
+            this._toggleWindowEffect(name, effect, color);
+        else
+            this._toggleGlobalEffect(name, effect, color);
     }
 
     toggleLightnessInvertEffect(window = true) {
@@ -505,25 +555,30 @@ var Actions = class {
             this._toggleGlobalEffect(name, TrueInvertEffect);
     }
     
-    _toggleGlobalEffect(name, effect) {
+    _toggleGlobalEffect(name, effect, tint = null) {
         if (Main.uiGroup.get_effect(name))
             Main.uiGroup.remove_effect_by_name(name);
         else
-            Main.uiGroup.add_effect_with_name(name, new effect());
+            if (tint)
+                Main.uiGroup.add_effect_with_name(name, new effect({tint:tint}));
+            else
+                Main.uiGroup.add_effect_with_name(name, new effect());
     }
 
-    _toggleWindowEffect(name, effect) {
+    _toggleWindowEffect(name, effect, tint = null) {
         global.get_window_actors().forEach(function(actor) {
             let meta_window = actor.get_meta_window();
             if(meta_window.has_focus()) {
                 if(actor.get_effect(name))
                     actor.remove_effect_by_name(name);
                 else
-                    actor.add_effect_with_name(name, new effect());
+                    if (tint)
+                        actor.add_effect_with_name(name, new effect({tint:tint}));    
+                    else
+                        actor.add_effect_with_name(name, new effect());
             }
         });
     }
-    /////////////////////////////////////////////////////////
     
     toggleDimmMonitors(alpha, text, monitorIdx = -1) {
         // reverse order to avoid conflicts after dimmer removed

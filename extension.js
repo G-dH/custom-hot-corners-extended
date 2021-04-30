@@ -74,12 +74,6 @@ function init() {
 function enable() {
     Actions = new ActionLib.Actions();
     _origUpdateHotCorners = Main.layoutManager._updateHotCorners;
-    /*let interfaceSettings = Settings.getSettings(
-        'org.gnome.desktop.interface',
-        '/org/gnome/desktop/interface/');
-    _systemHotCornersEnabled = interfaceSettings.get_boolean('enable-hot-corners');
-    interfaceSettings.set_boolean('enable-hot-corners', false);
-    */
     _extensionEnabled = true;
     _initMscOptions();
     _replaceLayoutManager();
@@ -102,11 +96,6 @@ function disable() {
     _extensionEnabled = false;
     Main.layoutManager._updateHotCorners = _origUpdateHotCorners;
     Main.layoutManager._updateHotCorners();
-/*    let interfaceSettings = Settings.getSettings(
-        'org.gnome.desktop.interface',
-        '/org/gnome/desktop/interface/');
-    interfaceSettings.set_boolean('enable-hot-corners', _systemHotCornersEnabled);
-*/
 }
 
 function _initMscOptions() {
@@ -255,8 +244,8 @@ function _updateWatch() {
                     3000,
                     () => {
                         if (Main.layoutManager.hotCorners !== _watchCorners) {
-                            Main.notify(Me.metadata.name, `Hot Corners have to be updated because of external override`);
                             _updateHotCorners();
+                            Main.notify(Me.metadata.name, `Hot Corners had to be updated because of external override`);
                         }
                         if (!_watch.active) {
                             _timeoutsCollector.splice(_timeoutsCollector.indexOf(_watch.timeout));
@@ -265,6 +254,7 @@ function _updateWatch() {
                         return _watch.active;
                     }
         );
+        _timeoutsCollector.push(_watch.timeout);
     }
 }
 
@@ -369,7 +359,11 @@ class CustomHotCorner extends Layout.HotCorner {
             ['contrastDownWin', this._contrastDownWindow      ],
             ['opacityUpWin',    this._opacityUpWindow         ],
             ['opacityDownWin',  this._opacityDownWindow       ],
-            ['opacityToggleWin',this._opacityToggle           ],
+            ['opacityToggleWin',this._opacityToggleWin        ],
+            ['tintRedToggleWin',this._redTintToggleWindow     ],
+            ['tintRedToggleAll',this._redTintToggleGlobal     ],
+            ['tintGreenToggleWin',this._greenTintToggleWindow ],
+            ['tintGreenToggleAll',this._greenTintToggleGlobal ],
             ['removeAllEffects',this._removeAllEffects        ],
 
 
@@ -824,28 +818,28 @@ class CustomHotCorner extends Layout.HotCorner {
         Actions.toggleDesaturateEffect(true);
     }
     _brightnessUpGlobal() {
-        Actions.adjustSwBrightnessContrast(+0.02);
+        Actions.adjustSwBrightnessContrast(+0.025);
     }
     _brightnessDownGlobal() {
-        Actions.adjustSwBrightnessContrast(-0.02);
+        Actions.adjustSwBrightnessContrast(-0.025);
     }
     _brightnessUpWindow() {
-        Actions.adjustSwBrightnessContrast(+0.02, true);
+        Actions.adjustSwBrightnessContrast(+0.025, true);
     }
     _brightnessDownWindow() {
-        Actions.adjustSwBrightnessContrast(-0.02, true);
+        Actions.adjustSwBrightnessContrast(-0.025, true);
     }
     _contrastUpGlobal() {
-        Actions.adjustSwBrightnessContrast(+0.02, false, false);
+        Actions.adjustSwBrightnessContrast(+0.025, false, false);
     }
     _contrastDownGlobal() {
-        Actions.adjustSwBrightnessContrast(-0.02, false, false);
+        Actions.adjustSwBrightnessContrast(-0.025, false, false);
     }
     _contrastUpWindow() {
-        Actions.adjustSwBrightnessContrast(+0.02, true, false);
+        Actions.adjustSwBrightnessContrast(+0.025, true, false);
     }
     _contrastDownWindow() {
-        Actions.adjustSwBrightnessContrast(-0.02, true, false);
+        Actions.adjustSwBrightnessContrast(-0.025, true, false);
     }
     _opacityUpWindow() {
         Actions.adjustWindowOpacity(+48);
@@ -853,11 +847,47 @@ class CustomHotCorner extends Layout.HotCorner {
     _opacityDownWindow() {
         Actions.adjustWindowOpacity(-48);
     }
-    _opacityToggle() {
+    _opacityToggleWin() {
         Actions.adjustWindowOpacity(0, 200);
     }
+    _redTintToggleWindow(){
+        Actions.toggleRedTintEffect(
+            new Clutter.Color({
+                red:    255,
+                green:  200,
+                blue:   146,
+            }),
+            true);
+    }
+    _redTintToggleGlobal(){
+        Actions.toggleRedTintEffect(
+            new Clutter.Color({
+                red:    255,
+                green:  200,
+                blue:   146,
+            }),
+            false);
+    }
+    _greenTintToggleWindow(){
+        Actions.toggleRedTintEffect(
+            new Clutter.Color({
+                red:    200,
+                green:  255,
+                blue:   146,
+            }),
+            true);
+    }
+    _greenTintToggleGlobal(){
+        Actions.toggleRedTintEffect(
+            new Clutter.Color({
+                red:    200,
+                green:  255,
+                blue:   146,
+            }),
+            false);
+    }
     _removeAllEffects() {
-        Actions.removeEffects();
+        Actions.removeEffects(true);
     }
 });
 

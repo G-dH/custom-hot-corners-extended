@@ -295,7 +295,7 @@ function buildPrefsWidget() {
                             display.get_monitor(monitorIndex);
         const geometry = monitor.get_geometry();
         const corners = Settings.Corner.forMonitor(monitorIndex, monitorIndex, geometry);
-        let grid = {};
+        let grid = [];
         for (let i =0; i < corners.length; i++) {
             grid[i] = new Gtk.Grid({
                 column_homogeneous: false,
@@ -534,21 +534,25 @@ function _buildCornerWidget(corner, trigger, geometry) {
         [null, ''                ,   _('Windows - Effects')],
         [   1, 'invertLightWin'  ,   _('Invert Lightness (window)')],
         [   1, 'desaturateWin'   ,   _('Desaturate (window)')],
-        [   1, 'brightUpWin'     ,   _('Brightness Up (SW,window)')],
-        [   1, 'brightDownWin'   ,   _('Brightness Down (SW,window)')],
-        [   1, 'contrastUpWin'   ,   _('Contrast Up (SW,window)')],
-        [   1, 'contrastDownWin' ,   _('Contrast Down (SW,window)')],
+        [   1, 'brightUpWin'     ,   _('Brightness Up (window)')],
+        [   1, 'brightDownWin'   ,   _('Brightness Down (window)')],
+        [   1, 'contrastUpWin'   ,   _('Contrast Up (window)')],
+        [   1, 'contrastDownWin' ,   _('Contrast Down (window)')],
         [   1, 'opacityUpWin'    ,   _('Opacity Up (window)')],
         [   1, 'opacityDownWin'  ,   _('Opacity Down (window)')],
         [   1, 'opacityToggleWin',   _('Toggle Transparency (window)')],
+        [   1, 'tintRedToggleWin',   _('Red Tint Mono (window)')],
+        [   1, 'tintGreenToggleWin', _('Green Tint Mono (window)')],
 
         [null, ''                ,   _('Global Effects')],
         [   1, 'invertLightAll'  ,   _('Invert Lightness (global)')],
         [   1, 'desaturateAll'   ,   _('Desaturate (global)')],
-        [   1, 'brightUpAll'     ,   _('Brightness Up (SW,global)')],
-        [   1, 'brightDownAll'   ,   _('Brightness Down (SW,global)')],
-        [   1, 'contrastUpAll'   ,   _('Contrast Up (SW,global)')],
-        [   1, 'contrastDownAll' ,   _('Contrast Down (SW,global)')],
+        [   1, 'brightUpAll'     ,   _('Brightness Up (global)')],
+        [   1, 'brightDownAll'   ,   _('Brightness Down (global)')],
+        [   1, 'contrastUpAll'   ,   _('Contrast Up (global)')],
+        [   1, 'contrastDownAll' ,   _('Contrast Down (global)')],
+        [   1, 'tintRedToggleAll',   _('Red Tint Mono (global)')],
+        [   1, 'tintGreenToggleAll', _('Green Tint Mono (global)')],
         [   1, 'removeAllEffects',   _('Remove All Effects')],
 
         [null, ''                ,   _('Universal Access')],
@@ -814,12 +818,15 @@ function _buildExpandWidget (corner) {
     });
     const expTitle = new Gtk.Label({
         use_markup: true,
-        label: _makeTitle(_("Expand corner along edges:")),
-        tooltip_text: _('For clicks / scrolls only, pressure barriers can be set independently') + '\n'
-                     + _('When adjacent corners are set to expand along the same edge, each of them will allocate a half of the edge') + '\n'
-                     +_("Activate 'Make active corners/edges visible' option to see real picture")
+        label: _makeTitle(_("Expand clickable corner along edges:")),
+        
     });
-    const frame = new Gtk.Frame();
+    const frame = new Gtk.Frame({
+        tooltip_text: 
+                      _('When adjacent corners are set to expand along the same edge, each of them allocate a half of the edge') + '\n'
+                    + _("Activate 'Make active corners/edges visible' option to see it") + '\n'
+                    + _('Hot corner pressure barriers can be set independently')
+    });
           frame.set_label_widget(expTitle);
     const hIcon = new Gtk.Image({
                     halign: Gtk.Align.START,
