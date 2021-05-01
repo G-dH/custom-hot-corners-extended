@@ -1,5 +1,4 @@
-/* Copyright 2017 Jan Runge <janrunx@gmail.com>
- * Copyright 2021 GdH <georgdh@gmail.com>
+/* Copyright 2021 GdH <georgdh@gmail.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -31,12 +30,6 @@ const _  = Settings._;
 let GNOME40;
 let WAYLAND;
 
-function _loadUI(file) {
-    const path = Me.dir.get_child(file).get_path();
-    let builder = Gtk.Builder.new_from_file(path);
-    return builder;
-}
-let time;
 function init() {
     log(`initializing ${Me.metadata.name} Preferences`);
     ExtensionUtils.initTranslations(Me.metadata['gettext-domain']);
@@ -53,7 +46,7 @@ function buildPrefsWidget() {
     prefsWidget.attach(notebook, 0, 0, 1, 1);
 
     const display = Gdk.Display.get_default();
-    const num_monitors = GNOME40 ?
+    let num_monitors = GNOME40 ?
                             display.get_monitors().get_n_items() :
                             display.get_n_monitors();
 
@@ -87,9 +80,9 @@ function buildPrefsWidget() {
         const triggersBook = new Gtk.Notebook();
 
         for (let i =0; i < corners.length; i++) {
-            // bacause of thousands of items total in combo boxes prefs window start is very slow
+            // bacause of thousands of items total in combo boxes, prefs window start was very slow
             // therefore render just the first corner page before the window is shown to user
-            // the rest of pages will be rendered little bit later, but all the user will notice is 4 times faster start
+            // the rest of pages will be rendered little bit later, but all the user will notice is 4*monitors times faster start
             GLib.timeout_add(
                     GLib.PRIORITY_DEFAULT,
                         i*300+(300*corners[i].monitorIndex),
@@ -114,10 +107,11 @@ function buildPrefsWidget() {
         }
         const label = new Gtk.Label({ label: _('Monitor') + ' ' + (monitorIndex + 1) });
         notebook.append_page(triggersBook, label);
-
+        
     }
-    const label = new Gtk.Label({ label: _('Options'), halign: Gtk.Align.START});
+    let label = new Gtk.Label({ label: _('Options'), halign: Gtk.Align.START});
     notebook.append_page(_buildMscOptions(), label);
+
     if (!GNOME40) prefsWidget.show_all();
     return prefsWidget;
 }
@@ -136,7 +130,7 @@ function _buildCorner(corner, grid, geometry, leftHandMouse) {
                         tooltip_text: _('When checked, pressed Ctrl key is needed to trigger the action'),
                     });
                 if (WAYLAND && (trigger === Settings.Triggers.PRESSURE)) {
-                    ctrlBtn.tooltip_text = ('Doesn\'t work with Wayland for Hot triggers\n') +
+                    ctrlBtn.tooltip_text = ('Doesn\'t work with Wayland for Hot triggers\n') + 
                                             ctrlBtn.tooltip_text;
                 }
                 ctrlBtn.connect('notify::active', () =>{
@@ -173,7 +167,6 @@ function _buildCorner(corner, grid, geometry, leftHandMouse) {
             const ew = _buildExpandWidget(corner);
             grid.attach(ew, 0, 6, 3, 1);
             if (!GNOME40) grid.show_all();
-
 }
 
 function _buildMscOptions() {
@@ -506,13 +499,8 @@ function _buildCornerWidget(corner, trigger, geometry) {
     cw.attach(commandEntryRevealer, 0, 1, 1, 1);
     cw.attach(wsIndexRevealer, 0, 2, 1, 1);
 
-                    _fillCombo(actionTreeStore, actionCombo, corner, trigger);
-    /*GLib.timeout_add(
-        GLib.PRIORITY_DEFAULT,
-                corners.indexOf(corner)*300+(300),
-                () => {
-                    return false;
-                });*/
+    _fillCombo(actionTreeStore, actionCombo, corner, trigger);
+
     let comboRenderer = new Gtk.CellRendererText();
 
     actionCombo.pack_start(comboRenderer, true);
@@ -720,7 +708,7 @@ function _fillCombo(actionTreeStore, actionCombo, corner, trigger) {
     let iter, iter2;
     for (let i = 0; i < _actions.length; i++){
         let item = _actions[i];
-        if (GNOME40 && item[1] === 'invertLightness') continue;
+        if (GNOME40 && _d40exclude.indexOf(item[1]) > -1) continue;
         if (item[0] === null){
             iter  = actionTreeStore.append(null);
             actionTreeStore.set(iter, [0], [item[1]]);
@@ -736,7 +724,6 @@ function _fillCombo(actionTreeStore, actionCombo, corner, trigger) {
     }
 
     if (iterDict[corner.getAction(trigger)]) actionCombo.set_active_iter(iterDict[corner.getAction(trigger)]);
-
 }
 
 function _buildExpandWidget (corner) {
@@ -807,48 +794,46 @@ function _buildExpandWidget (corner) {
 }
 
 function _chooseAppDialog() {
-        const dialog = new Gtk.Dialog({
-            title: (_('Choose Application')),
-            transient_for: GNOME40 ?
-                                notebook.get_root() :
-                                notebook.get_toplevel(),
-            use_header_bar: true,
-            modal: true
-        });
-
-        dialog.add_button(_('_Cancel'), Gtk.ResponseType.CANCEL);
-        dialog._addButton = dialog.add_button(_('_Add'), Gtk.ResponseType.OK);
-        dialog.set_default_response(Gtk.ResponseType.OK);
-
-        const grid = new Gtk.Grid({
-            margin_start:   10,
-            margin_end:     10,
-            margin_top:     10,
-            margin_bottom:  10,
-            column_spacing: 10,
-            row_spacing:    15
-        });
-        dialog._appChooser = new Gtk.AppChooserWidget({
-            show_all: true
-        });
-        let appInfo = dialog._appChooser.get_app_info();
-        grid.attach(dialog._appChooser, 0, 0, 2, 1);
-        const cmdLabel = new Gtk.Label({
-            label:"",
-            wrap: true
-        });
-        grid.attach(cmdLabel, 0, 1, 2, 1);
-        GNOME40 ?
-            dialog.get_content_area().append(grid) :
-            dialog.get_content_area().add(grid);
-        dialog._appChooser.connect('application-selected', (w, appInfo) => {
-                cmdLabel.set_text(appInfo.get_commandline());
-            }
-        );
-        GNOME40 ? dialog.show()
-                : dialog.show_all();
-        return dialog;
-    }
+    const dialog = new Gtk.Dialog({
+        title: (_('Choose Application')),
+        transient_for: GNOME40 ?
+                            notebook.get_root() :
+                            notebook.get_toplevel(),
+        use_header_bar: true,
+        modal: true
+    });
+    dialog.add_button(_('_Cancel'), Gtk.ResponseType.CANCEL);
+    dialog._addButton = dialog.add_button(_('_Add'), Gtk.ResponseType.OK);
+    dialog.set_default_response(Gtk.ResponseType.OK);
+    const grid = new Gtk.Grid({
+        margin_start:   10,
+        margin_end:     10,
+        margin_top:     10,
+        margin_bottom:  10,
+        column_spacing: 10,
+        row_spacing:    15
+    });
+    dialog._appChooser = new Gtk.AppChooserWidget({
+        show_all: true
+    });
+    let appInfo = dialog._appChooser.get_app_info();
+    grid.attach(dialog._appChooser, 0, 0, 2, 1);
+    const cmdLabel = new Gtk.Label({
+        label:"",
+        wrap: true
+    });
+    grid.attach(cmdLabel, 0, 1, 2, 1);
+    GNOME40 ?
+        dialog.get_content_area().append(grid) :
+        dialog.get_content_area().add(grid);
+    dialog._appChooser.connect('application-selected', (w, appInfo) => {
+            cmdLabel.set_text(appInfo.get_commandline());
+        }
+    );
+    GNOME40 ? dialog.show()
+            : dialog.show_all();
+    return dialog;
+}
 
 function _newGtkSwitch() {
     return new Gtk.Switch({
@@ -872,6 +857,59 @@ function _optionsItem(text, tooltip, widget) {
     if (tooltip) item.push(tooltip);
 
     return item;
+}
+
+function _buildShortcusPage() {
+    let model = new Gtk.ListStore();
+    model.set_column_types([
+            GObject.TYPE_STRING,
+            GObject.TYPE_STRING,
+            GObject.TYPE_INT,
+            GObject.TYPE_INT
+        ]);
+    let treeview = new Gtk.TreeView({
+            vexpand: false,
+            hexpand: true,
+            margin: 10,
+            model: model
+        });
+
+    let cell = new Gtk.CellRendererAccel({
+            editable: true,
+            accel_mode: Gtk.CellRendererAccelMode.GTK
+        });
+        cell.connect('accel-edited', (rend, colname, key, mods) => {
+            let value = Gtk.accelerator_name(key, mods);
+            let [success, iter] = model.get_iter_from_string(colname);
+            model.set(iter, [ 2, 3 ], [ mods, key ]);
+            corner.setAccel(trigger, [value]);
+            
+        });
+    cell.connect('accel-cleared', (rend, colname) => {
+            let [success, iter] = model.get_iter_from_string(colname);
+            model.set(iter, [2, 3], [0, 0]);
+            corner.setAccel(trigger, []);
+            
+        });
+
+    let col = new Gtk.TreeViewColumn({
+            title: 'Click on line below twice and press shortcut'
+        });
+    col.pack_start(cell, false);
+    col.add_attribute(cell, 'accel-mods', 2);
+    col.add_attribute(cell, 'accel-key', 3);
+    treeview.append_column(col);
+    accelRevealer.add(treeview);
+    let accel = corner.getAccel(trigger)[0];
+    let key, mods;
+    if (accel) {
+        [key, mods] = Gtk.accelerator_parse(accel);
+    } else {
+        [key, mods] = [0, 0];
+    }
+
+    let row = model.insert(10);
+    model.set(row, [0, 1, 2, 3], ['CHCE', 'CHCE', mods, key ]);
 }
 
 function _makeSmall(label) {
@@ -921,7 +959,8 @@ const _actions = [
 
         [null, ''                ,   _('Windows - Effects')],
         [   1, 'invertLightWin'  ,   _('Invert Lightness (window)')],
-        [   1, 'desaturateWin'   ,   _('Desaturate (window)')],
+        [   1, 'tintRedToggleWin',   _('Red Tint Mono (window)')],
+        [   1, 'tintGreenToggleWin', _('Green Tint Mono (window)')],
         [   1, 'brightUpWin'     ,   _('Brightness Up (window)')],
         [   1, 'brightDownWin'   ,   _('Brightness Down (window)')],
         [   1, 'contrastUpWin'   ,   _('Contrast Up (window)')],
@@ -929,18 +968,18 @@ const _actions = [
         [   1, 'opacityUpWin'    ,   _('Opacity Up (window)')],
         [   1, 'opacityDownWin'  ,   _('Opacity Down (window)')],
         [   1, 'opacityToggleWin',   _('Toggle Transparency (window)')],
-        [   1, 'tintRedToggleWin',   _('Red Tint Mono (window)')],
-        [   1, 'tintGreenToggleWin', _('Green Tint Mono (window)')],
+        [   1, 'desaturateWin'   ,   _('Desaturate (window)')],
 
         [null, ''                ,   _('Global Effects')],
+        [   1, 'toggleNightLight',   _('Toggle Night Light (Display settings)')],
         [   1, 'invertLightAll'  ,   _('Invert Lightness (global)')],
-        [   1, 'desaturateAll'   ,   _('Desaturate (global)')],
+        [   1, 'tintRedToggleAll',   _('Red Tint Mono (global)')],
+        [   1, 'tintGreenToggleAll', _('Green Tint Mono (global)')],
         [   1, 'brightUpAll'     ,   _('Brightness Up (global)')],
         [   1, 'brightDownAll'   ,   _('Brightness Down (global)')],
         [   1, 'contrastUpAll'   ,   _('Contrast Up (global)')],
         [   1, 'contrastDownAll' ,   _('Contrast Down (global)')],
-        [   1, 'tintRedToggleAll',   _('Red Tint Mono (global)')],
-        [   1, 'tintGreenToggleAll', _('Green Tint Mono (global)')],
+        [   1, 'desaturateAll'   ,   _('Desaturate (global)')],
         [   1, 'removeAllEffects',   _('Remove All Effects')],
 
         [null, ''                ,   _('Universal Access')],
@@ -974,9 +1013,10 @@ const _actions = [
         [null, 'prefs'           ,   _('Open Preferences')]
     ]
 
-
-
-
+const _d40exclude = [
+                        'invertLightAll',
+                        'invertLightWin',
+]
 
 
 
