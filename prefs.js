@@ -64,33 +64,9 @@ function buildPrefsWidget() {
         let leftHandMouse = mouseSettings.get_boolean('left-handed');
 
         let corners = Settings.Corner.forMonitor(monitorIndex, monitorIndex, geometry);
-        let grid = [];
-        for (let i =0; i < corners.length; i++) {
-            grid[i] = new Gtk.Grid({
-                column_homogeneous: false,
-                row_homogeneous: false,
-                margin_start:   10,
-                margin_end:     10,
-                margin_top:     10,
-                margin_bottom:  10,
-                column_spacing: 10
-            });
-        }
 
-        const triggersBook = new Gtk.Notebook();
+        const cornersBook = new Gtk.Notebook();
 
-        for (let i =0; i < corners.length; i++) {
-            // bacause of thousands of items total in combo boxes, prefs window start was very slow
-            // therefore render just the first corner page before the window is shown to user
-            // the rest of pages will be rendered little bit later, but all the user will notice is 4*monitors times faster start
-            GLib.timeout_add(
-                    GLib.PRIORITY_DEFAULT,
-                        i*300+(300*corners[i].monitorIndex),
-                () => {
-                    _buildCorner(corners[i], grid[i], geometry, leftHandMouse);
-                    return false;
-                });
-        }
         for (let i = 0; i < corners.length; i++){
             const label = new Gtk.Image({
                     halign: Gtk.Align.CENTER,
@@ -101,12 +77,26 @@ function buildPrefsWidget() {
                     pixel_size: 40
                 });
             label.set_from_file(`${Me.dir.get_path()}/icons/${corners[i].top ? 'Top':'Bottom'}${corners[i].left ? 'Left':'Right'}.svg`);
-            triggersBook.append_page(grid[i], label);
-
+            let cPage = new CornerPage({
+                column_homogeneous: false,
+                row_homogeneous: false,
+                margin_start:   10,
+                margin_end:     10,
+                margin_top:     10,
+                margin_bottom:  10,
+                column_spacing: 10
+            });
+            cPage._corner = corners[i];
+            cPage._geometry = geometry;
+            cPage._leftHandMouse = leftHandMouse;
+            cornersBook.append_page(cPage, label);
 
         }
         const label = new Gtk.Label({ label: _('Monitor') + ' ' + (monitorIndex + 1) });
-        notebook.append_page(triggersBook, label);
+        notebook.append_page(cornersBook, label);
+        cornersBook.connect('switch-page', (notebook, page, index) => {
+            page.buildPage();
+        });
         
     }
     let label = new Gtk.Label({ label: _('Options'), halign: Gtk.Align.START});
@@ -115,60 +105,6 @@ function buildPrefsWidget() {
     if (!GNOME40) prefsWidget.show_all();
     return prefsWidget;
 }
-
-function _buildCorner(corner, grid, geometry, leftHandMouse) {
-            for (let trigger of triggers) {
-
-                const ctrlBtn = new Gtk.CheckButton(
-                //const ctrlBtn = new Gtk.ToggleButton(
-                    {
-                        label: 'Ctrl',
-                        halign: Gtk.Align.START,
-                        valign: Gtk.Align.CENTER,
-                        vexpand: false,
-                        hexpand: false,
-                        tooltip_text: _('When checked, pressed Ctrl key is needed to trigger the action'),
-                    });
-                if (WAYLAND && (trigger === Settings.Triggers.PRESSURE)) {
-                    ctrlBtn.tooltip_text = ('Doesn\'t work with Wayland for Hot triggers\n') + 
-                                            ctrlBtn.tooltip_text;
-                }
-                ctrlBtn.connect('notify::active', () =>{
-                    corner.setCtrl(trigger, ctrlBtn.active);
-                });
-                ctrlBtn.set_active(corner.getCtrl(trigger));
-
-                const cw = _buildCornerWidget(corner, trigger, geometry);
-                const trgIcon = new Gtk.Image({
-                    halign: Gtk.Align.START,
-                    margin_start: 10,
-                    vexpand: true,
-                    hexpand: true,
-                    pixel_size: 40
-                });
-                let iconPath;
-                if (trigger === 0) {
-                    iconPath = `${Me.dir.get_path()}/icons/${corner.top ? 'Top':'Bottom'}${corner.left ? 'Left':'Right'}.svg`
-                } else {
-                    let iconIdx = trigger;
-                    if (leftHandMouse) {
-                        if (trigger === 1) iconIdx = 2;
-                        if (trigger === 2) iconIdx = 1;
-                    }
-                    iconPath = `${Me.dir.get_path()}/icons/Mouse-${iconIdx}.svg`;
-                }
-                trgIcon.set_from_file(iconPath);
-                trgIcon.set_tooltip_text(triggerLabels[trigger]);
-                grid.attach(trgIcon, 0, trigger, 1, 1);
-                grid.attach(ctrlBtn, 1, trigger, 1, 1);
-                grid.attach(cw, 2, trigger, 1, 1);
-            }
-
-            const ew = _buildExpandWidget(corner);
-            grid.attach(ew, 0, 6, 3, 1);
-            if (!GNOME40) grid.show_all();
-}
-
 function _buildMscOptions() {
     const mscOptions = new Settings.MscOptions();
 
@@ -398,401 +334,6 @@ function _buildMscOptions() {
     return miscUI;
 }
 
-function _buildCornerWidget(corner, trigger, geometry) {
-
-    const cw = new Gtk.Grid({
-        valign: Gtk.Align.CENTER
-    });
-
-    const popupGrid = new Gtk.Grid({
-        margin_start:  10,
-        margin_end:    10,
-        margin_top:    10,
-        margin_bottom: 10,
-        column_spacing: 12,
-        row_spacing: 8
-    });
-
-    const comboGrid = new Gtk.Grid();
-    const cmdGrid = new Gtk.Grid({
-        margin_top: 8
-    });
-
-    const commandEntryRevealer = new Gtk.Revealer({
-        child: cmdGrid
-    });
-
-    const wsIndexAdjustment = new Gtk.Adjustment({
-        lower:           1,
-        upper:         256,
-        step_increment:  1,
-        page_increment: 10
-    });
-    const workspaceIndexSpinButton = new Gtk.SpinButton({
-        margin_top: 8,
-        xalign: 0.5
-    });
-    const wsIndexRevealer = new Gtk.Revealer({
-        child: workspaceIndexSpinButton
-    });
-    workspaceIndexSpinButton.set_adjustment(wsIndexAdjustment);
-    const commandEntry = new Gtk.Entry({
-        hexpand: true});
-    const appButton = new Gtk.Button({
-        valign: Gtk.Align.END,
-        margin_start: 4
-    });
-
-    const actionTreeStore = new Gtk.TreeStore();
-    actionTreeStore.set_column_types([
-            GObject.TYPE_STRING,
-            GObject.TYPE_STRING
-    ]);
-
-    const actionCombo = new Gtk.ComboBox({
-        model: actionTreeStore,
-        id_column: 0,
-        hexpand: true
-    });
-
-    const cornerPopover = new Gtk.Popover();
-    const settingsBtn = new Gtk.MenuButton({
-        popover: cornerPopover,
-        valign: Gtk.Align.CENTER,
-        margin_start: 4
-    });
-
-
-    if (GNOME40) {
-        // Gtk3 implement button icon as added Gtk.Image child, Gtk4 does not
-        settingsBtn.set_icon_name('emblem-system-symbolic');
-        appButton.set_icon_name('find-location-symbolic');
-    } else {
-        settingsBtn.add(Gtk.Image.new_from_icon_name('emblem-system-symbolic', Gtk.IconSize.BUTTON));
-        appButton.add(Gtk.Image.new_from_icon_name('find-location-symbolic', Gtk.IconSize.BUTTON));
-    }
-
-    cmdGrid.attach(commandEntry, 0, 0, 1, 1);
-    cmdGrid.attach(appButton, 1, 0, 1, 1);
-
-    comboGrid.attach(actionCombo, 0, 0, 1, 1);
-    comboGrid.attach(settingsBtn, 1, 0, 1, 1);
-
-    const fullscreenLabel = new Gtk.Label({
-        label: _('Enable in fullscreen mode'),
-        halign: Gtk.Align.START
-    });
-    const fullscreenSwitch = _newGtkSwitch();
-
-    popupGrid.attach(fullscreenLabel, 0, 0, 1, 1);
-    popupGrid.attach(fullscreenSwitch, 1, 0, 1, 1);
-    if (!GNOME40) {
-        popupGrid.show_all();
-        cornerPopover.add(popupGrid);
-    } else cornerPopover.set_child(popupGrid);
-    fullscreenSwitch.active = corner.getFullscreen(trigger);
-    fullscreenSwitch.connect('notify::active', () => {
-        corner.setFullscreen(trigger, fullscreenSwitch.active);
-    });
-
-    cw.attach(comboGrid, 0, 0, 1, 1);
-    cw.attach(commandEntryRevealer, 0, 1, 1, 1);
-    cw.attach(wsIndexRevealer, 0, 2, 1, 1);
-
-    _fillCombo(actionTreeStore, actionCombo, corner, trigger);
-
-    let comboRenderer = new Gtk.CellRendererText();
-
-    actionCombo.pack_start(comboRenderer, true);
-    actionCombo.add_attribute(comboRenderer, "text", 1);
-    actionCombo.set_cell_data_func(comboRenderer,
-        (clayout, cell, model, iter) => {
-            let sensitive = !model.iter_has_child(iter);
-            cell.set_sensitive(sensitive);
-        }
-    );
-
-    let cmdConnected = false;
-    commandEntryRevealer.reveal_child = corner.getAction(trigger) === 'runCommand';
-    commandEntry.text = corner.getCommand(trigger);
-
-    actionCombo.connect('changed', () => {
-        corner.setAction(trigger, actionCombo.get_active_id());
-        commandEntryRevealer.reveal_child = corner.getAction(trigger) === 'runCommand';
-        wsIndexRevealer.reveal_child = corner.getAction(trigger) === 'moveToWorkspace';
-        if (corner.getAction(trigger) === 'runCommand' && !cmdConnected) {
-            appButton.connect('clicked', () => {
-                function fillCmdEntry () {
-                    let appInfo = dialog._appChooser.get_app_info();
-                        if (!appInfo) return;
-                        commandEntry.text = appInfo.get_commandline().replace(/ %.$/, '');
-                        dialog.destroy();
-                }
-                const dialog = _chooseAppDialog();
-                dialog._appChooser.connect('application-activated', () => {
-                    fillCmdEntry(dialog, commandEntry);
-                });
-                dialog.connect('response', (dlg, id) => {
-                    if (id !== Gtk.ResponseType.OK) {
-                        dialog.destroy();
-                        return;
-                    }
-                    fillCmdEntry();
-                });
-            });
-            commandEntry.text = corner.getCommand(trigger);
-            commandEntryRevealer.reveal_child = corner.getAction(trigger) === 'runCommand';
-            commandEntry.timeout_id = null;
-            commandEntry.connect('changed', () => {
-                if (commandEntry.timeout_id) {
-                    GLib.Source.remove(commandEntry.timeout_id);
-                }
-                commandEntry.timeout_id = GLib.timeout_add(
-                    GLib.PRIORITY_DEFAULT,
-                    500,
-                    () => {
-                        corner.setCommand(trigger, commandEntry.text);
-                        commandEntry.timeout_id = null;
-                        return false;
-                    }
-                );
-            });
-            cmdConnected = true;
-            wsIndexRevealer.reveal_child = corner.getAction(trigger) === 'moveToWorkspace';
-        }
-    });
-
-    if (trigger === Settings.Triggers.PRESSURE) {
-        const barrierLabelH = new Gtk.Label({
-            label: _('Barrier size - Horizontal'),
-            halign: Gtk.Align.START
-        });
-        const barrierLabelV = new Gtk.Label({
-            label: _('Barrier size - Vertical'),
-            halign: Gtk.Align.START
-        });
-        const pressureLabel = new Gtk.Label({
-            label: _('Pressure Threshold'),
-            halign: Gtk.Align.START
-        });
-        const barrierAdjustmentH = new Gtk.Adjustment({
-            lower: 1,
-            upper: geometry.width,
-            step_increment: 10,
-            page_increment: 100
-        });
-        const barrierAdjustmentV = new Gtk.Adjustment({
-            lower: 1,
-            upper: geometry.height,
-            step_increment: 10,
-            page_increment: 100
-        });
-        const pressureThresholdAdjustment = new Gtk.Adjustment({
-            lower: 0,
-            upper: 800,
-            step_increment: 10,
-            page_increment: 100
-        });
-        const barrierSizeSpinButtonH = new Gtk.SpinButton({
-            adjustment: barrierAdjustmentH,
-            numeric: true,
-            xalign: 0.5,
-            halign: Gtk.Align.END,
-            hexpand: true
-        });
-        const barrierSizeSpinButtonV = new Gtk.SpinButton({
-            adjustment: barrierAdjustmentV,
-            numeric: true,
-            xalign: 0.5,
-            halign: Gtk.Align.END,
-            hexpand: true
-        });
-        const pressureThresholdSpinButton = new Gtk.SpinButton({
-            adjustment: pressureThresholdAdjustment,
-            numeric: true,
-            xalign: 0.5,
-            halign: Gtk.Align.END,
-            hexpand: true
-        });
-        popupGrid.attach(barrierLabelH,               0, 1, 1, 1);
-        popupGrid.attach(barrierSizeSpinButtonH,      1, 1, 1, 1);
-        popupGrid.attach(barrierLabelV,               0, 2, 1, 1);
-        popupGrid.attach(barrierSizeSpinButtonV,      1, 2, 1, 1);
-        popupGrid.attach(pressureLabel,               0, 3, 1, 1);
-        popupGrid.attach(pressureThresholdSpinButton, 1, 3, 1, 1);
-
-        if (!GNOME40) popupGrid.show_all();
-
-
-        barrierSizeSpinButtonH.value = corner.barrierSizeH;
-        barrierSizeSpinButtonH.timout_id = null;
-        barrierSizeSpinButtonH.connect('value-changed', () => {
-            barrierSizeSpinButtonH.update();
-            // Cancel previous timeout
-            if (barrierSizeSpinButtonH.timeout_id) {
-                GLib.Source.remove(barrierSizeSpinButtonH.timeout_id);
-            }
-            barrierSizeSpinButtonH.timeout_id = GLib.timeout_add(
-                GLib.PRIORITY_DEFAULT,
-                500,
-                () => {
-                    corner.barrierSizeH = barrierSizeSpinButtonH.value;
-                    barrierSizeSpinButtonH.timeout_id = null;
-                    return false;
-                }
-            );
-        });
-        barrierSizeSpinButtonV.value = corner.barrierSizeV;
-        barrierSizeSpinButtonV.timout_id = null;
-        barrierSizeSpinButtonV.connect('value-changed', () => {
-            barrierSizeSpinButtonV.update();
-            // Cancel previous timeout
-            if (barrierSizeSpinButtonV.timeout_id) {
-                GLib.Source.remove(barrierSizeSpinButtonV.timeout_id);
-            }
-            barrierSizeSpinButtonV.timeout_id = GLib.timeout_add(
-                GLib.PRIORITY_DEFAULT,
-                500,
-                () => {
-                    corner.barrierSizeV = barrierSizeSpinButtonV.value;
-                    barrierSizeSpinButtonV.timeout_id = null;
-                    return false;
-                }
-            );
-        });
-    
-        pressureThresholdSpinButton.value = corner.pressureThreshold;
-        pressureThresholdSpinButton.timeout_id = null;
-        pressureThresholdSpinButton.connect('value-changed', () => {
-            pressureThresholdSpinButton.update();
-            if (pressureThresholdSpinButton.timeout_id) {
-                GLib.Source.remove(pressureThresholdSpinButton.timeout_id);
-            }
-            pressureThresholdSpinButton.timeout_id = GLib.timeout_add(
-                GLib.PRIORITY_DEFAULT,
-                500,
-                () => {
-                    corner.pressureThreshold = pressureThresholdSpinButton.value;
-                    pressureThresholdSpinButton.timeout_id = null;
-                    return false;
-                }
-            );
-        });
-
-    }
-
-    workspaceIndexSpinButton.value = corner.getWorkspaceIndex(trigger);
-    workspaceIndexSpinButton.timeout_id = null;
-    workspaceIndexSpinButton.connect('value-changed', () => {
-        workspaceIndexSpinButton.update();
-        if (workspaceIndexSpinButton.timeout_id) {
-            GLib.Source.remove(workspaceIndexSpinButton.timeout_id);
-        }
-        workspaceIndexSpinButton.timeout_id = GLib.timeout_add(
-            GLib.PRIORITY_DEFAULT,
-                500,
-                () => {
-                    corner.setWorkspaceIndex(trigger, workspaceIndexSpinButton.value);
-                    workspaceIndexSpinButton.timeout_id = null;
-                    return false;
-                }
-        );
-    });
-
-    if (!GNOME40) cw.show_all();
-    return cw;
-}
-
-function _fillCombo(actionTreeStore, actionCombo, corner, trigger) {
-    let iterDict = {};
-    let iter, iter2;
-    for (let i = 0; i < _actions.length; i++){
-        let item = _actions[i];
-        if (GNOME40 && _d40exclude.indexOf(item[1]) > -1) continue;
-        if (item[0] === null){
-            iter  = actionTreeStore.append(null);
-            actionTreeStore.set(iter, [0], [item[1]]);
-            actionTreeStore.set(iter, [1], [item[2]]);
-            // map items on iters to address them later
-            iterDict[item[1]] = iter;
-        } else {
-            iter2  = actionTreeStore.append(iter);
-            actionTreeStore.set(iter2, [0], [item[1]]);
-            actionTreeStore.set(iter2, [1], [item[2]]);
-            iterDict[item[1]] = iter2;
-        }
-    }
-
-    if (iterDict[corner.getAction(trigger)]) actionCombo.set_active_iter(iterDict[corner.getAction(trigger)]);
-}
-
-function _buildExpandWidget (corner) {
-    const ew = new Gtk.Grid({
-        row_spacing:     8,
-        column_spacing: 40,
-        margin_start:   10,
-        margin_end:     10,
-        margin_top:     10,
-        margin_bottom:  10,
-        halign: Gtk.Align.END
-    });
-    const expTitle = new Gtk.Label({
-        use_markup: true,
-        label: _makeTitle(_("Expand clickable corner along edges:")),
-        
-    });
-    const frame = new Gtk.Frame({
-        tooltip_text: 
-                      _('When adjacent corners are set to expand along the same edge, each of them allocate a half of the edge') + '\n'
-                    + _("Activate 'Make active corners/edges visible' option to see it") + '\n'
-                    + _('Hot corner pressure barriers can be set independently')
-    });
-          frame.set_label_widget(expTitle);
-    const hIcon = new Gtk.Image({
-                    halign: Gtk.Align.START,
-                    margin_start: 10,
-                    //vexpand: true,
-                    hexpand: true,
-                    pixel_size: 40
-                });
-          hIcon.set_from_file(`${Me.dir.get_path()}/icons/${corner.top ? 'Top':'Bottom'}${corner.left ? 'Left':'Right'}HE.svg`);
-    const vIcon = new Gtk.Image({
-                    halign: Gtk.Align.START,
-                    margin_start: 10,
-                    //vexpand: true,
-                    hexpand: true,
-                    pixel_size: 40
-                });
-    vIcon.set_from_file(`${Me.dir.get_path()}/icons/${corner.top ? 'Top':'Bottom'}${corner.left ? 'Left':'Right'}VE.svg`);
-
-    const hExpandSwitch = new Gtk.Switch({
-        tooltip_text: _('Expand horizonatally'),
-        halign: Gtk.Align.END,
-        valign: Gtk.Align.CENTER
-    });
-    const vExpandSwitch = new Gtk.Switch({
-        tooltip_text: _('Expand vertically'),
-        halign: Gtk.Align.END,
-        valign: Gtk.Align.CENTER
-    });
-    ew.attach(hIcon, 0, 1, 1, 1);
-    ew.attach(hExpandSwitch, 1, 1, 1, 1);
-    ew.attach(vIcon, 2, 1, 1, 1);
-    ew.attach(vExpandSwitch, 3, 1, 1, 1);
-    hExpandSwitch.active = corner.hExpand;
-    vExpandSwitch.active = corner.vExpand;
-    hExpandSwitch.connect('notify::active', () => {
-        corner.hExpand = hExpandSwitch.active;
-    });
-    vExpandSwitch.connect('notify::active', () => {
-        corner.vExpand = vExpandSwitch.active;
-    });
-    GNOME40 ?
-        frame.set_child(ew):
-        frame.add(ew)
-    return frame;
-}
-
 function _chooseAppDialog() {
     const dialog = new Gtk.Dialog({
         title: (_('Choose Application')),
@@ -857,59 +398,6 @@ function _optionsItem(text, tooltip, widget) {
     if (tooltip) item.push(tooltip);
 
     return item;
-}
-
-function _buildShortcusPage() {
-    let model = new Gtk.ListStore();
-    model.set_column_types([
-            GObject.TYPE_STRING,
-            GObject.TYPE_STRING,
-            GObject.TYPE_INT,
-            GObject.TYPE_INT
-        ]);
-    let treeview = new Gtk.TreeView({
-            vexpand: false,
-            hexpand: true,
-            margin: 10,
-            model: model
-        });
-
-    let cell = new Gtk.CellRendererAccel({
-            editable: true,
-            accel_mode: Gtk.CellRendererAccelMode.GTK
-        });
-        cell.connect('accel-edited', (rend, colname, key, mods) => {
-            let value = Gtk.accelerator_name(key, mods);
-            let [success, iter] = model.get_iter_from_string(colname);
-            model.set(iter, [ 2, 3 ], [ mods, key ]);
-            corner.setAccel(trigger, [value]);
-            
-        });
-    cell.connect('accel-cleared', (rend, colname) => {
-            let [success, iter] = model.get_iter_from_string(colname);
-            model.set(iter, [2, 3], [0, 0]);
-            corner.setAccel(trigger, []);
-            
-        });
-
-    let col = new Gtk.TreeViewColumn({
-            title: 'Click on line below twice and press shortcut'
-        });
-    col.pack_start(cell, false);
-    col.add_attribute(cell, 'accel-mods', 2);
-    col.add_attribute(cell, 'accel-key', 3);
-    treeview.append_column(col);
-    accelRevealer.add(treeview);
-    let accel = corner.getAccel(trigger)[0];
-    let key, mods;
-    if (accel) {
-        [key, mods] = Gtk.accelerator_parse(accel);
-    } else {
-        [key, mods] = [0, 0];
-    }
-
-    let row = model.insert(10);
-    model.set(row, [0, 1, 2, 3], ['CHCE', 'CHCE', mods, key ]);
 }
 
 function _makeSmall(label) {
@@ -1018,7 +506,463 @@ const _d40exclude = [
                         'invertLightWin',
 ]
 
+const CornerPage
+= GObject.registerClass(class CornerPage extends Gtk.Grid {
+    _init(corner, _geometry, leftHandMouse) {
+        super._init();
+
+        this._alreadyBuilt = false;
+        this._corner = null;
+        this._geometry = null;
+        this._leftHandMouse = false;
+    }
+
+    buildPage() {
+        if (this._alreadyBuilt) return;
+        this._alreadyBuilt = true;
+        for (let trigger of triggers) {
+
+            const ctrlBtn = new Gtk.CheckButton(
+            //const ctrlBtn = new Gtk.ToggleButton(
+                {
+                    label: 'Ctrl',
+                    halign: Gtk.Align.START,
+                    valign: Gtk.Align.CENTER,
+                    vexpand: false,
+                    hexpand: false,
+                    tooltip_text: _('When checked, pressed Ctrl key is needed to trigger the action'),
+                });
+            if (WAYLAND && (trigger === Settings.Triggers.PRESSURE)) {
+                ctrlBtn.tooltip_text = ('Doesn\'t work with Wayland for Hot triggers\n') + 
+                                        ctrlBtn.tooltip_text;
+            }
+            ctrlBtn.connect('notify::active', () =>{
+                this._corner.setCtrl(trigger, ctrlBtn.active);
+            });
+            ctrlBtn.set_active(this._corner.getCtrl(trigger));
+            const cw = this._buildTriggerWidget(trigger);
+            const trgIcon = new Gtk.Image({
+                halign: Gtk.Align.START,
+                margin_start: 10,
+                vexpand: true,
+                hexpand: true,
+                pixel_size: 40
+            });
+            let iconPath;
+            if (trigger === 0) {
+                iconPath = `${Me.dir.get_path()}/icons/${this._corner.top ? 'Top':'Bottom'}${this._corner.left ? 'Left':'Right'}.svg`
+            } else {
+                let iconIdx = trigger;
+                if (this._leftHandMouse) {
+                    if (trigger === 1) iconIdx = 2;
+                    if (trigger === 2) iconIdx = 1;
+                }
+                iconPath = `${Me.dir.get_path()}/icons/Mouse-${iconIdx}.svg`;
+            }
+            trgIcon.set_from_file(iconPath);
+            trgIcon.set_tooltip_text(triggerLabels[trigger]);
+            this.attach(trgIcon, 0, trigger, 1, 1);
+            this.attach(ctrlBtn, 1, trigger, 1, 1);
+            this.attach(cw, 2, trigger, 1, 1);
+        }
+        const ew = this._buildExpandWidget(this._corner);
+        this.attach(ew, 0, 6, 3, 1);
+        if (!GNOME40) this.show_all();
+    }
+
+    _buildTriggerWidget(trigger) {
+        const cw = new Gtk.Grid({
+            valign: Gtk.Align.CENTER
+        });
+    
+        const popupGrid = new Gtk.Grid({
+            margin_start:  10,
+            margin_end:    10,
+            margin_top:    10,
+            margin_bottom: 10,
+            column_spacing: 12,
+            row_spacing: 8
+        });
+    
+        const comboGrid = new Gtk.Grid();
+        const cmdGrid = new Gtk.Grid({
+            margin_top: 8
+        });
+    
+        const commandEntryRevealer = new Gtk.Revealer({
+            child: cmdGrid
+        });
+    
+        const wsIndexAdjustment = new Gtk.Adjustment({
+            lower:           1,
+            upper:         256,
+            step_increment:  1,
+            page_increment: 10
+        });
+        const workspaceIndexSpinButton = new Gtk.SpinButton({
+            margin_top: 8,
+            xalign: 0.5
+        });
+        const wsIndexRevealer = new Gtk.Revealer({
+            child: workspaceIndexSpinButton
+        });
+        workspaceIndexSpinButton.set_adjustment(wsIndexAdjustment);
+        const commandEntry = new Gtk.Entry({
+            hexpand: true});
+        const appButton = new Gtk.Button({
+            valign: Gtk.Align.END,
+            margin_start: 4
+        });
+    
+        const actionTreeStore = new Gtk.TreeStore();
+        actionTreeStore.set_column_types([
+                GObject.TYPE_STRING,
+                GObject.TYPE_STRING
+        ]);
+    
+        const actionCombo = new Gtk.ComboBox({
+            model: actionTreeStore,
+            id_column: 0,
+            hexpand: true
+        });
+    
+        const cornerPopover = new Gtk.Popover();
+        const settingsBtn = new Gtk.MenuButton({
+            popover: cornerPopover,
+            valign: Gtk.Align.CENTER,
+            margin_start: 4
+        });
+
+        if (GNOME40) {
+            // Gtk3 implement button icon as added Gtk.Image child, Gtk4 does not
+            settingsBtn.set_icon_name('emblem-system-symbolic');
+            appButton.set_icon_name('find-location-symbolic');
+        } else {
+            settingsBtn.add(Gtk.Image.new_from_icon_name('emblem-system-symbolic', Gtk.IconSize.BUTTON));
+            appButton.add(Gtk.Image.new_from_icon_name('find-location-symbolic', Gtk.IconSize.BUTTON));
+        }
+    
+        cmdGrid.attach(commandEntry, 0, 0, 1, 1);
+        cmdGrid.attach(appButton, 1, 0, 1, 1);
+    
+        comboGrid.attach(actionCombo, 0, 0, 1, 1);
+        comboGrid.attach(settingsBtn, 1, 0, 1, 1);
+    
+        const fullscreenLabel = new Gtk.Label({
+            label: _('Enable in fullscreen mode'),
+            halign: Gtk.Align.START
+        });
+        const fullscreenSwitch = _newGtkSwitch();
+    
+        popupGrid.attach(fullscreenLabel, 0, 0, 1, 1);
+        popupGrid.attach(fullscreenSwitch, 1, 0, 1, 1);
+        if (!GNOME40) {
+            popupGrid.show_all();
+            cornerPopover.add(popupGrid);
+        } else cornerPopover.set_child(popupGrid);
+        fullscreenSwitch.active = this._corner.getFullscreen(trigger);
+        fullscreenSwitch.connect('notify::active', () => {
+            this._corner.setFullscreen(trigger, fullscreenSwitch.active);
+        });
+    
+        cw.attach(comboGrid, 0, 0, 1, 1);
+        cw.attach(commandEntryRevealer, 0, 1, 1, 1);
+        cw.attach(wsIndexRevealer, 0, 2, 1, 1);
+    
+        this._fillCombo(actionTreeStore, actionCombo, trigger);
+    
+        let comboRenderer = new Gtk.CellRendererText();
+    
+        actionCombo.pack_start(comboRenderer, true);
+        actionCombo.add_attribute(comboRenderer, "text", 1);
+        actionCombo.set_cell_data_func(comboRenderer,
+            (clayout, cell, model, iter) => {
+                let sensitive = !model.iter_has_child(iter);
+                cell.set_sensitive(sensitive);
+            }
+        );
+    
+        let cmdConnected = false;
+        commandEntryRevealer.reveal_child = this._corner.getAction(trigger) === 'runCommand';
+        commandEntry.text = this._corner.getCommand(trigger);
+    
+        actionCombo.connect('changed', () => {
+            this._corner.setAction(trigger, actionCombo.get_active_id());
+            commandEntryRevealer.reveal_child = this._corner.getAction(trigger) === 'runCommand';
+            wsIndexRevealer.reveal_child = this._corner.getAction(trigger) === 'moveToWorkspace';
+            if (this._corner.getAction(trigger) === 'runCommand' && !cmdConnected) {
+                appButton.connect('clicked', () => {
+                    function fillCmdEntry () {
+                        let appInfo = dialog._appChooser.get_app_info();
+                            if (!appInfo) return;
+                            commandEntry.text = appInfo.get_commandline().replace(/ %.$/, '');
+                            dialog.destroy();
+                    }
+                    const dialog = _chooseAppDialog();
+                    dialog._appChooser.connect('application-activated', () => {
+                        fillCmdEntry(dialog, commandEntry);
+                    });
+                    dialog.connect('response', (dlg, id) => {
+                        if (id !== Gtk.ResponseType.OK) {
+                            dialog.destroy();
+                            return;
+                        }
+                        fillCmdEntry();
+                    });
+                });
+                commandEntry.text = this._corner.getCommand(trigger);
+                commandEntryRevealer.reveal_child = this._corner.getAction(trigger) === 'runCommand';
+                commandEntry.timeout_id = null;
+                commandEntry.connect('changed', () => {
+                    if (commandEntry.timeout_id) {
+                        GLib.Source.remove(commandEntry.timeout_id);
+                    }
+                    commandEntry.timeout_id = GLib.timeout_add(
+                        GLib.PRIORITY_DEFAULT,
+                        500,
+                        () => {
+                            this._corner.setCommand(trigger, commandEntry.text);
+                            commandEntry.timeout_id = null;
+                            return false;
+                        }
+                    );
+                });
+                cmdConnected = true;
+                wsIndexRevealer.reveal_child = this._corner.getAction(trigger) === 'moveToWorkspace';
+            }
+        });
+    
+        workspaceIndexSpinButton.value = this._corner.getWorkspaceIndex(trigger);
+        workspaceIndexSpinButton.timeout_id = null;
+        workspaceIndexSpinButton.connect('value-changed', () => {
+            workspaceIndexSpinButton.update();
+            if (workspaceIndexSpinButton.timeout_id) {
+                GLib.Source.remove(workspaceIndexSpinButton.timeout_id);
+            }
+            workspaceIndexSpinButton.timeout_id = GLib.timeout_add(
+                GLib.PRIORITY_DEFAULT,
+                    500,
+                    () => {
+                        this._corner.setWorkspaceIndex(trigger, workspaceIndexSpinButton.value);
+                        workspaceIndexSpinButton.timeout_id = null;
+                        return false;
+                    }
+            );
+        });
+    
+        if (trigger === Settings.Triggers.PRESSURE) {
+            this._buildPressureSettings(popupGrid);
+        }
+   
+        if (!GNOME40) cw.show_all();
+        return cw;
+    }
+
+    _fillCombo(actionTreeStore, actionCombo, trigger) {
+        let iterDict = {};
+        let iter, iter2;
+        for (let i = 0; i < _actions.length; i++){
+            let item = _actions[i];
+            if (GNOME40 && _d40exclude.indexOf(item[1]) > -1) continue;
+            if (item[0] === null){
+                iter  = actionTreeStore.append(null);
+                actionTreeStore.set(iter, [0], [item[1]]);
+                actionTreeStore.set(iter, [1], [item[2]]);
+                // map items on iters to address them later
+                iterDict[item[1]] = iter;
+            } else {
+                iter2  = actionTreeStore.append(iter);
+                actionTreeStore.set(iter2, [0], [item[1]]);
+                actionTreeStore.set(iter2, [1], [item[2]]);
+                iterDict[item[1]] = iter2;
+            }
+        }
+        if (iterDict[this._corner.getAction(trigger)]) actionCombo.set_active_iter(iterDict[this._corner.getAction(trigger)]);
+    }
+
+    _buildPressureSettings(popupGrid) {
+        const barrierLabelH = new Gtk.Label({
+            label: _('Barrier size - Horizontal'),
+            halign: Gtk.Align.START
+        });
+        const barrierLabelV = new Gtk.Label({
+            label: _('Barrier size - Vertical'),
+            halign: Gtk.Align.START
+        });
+        const pressureLabel = new Gtk.Label({
+            label: _('Pressure Threshold'),
+            halign: Gtk.Align.START
+        });
+        const barrierAdjustmentH = new Gtk.Adjustment({
+            lower: 1,
+            upper: this._geometry.width,
+            step_increment: 10,
+            page_increment: 100
+        });
+        const barrierAdjustmentV = new Gtk.Adjustment({
+            lower: 1,
+            upper: this._geometry.height,
+            step_increment: 10,
+            page_increment: 100
+        });
+        const pressureThresholdAdjustment = new Gtk.Adjustment({
+            lower: 0,
+            upper: 800,
+            step_increment: 10,
+            page_increment: 100
+        });
+        const barrierSizeSpinButtonH = new Gtk.SpinButton({
+            adjustment: barrierAdjustmentH,
+            numeric: true,
+            xalign: 0.5,
+            halign: Gtk.Align.END,
+            hexpand: true
+        });
+        const barrierSizeSpinButtonV = new Gtk.SpinButton({
+            adjustment: barrierAdjustmentV,
+            numeric: true,
+            xalign: 0.5,
+            halign: Gtk.Align.END,
+            hexpand: true
+        });
+        const pressureThresholdSpinButton = new Gtk.SpinButton({
+            adjustment: pressureThresholdAdjustment,
+            numeric: true,
+            xalign: 0.5,
+            halign: Gtk.Align.END,
+            hexpand: true
+        });
+        popupGrid.attach(barrierLabelH,               0, 1, 1, 1);
+        popupGrid.attach(barrierSizeSpinButtonH,      1, 1, 1, 1);
+        popupGrid.attach(barrierLabelV,               0, 2, 1, 1);
+        popupGrid.attach(barrierSizeSpinButtonV,      1, 2, 1, 1);
+        popupGrid.attach(pressureLabel,               0, 3, 1, 1);
+        popupGrid.attach(pressureThresholdSpinButton, 1, 3, 1, 1);
+
+        if (!GNOME40) popupGrid.show_all();
 
 
+        barrierSizeSpinButtonH.value = this._corner.barrierSizeH;
+        barrierSizeSpinButtonH.timout_id = null;
+        barrierSizeSpinButtonH.connect('value-changed', () => {
+            barrierSizeSpinButtonH.update();
+            // Cancel previous timeout
+            if (barrierSizeSpinButtonH.timeout_id) {
+                GLib.Source.remove(barrierSizeSpinButtonH.timeout_id);
+            }
+            barrierSizeSpinButtonH.timeout_id = GLib.timeout_add(
+                GLib.PRIORITY_DEFAULT,
+                500,
+                () => {
+                    this._corner.barrierSizeH = barrierSizeSpinButtonH.value;
+                    barrierSizeSpinButtonH.timeout_id = null;
+                    return false;
+                }
+            );
+        });
+        barrierSizeSpinButtonV.value = this._corner.barrierSizeV;
+        barrierSizeSpinButtonV.timout_id = null;
+        barrierSizeSpinButtonV.connect('value-changed', () => {
+            barrierSizeSpinButtonV.update();
+            // Cancel previous timeout
+            if (barrierSizeSpinButtonV.timeout_id) {
+                GLib.Source.remove(barrierSizeSpinButtonV.timeout_id);
+            }
+            barrierSizeSpinButtonV.timeout_id = GLib.timeout_add(
+                GLib.PRIORITY_DEFAULT,
+                500,
+                () => {
+                    this._corner.barrierSizeV = barrierSizeSpinButtonV.value;
+                    barrierSizeSpinButtonV.timeout_id = null;
+                    return false;
+                }
+            );
+        });
+    
+        pressureThresholdSpinButton.value = this._corner.pressureThreshold;
+        pressureThresholdSpinButton.timeout_id = null;
+        pressureThresholdSpinButton.connect('value-changed', () => {
+            pressureThresholdSpinButton.update();
+            if (pressureThresholdSpinButton.timeout_id) {
+                GLib.Source.remove(pressureThresholdSpinButton.timeout_id);
+            }
+            pressureThresholdSpinButton.timeout_id = GLib.timeout_add(
+                GLib.PRIORITY_DEFAULT,
+                500,
+                () => {
+                    this._corner.pressureThreshold = pressureThresholdSpinButton.value;
+                    pressureThresholdSpinButton.timeout_id = null;
+                    return false;
+                }
+            );
+        });
+    }
 
+    _buildExpandWidget() {
+        const ew = new Gtk.Grid({
+            row_spacing:     8,
+            column_spacing: 40,
+            margin_start:   10,
+            margin_end:     10,
+            margin_top:     10,
+            margin_bottom:  10,
+            halign: Gtk.Align.END
+        });
+        const expTitle = new Gtk.Label({
+            use_markup: true,
+            label: _makeTitle(_("Expand clickable corner along edges:")),
+            
+        });
+        const frame = new Gtk.Frame({
+            tooltip_text: 
+                          _('When adjacent corners are set to expand along the same edge, each of them allocate a half of the edge') + '\n'
+                        + _("Activate 'Make active corners/edges visible' option to see it") + '\n'
+                        + _('Hot corner pressure barriers can be set independently')
+        });
+              frame.set_label_widget(expTitle);
+        const hIcon = new Gtk.Image({
+                        halign: Gtk.Align.START,
+                        margin_start: 10,
+                        //vexpand: true,
+                        hexpand: true,
+                        pixel_size: 40
+                    });
+              hIcon.set_from_file(`${Me.dir.get_path()}/icons/${this._corner.top ? 'Top':'Bottom'}${this._corner.left ? 'Left':'Right'}HE.svg`);
+        const vIcon = new Gtk.Image({
+                        halign: Gtk.Align.START,
+                        margin_start: 10,
+                        //vexpand: true,
+                        hexpand: true,
+                        pixel_size: 40
+                    });
+        vIcon.set_from_file(`${Me.dir.get_path()}/icons/${this._corner.top ? 'Top':'Bottom'}${this._corner.left ? 'Left':'Right'}VE.svg`);
+    
+        const hExpandSwitch = new Gtk.Switch({
+            tooltip_text: _('Expand horizonatally'),
+            halign: Gtk.Align.END,
+            valign: Gtk.Align.CENTER
+        });
+        const vExpandSwitch = new Gtk.Switch({
+            tooltip_text: _('Expand vertically'),
+            halign: Gtk.Align.END,
+            valign: Gtk.Align.CENTER
+        });
+        ew.attach(hIcon, 0, 1, 1, 1);
+        ew.attach(hExpandSwitch, 1, 1, 1, 1);
+        ew.attach(vIcon, 2, 1, 1, 1);
+        ew.attach(vExpandSwitch, 3, 1, 1, 1);
+        hExpandSwitch.active = this._corner.hExpand;
+        vExpandSwitch.active = this._corner.vExpand;
+        hExpandSwitch.connect('notify::active', () => {
+            this._corner.hExpand = hExpandSwitch.active;
+        });
+        vExpandSwitch.connect('notify::active', () => {
+            this._corner.vExpand = vExpandSwitch.active;
+        });
+        GNOME40 ?
+            frame.set_child(ew):
+            frame.add(ew)
+        return frame;
+    }
+});
 
