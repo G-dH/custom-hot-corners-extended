@@ -321,6 +321,7 @@ class CustomHotCorner extends Layout.HotCorner {
             ['nextWinWsMon',    this._nextWinMonitor          ],
             ['recentWin',       this._recentWindow            ],
             ['closeWin',        this._closeWindow             ],
+            ['killApp',         this._killApp                 ],
             ['maximizeWin',     this._maximizeWindow          ],
             ['minimizeWin',     this._minimizeWindow          ],
             ['fullscreenWin',   this._fullscreenWindow        ],
@@ -364,6 +365,7 @@ class CustomHotCorner extends Layout.HotCorner {
             ['tintRedToggleAll',this._redTintToggleGlobal     ],
             ['tintGreenToggleWin',this._greenTintToggleWindow ],
             ['tintGreenToggleAll',this._greenTintToggleGlobal ],
+            ['toggleNightLight',this._nightLightToggle        ],
             ['removeAllEffects',this._removeAllEffects        ],
 
 
@@ -712,6 +714,9 @@ class CustomHotCorner extends Layout.HotCorner {
     _closeWindow() {
         Actions.closeWindow();
     }
+    _killApp() {
+        Actions.killApplication();
+    }
     _maximizeWindow() {
         Actions.toggleMaximizeWindow();
     }
@@ -849,6 +854,9 @@ class CustomHotCorner extends Layout.HotCorner {
     }
     _opacityToggleWin() {
         Actions.adjustWindowOpacity(0, 200);
+    }
+    _nightLightToggle() {
+        Actions.toggleNightLight();
     }
     _redTintToggleWindow(){
         Actions.toggleRedTintEffect(

@@ -34,15 +34,17 @@ function init() {
     log(`initializing ${Me.metadata.name} Preferences`);
     ExtensionUtils.initTranslations(Me.metadata['gettext-domain']);
     if (Settings.shellVersion.startsWith("40"))
-        GNOME40 = true;
+         GNOME40 = true;
     else GNOME40 = false;
     WAYLAND = GLib.getenv('XDG_SESSION_TYPE') === 'wayland';
 }
 
 function buildPrefsWidget() {
     const prefsWidget = new Gtk.Grid();
-    notebook = new Gtk.Notebook();
-    notebook.tab_pos = Gtk.POS_LEFT;
+    notebook = new Gtk.Notebook({
+        tab_pos: Gtk.PositionType.LEFT
+    });
+    
     prefsWidget.attach(notebook, 0, 0, 1, 1);
 
     const display = Gdk.Display.get_default();
@@ -50,7 +52,10 @@ function buildPrefsWidget() {
                             display.get_monitors().get_n_items() :
                             display.get_n_monitors();
 
-    const cornerWidgets = [];
+    let mouseSettings = Settings.getSettings(
+                                'org.gnome.desktop.peripherals.mouse',
+                                '/org/gnome/desktop/peripherals/mouse/');
+    let leftHandMouse = mouseSettings.get_boolean('left-handed');
 
     for (let monitorIndex = 0; monitorIndex < num_monitors; ++monitorIndex) {
         const monitor = GNOME40 ?
@@ -58,14 +63,11 @@ function buildPrefsWidget() {
                             display.get_monitor(monitorIndex);
         const geometry = monitor.get_geometry();
 
-        let mouseSettings = Settings.getSettings(
-                                'org.gnome.desktop.peripherals.mouse',
-                                '/org/gnome/desktop/peripherals/mouse/');
-        let leftHandMouse = mouseSettings.get_boolean('left-handed');
-
         let corners = Settings.Corner.forMonitor(monitorIndex, monitorIndex, geometry);
 
-        const cornersBook = new Gtk.Notebook();
+        const cornersBook = new Gtk.Notebook({
+            tab_pos: Gtk.PositionType.TOP
+        });
 
         for (let i = 0; i < corners.length; i++){
             const label = new Gtk.Image({
@@ -90,6 +92,7 @@ function buildPrefsWidget() {
             cPage._geometry = geometry;
             cPage._leftHandMouse = leftHandMouse;
             cornersBook.append_page(cPage, label);
+            if (i === 0) cPage.buildPage();
 
         }
         const label = new Gtk.Label({ label: _('Monitor') + ' ' + (monitorIndex + 1) });
@@ -97,14 +100,15 @@ function buildPrefsWidget() {
         cornersBook.connect('switch-page', (notebook, page, index) => {
             page.buildPage();
         });
-        
     }
+
     let label = new Gtk.Label({ label: _('Options'), halign: Gtk.Align.START});
     notebook.append_page(_buildMscOptions(), label);
 
     if (!GNOME40) prefsWidget.show_all();
     return prefsWidget;
 }
+
 function _buildMscOptions() {
     const mscOptions = new Settings.MscOptions();
 
@@ -439,6 +443,7 @@ const _actions = [
 
         [null, ''                ,   _('Windows - Control')],
         [   1, 'closeWin'        ,   _('Close Window')],
+        [   1, 'killApp'         ,   _('Kill Application')],
         [   1, 'maximizeWin'     ,   _('Maximize Window')],
         [   1, 'minimizeWin'     ,   _('Minimize Window')],
         [   1, 'fullscreenWin'   ,   _('Fullscreen Window')],
@@ -508,8 +513,8 @@ const _d40exclude = [
 
 const CornerPage
 = GObject.registerClass(class CornerPage extends Gtk.Grid {
-    _init(corner, _geometry, leftHandMouse) {
-        super._init();
+    _init(constructProperties = {}) {
+        super._init(constructProperties);
 
         this._alreadyBuilt = false;
         this._corner = null;
@@ -536,7 +541,7 @@ const CornerPage
                 ctrlBtn.tooltip_text = ('Doesn\'t work with Wayland for Hot triggers\n') + 
                                         ctrlBtn.tooltip_text;
             }
-            ctrlBtn.connect('notify::active', () =>{
+            ctrlBtn.connect('notify::active', ()=> {
                 this._corner.setCtrl(trigger, ctrlBtn.active);
             });
             ctrlBtn.set_active(this._corner.getCtrl(trigger));
@@ -947,9 +952,9 @@ const CornerPage
             halign: Gtk.Align.END,
             valign: Gtk.Align.CENTER
         });
-        ew.attach(hIcon, 0, 1, 1, 1);
+        ew.attach(hIcon,         0, 1, 1, 1);
         ew.attach(hExpandSwitch, 1, 1, 1, 1);
-        ew.attach(vIcon, 2, 1, 1, 1);
+        ew.attach(vIcon,         2, 1, 1, 1);
         ew.attach(vExpandSwitch, 3, 1, 1, 1);
         hExpandSwitch.active = this._corner.hExpand;
         vExpandSwitch.active = this._corner.vExpand;

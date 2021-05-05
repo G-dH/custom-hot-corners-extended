@@ -72,7 +72,8 @@ var Actions = class {
         this._a11yAppsSettings      = null;
         this._a11yMagnifierSettings = null;
         this._interfaceSettings     = null;
-        this._getShellSettings      = null;
+        this._shellSettings         = null;
+        this._colorSettings         = null;
 
     }
 
@@ -134,6 +135,15 @@ var Actions = class {
         return this._interfaceSettings;
     }
 
+    _getColorSettings() {
+        if (!this._colorSettings) {
+            this._colorSettings = Settings.getSettings(
+                            'org.gnome.settings-daemon.plugins.color',
+                            '/org/gnome/settings-daemon/plugins/color/');
+        }
+        return this._colorSettings;
+    }
+
     _connectRecentWorkspace() {
         this._signalsCollector.push((global.workspace_manager).connect('workspace-switched', this._onWorkspaceSwitched.bind(this)));
     }
@@ -150,14 +160,16 @@ var Actions = class {
         this._dimmerActors = [];
     }
     _getFocusedWindow() {
-        let windows = global.display.get_tab_list(Meta.TabList.NORMAL_ALL, null);
+        return global.display.focus_window;
+
+        /*let windows = global.display.get_tab_list(Meta.TabList.NORMAL_ALL, null);
         for (let win of windows) {
             if (win.has_focus()) {
                 return win;
             }
         }
         log (`[${Me.metadata.name}] Warning: no focused window found`);
-        return null;
+        return null;*/
     }
 
     _getWindowSurface(windowActor) {
@@ -231,6 +243,11 @@ var Actions = class {
         global.display.get_tab_list(0, null)[1].activate(global.get_current_time());
     }
     closeWindow() {
+        let win = this._getFocusedWindow();
+        if (!win) return;
+        win.delete(global.get_current_time());
+    }
+    killApplication() {
         let win = this._getFocusedWindow();
         if (!win) return;
         win.kill();
@@ -536,6 +553,11 @@ var Actions = class {
         else
             this._toggleGlobalEffect(name, effect);
 
+    }
+
+    toggleNightLight() {
+        let settings = this._getColorSettings();
+        settings.set_boolean('night-light-enabled', !settings.get_boolean('night-light-enabled'));
     }
 
     toggleRedTintEffect(color, window = true) {
