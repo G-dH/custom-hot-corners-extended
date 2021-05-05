@@ -5,10 +5,7 @@ EXTRA_DIST = settings.js \
              extension.js \
              metadata.json \
              prefs.js \
-             corner-widget.ui \
-             misc-settings-widget.ui \
-             corner-widget-40.ui \
-             misc-settings-widget-40.ui
+             actions.js
 
 topextensiondir = $(datadir)/gnome-shell/extensions
 extensiondir = $(topextensiondir)/$(uuid)
@@ -16,10 +13,7 @@ extension_DATA = settings.js \
                  extension.js \
                  metadata.json \
                  prefs.js \
-                 corner-widget.ui \
-                 misc-settings-widget.ui \
-                 corner-widget-40.ui \
-                 misc-settings-widget-40.ui \
+                 actions.js \
                  README.md \
                  LICENSE
 

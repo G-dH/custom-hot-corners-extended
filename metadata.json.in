@@ -1,5 +1,5 @@
 {
-    "description": "The Extended version of Custom Hot Corners extension can use mouse buttons and a scroll wheel as triggers, expand corners along the monitor's edges and offers lots of actions for desktop navigation and control.",
+    "description": "Navigate and control the Gnome Shell environment by a mouse through the corners and edges of your monitors",
     "shell-version": [
     	"3.36",
     	"3.38",
