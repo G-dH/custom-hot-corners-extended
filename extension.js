@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-'use strict'
+'use strict';
 const Clutter                = imports.gi.Clutter;
 const Meta                   = imports.gi.Meta;
 const Shell                  = imports.gi.Shell;
@@ -111,8 +111,11 @@ function _removeHotCorners() {
     const hc = Main.layoutManager.hotCorners;
     // reverse iteration, objects are being removed from the source during destruction
     for (let i = hc.length-1; i >= 0; i--) {
-        if (hc[i]._corner)
-            _destroyHotCorner(hc[i]._corner);
+        if (hc[i]) {
+            if (hc[i]._corner) {
+               _destroyHotCorner(hc[i]._corner);
+           }
+        }
     }
     Main.layoutManager.hotCorners = [];
     _updateWatchCorners();
