@@ -13,7 +13,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
-'use strict'
+'use strict';
 
 const GObject                = imports.gi.GObject;
 const GLib                   = imports.gi.GLib;
@@ -520,7 +520,7 @@ var Actions = class {
                             brightnessContrast.get_contrast()[0];
             // multiply to avoid value shifting
             value = Math.round((value * 1000) + (step *1000));
-            let max = brightness ? 100 : 250;
+            let max = brightness ? 0 : 250;
             if (value > max) value = max;
             if (value < -750) value = -750;
             value /= 1000;

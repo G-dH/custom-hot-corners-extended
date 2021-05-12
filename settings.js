@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-'use strict'
+'use strict';
 const {GLib, Gio} = imports.gi;
 
 const ExtensionUtils = imports.misc.extensionUtils;
@@ -54,7 +54,8 @@ function listTriggers() {
 
 var MscOptions = class MscOptions {
     constructor() {
-        this._gsettings = this._loadSettings();
+        this._gsettings = this._loadSettings('misc');
+        this._gsettingsKB = this._loadSettings('shortcuts');
         this._connectionIds = [];
     }
 
@@ -68,9 +69,9 @@ var MscOptions = class MscOptions {
         this._connectionIds.forEach(id => this._gsettings.disconnect(id));
     }
 
-    _loadSettings() {
-        const schema = `${_schema}.misc`;
-        const path = `${_path}/misc/`;
+    _loadSettings(schm) {
+        const schema = `${_schema}.${schm}`;
+        const path = `${_path}/${schm}/`;
         return getSettings(schema, path);
     }
     get watchCorners() {
@@ -138,6 +139,12 @@ var MscOptions = class MscOptions {
     }
     set barrierFallback(bool_val) {
         this._gsettings.set_boolean('barrier-fallback', bool_val);
+    }
+    getKeyBind(key) {
+        return this._gsettingsKB.get_strv(key);
+    }
+    setKeyBind(key, value) {
+        this._gsettingsKB.set_strv(key, value);
     }
 }
 

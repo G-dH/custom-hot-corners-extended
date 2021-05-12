@@ -32,6 +32,7 @@ const Me                     = ExtensionUtils.getCurrentExtension();
 const Settings               = Me.imports.settings;
 const ActionLib              = Me.imports.actions;
 let   Actions;
+let   actionTrigger;
 
 // gettext
 const _                      = Settings._;
@@ -54,7 +55,6 @@ let _rippleAnimation;
 let _barrierFallback;
 
 let _extensionEnabled;
-//let _systemHotCornersEnabled;
 
 let _watchCorners;
 let _watch;
@@ -76,6 +76,7 @@ function enable() {
     _origUpdateHotCorners = Main.layoutManager._updateHotCorners;
     _extensionEnabled = true;
     _initMscOptions();
+    actionTrigger = new ActionTrigger(_mscOptions);
     _replaceLayoutManager();
     _updateWatch();
 }
@@ -92,6 +93,7 @@ function disable() {
     _removeHotCorners();
     _mscOptions.destroy();
     Actions.clean();
+    actionTrigger.clean();
     // This restores the original hot corners
     _extensionEnabled = false;
     Main.layoutManager._updateHotCorners = _origUpdateHotCorners;
@@ -248,7 +250,7 @@ function _updateWatch() {
                     () => {
                         if (Main.layoutManager.hotCorners !== _watchCorners) {
                             _updateHotCorners();
-                            Main.notify(Me.metadata.name, `Hot Corners had to be updated because of external override`);
+                            //Main.notify(Me.metadata.name, `Hot Corners had to be updated because of external override`);
                         }
                         if (!_watch.active) {
                             _timeoutsCollector.splice(_timeoutsCollector.indexOf(_watch.timeout));
@@ -303,77 +305,7 @@ class CustomHotCorner extends Layout.HotCorner {
         this._actors  = [];
         this._corner.hotCornerExists = true;
 
-        this.m = new Map([
-            ['toggleOverview',  this._overview                ],
-            ['showApplications',this._showAppGrid             ],
-            ['showDesktop',     this._showDesktop             ],
-            ['showDesktopMon',  this._showDesktopMonitor      ],
-            ['blackScreen',     this._blackScreen             ],
-            ['blackScreenMon',  this._blackScreenMonitor      ],
-            ['runCommand',      this._runCommand              ],
-            ['runDialog',       this._runDialog               ],
-            ['prevWorkspace',   this._prevWorkspace           ],
-            ['nextWorkspace',   this._nextWorkspace           ],
-            ['moveToWorkspace', this._moveToWorkspace         ],
-            ['recentWS',        this._moveToRecentWorkspace   ],
-            ['prevWinAll',      this._prevWindow              ],
-            ['prevWinWS',       this._prevWindowWS            ],
-            ['prevWinWsMon',    this._prevWinMonitor          ],
-            ['nextWinAll',      this._nextWindow              ],
-            ['nextWinWS',       this._nextWindowWS            ],
-            ['nextWinWsMon',    this._nextWinMonitor          ],
-            ['recentWin',       this._recentWindow            ],
-            ['closeWin',        this._closeWindow             ],
-            ['killApp',         this._killApp                 ],
-            ['maximizeWin',     this._maximizeWindow          ],
-            ['minimizeWin',     this._minimizeWindow          ],
-            ['fullscreenWin',   this._fullscreenWindow        ],
-            ['aboveWin',        this._aboveWindow             ],
-            ['stickWin',        this._stickWindow             ],
-            ['screenLock',      this._lockScreen              ],
-            ['suspend',         this._suspendToRam            ],
-            ['powerOff',        this._powerOff                ],
-            ['logout',          this._logOut                  ],
-            ['switchUser',      this._switchUser              ],
-            ['volumeUp',        this._volumeUp                ],
-            ['volumeDown',      this._volumeDown              ],
-            ['muteAudio',       this._mute                    ],
-            ['toggleZoom',      this._toggleZoom              ],
-            ['zoomIn',          this._zoomIn                  ],
-            ['zoomOut',         this._zoomOut                 ],
-            ['keyboard',        this._showKeyboard            ],
-            ['largeText',       this._largeText               ],
-            ['screenReader',    this._screenReader            ],
-            ['hidePanel',       this._togglePanel             ],
-            ['toggleTheme',     this._toggleTheme             ],
-            ['lookingGlass',    this._lookingGlass            ],
-            ['restartShell',    this._restartGnomeShell       ],
-            ['prefs',           this._showPrefs               ],
-            ['invertLightWin',  this._lightnessInvertWindow   ],
-            ['invertLightAll',  this._lightnessInvertGlobal   ],
-            ['desaturateAll',   this._toggleDesaturateGlobal  ],
-            ['desaturateWin',   this._toggleDesaturateWindow  ],
-            ['brightUpAll',     this._brightnessUpGlobal      ],
-            ['brightDownAll',   this._brightnessDownGlobal    ],
-            ['brightUpWin',     this._brightnessUpWindow      ],
-            ['brightDownWin',   this._brightnessDownWindow    ],
-            ['contrastUpAll',   this._contrastUpGlobal        ],
-            ['contrastDownAll', this._contrastDownGlobal      ],
-            ['contrastUpWin',   this._contrastUpWindow        ],
-            ['contrastDownWin', this._contrastDownWindow      ],
-            ['opacityUpWin',    this._opacityUpWindow         ],
-            ['opacityDownWin',  this._opacityDownWindow       ],
-            ['opacityToggleWin',this._opacityToggleWin        ],
-            ['tintRedToggleWin',this._redTintToggleWindow     ],
-            ['tintRedToggleAll',this._redTintToggleGlobal     ],
-            ['tintGreenToggleWin',this._greenTintToggleWindow ],
-            ['tintGreenToggleAll',this._greenTintToggleGlobal ],
-            ['toggleNightLight',this._nightLightToggle        ],
-            ['removeAllEffects',this._removeAllEffects        ],
 
-
-
-        ]);
 
         this._enterd = false;
         this._pressureBarrier = new Layout.PressureBarrier(
@@ -653,16 +585,192 @@ class CustomHotCorner extends Layout.HotCorner {
         this._runAction(trigger);
         return Clutter.EVENT_STOP;
     }
+
     _runAction(trigger) {
         if ( (_actionTimeoutActive(trigger) && !(['volumeUp','volumeDown'].includes(this._corner.action[trigger])))
             || this._corner.action[trigger] == 'disabled'
             ) return;
-        this._actionFunction = this.m.get(this._corner.action[trigger]) || function () {};
         if (    (!this._monitor.inFullscreen) ||
                 ( this._monitor.inFullscreen  && (this._corner.fullscreen[trigger] || _fullscreenGlobal))) {
             if (_rippleAnimation) this._rippleAnimation();
-            this._actionFunction(trigger);
+            actionTrigger.runAction(  this._corner.action[trigger],
+                                      this._corner.monitorIndex,
+                                      this._corner.workspaceIndex[trigger],
+                                      this._corner.command[trigger]
+            );
         }
+    }
+
+
+});
+
+function _removeActionTimeout() {
+    _timeoutsCollector.splice(_timeoutsCollector.indexOf(_actionTimeoutId));
+    _actionTimeoutId = null;
+    return false;
+}
+
+function _notValidScroll(direction) {
+    if (direction === Clutter.ScrollDirection.SMOOTH) return true;
+    return false;
+}
+
+function _actionTimeoutActive(trigger) {
+    if (_actionTimeoutId)
+        return true;
+
+    _actionTimeoutId = GLib.timeout_add(
+            GLib.PRIORITY_DEFAULT,
+            _actionEventDelay,
+            _removeActionTimeout
+        );
+    _timeoutsCollector.push(_actionTimeoutId);
+    return false;
+}
+
+
+
+const ActionTrigger = class ActionTrigger {
+
+    constructor(mscOptions) {
+        this._gsettingsKB = mscOptions._gsettingsKB;
+        this._monitorIndex = 0;
+        this._workspaceIndex = 0;
+        this._command = '';
+
+        this.m = new Map([
+            ['toggleOverview',  this._overview                ],
+            ['showApplications',this._showAppGrid             ],
+            ['showDesktop',     this._showDesktop             ],
+            ['showDesktopMon',  this._showDesktopMonitor      ],
+            ['blackScreen',     this._blackScreen             ],
+            ['blackScreenMon',  this._blackScreenMonitor      ],
+            ['runCommand',      this._runCommand              ],
+            ['runDialog',       this._runDialog               ],
+            ['prevWorkspace',   this._prevWorkspace           ],
+            ['nextWorkspace',   this._nextWorkspace           ],
+            ['moveToWorkspace', this._moveToWorkspace         ],
+            ['recentWS',        this._moveToRecentWorkspace   ],
+            ['prevWinAll',      this._prevWindow              ],
+            ['prevWinWS',       this._prevWindowWS            ],
+            ['prevWinWsMon',    this._prevWinMonitor          ],
+            ['nextWinAll',      this._nextWindow              ],
+            ['nextWinWS',       this._nextWindowWS            ],
+            ['nextWinWsMon',    this._nextWinMonitor          ],
+            ['recentWin',       this._recentWindow            ],
+            ['closeWin',        this._closeWindow             ],
+            ['killApp',         this._killApp                 ],
+            ['maximizeWin',     this._maximizeWindow          ],
+            ['minimizeWin',     this._minimizeWindow          ],
+            ['fullscreenWin',   this._fullscreenWindow        ],
+            ['aboveWin',        this._aboveWindow             ],
+            ['stickWin',        this._stickWindow             ],
+            ['screenLock',      this._lockScreen              ],
+            ['suspend',         this._suspendToRam            ],
+            ['powerOff',        this._powerOff                ],
+            ['logout',          this._logOut                  ],
+            ['switchUser',      this._switchUser              ],
+            ['volumeUp',        this._volumeUp                ],
+            ['volumeDown',      this._volumeDown              ],
+            ['muteAudio',       this._mute                    ],
+            ['toggleZoom',      this._toggleZoom              ],
+            ['zoomIn',          this._zoomIn                  ],
+            ['zoomOut',         this._zoomOut                 ],
+            ['keyboard',        this._showKeyboard            ],
+            ['largeText',       this._largeText               ],
+            ['screenReader',    this._screenReader            ],
+            ['hidePanel',       this._togglePanel             ],
+            ['toggleTheme',     this._toggleTheme             ],
+            ['lookingGlass',    this._lookingGlass            ],
+            ['restartShell',    this._restartGnomeShell       ],
+            ['prefs',           this._showPrefs               ],
+            ['invertLightWin',  this._lightnessInvertWindow   ],
+            ['invertLightAll',  this._lightnessInvertGlobal   ],
+            ['desaturateAll',   this._toggleDesaturateGlobal  ],
+            ['desaturateWin',   this._toggleDesaturateWindow  ],
+            ['brightUpAll',     this._brightnessUpGlobal      ],
+            ['brightDownAll',   this._brightnessDownGlobal    ],
+            ['brightUpWin',     this._brightnessUpWindow      ],
+            ['brightDownWin',   this._brightnessDownWindow    ],
+            ['contrastUpAll',   this._contrastUpGlobal        ],
+            ['contrastDownAll', this._contrastDownGlobal      ],
+            ['contrastUpWin',   this._contrastUpWindow        ],
+            ['contrastDownWin', this._contrastDownWindow      ],
+            ['opacityUpWin',    this._opacityUpWindow         ],
+            ['opacityDownWin',  this._opacityDownWindow       ],
+            ['opacityToggleWin',this._opacityToggleWin        ],
+            ['tintRedToggleWin',this._redTintToggleWindow     ],
+            ['tintRedToggleAll',this._redTintToggleGlobal     ],
+            ['tintGreenToggleWin',this._greenTintToggleWindow ],
+            ['tintGreenToggleAll',this._greenTintToggleGlobal ],
+            ['toggleNightLight',this._nightLightToggle        ],
+            ['removeAllEffects',this._removeAllEffects        ]
+        ]);
+
+        this._shortcutsBindingIds=[];
+        this._gsettingsKBid = 0;
+        this._bindShortcuts();
+
+    }
+
+    runAction(action, monitorIndex = 0, workspaceIndex = 0, command = '') {
+        this._monitorIndex = monitorIndex;
+        this._command = command;
+        this._workspaceIndex = workspaceIndex;
+        let actionFunction = this.m.get(action).bind(this) || function () {};
+        actionFunction();
+    }
+
+    clean() {
+        this._removeShortcuts();
+        this._disconnectSettingsKB();
+
+    }
+
+    _bindShortcuts() {
+        for (let key of this._gsettingsKB.list_keys()) {
+            let action = this._translateKeyToAction(key);
+            if (this._gsettingsKB.get_strv(key)[0]) {
+                this._bindShortcut(key, action);
+                this._shortcutsBindingIds.push(key);
+            }
+        }
+        this._gsettingsKBid = this._gsettingsKB.connect('changed', this._updateKeyBinding.bind(this));
+    }
+
+    _bindShortcut(key, action) {
+        Main.wm.addKeybinding(  key,
+                                this._gsettingsKB,
+                                Meta.KeyBindingFlags.NONE,
+                                Shell.ActionMode.ALL,
+                                () => {
+                                        this.runAction(action);
+                                }
+        );
+    }
+
+    _updateKeyBinding(settings, key) {
+        if (settings.get_strv(key)[0]) {
+            this._bindShortcut(key, this._translateKeyToAction(key));
+        }
+    }
+
+    _removeShortcuts() {
+        for (let key of this._shortcutsBindingIds) {
+            Main.wm.removeKeybinding(key);
+        }
+        this._shortcutsBindingIds = [];
+    }
+
+    _disconnectSettingsKB() {
+        this._gsettingsKB.disconnect(this._gsettingsKBid)
+    }
+
+    _translateKeyToAction(key) {
+        let regex = /-(.)/g;
+        return key.replace(regex,function($0,$1) {
+            return $0.replace($0, $1.toUpperCase());
+        }).replace('Gdh', '');
     }
 
     _overview() {
@@ -675,14 +783,13 @@ class CustomHotCorner extends Layout.HotCorner {
         Actions.togleShowDesktop();
     }
     _showDesktopMonitor() {
-        Actions.togleShowDesktop(this._corner.monitorIndex);
+        Actions.togleShowDesktop(this._monitorIndex);
     }
-    _runCommand(trigger) {
-        Actions.runCommand(this._corner.command[trigger]);
+    _runCommand() {
+        Actions.runCommand(this._command);
     }
-    _moveToWorkspace(trigger) {
-        Actions.moveToWorkspace(
-            this._corner.workspaceIndex[trigger] - 1);
+    _moveToWorkspace() {
+        Actions.moveToWorkspace(this._workspaceIndex - 1);
     }
     _prevWorkspace() {
         Actions.switchWorkspace(Clutter.ScrollDirection.UP);
@@ -706,10 +813,10 @@ class CustomHotCorner extends Layout.HotCorner {
         Actions.switchWindow( +1, true, -1);
     }
     _prevWinMonitor() {
-        Actions.switchWindow( -1, true, this._corner.monitorIndex);
+        Actions.switchWindow( -1, true, this._monitorIndex);
     }
     _nextWinMonitor() {
-        Actions.switchWindow( +1, true, this._corner.monitorIndex);
+        Actions.switchWindow( +1, true, this._monitorIndex);
     }
     _recentWindow() {
         Actions.recentWindow();
@@ -782,7 +889,7 @@ class CustomHotCorner extends Layout.HotCorner {
         Actions.toggleDimmMonitors(
             opacity,
             note,
-            this._corner.monitorIndex
+            this._monitorIndex
         );
     }
     _toggleZoom() {
@@ -795,7 +902,7 @@ class CustomHotCorner extends Layout.HotCorner {
         Actions.zoom(-0.25);
     }
     _showKeyboard() {
-        Actions.toggleKeyboard(this._corner.monitorIndex);
+        Actions.toggleKeyboard(this._monitorIndex);
     }
     _screenReader() {
         Actions.toggleScreenReader();
@@ -850,10 +957,10 @@ class CustomHotCorner extends Layout.HotCorner {
         Actions.adjustSwBrightnessContrast(-0.025, true, false);
     }
     _opacityUpWindow() {
-        Actions.adjustWindowOpacity(+48);
+        Actions.adjustWindowOpacity(+12);
     }
     _opacityDownWindow() {
-        Actions.adjustWindowOpacity(-48);
+        Actions.adjustWindowOpacity(-12);
     }
     _opacityToggleWin() {
         Actions.adjustWindowOpacity(0, 200);
@@ -900,28 +1007,4 @@ class CustomHotCorner extends Layout.HotCorner {
     _removeAllEffects() {
         Actions.removeEffects(true);
     }
-});
-
-function _removeActionTimeout() {
-    _timeoutsCollector.splice(_timeoutsCollector.indexOf(_actionTimeoutId));
-    _actionTimeoutId = null;
-    return false;
-}
-
-function _notValidScroll(direction) {
-    if (direction === Clutter.ScrollDirection.SMOOTH) return true;
-    return false;
-}
-
-function _actionTimeoutActive(trigger) {
-    if (_actionTimeoutId)
-        return true;
-
-   _actionTimeoutId = GLib.timeout_add(
-            GLib.PRIORITY_DEFAULT,
-            _actionEventDelay,
-            _removeActionTimeout
-        );
-    _timeoutsCollector.push(_actionTimeoutId);
-    return false;
-}
+};
