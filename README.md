@@ -24,6 +24,7 @@ A GNOME Shell Extension which allows you to control and navigate Gnome Shell env
 
 ![Extension configuration window](screenshot.png)
 ![Extension configuration window](screenshot1.png)
+![Extension configuration window](screenshot4.png)
 ![Extension configuration window](screenshot2.png)
 ![Extension configuration window](screenshot3.png)
 
