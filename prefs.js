@@ -88,8 +88,10 @@ function buildPrefsWidget() {
             page.buildPage();
     });
 
+    notebook.get_nth_page(0).buildPage();
     notebook.set_current_page(0);
-    if (!GNOME40) prefsWidget.show_all();
+    if (!GNOME40)
+        prefsWidget.show_all();
     return prefsWidget;
 }
 
@@ -125,7 +127,7 @@ const MonitorPage
             this.append_page(cPage, label);
             // Gtk3 notebook emits 'switch-page' signal when showing it's content for the 1. time
             // Gtk4 doesn't, so we have to trigger the build of the first tab malually
-            if (i === 0) cPage.buildPage();
+            //if (i === 0) cPage.buildPage();
 
         }
         if (!GNOME40) this.show_all();
@@ -413,13 +415,13 @@ const _actions = [
         [   1, 'blackScreenMon'  ,   _('Black Screen (this monitor)'),      false],
 
         [null, ''                ,   _('Run Command'),                      false],
-        [   1, 'runCommand'      ,   _('Run Command'),                      false],
-        [   1, 'runDialog'       ,   _('Open "Run a Command" Dialog'),      false],
+        [   1, 'runCommand'      ,   _('Run preset Command'),               false],
+        [   1, 'runDialog'       ,   _('Show "Run a Command" prompt'),      false],
 
-        [null, ''                ,   _('Workspaces'),                       false],
+        [null, ''                ,   _('Workspaces'),                        true],
         [   1, 'prevWorkspace'   ,   _('Previous Workspace'),               false],
         [   1, 'nextWorkspace'   ,   _('Next Workspace'),                   false],
-        [   1, 'recentWS'        ,   _('Recent Workspace'),                 false],
+        [   1, 'recentWs'        ,   _('Recent Workspace'),                  true],
         [   1, 'moveToWorkspace' ,   _('Move to Workspace #'),              false],
 
         [null, ''                ,   _('Windows - Navigation'),              true],
@@ -465,13 +467,13 @@ const _actions = [
         [   1, 'desaturateAll'   ,   _('Desaturate (global)'),               true],
         [   1, 'removeAllEffects',   _('Remove All Effects'),                true],
 
-        [null, ''                ,   _('Universal Access'),                 false],
-        [   1, 'toggleZoom'      ,   _('Toggle Zoom'),                      false],
-        [   1, 'zoomIn'          ,   _('Zoom In'),                          false],
-        [   1, 'zoomOut'         ,   _('Zoom Out'),                         false],
-        [   1, 'screenReader'    ,   _('Screen Reader'),                    false],
-        [   1, 'largeText'       ,   _('Large Text'),                       false],
-        [   1, 'keyboard'        ,   _('Screen Keyboard'),                  false],
+        [null, ''                ,   _('Universal Access'),                  true],
+        [   1, 'toggleZoom'      ,   _('Toggle Zoom'),                       true],
+        [   1, 'zoomIn'          ,   _('Zoom In'),                           true],
+        [   1, 'zoomOut'         ,   _('Zoom Out'),                          true],
+        [   1, 'screenReader'    ,   _('Screen Reader'),                     true],
+        [   1, 'largeText'       ,   _('Large Text'),                        true],
+        [   1, 'keyboard'        ,   _('Screen Keyboard'),                   true],
 
         [null, ''                ,   _('Gnome Shell'),                       true],
         [   1, 'hidePanel'       ,   _('Hide/Show Main Panel'),              true],
@@ -480,14 +482,14 @@ const _actions = [
         [null, ''                ,   _('System'),                            true],
         [   1, 'screenLock'      ,   _('Lock Screen'),                      false],
         [   1, 'suspend'         ,   _('Suspend to RAM'),                    true],
-        [   1, 'powerOff'        ,   _('Power Off Dialog'),                 false],
-        [   1, 'logout'          ,   _('Log Out Dialog'),                   false],
-        [   1, 'switchUser'      ,   _('Switch User (if exists)'),          false],
+        [   1, 'powerOff'        ,   _('Power Off Dialog'),                  true],
+        [   1, 'logout'          ,   _('Log Out Dialog'),                    true],
+        [   1, 'switchUser'      ,   _('Switch User (if exists)'),           true],
 
         [null, ''                ,   _('Sound'),                            false],
         [   1, 'volumeUp'        ,   _('Volume Up'),                        false],
         [   1, 'volumeDown'      ,   _('Volume Down'),                      false],
-        [   1, 'muteAudio'       ,   _('Mute'),                             false],
+        [   1, 'muteAudio'       ,   _('Volume mute/unmute'),                             false],
 
         [null, ''                ,   _('Debug'),                             true],
         [   1, 'lookingGlass'    ,   _('Looking Glass (GS debugger)'),       true],
@@ -497,8 +499,8 @@ const _actions = [
     ]; // end
 
 const _d40exclude = [
-                        'invertLightAll',
-                        'invertLightWin',
+                    //    'invertLightAll',
+                    //    'invertLightWin',
 ];
 
 const CornerPage
@@ -1037,6 +1039,8 @@ const KeyboardPage
         let lbl = new Gtk.Label({
             use_markup: true,
             label: _makeTitle(_("Keyboard Shortcuts:")),
+            tooltip_text: "Click on Shortcut Key cell to set new\n\
+Press Backspace to disable shortcut\nWarning: Some system shortcuts can NOT be overriden, but can be set"
         });
         let frame = new Gtk.Frame({
                 label_widget: lbl });
@@ -1048,7 +1052,6 @@ const KeyboardPage
         model.set_column_types([ GObject.TYPE_STRING, GObject.TYPE_STRING, GObject.TYPE_INT, GObject.TYPE_INT]);
         this.treeView.model = model;
         this.keybindings = this._getKeybindingSettings();
-
 
         // Hotkey
         const actions     = new Gtk.TreeViewColumn({ title: _('Action'), expand: true });
@@ -1095,6 +1098,8 @@ const KeyboardPage
                 this._storeKeyBind(name, [value]);
                 Object.entries(this.keybindings).forEach(([key, value]) => {
                 });
+            } else {
+                log(Me.metadata.name, _(`This keyoard shortcut is invalid or already in use!`));
             }
         });
         const uniqueVal = function (dict, value) {
@@ -1176,19 +1181,19 @@ const KeyboardPage
         mscOptions.setKeyBind(key, value);
     }
 
-    // the -gdh extension's purpose is to make key names unique
+    // the -ce extension's purpose is to make key names unique
     // in case of conflict with system shortcut system wins
     _translateKeyToAction(key) {
         let regex = /-(.)/g;
         return key.replace(regex,function($0,$1) {
             return $0.replace($0, $1.toUpperCase());
-        }).replace('Gdh', '');
+        }).replace('Ce', '');
     }
 
     _translateActionToKey(action) {
         let regex = /([A-Z])/g;
         return action.replace(regex,function($0, $1) {
             return $0.replace($0, `-${$1}`.toLowerCase());
-        }) + '-gdh';
+        }) + '-ce';
     }
 });

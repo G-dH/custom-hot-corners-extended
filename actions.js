@@ -19,6 +19,7 @@ const GObject                = imports.gi.GObject;
 const GLib                   = imports.gi.GLib;
 const Clutter                = imports.gi.Clutter;
 const St                     = imports.gi.St;
+const Shell                  = imports.gi.Shell;
 const Main                   = imports.ui.main;
 const Meta                   = imports.gi.Meta;
 const WorkspaceSwitcherPopup = imports.ui.workspaceSwitcherPopup;
@@ -29,6 +30,8 @@ const SystemActions          = imports.misc.systemActions;
 const Me                     = ExtensionUtils.getCurrentExtension();
 const Settings               = Me.imports.settings;
 const ExtManager             = Main.extensionManager;
+
+let GNOME40;
 
 
 var Actions = class {
@@ -56,6 +59,10 @@ var Actions = class {
         this._mainPanelVisible      = Main.panel.is_visible();
 
         this._connectRecentWorkspace();
+
+        if (Settings.shellVersion.startsWith("40"))
+             GNOME40 = true;
+        else GNOME40 = false;
     }
 
     clean() {
@@ -85,7 +92,7 @@ var Actions = class {
             return;
         let effects = [ 'brightness',
                         'contrast',
-                        'color-invert',
+                        'lightness-invert',
                         'desaturate',
                         'color-tint' ];
         for (let effect of effects) {
@@ -342,21 +349,12 @@ var Actions = class {
         let windows = metaWorkspace.list_windows();
         let wins=[];
         for (let win of windows) {
-            let wm_class = win.wm_class ? win.wm_class.toLowerCase() : 'null';
-            let window_type = win.window_type ? win.window_type : 'null';
-            let title = win.title ? win.title : 'null';
-            // if monitorIdx has default value don't filter by monitor
             if ( (monitorIdx < 0 ? true : win.get_monitor() === monitorIdx) &&
-                (!(win.minimized ||
-                    window_type === Meta.WindowType.DESKTOP ||
-                    window_type === Meta.WindowType.DOCK ||
-                    // DING is GS extenson providing desktop icons
-                    title.startsWith('DING') ||
-                    wm_class.endsWith('notejot') ||
-                    // conky is a system monitor for Desktop, but not always is its window of type WindowType.DESKTOP
-                    wm_class === 'conky' ||
-                    ( title.startsWith('@!') && title.endsWith('BDH') ) ))
-                ) {
+                    (!(win.minimized ||
+                    win.window_type === Meta.WindowType.DESKTOP ||
+                    win.window_type === Meta.WindowType.DOCK ||
+                    win.skip_taskbar
+                ))) {
     
                 wins.push(win);
             }
@@ -560,7 +558,7 @@ var Actions = class {
         settings.set_boolean('night-light-enabled', !settings.get_boolean('night-light-enabled'));
     }
 
-    toggleRedTintEffect(color, window = true) {
+    toggleColorTintEffect(color, window = true) {
         let name = 'color-tint';
         let effect = Clutter.ColorizeEffect;
         if (window)
@@ -570,11 +568,14 @@ var Actions = class {
     }
 
     toggleLightnessInvertEffect(window = true) {
-        let name = 'color-invert';
+        let name = 'lightness-invert';
+        let effect;
+        if (GNOME40) effect = Shell.InvertLightnessEffect;
+        else         effect = InvertLightnessEffect;
         if (window)
-            this._toggleWindowEffect(name, TrueInvertEffect);
+            this._toggleWindowEffect(name, effect);
         else
-            this._toggleGlobalEffect(name, TrueInvertEffect);
+            this._toggleGlobalEffect(name, effect);
     }
     
     _toggleGlobalEffect(name, effect, tint = null) {
@@ -710,8 +711,8 @@ var Actions = class {
 }
 //Code taken from (and compatible with) True color invert extension
 /////////////////////////////////////////////////////////////////////
-const TrueInvertEffect = GObject.registerClass(
-class TrueInvertEffect extends Clutter.ShaderEffect {
+const InvertLightnessEffect = GObject.registerClass(
+class InvertLightnessEffect extends Clutter.ShaderEffect {
 
     vfunc_get_static_shader_source() {
         return `

@@ -650,7 +650,7 @@ const ActionTrigger = class ActionTrigger {
             ['prevWorkspace',   this._prevWorkspace           ],
             ['nextWorkspace',   this._nextWorkspace           ],
             ['moveToWorkspace', this._moveToWorkspace         ],
-            ['recentWS',        this._moveToRecentWorkspace   ],
+            ['recentWs',        this._moveToRecentWorkspace   ],
             ['prevWinAll',      this._prevWindow              ],
             ['prevWinWS',       this._prevWindowWS            ],
             ['prevWinWsMon',    this._prevWinMonitor          ],
@@ -763,14 +763,14 @@ const ActionTrigger = class ActionTrigger {
     }
 
     _disconnectSettingsKB() {
-        this._gsettingsKB.disconnect(this._gsettingsKBid)
+        this._gsettingsKB.disconnect(this._gsettingsKBid);
     }
 
     _translateKeyToAction(key) {
         let regex = /-(.)/g;
         return key.replace(regex,function($0,$1) {
             return $0.replace($0, $1.toUpperCase());
-        }).replace('Gdh', '');
+        }).replace('Ce', '');
     }
 
     _overview() {
@@ -969,7 +969,7 @@ const ActionTrigger = class ActionTrigger {
         Actions.toggleNightLight();
     }
     _redTintToggleWindow(){
-        Actions.toggleRedTintEffect(
+        Actions.toggleCplorTintEffect(
             new Clutter.Color({
                 red:    255,
                 green:  200,
@@ -978,7 +978,7 @@ const ActionTrigger = class ActionTrigger {
             true);
     }
     _redTintToggleGlobal(){
-        Actions.toggleRedTintEffect(
+        Actions.toggleColorTintEffect(
             new Clutter.Color({
                 red:    255,
                 green:  200,
@@ -987,7 +987,7 @@ const ActionTrigger = class ActionTrigger {
             false);
     }
     _greenTintToggleWindow(){
-        Actions.toggleRedTintEffect(
+        Actions.toggleColorTintEffect(
             new Clutter.Color({
                 red:    200,
                 green:  255,
@@ -996,7 +996,7 @@ const ActionTrigger = class ActionTrigger {
             true);
     }
     _greenTintToggleGlobal(){
-        Actions.toggleRedTintEffect(
+        Actions.toggleColorTintEffect(
             new Clutter.Color({
                 red:    200,
                 green:  255,

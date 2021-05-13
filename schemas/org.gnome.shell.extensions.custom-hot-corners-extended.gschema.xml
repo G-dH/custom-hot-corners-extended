@@ -72,112 +72,144 @@
     </key>
   </schema>
   <schema id='org.gnome.shell.extensions.custom-hot-corners-extended.shortcuts'>
-    <key name='black-screen-gdh' type='as'>
+    <key name='black-screen-ce' type='as'>
       <default>[]</default>
     </key>
-    <key name='show-desktop-gdh' type='as'>
+    <key name='show-desktop-ce' type='as'>
       <default>[]</default>
     </key>
-    <key name='prev-win-ws-mon-gdh' type='as'>
+    <key name='recent-ws-ce' type='as'>
       <default>[]</default>
     </key>
-    <key name='prev-win-ws-gdh' type='as'>
+    <key name='prev-win-ws-mon-ce' type='as'>
       <default>[]</default>
     </key>
-    <key name='prev-win-all-gdh' type='as'>
+    <key name='prev-win-ws-ce' type='as'>
       <default>[]</default>
     </key>
-    <key name='next-win-ws-mon-gdh' type='as'>
+    <key name='prev-win-all-ce' type='as'>
       <default>[]</default>
     </key>
-    <key name='next-win-ws-gdh' type='as'>
+    <key name='next-win-ws-mon-ce' type='as'>
       <default>[]</default>
     </key>
-    <key name='next-win-all-gdh' type='as'>
+    <key name='next-win-ws-ce' type='as'>
       <default>[]</default>
     </key>
-    <key name='kill-app-gdh' type='as'>
+    <key name='next-win-all-ce' type='as'>
       <default>[]</default>
     </key>
-    <key name='invert-light-win-gdh' type='as'>
+    <key name='kill-app-ce' type='as'>
       <default>[]</default>
     </key>
-    <key name='tint-red-toggle-win-gdh' type='as'>
+    <key name='invert-light-win-ce' type='as'>
       <default>[]</default>
     </key>
-    <key name='tint-green-toggle-win-gdh' type='as'>
+    <key name='tint-red-toggle-win-ce' type='as'>
       <default>[]</default>
     </key>
-    <key name='bright-uip-win-gdh' type='as'>
+    <key name='tint-green-toggle-win-ce' type='as'>
       <default>[]</default>
     </key>
-    <key name='bright-down-win-gdh' type='as'>
+    <key name='bright-up-win-ce' type='as'>
       <default>[]</default>
     </key>
-    <key name='contrast-up-win-gdh' type='as'>
+    <key name='bright-down-win-ce' type='as'>
       <default>[]</default>
     </key>
-    <key name='contrast-down-win-gdh' type='as'>
+    <key name='contrast-up-win-ce' type='as'>
       <default>[]</default>
     </key>
-    <key name='opacity-up-win-gdh' type='as'>
+    <key name='contrast-down-win-ce' type='as'>
       <default>[]</default>
     </key>
-    <key name='opacity-down-win-gdh' type='as'>
+    <key name='opacity-up-win-ce' type='as'>
       <default>[]</default>
     </key>
-    <key name='opacity-toggle-win-gdh' type='as'>
+    <key name='opacity-down-win-ce' type='as'>
       <default>[]</default>
     </key>
-    <key name='desaturate-win-gdh' type='as'>
+    <key name='opacity-toggle-win-ce' type='as'>
       <default>[]</default>
     </key>
-    <key name='toggle-night-light-gdh' type='as'>
+    <key name='desaturate-win-ce' type='as'>
       <default>[]</default>
     </key>
-    <key name='invert-light-all-gdh' type='as'>
+    <key name='toggle-night-light-ce' type='as'>
       <default>[]</default>
     </key>
-    <key name='tint-red-toggle-all-gdh' type='as'>
+    <key name='invert-light-all-ce' type='as'>
       <default>[]</default>
     </key>
-    <key name='tint-green-toggle-all-gdh' type='as'>
+    <key name='tint-red-toggle-all-ce' type='as'>
       <default>[]</default>
     </key>
-    <key name='bright-up-all-gdh' type='as'>
+    <key name='tint-green-toggle-all-ce' type='as'>
       <default>[]</default>
     </key>
-    <key name='bright-down-all-gdh' type='as'>
+    <key name='bright-up-all-ce' type='as'>
       <default>[]</default>
     </key>
-    <key name='contrast-up-all-gdh' type='as'>
+    <key name='bright-down-all-ce' type='as'>
       <default>[]</default>
     </key>
-    <key name='contrast-down-all-gdh' type='as'>
+    <key name='contrast-up-all-ce' type='as'>
       <default>[]</default>
     </key>
-    <key name='desaturate-all-gdh' type='as'>
+    <key name='contrast-down-all-ce' type='as'>
       <default>[]</default>
     </key>
-    <key name='remove-all-effects-gdh' type='as'>
+    <key name='desaturate-all-ce' type='as'>
       <default>[]</default>
     </key>
-    <key name='hide-panel-gdh' type='as'>
+    <key name='remove-all-effects-ce' type='as'>
       <default>[]</default>
     </key>
-    <key name='toggle-theme-gdh' type='as'>
+
+    <key name='toggle-zoom-ce' type='as'>
       <default>[]</default>
     </key>
-    <key name='suspend-gdh' type='as'>
+    <key name='zoom-in-ce' type='as'>
       <default>[]</default>
     </key>
-    <key name='looking-glass-gdh' type='as'>
+    <key name='zoom-out-ce' type='as'>
       <default>[]</default>
     </key>
-    <key name='restart-shell-gdh' type='as'>
+    <key name='large-text-ce' type='as'>
       <default>[]</default>
     </key>
-    <key name='prefs-gdh' type='as'>
+    <key name='screen-reader-ce' type='as'>
+      <default>[]</default>
+    </key>
+    <key name='keyboard-ce' type='as'>
+      <default>[]</default>
+    </key>
+
+    <key name='hide-panel-ce' type='as'>
+      <default>[]</default>
+    </key>
+    <key name='toggle-theme-ce' type='as'>
+      <default>[]</default>
+    </key>
+    <key name='suspend-ce' type='as'>
+      <default>[]</default>
+    </key>
+    <key name='power-off-ce' type='as'>
+      <default>[]</default>
+    </key>
+    <key name='logout-ce' type='as'>
+      <default>[]</default>
+    </key>
+    <key name='switch-user-ce' type='as'>
+      <default>[]</default>
+    </key>
+    <key name='looking-glass-ce' type='as'>
+      <default>[]</default>
+    </key>
+    <key name='restart-shell-ce' type='as'>
+      <default>[]</default>
+    </key>
+    <key name='prefs-ce' type='as'>
       <default>[]</default>
     </key>
   </schema>
