@@ -5,7 +5,7 @@ A GNOME Shell Extension which allows you to control and navigate Gnome Shell env
 Features:
 
 New:
-- **Keyboard shortcuts for most actions** - CHC-E offers many unique actions which can be now used even without a mouse
+- **Optional keyboard shortcuts for most actions** - CHC-E offers many unique actions which can be now used even without a mouse
 - The *Invert Lightness* action is now available in Gnome 40 too
 - Toggle Light/Dark GTK theme action - supports Adwaita and Ubuntu Yaru(Light) themes
 - Multiple color effect actions for whole desktop and single windows including color tint, contrast, brightness, transparency and system Night Light switch
