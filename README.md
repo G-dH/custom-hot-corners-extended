@@ -2,14 +2,13 @@
 
 A GNOME Shell Extension which allows you to control and navigate Gnome Shell environment through the corners and edges of your monitors.
 
-Features:
-
-New:
+**New:**
 - **Optional keyboard shortcuts for most actions** - CHC-E offers many unique actions which can be now used even without a mouse
 - The *Invert Lightness* action is now available in Gnome 40 too
 - Toggle Light/Dark GTK theme action - supports Adwaita and Ubuntu Yaru(Light) themes
-- Multiple color effect actions for whole desktop and single windows including color tint, contrast, brightness, transparency and system Night Light switch
+- Multiple color effect actions for whole desktop and single windows including red/green color tint, contrast, brightness, transparency and system Night Light switch
 
+**Features:**
 - Gnome 3.36, 3.38 and 40 compatibility
 - Hot corners with adjustable barrier sizes, both vertical and horizontal adjustable independently and usable as hot edges
 - Mouse buttons and a scroll wheel can be used as triggers in addition to hot corners
