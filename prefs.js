@@ -1157,6 +1157,7 @@ Press Backspace to disable shortcut\nWarning: Some system shortcuts can NOT be o
             if (item[1] && (item[1] in this.keybindings && this.keybindings[item[1]][0])) {
                 let binding = this.keybindings[item[1]][0];
                 let ap = Gtk.accelerator_parse(binding);
+                if (ap.length === 3) ap.splice(0, 1);
                 if (ap[0] && ap[1]) a = [ap[1], ap[0]];
                 else log ("conversion error");
             }
