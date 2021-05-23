@@ -709,7 +709,7 @@ var Actions = class {
     }
 
 }
-//Code taken from (and compatible with) True color invert extension
+//Code taken from True color invert extension
 /////////////////////////////////////////////////////////////////////
 const InvertLightnessEffect = GObject.registerClass(
 class InvertLightnessEffect extends Clutter.ShaderEffect {

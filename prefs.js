@@ -1039,8 +1039,10 @@ const KeyboardPage
         let lbl = new Gtk.Label({
             use_markup: true,
             label: _makeTitle(_("Keyboard Shortcuts:")),
-            tooltip_text: "Click on Shortcut Key cell to set new\n\
-Press Backspace to disable shortcut\nWarning: Some system shortcuts can NOT be overriden, but can be set"
+            tooltip_text: _("Click on Shortcut Key cell to set new") + "\n" +
+                          _("Press Backspace instead of new shortcut to disable shortcut") + "\n" +
+                          _("Warning: Some system shortcuts can NOT be overriden, but can be set") + "\n" +
+                          _("Warning: Already used shortcuts will be ignored")
         });
         let frame = new Gtk.Frame({
                 label_widget: lbl });
@@ -1095,11 +1097,11 @@ Press Backspace to disable shortcut\nWarning: Some system shortcuts can NOT be o
             if (name && !(value in this.keybindings) && uniqueVal(this.keybindings, value)) {
                 model.set(iter, [2,3], [mods, key]);
                 this.keybindings[name] = [value];
-                this._storeKeyBind(name, [value]);
+                this._storeKeyBinding(name, [value]);
                 Object.entries(this.keybindings).forEach(([key, value]) => {
                 });
             } else {
-                log(Me.metadata.name, _(`This keyoard shortcut is invalid or already in use!`));
+                log(Me.metadata.name, 'This keyboard shortcut is invalid or already in use!');
             }
         });
         const uniqueVal = function (dict, value) {
@@ -1123,7 +1125,7 @@ Press Backspace to disable shortcut\nWarning: Some system shortcuts can NOT be o
 
             if (name in this.keybindings) {
                 delete this.keybindings[name];
-                this._storeKeyBind(name, []);
+                this._storeKeyBinding(name, []);
             }
         });
 
@@ -1157,9 +1159,10 @@ Press Backspace to disable shortcut\nWarning: Some system shortcuts can NOT be o
             if (item[1] && (item[1] in this.keybindings && this.keybindings[item[1]][0])) {
                 let binding = this.keybindings[item[1]][0];
                 let ap = Gtk.accelerator_parse(binding);
+                // Gtk4 accelerator_parse returns 3 values - the first one is bool ok/failed
                 if (ap.length === 3) ap.splice(0, 1);
                 if (ap[0] && ap[1]) a = [ap[1], ap[0]];
-                else log ("conversion error");
+                else log (`[${Me.metadata.name}] Error: Gtk keybind conversion failed`);
             }
             if (!item[0]){
                 iter  = this.treeView.model.append(null);
@@ -1177,13 +1180,13 @@ Press Backspace to disable shortcut\nWarning: Some system shortcuts can NOT be o
         }
     }
 
-    _storeKeyBind(action, value) {
+    _storeKeyBinding(action, value) {
         let key = this._translateActionToKey(action);
         mscOptions.setKeyBind(key, value);
     }
 
     // the -ce extension's purpose is to make key names unique
-    // in case of conflict with system shortcut system wins
+    // in case of conflict with system shortcut, system wins
     _translateKeyToAction(key) {
         let regex = /-(.)/g;
         return key.replace(regex,function($0,$1) {
