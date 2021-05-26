@@ -357,7 +357,7 @@ var actionList = [
         [   1, 'recent-workspace'     ,   _('Recent Workspace'),                  true],
         [   1, 'move-to-workspace'    ,   _('Move to Workspace #'),              false],
         [   1, 'reorder-ws-prev'      ,   _(`Reorder Workspace - ${GNOME40? _('Left') : _('Up')}`),  true],
-        [   1, 'reorder-ws-next'      ,   _(`Reorder Workspace - ${GNOME40? _('Left') : _('Down')}`),true],
+        [   1, 'reorder-ws-next'      ,   _(`Reorder Workspace - ${GNOME40? _('Right') : _('Down')}`),true],
 
         [null, ''                     ,   _('Windows - Navigation'),              true],
         [   1, 'recent-win'           ,   _('Recent Window (Alt+Tab)'),          false],
