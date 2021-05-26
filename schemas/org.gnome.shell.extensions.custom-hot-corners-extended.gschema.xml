@@ -144,6 +144,12 @@
     <key name='opacity-toggle-win-ce' type='as'>
       <default>[]</default>
     </key>
+    <key name='opacity-toggle-hc-win-ce' type='as'>
+      <default>[]</default>
+    </key>
+    <key name='opacity-toggle-lc-win-ce' type='as'>
+      <default>[]</default>
+    </key>
     <key name='desaturate-win-ce' type='as'>
       <default>[]</default>
     </key>

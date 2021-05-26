@@ -389,7 +389,9 @@ var actionList = [
         [   1, 'contrast-low-win'     ,   _('Low Contrast (window)'),             true],
         [   1, 'opacity-up-win'       ,   _('Opacity Up (window)'),               true],
         [   1, 'opacity-down-win'     ,   _('Opacity Down (window)'),             true],
-        [   1, 'opacity-toggle-win'   ,   _('Toggle Transparency (window)'),      true],
+        [   1, 'opacity-toggle-win'   ,   _('Toggle Transparency o200 (window)'), true],
+        [   1, 'opacity-toggle-hc-win',   _('Toggle Transparency o200/c0.20 (window)'), true],
+        [   1, 'opacity-toggle-lc-win',   _('Toggle Transparency o240/c0.05 (window)'), true],
         [   1, 'desaturate-win'       ,   _('Desaturate (window)'),               true],
         [   1, 'remove-effects-win'   ,   _('Remove All Effects (window)'),       true],
 

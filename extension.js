@@ -940,6 +940,14 @@ const ActionTrigger = class ActionTrigger {
     _opacityToggleWin() {
         Actions.adjustWindowOpacity(0, 200);
     }
+    _opacityToggleHcWin() {
+        Actions.adjustWindowOpacity(0, 200);
+        Actions.adjustSwBrightnessContrast(null, true, false, 0.2);
+    }
+    _opacityToggleLcWin() {
+        Actions.adjustWindowOpacity(0, 240);
+        Actions.adjustSwBrightnessContrast(null, true, false, 0.05);
+    }
     _nightLightToggle() {
         Actions.toggleNightLight();
     }
@@ -979,10 +987,11 @@ const ActionTrigger = class ActionTrigger {
             }),
             false);
     }
-    _removeWinEffects() {
+    _removeEffectsWin() {
         Actions.removeWinEffects(true);
     }
-    _removeAllEffects() {
+    _removeEffectsAll() {
         Actions.removeAllEffects(true);
     }
 };
+

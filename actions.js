@@ -316,7 +316,7 @@ var Actions = class {
     }
     restartGnomeShell() {
         if (!Meta.is_wayland_compositor()) {
-            Meta.restart(_('Restarting Gnome Shell ...'));
+            Meta.restart(_('Restarting Gnome Shell...'));
         }
         else {
             Main.notify(Me.metadata.name, _('Gnome Shell - Restart is unavailable in Wayland session' ));
@@ -778,3 +778,4 @@ class InvertLightnessEffect extends Clutter.ShaderEffect {
         super.vfunc_paint_target(paint_context);
     }
 });
+
