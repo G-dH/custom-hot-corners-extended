@@ -56,7 +56,7 @@ let _barrierFallback;
 
 let _extensionEnabled;
 
-let _watchCorners;
+let _myCorners;
 let _watch;
 
 
@@ -72,16 +72,25 @@ function init() {
 }
 
 function enable() {
-    Actions = new ActionLib.Actions();
-    _origUpdateHotCorners = Main.layoutManager._updateHotCorners;
-    _extensionEnabled = true;
-    _initMscOptions();
-    actionTrigger = new ActionTrigger(_mscOptions);
-    _replaceLayoutManager();
-    _updateWatch();
+    // delayed start because of aggresive beasts that steal my corners even under my watch
+    // (happens with Just Perfection extension after returning from screen lock. Was OK after shell restart tho..)
+    GLib.timeout_add(
+            GLib.PRIORITY_DEFAULT,
+            50,
+            () => {
+                    Actions = new ActionLib.Actions();
+                    _origUpdateHotCorners = Main.layoutManager._updateHotCorners;
+                    _extensionEnabled = true;
+                    _initMscOptions();
+                    actionTrigger = new ActionTrigger(_mscOptions);
+                    _replace_updateHotCornersFunc();
+                    _updateWatch();
+                    return false;
+            }
+    );
 }
 
-function _replaceLayoutManager() {
+function _replace_updateHotCornersFunc() {
     Main.layoutManager._updateHotCorners = _updateHotCorners;
     Main.layoutManager._updateHotCorners();
 }
@@ -156,11 +165,11 @@ function _updateHotCorners() {
     // ...since this method overrides the original one in GS and something can store pointer to this replacement
     if (!_extensionEnabled) return;
     let monIndexes = [...Main.layoutManager.monitors.keys()];
-    // index of primary monitor to the first possition
+    // index of the primary monitor to the first possition
     monIndexes.splice(0, 0, monIndexes.splice(primaryIndex, 1)[0]);
 
     for (let i = 0; i < Main.layoutManager.monitors.length; ++i) {
-        // Monitor 1 in preferences will allways refer to primary monitor
+        // Monitor 1 in preferences will allways refer to the primary monitor
         const corners = Settings.Corner.forMonitor(i, monIndexes[i], global.display.get_monitor_geometry(monIndexes[i]));
         _setExpansionLimits(corners);
         for (let corner of corners) {
@@ -248,9 +257,10 @@ function _updateWatch() {
                     GLib.PRIORITY_DEFAULT,
                     3000,
                     () => {
-                        if (Main.layoutManager.hotCorners !== _watchCorners) {
+                        if (Main.layoutManager.hotCorners !== _myCorners) {
                             _updateHotCorners();
                             //Main.notify(Me.metadata.name, `Hot Corners had to be updated because of external override`);
+                            log(Me.metadata.name, `Hot Corners had to be updated because of external override`);
                         }
                         if (!_watch.active) {
                             _timeoutsCollector.splice(_timeoutsCollector.indexOf(_watch.timeout));
@@ -264,7 +274,7 @@ function _updateWatch() {
 }
 
 function _updateWatchCorners() {
-    _watchCorners = Main.layoutManager.hotCorners;
+    _myCorners = Main.layoutManager.hotCorners;
 }
 
 function _rebuildHotCorner(corner) {
@@ -346,7 +356,7 @@ class CustomHotCorner extends Layout.HotCorner {
             // ...Wayland behave differently and addressed pixel means the one behind which pointer can't go
             // but avoid barriers that are at the same position
             // ...and block opposite directions. Neither with X nor with Wayland
-            // such barriers work.
+            // ...such barriers work.
             let x = this._corner.x + (Meta.is_wayland_compositor() ? 0: ((!this._corner.left && !this._barrierCollision()['x']) ? 1 : 0)); 
             this._verticalBarrier = new Meta.Barrier({
                 display: global.display,
@@ -537,7 +547,7 @@ class CustomHotCorner extends Layout.HotCorner {
         this._runAction(Triggers.PRESSURE);
     }
     _onCornerClicked(actor, event) {
-        if (event.get_click_count() > 1) return; // ignore second click of double clicks
+        //if (event.get_click_count() > 1) return; // ignore second click of double clicks
         let button = event.get_button();
         let trigger;
         let state = event.get_state();
@@ -570,11 +580,13 @@ class CustomHotCorner extends Layout.HotCorner {
         let trigger;
         switch (direction) {
             case Clutter.ScrollDirection.UP:
+            //case Clutter.ScrollDirection.LEFT:
                 if (this._corner.ctrl[Triggers.SCROLL_UP] && !this._ctrlPressed(state))
                     return;
                 trigger = Triggers.SCROLL_UP;
                 break;
             case Clutter.ScrollDirection.DOWN:
+            //case Clutter.ScrollDirection.RIGHT:
                 if (this._corner.ctrl[Triggers.SCROLL_DOWN] && !this._ctrlPressed(state))
                     return;
                 trigger = Triggers.SCROLL_DOWN;
@@ -637,80 +649,19 @@ const ActionTrigger = class ActionTrigger {
         this._monitorIndex = 0;
         this._workspaceIndex = 0;
         this._command = '';
+        this.m = new Map();
+        let actionList = Settings.actionList;
 
-        this.m = new Map([
-            ['toggleOverview',  this._overview                ],
-            ['showApplications',this._showAppGrid             ],
-            ['showDesktop',     this._showDesktop             ],
-            ['showDesktopMon',  this._showDesktopMonitor      ],
-            ['blackScreen',     this._blackScreen             ],
-            ['blackScreenMon',  this._blackScreenMonitor      ],
-            ['runCommand',      this._runCommand              ],
-            ['runDialog',       this._runDialog               ],
-            ['prevWorkspace',   this._prevWorkspace           ],
-            ['nextWorkspace',   this._nextWorkspace           ],
-            ['moveToWorkspace', this._moveToWorkspace         ],
-            ['recentWs',        this._moveToRecentWorkspace   ],
-            ['prevWinAll',      this._prevWindow              ],
-            ['prevWinWS',       this._prevWindowWS            ],
-            ['prevWinWsMon',    this._prevWinMonitor          ],
-            ['nextWinAll',      this._nextWindow              ],
-            ['nextWinWS',       this._nextWindowWS            ],
-            ['nextWinWsMon',    this._nextWinMonitor          ],
-            ['recentWin',       this._recentWindow            ],
-            ['closeWin',        this._closeWindow             ],
-            ['killApp',         this._killApp                 ],
-            ['maximizeWin',     this._maximizeWindow          ],
-            ['minimizeWin',     this._minimizeWindow          ],
-            ['fullscreenWin',   this._fullscreenWindow        ],
-            ['aboveWin',        this._aboveWindow             ],
-            ['stickWin',        this._stickWindow             ],
-            ['screenLock',      this._lockScreen              ],
-            ['suspend',         this._suspendToRam            ],
-            ['powerOff',        this._powerOff                ],
-            ['logout',          this._logOut                  ],
-            ['switchUser',      this._switchUser              ],
-            ['volumeUp',        this._volumeUp                ],
-            ['volumeDown',      this._volumeDown              ],
-            ['muteAudio',       this._mute                    ],
-            ['toggleZoom',      this._toggleZoom              ],
-            ['zoomIn',          this._zoomIn                  ],
-            ['zoomOut',         this._zoomOut                 ],
-            ['keyboard',        this._showKeyboard            ],
-            ['largeText',       this._largeText               ],
-            ['screenReader',    this._screenReader            ],
-            ['hidePanel',       this._togglePanel             ],
-            ['toggleTheme',     this._toggleTheme             ],
-            ['lookingGlass',    this._lookingGlass            ],
-            ['restartShell',    this._restartGnomeShell       ],
-            ['prefs',           this._showPrefs               ],
-            ['invertLightWin',  this._lightnessInvertWindow   ],
-            ['invertLightAll',  this._lightnessInvertGlobal   ],
-            ['desaturateAll',   this._toggleDesaturateGlobal  ],
-            ['desaturateWin',   this._toggleDesaturateWindow  ],
-            ['brightUpAll',     this._brightnessUpGlobal      ],
-            ['brightDownAll',   this._brightnessDownGlobal    ],
-            ['brightUpWin',     this._brightnessUpWindow      ],
-            ['brightDownWin',   this._brightnessDownWindow    ],
-            ['contrastUpAll',   this._contrastUpGlobal        ],
-            ['contrastDownAll', this._contrastDownGlobal      ],
-            ['contrastUpWin',   this._contrastUpWindow        ],
-            ['contrastDownWin', this._contrastDownWindow      ],
-            ['opacityUpWin',    this._opacityUpWindow         ],
-            ['opacityDownWin',  this._opacityDownWindow       ],
-            ['opacityToggleWin',this._opacityToggleWin        ],
-            ['tintRedToggleWin',this._redTintToggleWindow     ],
-            ['tintRedToggleAll',this._redTintToggleGlobal     ],
-            ['tintGreenToggleWin',this._greenTintToggleWindow ],
-            ['tintGreenToggleAll',this._greenTintToggleGlobal ],
-            ['toggleNightLight',this._nightLightToggle        ],
-            ['removeAllEffects',this._removeAllEffects        ]
-        ]);
+        for (let action of actionList) {
+            if (action[1] !== '') {
+                let func = this['_' + this._translateActionToFunction(action[1])];
+                this.m.set(action[1], func);
+            }
+        }
 
         this._shortcutsBindingIds=[];
         this._gsettingsKBid = 0;
         this._bindShortcuts();
-
     }
 
     runAction(action, monitorIndex = 0, workspaceIndex = 0, command = '') {
@@ -766,27 +717,53 @@ const ActionTrigger = class ActionTrigger {
         this._gsettingsKB.disconnect(this._gsettingsKBid);
     }
 
-    _translateKeyToAction(key) {
+    // translates key to action function
+    _translateActionToFunction(key) {
         let regex = /-(.)/g;
         return key.replace(regex,function($0,$1) {
             return $0.replace($0, $1.toUpperCase());
-        }).replace('Ce', '');
+        });
     }
 
-    _overview() {
+    _translateKeyToAction(key) {
+        let regex = /-ce$/
+        return key.replace(regex, '');
+    }
+
+    _toggleOverview() {
         Actions.toggleOverview();
     }
-    _showAppGrid() {
+    _showApplications() {
         Actions.showApplications();
     }
     _showDesktop() {
         Actions.togleShowDesktop();
     }
-    _showDesktopMonitor() {
+    _showDesktopMon() {
         Actions.togleShowDesktop(this._monitorIndex);
+    }
+    _blackScreen() {
+        let opacity = 255;
+        let note = Me.metadata.name;
+        Actions.toggleDimmMonitors(
+            opacity,
+            note
+        );
+    }
+    _blackScreenMon() {
+        let opacity = 255;
+        let note = Me.metadata.name;
+        Actions.toggleDimmMonitors(
+            opacity,
+            note,
+            this._monitorIndex
+        );
     }
     _runCommand() {
         Actions.runCommand(this._command);
+    }
+    _runDialog() {
+        Actions.openRunDialog();
     }
     _moveToWorkspace() {
         Actions.moveToWorkspace(this._workspaceIndex - 1);
@@ -797,52 +774,58 @@ const ActionTrigger = class ActionTrigger {
     _nextWorkspace() {
         Actions.switchWorkspace(Clutter.ScrollDirection.DOWN);
     }
-    _moveToRecentWorkspace() {
+    _recentWorkspace() {
         Actions.moveToRecentWorkspace();
     }
-    _prevWindow() {
+    _reorderWsPrev() {
+        Actions.reorderWorkspace(-1);
+    }
+    _reorderWsNext() {
+        Actions.reorderWorkspace(+1);
+    }
+    _prevWinAll() {
         Actions.switchWindow( -1, false, -1);
     }
-    _nextWindow() {
+    _nextWinAll() {
         Actions.switchWindow( +1, false, -1);
     }
-    _prevWindowWS() {
+    _prevWinWs() {
         Actions.switchWindow( -1, true, -1);
     }
-    _nextWindowWS() {
+    _nextWinWs() {
         Actions.switchWindow( +1, true, -1);
     }
-    _prevWinMonitor() {
+    _prevWinMon() {
         Actions.switchWindow( -1, true, this._monitorIndex);
     }
-    _nextWinMonitor() {
+    _nextWinMon() {
         Actions.switchWindow( +1, true, this._monitorIndex);
     }
-    _recentWindow() {
+    _recentWin() {
         Actions.recentWindow();
     }
-    _closeWindow() {
+    _closeWin() {
         Actions.closeWindow();
     }
     _killApp() {
         Actions.killApplication();
     }
-    _maximizeWindow() {
+    _maximizeWin() {
         Actions.toggleMaximizeWindow();
     }
-    _minimizeWindow() {
+    _minimizeWin() {
         Actions.minimizeWindow();
     }
-    _fullscreenWindow() {
+    _fullscreenWin() {
         Actions.toggleFullscreenWindow();
     }
-    _aboveWindow() {
+    _aboveWin() {
         Actions.toggleAboveWindow();
     }
-    _stickWindow() {
+    _stickWin() {
         Actions.toggleStickWindow();
     }
-    _restartGnomeShell() {
+    _restartShell() {
         Actions.restartGnomeShell();
     }
     _volumeUp() {
@@ -851,13 +834,13 @@ const ActionTrigger = class ActionTrigger {
     _volumeDown() {
         Actions.adjustVolume(-1);
     }
-    _mute() {
+    _muteSound() {
         Actions.adjustVolume(0);
     }
     _lockScreen() {
         Actions.lockScreen();
     }
-    _suspendToRam () {
+    _suspend() {
         Actions.suspendToRam();
     }
     _powerOff() {
@@ -872,25 +855,8 @@ const ActionTrigger = class ActionTrigger {
     _lookingGlass() {
         Actions.toggleLookingGlass()
     }
-    _showPrefs() {
+    _prefs() {
         Actions.openPreferences();
-    }
-    _blackScreen() {
-        let opacity = 255;
-        let note = Me.metadata.name;
-        Actions.toggleDimmMonitors(
-            opacity,
-            note
-        );
-    }
-    _blackScreenMonitor() {
-        let opacity = 255;
-        let note = Me.metadata.name;
-        Actions.toggleDimmMonitors(
-            opacity,
-            note,
-            this._monitorIndex
-        );
     }
     _toggleZoom() {
         Actions.zoom(0);
@@ -901,7 +867,7 @@ const ActionTrigger = class ActionTrigger {
     _zoomOut(){
         Actions.zoom(-0.25);
     }
-    _showKeyboard() {
+    _keyboard() {
         Actions.toggleKeyboard(this._monitorIndex);
     }
     _screenReader() {
@@ -910,56 +876,65 @@ const ActionTrigger = class ActionTrigger {
     _largeText() {
         Actions.toggleLargeText()
     }
-    _togglePanel() {
+    _hidePanel() {
         Actions.toggleShowPanel();
     }
     _toggleTheme() {
         Actions.toggleTheme();
 
     }
-    _runDialog() {
-        Actions.openRunDialog();
-    }
-    _lightnessInvertGlobal() {
+    _invertLightAll() {
         Actions.toggleLightnessInvertEffect(false);
     }
-    _lightnessInvertWindow() {
+    _invertLightWin() {
         Actions.toggleLightnessInvertEffect(true);
     }
-    _toggleDesaturateGlobal() {
+    _desaturateAll() {
         Actions.toggleDesaturateEffect(false);
     }
-    _toggleDesaturateWindow() {
+    _desaturateWin() {
         Actions.toggleDesaturateEffect(true);
     }
-    _brightnessUpGlobal() {
+    _brightUpAll() {
         Actions.adjustSwBrightnessContrast(+0.025);
     }
-    _brightnessDownGlobal() {
+    _brightDownAll() {
         Actions.adjustSwBrightnessContrast(-0.025);
     }
-    _brightnessUpWindow() {
+    _brightUpWin() {
         Actions.adjustSwBrightnessContrast(+0.025, true);
     }
-    _brightnessDownWindow() {
+    _brightDownWin() {
         Actions.adjustSwBrightnessContrast(-0.025, true);
     }
-    _contrastUpGlobal() {
+    _contrastUpAll() {
         Actions.adjustSwBrightnessContrast(+0.025, false, false);
     }
-    _contrastDownGlobal() {
+    _contrastDownAll() {
         Actions.adjustSwBrightnessContrast(-0.025, false, false);
     }
-    _contrastUpWindow() {
+    _contrastUpWin() {
         Actions.adjustSwBrightnessContrast(+0.025, true, false);
     }
-    _contrastDownWindow() {
+    _contrastDownWin() {
         Actions.adjustSwBrightnessContrast(-0.025, true, false);
     }
-    _opacityUpWindow() {
+    _contrastHighWin() {
+        Actions.adjustSwBrightnessContrast(null, true, false, 0.2);
+    }
+    _contrastHighAll() {
+        Actions.adjustSwBrightnessContrast(null, false, false, 0.2);
+    }
+    _contrastLowWin() {
+        Actions.adjustSwBrightnessContrast(null, true, false, -0.1);
+    }
+    _contrastLowAll() {
+        Actions.adjustSwBrightnessContrast(null, false, false, -0.1);
+    }
+    _opacityUpWin() {
         Actions.adjustWindowOpacity(+12);
     }
-    _opacityDownWindow() {
+    _opacityDownWin() {
         Actions.adjustWindowOpacity(-12);
     }
     _opacityToggleWin() {
@@ -968,8 +943,8 @@ const ActionTrigger = class ActionTrigger {
     _nightLightToggle() {
         Actions.toggleNightLight();
     }
-    _redTintToggleWindow(){
-        Actions.toggleCplorTintEffect(
+    _tintRedToggleWin(){
+        Actions.toggleColorTintEffect(
             new Clutter.Color({
                 red:    255,
                 green:  200,
@@ -977,7 +952,7 @@ const ActionTrigger = class ActionTrigger {
             }),
             true);
     }
-    _redTintToggleGlobal(){
+    _tintRedToggleAll(){
         Actions.toggleColorTintEffect(
             new Clutter.Color({
                 red:    255,
@@ -986,7 +961,7 @@ const ActionTrigger = class ActionTrigger {
             }),
             false);
     }
-    _greenTintToggleWindow(){
+    _tintGreenToggleWin(){
         Actions.toggleColorTintEffect(
             new Clutter.Color({
                 red:    200,
@@ -995,7 +970,7 @@ const ActionTrigger = class ActionTrigger {
             }),
             true);
     }
-    _greenTintToggleGlobal(){
+    _tintGreenToggleAll(){
         Actions.toggleColorTintEffect(
             new Clutter.Color({
                 red:    200,
@@ -1003,8 +978,11 @@ const ActionTrigger = class ActionTrigger {
                 blue:   146,
             }),
             false);
+    }
+    _removeWinEffects() {
+        Actions.removeWinEffects(true);
     }
     _removeAllEffects() {
-        Actions.removeEffects(true);
+        Actions.removeAllEffects(true);
     }
 };

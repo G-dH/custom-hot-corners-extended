@@ -21,6 +21,7 @@ const Me             = ExtensionUtils.getCurrentExtension();
 const Settings       = Me.imports.settings;
 const triggers       = Settings.listTriggers();
 const triggerLabels  = Settings.TriggerLabels;
+const actionList     = Settings.actionList;
 let   notebook;
 let   mscOptions;
 
@@ -34,9 +35,7 @@ let WAYLAND;
 function init() {
     log(`initializing ${Me.metadata.name} Preferences`);
     ExtensionUtils.initTranslations(Me.metadata['gettext-domain']);
-    if (Settings.shellVersion.startsWith("40"))
-         GNOME40 = true;
-    else GNOME40 = false;
+    GNOME40 = Settings.GNOME40;
     WAYLAND = GLib.getenv('XDG_SESSION_TYPE') === 'wayland';
     mscOptions = new Settings.MscOptions();
 }
@@ -90,8 +89,10 @@ function buildPrefsWidget() {
 
     notebook.get_nth_page(0).buildPage();
     notebook.set_current_page(0);
-    if (!GNOME40)
+    if (!GNOME40) {
+        prefsWidget.connect('destroy', Gtk.main_quit);
         prefsWidget.show_all();
+    }
     return prefsWidget;
 }
 
@@ -126,8 +127,7 @@ const MonitorPage
             cPage._leftHandMouse = this._leftHandMouse;
             this.append_page(cPage, label);
             // Gtk3 notebook emits 'switch-page' signal when showing it's content for the 1. time
-            // Gtk4 doesn't, so we have to trigger the build of the first tab malually
-            //if (i === 0) cPage.buildPage();
+            // Gtk4 doesn't. Just a note, irrelevant to the actual program.
 
         }
         if (!GNOME40) this.show_all();
@@ -402,101 +402,6 @@ function _makeSmall(label) {
 function _makeTitle(label) {
   return '<b>'+label+'</b>';
 }
-//      [root/submenu, action key,  action name,                         accelerator
-const _actions = [
-        [   0, 'disabled'        ,   _('-'),                                false],
-        [   0, 'toggleOverview'  ,   _('Show Activities (Overview)'),       false],
-        [   0, 'showApplications',   _('Show Applications'),                false],
-
-        [null, ''                ,   _('Show / Hide Desktop'),               true],
-        [   1, 'showDesktop'     ,   _('Show Desktop (all monitors)'),       true],
-        [   1, 'showDesktopMon'  ,   _('Show Desktop (this monitor)'),      false],
-        [   1, 'blackScreen'     ,   _('Black Screen (all monitors)'),       true],
-        [   1, 'blackScreenMon'  ,   _('Black Screen (this monitor)'),      false],
-
-        [null, ''                ,   _('Run Command'),                      false],
-        [   1, 'runCommand'      ,   _('Run preset Command'),               false],
-        [   1, 'runDialog'       ,   _('Show "Run a Command" prompt'),      false],
-
-        [null, ''                ,   _('Workspaces'),                        true],
-        [   1, 'prevWorkspace'   ,   _('Previous Workspace'),               false],
-        [   1, 'nextWorkspace'   ,   _('Next Workspace'),                   false],
-        [   1, 'recentWs'        ,   _('Recent Workspace'),                  true],
-        [   1, 'moveToWorkspace' ,   _('Move to Workspace #'),              false],
-
-        [null, ''                ,   _('Windows - Navigation'),              true],
-        [   1, 'recentWin'       ,   _('Recent Window (Alt+Tab)'),          false],
-        [   1, 'prevWinWsMon'    ,   _('Previous Window (this monitor)'),   false],
-        [   1, 'prevWinWS'       ,   _('Previous Window (current WS)'),      true],
-        [   1, 'prevWinAll'      ,   _('Previous Window (all)'),             true],
-        [   1, 'nextWinWsMon'    ,   _('Next Window (this monitor)'),       false],
-        [   1, 'nextWinWS'       ,   _('Next Window (current WS)'),          true],
-        [   1, 'nextWinAll'      ,   _('Next Window (all)'),                 true],
-
-        [null, ''                ,   _('Windows - Control'),                 true],
-        [   1, 'closeWin'        ,   _('Close Window'),                     false],
-        [   1, 'killApp'         ,   _('Kill Application'),                  true],
-        [   1, 'maximizeWin'     ,   _('Maximize Window'),                  false],
-        [   1, 'minimizeWin'     ,   _('Minimize Window'),                  false],
-        [   1, 'fullscreenWin'   ,   _('Fullscreen Window'),                false],
-        [   1, 'aboveWin'        ,   _('Win Always on Top'),                false],
-        [   1, 'stickWin'        ,   _('Win Always on Visible WS'),         false],
-
-        [null, ''                ,   _('Windows - Effects'),                 true],
-        [   1, 'invertLightWin'  ,   _('Invert Lightness (window)'),         true],
-        [   1, 'tintRedToggleWin',   _('Red Tint Mono (window)'),            true],
-        [   1, 'tintGreenToggleWin', _('Green Tint Mono (window)'),          true],
-        [   1, 'brightUpWin'     ,   _('Brightness Up (window)'),            true],
-        [   1, 'brightDownWin'   ,   _('Brightness Down (window)'),          true],
-        [   1, 'contrastUpWin'   ,   _('Contrast Up (window)'),              true],
-        [   1, 'contrastDownWin' ,   _('Contrast Down (window)'),            true],
-        [   1, 'opacityUpWin'    ,   _('Opacity Up (window)'),               true],
-        [   1, 'opacityDownWin'  ,   _('Opacity Down (window)'),             true],
-        [   1, 'opacityToggleWin',   _('Toggle Transparency (window)'),      true],
-        [   1, 'desaturateWin'   ,   _('Desaturate (window)'),               true],
-
-        [null, ''                ,   _('Global Effects'),                    true],
-        [   1, 'toggleNightLight',   _('Toggle Night Light (Display settings)'), true],
-        [   1, 'invertLightAll'  ,   _('Invert Lightness (global)'),         true],
-        [   1, 'tintRedToggleAll',   _('Red Tint Mono (global)'),            true],
-        [   1, 'tintGreenToggleAll', _('Green Tint Mono (global)'),          true],
-        [   1, 'brightUpAll'     ,   _('Brightness Up (global)'),            true],
-        [   1, 'brightDownAll'   ,   _('Brightness Down (global)'),          true],
-        [   1, 'contrastUpAll'   ,   _('Contrast Up (global)'),              true],
-        [   1, 'contrastDownAll' ,   _('Contrast Down (global)'),            true],
-        [   1, 'desaturateAll'   ,   _('Desaturate (global)'),               true],
-        [   1, 'removeAllEffects',   _('Remove All Effects'),                true],
-
-        [null, ''                ,   _('Universal Access'),                  true],
-        [   1, 'toggleZoom'      ,   _('Toggle Zoom'),                       true],
-        [   1, 'zoomIn'          ,   _('Zoom In'),                           true],
-        [   1, 'zoomOut'         ,   _('Zoom Out'),                          true],
-        [   1, 'screenReader'    ,   _('Screen Reader'),                     true],
-        [   1, 'largeText'       ,   _('Large Text'),                        true],
-        [   1, 'keyboard'        ,   _('Screen Keyboard'),                   true],
-
-        [null, ''                ,   _('Gnome Shell'),                       true],
-        [   1, 'hidePanel'       ,   _('Hide/Show Main Panel'),              true],
-        [   1, 'toggleTheme'     ,   _('Toggle Light/Dark Gtk Theme'),       true],
-
-        [null, ''                ,   _('System'),                            true],
-        [   1, 'screenLock'      ,   _('Lock Screen'),                      false],
-        [   1, 'suspend'         ,   _('Suspend to RAM'),                    true],
-        [   1, 'powerOff'        ,   _('Power Off Dialog'),                  true],
-        [   1, 'logout'          ,   _('Log Out Dialog'),                    true],
-        [   1, 'switchUser'      ,   _('Switch User (if exists)'),           true],
-
-        [null, ''                ,   _('Sound'),                            false],
-        [   1, 'volumeUp'        ,   _('Volume Up'),                        false],
-        [   1, 'volumeDown'      ,   _('Volume Down'),                      false],
-        [   1, 'muteAudio'       ,   _('Volume mute/unmute'),                             false],
-
-        [null, ''                ,   _('Debug'),                             true],
-        [   1, 'lookingGlass'    ,   _('Looking Glass (GS debugger)'),       true],
-        [   1, 'restartShell'    ,   _('Restart Gnome Shell (X11 only)'),    true],
-
-        [   0, 'prefs'           ,   _('Open Preferences'),                  true]
-    ]; // end
 
 const _d40exclude = [
                     //    'invertLightAll',
@@ -524,6 +429,7 @@ const CornerPage
 
     buildPage() {
         if (this._alreadyBuilt) return;
+
         this._alreadyBuilt = true;
         for (let trigger of triggers) {
 
@@ -719,12 +625,12 @@ const CornerPage
 
         actionCombo.connect('changed', () => {
             this._corner.setAction(trigger, actionCombo.get_active_id());
-            commandEntryRevealer.reveal_child = this._corner.getAction(trigger) === 'runCommand';
-            wsIndexRevealer.reveal_child = this._corner.getAction(trigger) === 'moveToWorkspace';
-            if (this._corner.getAction(trigger) === 'runCommand' && !cmdConnected) {
+            commandEntryRevealer.reveal_child = this._corner.getAction(trigger) === 'run-command';
+            wsIndexRevealer.reveal_child = this._corner.getAction(trigger) === 'move-to-workspace';
+            if (this._corner.getAction(trigger) === 'run-command' && !cmdConnected) {
                 _connectCmdBtn();
                 commandEntry.text = this._corner.getCommand(trigger);
-                commandEntryRevealer.reveal_child = this._corner.getAction(trigger) === 'runCommand';
+                commandEntryRevealer.reveal_child = this._corner.getAction(trigger) === 'run-command';
                 commandEntry.timeout_id = null;
                 commandEntry.connect('changed', () => {
                     if (commandEntry.timeout_id) {
@@ -740,7 +646,7 @@ const CornerPage
                         }
                     );
                 });
-                wsIndexRevealer.reveal_child = this._corner.getAction(trigger) === 'moveToWorkspace';
+                wsIndexRevealer.reveal_child = this._corner.getAction(trigger) === 'move-to-workspace';
                 cmdConnected = true;
             }
         });
@@ -774,8 +680,8 @@ const CornerPage
     _fillCombo(actionTreeStore, actionCombo, trigger) {
         let iterDict = {};
         let iter, iter2;
-        for (let i = 0; i < _actions.length; i++){
-            let item = _actions[i];
+        for (let i = 0; i < actionList.length; i++){
+            let item = actionList[i];
             if (GNOME40 && _d40exclude.indexOf(item[1]) > -1) continue;
             if (!item[0]){
                 iter  = actionTreeStore.append(null);
@@ -790,7 +696,15 @@ const CornerPage
                 iterDict[item[1]] = iter2;
             }
         }
-        if (iterDict[this._corner.getAction(trigger)]) actionCombo.set_active_iter(iterDict[this._corner.getAction(trigger)]);
+        // action keys has been changed, translate old keys to new and store them
+        // will be removed from the next version
+        let action = this._corner.getAction(trigger);
+        if (Settings.transitionMap.has(action)) {
+            action = Settings.transitionMap.get(action);
+        }
+        if (iterDict[action]) {
+            actionCombo.set_active_iter(iterDict[action]);
+        }
     }
 
     _buildPressureSettings(popupGrid) {
@@ -1030,7 +944,6 @@ const KeyboardPage
 
     buildPage() {
         if (this._alreadyBuilt) return false;
-
         let add;
         GNOME40 ?
             add = 'set_child':
@@ -1152,8 +1065,8 @@ const KeyboardPage
 
     _populateTreeview() {
         let iter, iter2;
-        for (let i = 0; i < _actions.length; i++){
-            let item = _actions[i];
+        for (let i = 0; i < actionList.length; i++){
+            let item = actionList[i];
             if ((GNOME40 && _d40exclude.indexOf(item[1]) > -1) || !item[3]) continue;
             let a = [0, 0];
             if (item[1] && (item[1] in this.keybindings && this.keybindings[item[1]][0])) {
@@ -1188,16 +1101,19 @@ const KeyboardPage
     // the -ce extension's purpose is to make key names unique
     // in case of conflict with system shortcut, system wins
     _translateKeyToAction(key) {
-        let regex = /-(.)/g;
+        /*let regex = /-(.)/g;
         return key.replace(regex,function($0,$1) {
             return $0.replace($0, $1.toUpperCase());
-        }).replace('Ce', '');
+        }).replace('Ce', '');*/
+        let regex = /-ce$/
+        return key.replace(regex, '');
     }
 
     _translateActionToKey(action) {
-        let regex = /([A-Z])/g;
+        /*let regex = /([A-Z])/g;
         return action.replace(regex,function($0, $1) {
             return $0.replace($0, `-${$1}`.toLowerCase());
-        }) + '-ce';
+        }) + '-ce';*/
+        return action + '-ce';
     }
 });

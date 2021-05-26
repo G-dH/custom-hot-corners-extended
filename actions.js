@@ -60,14 +60,12 @@ var Actions = class {
 
         this._connectRecentWorkspace();
 
-        if (Settings.shellVersion.startsWith("40"))
-             GNOME40 = true;
-        else GNOME40 = false;
+        GNOME40 = Settings.GNOME40;
     }
 
     clean() {
         this._destroyDimmerActors();
-        this.removeEffects();
+        this.removeAllEffects();
         global.workspace_manager.disconnect(this._signalsCollector.pop());
         this._mainPanelVisible ?
             Main.panel.show() :
@@ -84,25 +82,35 @@ var Actions = class {
 
     }
 
-    removeEffects(removeFilters = false) {
+    removeAllEffects(force = false) {
         this._getShellSettings();
         let enabled = this._shellSettings.get_strv('enabled-extensions');
-        // if extension enabled don't reset filters
-        if (!removeFilters && enabled.indexOf(Me.metadata.uuid) > -1)
+        // don't reset effects if extension is enabled (GS calls ext. disable() before locking screen f.e.)
+        if (!force && enabled.indexOf(Me.metadata.uuid) > -1)
             return;
+        for (let actor of global.get_window_actors()) {
+                this._removeEffects(actor);
+        }
+            // remove global effect
+        this._removeEffects(Main.uiGroup, true);//.remove_effect_by_name(effect);
+    }
+
+    removeWinEffects() {
+        this._removeEffects(this._getFocusedActor());
+    }
+
+    _removeEffects(obj = null, glob = false) {
         let effects = [ 'brightness',
                         'contrast',
                         'lightness-invert',
                         'desaturate',
                         'color-tint' ];
         for (let effect of effects) {
-            for (let actor of global.get_window_actors()) {
-                actor.remove_effect_by_name(effect);
-                let windowActor = actor.get_meta_window().get_compositor_private();
-                this._getWindowSurface(windowActor).opacity = 255;
-            }
-
-            Main.uiGroup.remove_effect_by_name(effect);
+            obj.remove_effect_by_name(effect);
+        }
+        if (!glob) {
+            let winActor = obj.get_meta_window().get_compositor_private();
+            this._getWindowSurface(winActor).opacity = 255;
         }
     }
 
@@ -222,6 +230,13 @@ var Actions = class {
     }
     moveToRecentWorkspace() {
         this.moveToWorkspace(this._recentWorkspace);
+    }
+    reorderWorkspace(direction = 0) {
+        let activeWs = global.workspace_manager.get_active_workspace();
+        let activeWsIdx = activeWs.index();
+        let targetIdx = activeWsIdx + direction;
+        if (targetIdx < 0 || targetIdx > (global.workspace_manager.get_n_workspaces() - 1)) return;
+        global.workspace_manager.reorder_workspace(activeWs, targetIdx);
     }
     lockScreen() {
         //Main.screenShield.lock(true);
@@ -493,13 +508,23 @@ var Actions = class {
         windowSurface.opacity = value;
     }
 
-    adjustSwBrightnessContrast(step = 0, window=false, brightness = true) {
+    adjustSwBrightnessContrast(step = 0, window=false, brightness = true, valueO = null) {
         // brightness/contrast range: -1 all black/gray, 0 normal, 1 all white/extreme contrast
         // step with +/- value from range
         let name = brightness ?
                         'brightness':
                         'contrast';
-        let brightnessContrast;
+        let brightnessContrast, value;
+        const getBCValue = function() {
+            return brightness ?
+                            brightnessContrast.get_brightness()[0] : // Clutter returns value in [r,g,b] format
+                            brightnessContrast.get_contrast()[0];
+        }
+        const setBCValue = function(val) {
+            return brightness ?
+                            brightnessContrast.set_brightness(val) :
+                            brightnessContrast.set_contrast(val);
+        }
         if (window) {
             let actor = this._getFocusedActor();
             if (!actor) return;
@@ -513,34 +538,36 @@ var Actions = class {
             }
             brightnessContrast = Main.uiGroup.get_effect(name);
         }
-            let value = brightness ?
-                            brightnessContrast.get_brightness()[0] : // Clutter returns value in [r,g,b] format
-                            brightnessContrast.get_contrast()[0];
+        if (!valueO) {
+            value = getBCValue();
             // multiply to avoid value shifting
             value = Math.round((value * 1000) + (step *1000));
-            let max = brightness ? 0 : 250;
+            let max = brightness ? 0 : 300;
             if (value > max) value = max;
             if (value < -750) value = -750;
             value /= 1000;
-            brightness ?
-                brightnessContrast.set_brightness(value) :
-                brightnessContrast.set_contrast(value);
-            // notify when normal contrast is reached
-            if (value === 0) {
-                brightness ?
-                    brightnessContrast.set_brightness(-0.3) :
-                    brightnessContrast.set_contrast(-0.1);
-                GLib.timeout_add(
-                    GLib.PRIORITY_DEFAULT,
-                    100,
-                    () => {
-                        brightness ?
-                            brightnessContrast.set_brightness(value) :
-                            brightnessContrast.set_contrast(value);
-                        return false;
-                    }
-                );
+        } else {
+            value = valueO;
+            if (valueO === Math.round(getBCValue()*1000)/1000) {
+                value = 0;
             }
+        }
+        setBCValue(value);
+        // notify when normal contrast is reached
+        if (!valueO && value === 0) {
+            brightness ?
+                brightnessContrast.set_brightness(-0.3) :
+                brightnessContrast.set_contrast(-0.1);
+            GLib.timeout_add(
+                GLib.PRIORITY_DEFAULT,
+                100,
+                () => {
+                    setBCValue(value);
+                    return false;
+                }
+            );
+        }
+
     }
     
     toggleDesaturateEffect(window = true) {

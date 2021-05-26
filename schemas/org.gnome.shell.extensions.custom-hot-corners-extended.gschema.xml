@@ -81,7 +81,13 @@
     <key name='recent-ws-ce' type='as'>
       <default>[]</default>
     </key>
-    <key name='prev-win-ws-mon-ce' type='as'>
+    <key name='reorder-ws-next-ce' type='as'>
+      <default>[]</default>
+    </key>
+    <key name='reorder-ws-prev-ce' type='as'>
+      <default>[]</default>
+    </key>
+    <key name='prev-win-mon-ce' type='as'>
       <default>[]</default>
     </key>
     <key name='prev-win-ws-ce' type='as'>
@@ -90,7 +96,7 @@
     <key name='prev-win-all-ce' type='as'>
       <default>[]</default>
     </key>
-    <key name='next-win-ws-mon-ce' type='as'>
+    <key name='next-win-mon-ce' type='as'>
       <default>[]</default>
     </key>
     <key name='next-win-ws-ce' type='as'>
@@ -123,6 +129,12 @@
     <key name='contrast-down-win-ce' type='as'>
       <default>[]</default>
     </key>
+    <key name='contrast-high-win-ce' type='as'>
+      <default>[]</default>
+    </key>
+    <key name='contrast-low-win-ce' type='as'>
+      <default>[]</default>
+    </key>
     <key name='opacity-up-win-ce' type='as'>
       <default>[]</default>
     </key>
@@ -135,7 +147,10 @@
     <key name='desaturate-win-ce' type='as'>
       <default>[]</default>
     </key>
-    <key name='toggle-night-light-ce' type='as'>
+    <key name='remove-effects-win-ce' type='as'>
+      <default>[]</default>
+    </key>
+    <key name='night-light-toggle-ce' type='as'>
       <default>[]</default>
     </key>
     <key name='invert-light-all-ce' type='as'>
@@ -159,13 +174,18 @@
     <key name='contrast-down-all-ce' type='as'>
       <default>[]</default>
     </key>
+    <key name='contrast-high-all-ce' type='as'>
+      <default>[]</default>
+    </key>
+    <key name='contrast-low-all-ce' type='as'>
+      <default>[]</default>
+    </key>
     <key name='desaturate-all-ce' type='as'>
       <default>[]</default>
     </key>
-    <key name='remove-all-effects-ce' type='as'>
+    <key name='remove-effects-all-ce' type='as'>
       <default>[]</default>
     </key>
-
     <key name='toggle-zoom-ce' type='as'>
       <default>[]</default>
     </key>
@@ -184,7 +204,6 @@
     <key name='keyboard-ce' type='as'>
       <default>[]</default>
     </key>
-
     <key name='hide-panel-ce' type='as'>
       <default>[]</default>
     </key>
