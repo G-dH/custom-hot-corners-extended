@@ -108,6 +108,12 @@
     <key name='kill-app-ce' type='as'>
       <default>[]</default>
     </key>
+    <key name='unminimize-all-ws-ce' type='as'>
+      <default>[]</default>
+    </key>
+    <key name='make-thumbnail-win-ce' type='as'>
+      <default>[]</default>
+    </key>
     <key name='invert-light-win-ce' type='as'>
       <default>[]</default>
     </key>

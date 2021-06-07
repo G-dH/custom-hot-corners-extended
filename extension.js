@@ -59,6 +59,8 @@ let _extensionEnabled;
 let _myCorners;
 let _watch;
 
+//let LOG = print;
+let LOG = function() {return;};
 
 function init() {
     ExtensionUtils.initTranslations(Me.metadata['gettext-domain']);
@@ -72,17 +74,21 @@ function init() {
 }
 
 function enable() {
+        LOG(`[${Me.metadata.name}] enable`);
     // delayed start because of aggresive beasts that steal my corners even under my watch
     // (happens with Just Perfection extension after returning from screen lock. Was OK after shell restart tho..)
     GLib.timeout_add(
             GLib.PRIORITY_DEFAULT,
             50,
             () => {
-                    Actions = new ActionLib.Actions();
+                    if (!Actions)
+                        Actions = new ActionLib.Actions();
+                    else Actions.resume();
                     _origUpdateHotCorners = Main.layoutManager._updateHotCorners;
                     _extensionEnabled = true;
                     _initMscOptions();
                     actionTrigger = new ActionTrigger(_mscOptions);
+                        LOG(`[${Me.metadata.name}]     enable: Creating hot corners now..`);
                     _replace_updateHotCornersFunc();
                     _updateWatch();
                     return false;
@@ -91,33 +97,46 @@ function enable() {
 }
 
 function _replace_updateHotCornersFunc() {
+        LOG(`[${Me.metadata.name}] _replace_updateHotCornersFunc`);
     Main.layoutManager._updateHotCorners = _updateHotCorners;
     Main.layoutManager._updateHotCorners();
 }
 
 function disable() {
+        LOG(`[${Me.metadata.name}] disable`);
+        LOG(`[${Me.metadata.name}]     disable: ${_timeoutsCollector.length} timeouts are being destroyed..`);
     _timeoutsCollector.forEach( c => GLib.Source.remove(c));
     _timeoutsCollector=[];
     _removeActionTimeout();
     _removeHotCorners();
+        LOG(`[${Me.metadata.name}]     disable: Updating hot corners from original backup`);
     _mscOptions.destroy();
-    Actions.clean();
+    // don't destroy Actions and lose effects and thumbnails because of screen lock, for example
+    if (!Actions.extensionEnabled()) {
+        Actions.clean(true);
+        Actions = null;
+    } else Actions.clean(false);
     actionTrigger.clean();
     // This restores the original hot corners
     _extensionEnabled = false;
     Main.layoutManager._updateHotCorners = _origUpdateHotCorners;
     Main.layoutManager._updateHotCorners();
+        LOG(`[${Me.metadata.name}] disable: Extension disabled`);
 }
 
 function _initMscOptions() {
+        LOG(`[${Me.metadata.name}] _initMscOptions`);
     _mscOptions = new Settings.MscOptions();
     _mscOptions.connect('changed', ()=> _updateMscOptions());
     _updateMscOptions(true);
 }
 
 function _removeHotCorners() {
+        LOG(`[${Me.metadata.name}] _removeHotCorners`);
+        LOG(`[${Me.metadata.name}]     ${_cornersCollector.length} collected corners are being destroyed`);
     _cornersCollector.forEach(c => c.destroy());
     _cornersCollector = [];
+        LOG(`[${Me.metadata.name}]     ${Main.layoutManager.hotCorners.length} Hot Corners are being destroyed`);
 
     const hc = Main.layoutManager.hotCorners;
     // reverse iteration, objects are being removed from the source during destruction
@@ -131,11 +150,13 @@ function _removeHotCorners() {
     Main.layoutManager.hotCorners = [];
     _updateWatchCorners();
     // when some other extension steal my hot corners I still need to be able to destroy all actors I made
+    LOG(`[${Me.metadata.name}]     _removeHotCorners: ${_actorsCollector.length} untracked actors are being destroyed`);
     _actorsCollector.filter(a => a !== null).forEach(a => a.destroy());
     _actorsCollector = [];
 }
 
 function _updateMscOptions(doNotUpdateHC = false) {
+        LOG(`[${Me.metadata.name}] _updateMscOptions`);
     Actions._wsSwitchIgnoreLast = _mscOptions.wsSwitchIgnoreLast;
     Actions._wsSwitchWrap       = _mscOptions.wsSwitchWrap;
     Actions._wsSwitchIndicator  = _mscOptions.wsSwitchIndicator;
@@ -158,12 +179,14 @@ function _updateMscOptions(doNotUpdateHC = false) {
 
 function _updateHotCorners() {
     _removeHotCorners();
+        LOG(`[${Me.metadata.name}]     _updateHotCorners: Updating all hot corners..`);
     Main.layoutManager.hotCorners=[];
     _updateWatchCorners();
     let primaryIndex = Main.layoutManager.primaryIndex;
     // avoid creating new corners if this extension is disabled...
     // ...since this method overrides the original one in GS and something can store pointer to this replacement
     if (!_extensionEnabled) return;
+        LOG(`[${Me.metadata.name}] _updateHotCorners`);
     let monIndexes = [...Main.layoutManager.monitors.keys()];
     // index of the primary monitor to the first possition
     monIndexes.splice(0, 0, monIndexes.splice(primaryIndex, 1)[0]);
@@ -173,14 +196,17 @@ function _updateHotCorners() {
         const corners = Settings.Corner.forMonitor(i, monIndexes[i], global.display.get_monitor_geometry(monIndexes[i]));
         _setExpansionLimits(corners);
         for (let corner of corners) {
+                LOG(`\n[${Me.metadata.name}]     _updateHotCorners: Updating corner x:${corner.x}, y:${corner.y}, Monitor:${corner.monitorIndex}`);
             _cornersCollector.push(corner);
 
+                LOG(`[${Me.metadata.name}]     _updateHotCorners: Connecting triggers to gsettings..`);
             for (let trigger of listTriggers) {
                 // Update hot corner if something changes
                 // corner has it's own connect method defined in settings, this is not direct gsettings connect
                 corner.connect('changed', (settings, key) => _updateCorner(corner, key, trigger), trigger);
             }
             if (_shouldExistHotCorner(corner)) {
+                    LOG(`[${Me.metadata.name}]     _updateHotCorners: Creating corner..`);
                 Main.layoutManager.hotCorners.push(new CustomHotCorner(corner));
                 _updateWatchCorners();
             }
@@ -189,6 +215,7 @@ function _updateHotCorners() {
 }
 
 function _setExpansionLimits(corners) {
+    LOG(`[${Me.metadata.name}] _setExpansionLimits`);
     const cornerOrder = [0,1,3,2];
     for (let i = 0; i < corners.length; i++) {
         let prevCorner = (i + corners.length-1) % corners.length;
@@ -196,6 +223,9 @@ function _setExpansionLimits(corners) {
             prevCorner = corners[cornerOrder[prevCorner]];
             nextCorner = corners[cornerOrder[nextCorner]];
         let corner = corners[cornerOrder[i]];
+        //LOG(`[${Me.metadata.name}]     _setExpansionLimits: Corner: ${corner.top ? 'Top ':'Bottom '}${corner.left ? 'Left':'Right'}`);
+        //LOG(`[${Me.metadata.name}]     _setExpansionLimits:     Prev Corner: ${prevCorner.top ? 'Top ':'Bottom '}${prevCorner.left ? 'Left':'Right'}: H: ${prevCorner.hExpand} V: ${prevCorner.vExpand}`);
+        //LOG(`[${Me.metadata.name}]     _setExpansionLimits:     Next Corner: ${nextCorner.top ? 'Top ':'Bottom '}${nextCorner.left ? 'Left':'Right'}: H: ${nextCorner.hExpand} V: ${nextCorner.vExpand}`);
         if ((corner.left && prevCorner.left) || (!corner.left && !prevCorner.left)) {
             corner.fullExpandVertical   = (prevCorner.vExpand) ? false : true;
             corner.fullExpandHorizontal = (nextCorner.hExpand) ? false : true;
@@ -204,18 +234,23 @@ function _setExpansionLimits(corners) {
             corner.fullExpandVertical   = (nextCorner.vExpand) ? false : true;
             corner.fullExpandHorizontal = (prevCorner.hExpand) ? false : true;          
         }
+        LOG(`[${Me.metadata.name}]     _setExpansionLimits:   Corner: ${corner.top ? 'Top ':'Bottom '}${corner.left ? 'Left':'Right'}, V: ${corner.fullExpandVertical}, H: ${corner.fullExpandHorizontal}`);
     }
 }
 
 function _shouldExistHotCorner(corner) {
+        LOG(`[${Me.metadata.name}] _shouldExistHotCorner`);
     let answer = false;
     for (let trigger of listTriggers) {
         answer = answer || (corner.action[trigger] !== 'disabled');
     }
+        LOG(`[${Me.metadata.name}]     This corner should${answer ? ' ' : ' not'} exist`);
     return answer;
 }
 
 function _updateCorner(corner, key, trigger) {
+        LOG(`[${Me.metadata.name}] _updateCorner`);
+        LOG(`[${Me.metadata.name}]     Updating corner: x:${corner.x}, y:${corner.y}, Monitor:${corner.monitorIndex}, key: ${key}, trigger: ${Settings.TriggerLabels[trigger]}`);
     switch (key) {
         case 'action':
             corner.action[trigger] = corner.getAction(trigger);
@@ -251,8 +286,11 @@ function _updateCorner(corner, key, trigger) {
 }
 
 function _updateWatch() {
+        LOG(`[${Me.metadata.name}] _updateWatch`);
     _watch.active = _mscOptions.watchCorners;
+        //LOG(`[${Me.metadata.name}]     _updateWatch: active: ${_watch.active}, timeout: ${_watch.timeout}`);
     if (_watch.active && !_watch.timeout) {
+            LOG(`[${Me.metadata.name}]     _updateWatch: Setting up watch`);
         _watch.timeout = GLib.timeout_add(
                     GLib.PRIORITY_DEFAULT,
                     3000,
@@ -263,7 +301,8 @@ function _updateWatch() {
                             log(Me.metadata.name, `Hot Corners had to be updated because of external override`);
                         }
                         if (!_watch.active) {
-                            _timeoutsCollector.splice(_timeoutsCollector.indexOf(_watch.timeout));
+                            LOG(`[${Me.metadata.name}]     _updateWatch: Destroying watch`);
+                            _timeoutsCollector.splice(_timeoutsCollector.indexOf(_watch.timeout), 1);
                             _watch.timeout = null;
                         }
                         return _watch.active;
@@ -278,24 +317,30 @@ function _updateWatchCorners() {
 }
 
 function _rebuildHotCorner(corner) {
+        LOG(`[${Me.metadata.name}] _rebuildHotCorner`);
+        LOG(`[${Me.metadata.name}]     _rebuildHotCorner: Updating corner: x:${corner.x}, y:${corner.y}, Monitor:${corner.monitorIndex}`);
     _destroyHotCorner(corner);
     if (_shouldExistHotCorner(corner)) {
+            LOG(`[${Me.metadata.name}]     _rebuildHotCorner: Creating new corner: x:${corner.x}, y:${corner.y}, Monitor:${corner.monitorIndex}`);
         Main.layoutManager.hotCorners.push(new CustomHotCorner(corner));
         _updateWatchCorners();
     }
 }
 
 function _destroyHotCorner(corner) {
+        LOG(`[${Me.metadata.name}] _destroyHotCorner: x:${corner.x}, y:${corner.y}, Monitor:${corner.monitorIndex}`);
     let hc=Main.layoutManager.hotCorners;
     for (let i = 0; i < hc.length; i++) {
         if (hc[i]._corner.top  === corner.top &&
             hc[i]._corner.left === corner.left &&
             hc[i]._corner.monitorIndex === corner.monitorIndex) {
+                    LOG(`[${Me.metadata.name}]     _destroyHotCorner: Destroying ${Main.layoutManager.hotCorners[i]._actors.length} actors`);
                 for (let a of Main.layoutManager.hotCorners[i]._actors) {
-                    _actorsCollector.splice(_actorsCollector.indexOf(a));
+                    _actorsCollector.splice(_actorsCollector.indexOf(a), 1);
                     a.destroy();
                 }
                 Main.layoutManager.hotCorners[i]._actors = [];
+                    LOG(`[${Me.metadata.name}]     _destroyHotCorner: Destroying corner`);
                 hc[i].setBarrierSize(0, false);
                 Main.layoutManager.hotCorners[i].destroy();
                 Main.layoutManager.hotCorners.splice(i, 1);
@@ -308,6 +353,7 @@ function _destroyHotCorner(corner) {
 const CustomHotCorner = GObject.registerClass(
 class CustomHotCorner extends Layout.HotCorner {
     _init(corner) {
+            LOG(`[${Me.metadata.name}] CustomHotCorner._init`);
         let monitor = Main.layoutManager.monitors[corner.monitorIndex];
         super._init(Main.layoutManager, monitor, corner.x, corner.y);
         this._corner  = corner;
@@ -326,6 +372,7 @@ class CustomHotCorner extends Layout.HotCorner {
         this.setBarrierSize([corner.barrierSizeH, corner.barrierSizeV], false);
 
         if (this._corner.action[Triggers.PRESSURE] !== 'disabled' && !_barrierFallback) {
+                LOG(`[${Me.metadata.name}]     _init: Connecting barrier trigger..`);
             this._pressureBarrier.connect('trigger', this._onPressureTriggered.bind(this));
 
         } 
@@ -342,13 +389,16 @@ class CustomHotCorner extends Layout.HotCorner {
 
     // Overridden to allow all 4 monitor corners
     setBarrierSize(size, forignAccess=true) {
+            LOG(`[${Me.metadata.name}]   setBarrierSize: ${size}`);
         if (forignAccess) return;
+            LOG(`[${Me.metadata.name}]     setBarrierSize: Setting barrier size: ${size}`);
         // Use code of parent class to remove old barriers but new barriers
         // must be created here since the properties are construct only.
         super.setBarrierSize(0);
         let sizeH = size[0];
         let sizeV = size[1];
         if (sizeH > 0 && sizeV > 0) {
+                LOG(`[${Me.metadata.name}]     setBarrierSize: X11 correction: ${!Meta.is_wayland_compositor()}`);
             const BD = Meta.BarrierDirection;
             // for X11 session:
             //  right vertical and bottom horizontal pointer barriers must be 1px further to match the screen edge
@@ -358,6 +408,7 @@ class CustomHotCorner extends Layout.HotCorner {
             // ...and block opposite directions. Neither with X nor with Wayland
             // ...such barriers work.
             let x = this._corner.x + (Meta.is_wayland_compositor() ? 0: ((!this._corner.left && !this._barrierCollision()['x']) ? 1 : 0)); 
+                LOG(`[${Me.metadata.name}]     setBarrierSize: Vertical barrier: x1: ${x}, x2: ${x}, y1: ${this._corner.y}, y2: ${this._corner.top ? this._corner.y + sizeV : this._corner.y - sizeV}`);
             this._verticalBarrier = new Meta.Barrier({
                 display: global.display,
                 x1: x,
@@ -367,6 +418,7 @@ class CustomHotCorner extends Layout.HotCorner {
                 directions: this._corner.left ? BD.POSITIVE_X : BD.NEGATIVE_X
             });
             let y = this._corner.y + (Meta.is_wayland_compositor() ? 0: ((!this._corner.top && !this._barrierCollision()['y']) ? 1 : 0));
+                LOG(`[${Me.metadata.name}]     setBarrierSize: Horizontal barrier: x1: ${this._corner.x}, x2: ${this._corner.left ? this._corner.x + sizeH : this._corner.x - sizeH}, y1: ${y}, y2: ${y}`);
             this._horizontalBarrier = new Meta.Barrier({
                 display: global.display,
                 x1: this._corner.x,
@@ -398,10 +450,12 @@ class CustomHotCorner extends Layout.HotCorner {
 
     // Overridden original function
     _setupCornerActorsIfNeeded(layoutManager) {
+            LOG(`[${Me.metadata.name}]   _setupCornerActorsIfNeeded`);
         let shouldCreateActor = this._shouldCreateActor();
         if (!(shouldCreateActor || this._corner.hExpand || this._corner.vExpand)) {
             return;
         }
+            LOG(`[${Me.metadata.name}]     _setupCornerActorsIfNeeded: Creating main corner actor..`);
         let aSize = 3;
         let h = this._corner.hExpand;
         let v = this._corner.vExpand;
@@ -420,6 +474,8 @@ class CustomHotCorner extends Layout.HotCorner {
             aSize = vSize;
         }
 
+            LOG(`[${Me.metadata.name}]   _setupCornerActorsIfNeeded: Expand: h: ${h}, v: ${v}`);
+            LOG(`[${Me.metadata.name}]   _setupCornerActorsIfNeeded: Base actor expansions: h: ${hSize}, v: ${vSize}`);
         
         // base clickable actor, normal size or expanded
         this._actor = new Clutter.Actor({
@@ -448,6 +504,7 @@ class CustomHotCorner extends Layout.HotCorner {
 
         // to expand clickable area in both axis make second actor
         if (v && h) {
+                LOG(`[${Me.metadata.name}]   _setupCornerActorsIfNeeded: Secondary actor size: h: ${aSize}, v: ${vSize}`);
             this._actorV = new Clutter.Actor ({
                 name: 'hot-corner-v',
                 x: this._corner.x + (this._corner.left ? 0 : - (aSize - 1)),
@@ -475,6 +532,7 @@ class CustomHotCorner extends Layout.HotCorner {
         // Fallback hot corners as a part of base actor
         if ( this._corner.action[Triggers.PRESSURE] !== 'disabled' &&
              (! global.display.supports_extended_barriers() || _barrierFallback) ) {
+                LOG(`[${Me.metadata.name}]     _setupCornerActorsIfNeeded: Creating fallback hot actor`);
             let fSize = 3;
             this._cornerActor = new Clutter.Actor({
                 name: 'hot-corner',
@@ -495,15 +553,19 @@ class CustomHotCorner extends Layout.HotCorner {
         }
     }
     _connectActorEvents(actor) {
+            LOG(`[${Me.metadata.name}]   _connectActorEvents`);
         if (this._shouldConnect([Triggers.BUTTON_PRIMARY, Triggers.BUTTON_SECONDARY, Triggers.BUTTON_MIDDLE])) {
+                LOG(`[${Me.metadata.name}]     _setupCornerActorsIfNeeded: Connecting button-press-event`);
             actor.connect('button-press-event', this._onCornerClicked.bind(this));
         }
         if (this._shouldConnect([Triggers.SCROLL_UP, Triggers.SCROLL_DOWN])) {
+                LOG(`[${Me.metadata.name}]     _setupCornerActorsIfNeeded: Connecting scroll-event`);
             actor.connect('scroll-event', this._onCornerScrolled.bind(this));
         }
 
     }
     _shouldCreateActor() {
+            LOG(`[${Me.metadata.name}]   _shouldCreateActor`);
         let answer = false;
         for (let trigger of listTriggers) {
             if (trigger === Triggers.PRESSURE && (global.display.supports_extended_barriers() && ! _barrierFallback)) {
@@ -511,18 +573,22 @@ class CustomHotCorner extends Layout.HotCorner {
             }
             answer = answer || (this._corner.action[trigger] !== 'disabled');
         }
+            LOG(`[${Me.metadata.name}]     This actor should ${answer ? '' : 'not'} be created`);
         return answer;
     }
     _shouldConnect(signals) {
+            LOG(`[${Me.metadata.name}]   _shouldConnect`);
         let answer = null;
         for (let trigger of listTriggers) {
             if (signals.includes(trigger)) {
             answer = answer || (this._corner.action[trigger] !== 'disabled');
             }
         }
+            LOG(`[${Me.metadata.name}]     This signal should ${answer ? '' : 'not'} be connected`);
         return answer;
     }
     _rippleAnimation() {
+            LOG(`[${Me.metadata.name}]   _rippleAnimation`);
         this._ripples.playAnimation(this._corner.x, this._corner.y);
     }
 
@@ -531,6 +597,8 @@ class CustomHotCorner extends Layout.HotCorner {
     }
 
     _onPressureTriggered() {
+            LOG(`[${Me.metadata.name}]   _onPressureTriggered`);
+            LOG(`[${Me.metadata.name}]     Mouse entered corner actor: ${this._corner.x} ${this._corner.y}, ${this._corner.monitorIndex}`);
         if (this._corner.ctrl[Triggers.PRESSURE]) {
             // neither the 'enter' nor pressure 'trigger' events contain modifier state
             if (!Meta.is_wayland_compositor()) {
@@ -544,10 +612,12 @@ class CustomHotCorner extends Layout.HotCorner {
                 return;
             }
         }
+            LOG(`[${Me.metadata.name}]     Triggering pressure action..`);
         this._runAction(Triggers.PRESSURE);
     }
     _onCornerClicked(actor, event) {
         //if (event.get_click_count() > 1) return; // ignore second click of double clicks
+            LOG(`[${Me.metadata.name}]   _onCornerClicked`);
         let button = event.get_button();
         let trigger;
         let state = event.get_state();
@@ -574,6 +644,7 @@ class CustomHotCorner extends Layout.HotCorner {
         return Clutter.EVENT_STOP;
     }
     _onCornerScrolled(actor, event) {
+            LOG(`[${Me.metadata.name}]   _onCornerScrolled`);
         let direction = event.get_scroll_direction();
         let state = event.get_state();
         if (_notValidScroll(direction)) return;
@@ -599,9 +670,11 @@ class CustomHotCorner extends Layout.HotCorner {
     }
 
     _runAction(trigger) {
+            LOG(`[${Me.metadata.name}]   _runAction: timeout ${_actionTimeoutId}`);
         if ( (_actionTimeoutActive(trigger) && !(['volumeUp','volumeDown'].includes(this._corner.action[trigger])))
             || this._corner.action[trigger] == 'disabled'
             ) return;
+            LOG(`[${Me.metadata.name}]     _runAction: Action: ${this._corner.action[trigger]}`);
         if (    (!this._monitor.inFullscreen) ||
                 ( this._monitor.inFullscreen  && (this._corner.fullscreen[trigger] || _fullscreenGlobal))) {
             if (_rippleAnimation) this._rippleAnimation();
@@ -617,20 +690,24 @@ class CustomHotCorner extends Layout.HotCorner {
 });
 
 function _removeActionTimeout() {
-    _timeoutsCollector.splice(_timeoutsCollector.indexOf(_actionTimeoutId));
+        LOG(`[${Me.metadata.name}]     _removeActionTimeout: Removing _actionTimeoutId from _timeoutsCollector: ${_actionTimeoutId}`);
+    _timeoutsCollector.splice(_timeoutsCollector.indexOf(_actionTimeoutId), 1);
     _actionTimeoutId = null;
     return false;
 }
 
 function _notValidScroll(direction) {
+        LOG(`[${Me.metadata.name}] _notValidScroll`);
     if (direction === Clutter.ScrollDirection.SMOOTH) return true;
     return false;
 }
 
 function _actionTimeoutActive(trigger) {
+        LOG(`[${Me.metadata.name}] _actionTimeoutActive`);
     if (_actionTimeoutId)
         return true;
 
+        LOG(`[${Me.metadata.name}]     Creating _actionTimeout..`);
     _actionTimeoutId = GLib.timeout_add(
             GLib.PRIORITY_DEFAULT,
             _actionEventDelay,
@@ -731,18 +808,23 @@ const ActionTrigger = class ActionTrigger {
     }
 
     _toggleOverview() {
+            LOG(`[${Me.metadata.name}]   _toggleOverview`);
         Actions.toggleOverview();
     }
     _showApplications() {
+            LOG(`[${Me.metadata.name}]   _showAppGrid`);
         Actions.showApplications();
     }
     _showDesktop() {
+            LOG(`[${Me.metadata.name}]   _showDesktop`);
         Actions.togleShowDesktop();
     }
     _showDesktopMon() {
+            LOG(`[${Me.metadata.name}]   _showDesktopMonitor`);
         Actions.togleShowDesktop(this._monitorIndex);
     }
     _blackScreen() {
+            LOG(`[${Me.metadata.name}]   _toggleBlackScreen`);
         let opacity = 255;
         let note = Me.metadata.name;
         Actions.toggleDimmMonitors(
@@ -751,6 +833,7 @@ const ActionTrigger = class ActionTrigger {
         );
     }
     _blackScreenMon() {
+            LOG(`[${Me.metadata.name}]   _toggleBlackScreenMonitor`);
         let opacity = 255;
         let note = Me.metadata.name;
         Actions.toggleDimmMonitors(
@@ -760,21 +843,27 @@ const ActionTrigger = class ActionTrigger {
         );
     }
     _runCommand() {
+            LOG(`[${Me.metadata.name}]   _runCommand`);
         Actions.runCommand(this._command);
     }
     _runDialog() {
+            LOG(`[${Me.metadata.name}]   _runDialog`);
         Actions.openRunDialog();
     }
     _moveToWorkspace() {
+            LOG(`[${Me.metadata.name}]   _moveToWorkspace`);
         Actions.moveToWorkspace(this._workspaceIndex - 1);
     }
     _prevWorkspace() {
+            LOG(`[${Me.metadata.name}]   _prevWorkspace`);
         Actions.switchWorkspace(Clutter.ScrollDirection.UP);
     }
     _nextWorkspace() {
+            LOG(`[${Me.metadata.name}]   _nextWorkspace`);
         Actions.switchWorkspace(Clutter.ScrollDirection.DOWN);
     }
     _recentWorkspace() {
+            LOG(`[${Me.metadata.name}]   _moveToRecentWorkspace`);
         Actions.moveToRecentWorkspace();
     }
     _reorderWsPrev() {
@@ -784,110 +873,180 @@ const ActionTrigger = class ActionTrigger {
         Actions.reorderWorkspace(+1);
     }
     _prevWinAll() {
+            LOG(`[${Me.metadata.name}]   _prevWindow`);
         Actions.switchWindow( -1, false, -1);
     }
     _nextWinAll() {
+            LOG(`[${Me.metadata.name}]   _nextWindow`);
         Actions.switchWindow( +1, false, -1);
     }
     _prevWinWs() {
+            LOG(`[${Me.metadata.name}]   _prevWindowWS`);
         Actions.switchWindow( -1, true, -1);
     }
     _nextWinWs() {
+            LOG(`[${Me.metadata.name}]   _nextWindowWS`);
         Actions.switchWindow( +1, true, -1);
     }
     _prevWinMon() {
+            LOG(`[${Me.metadata.name}]   _prevWinMonitor`);
         Actions.switchWindow( -1, true, this._monitorIndex);
     }
     _nextWinMon() {
+            LOG(`[${Me.metadata.name}]   _nextWinMonitor`);
         Actions.switchWindow( +1, true, this._monitorIndex);
     }
     _recentWin() {
+            LOG(`[${Me.metadata.name}]   _recentWindow`);
         Actions.recentWindow();
     }
     _closeWin() {
+            LOG(`[${Me.metadata.name}]   _closeWindow`);
         Actions.closeWindow();
     }
     _killApp() {
+            LOG(`[${Me.metadata.name}]   _closeWindow`);
         Actions.killApplication();
     }
     _maximizeWin() {
+            LOG(`[${Me.metadata.name}]   _maximizeWindow`);
         Actions.toggleMaximizeWindow();
     }
     _minimizeWin() {
+            LOG(`[${Me.metadata.name}]   _minimizeWindow`);
         Actions.minimizeWindow();
     }
+    _unminimizeAllWs() {
+        Actions.unminimizeAll(true);
+    }
     _fullscreenWin() {
+            LOG(`[${Me.metadata.name}]   _maximizeWindow`);
         Actions.toggleFullscreenWindow();
     }
     _aboveWin() {
+            LOG(`[${Me.metadata.name}]   _aboveWindow`);
         Actions.toggleAboveWindow();
     }
     _stickWin() {
+            LOG(`[${Me.metadata.name}]   _stickWindow`);
         Actions.toggleStickWindow();
     }
     _restartShell() {
+            LOG(`[${Me.metadata.name}]   _restartGnomeShell`);
         Actions.restartGnomeShell();
     }
     _volumeUp() {
+            LOG(`[${Me.metadata.name}]   _volumeUp`);
         Actions.adjustVolume(1);
     }
     _volumeDown() {
+            LOG(`[${Me.metadata.name}]   _volumeDown`);
         Actions.adjustVolume(-1);
     }
     _muteSound() {
+            LOG(`[${Me.metadata.name}]   _mute`);
         Actions.adjustVolume(0);
     }
     _lockScreen() {
+            LOG(`[${Me.metadata.name}]   _lockScreen`);
         Actions.lockScreen();
     }
     _suspend() {
+            LOG(`[${Me.metadata.name}]   _suspendToRam`);
         Actions.suspendToRam();
     }
     _powerOff() {
+            LOG(`[${Me.metadata.name}]   _powerOff`);
         Actions.powerOff();
     }
     _logOut() {
+            LOG(`[${Me.metadata.name}]   _logOut`);
         Actions.logOut();
     }
     _switchUser() {
+            LOG(`[${Me.metadata.name}]   _switchUser`);
         Actions.switchUser();
     }
     _lookingGlass() {
+            LOG(`[${Me.metadata.name}]   _toggleLookingGlass`);
         Actions.toggleLookingGlass()
     }
     _prefs() {
         Actions.openPreferences();
     }
     _toggleZoom() {
+            LOG(`[${Me.metadata.name}]   _toggleZoom`);
         Actions.zoom(0);
     }
     _zoomIn(){
+            LOG(`[${Me.metadata.name}]   _zoomIn`);
         Actions.zoom(0.25);
     }
     _zoomOut(){
+            LOG(`[${Me.metadata.name}]   _zoomOut`);
         Actions.zoom(-0.25);
     }
     _keyboard() {
+            LOG(`[${Me.metadata.name}]   _toggleKeyboard`);
         Actions.toggleKeyboard(this._monitorIndex);
     }
     _screenReader() {
+            LOG(`[${Me.metadata.name}]   _toggleScreenReader`);
         Actions.toggleScreenReader();
     }
     _largeText() {
+            LOG(`[${Me.metadata.name}]   _largeText`);
         Actions.toggleLargeText()
     }
     _hidePanel() {
+            LOG(`[${Me.metadata.name}]   _togglePanel`);
         Actions.toggleShowPanel();
     }
     _toggleTheme() {
+            LOG(`[${Me.metadata.name}]   _toggleTheme`);
         Actions.toggleTheme();
 
     }
     _invertLightAll() {
-        Actions.toggleLightnessInvertEffect(false);
+            LOG(`[${Me.metadata.name}]   _toggleLightnessInvertGlobal`);
+        Actions.toggleLightnessInvertEffect(false, false);
     }
     _invertLightWin() {
-        Actions.toggleLightnessInvertEffect(true);
+            LOG(`[${Me.metadata.name}]   _toggleLightnessInvertWindow`);
+        Actions.toggleLightnessInvertEffect(true, false);
+    }
+    _invertLightShiftAll() {
+            LOG(`[${Me.metadata.name}]   _toggleLightnessInvertGlobal`);
+        Actions.toggleLightnessInvertEffect(false, true);
+    }
+    _invertLightShiftWin() {
+            LOG(`[${Me.metadata.name}]   _toggleLightnessInvertWindow`);
+        Actions.toggleLightnessInvertEffect(true, true);
+    }
+    _invertColorsWin() {
+            LOG(`[${Me.metadata.name}]   _toggleColorsInvertWindow`);
+        Actions.toggleColorsInvertEffect(true);
+    }
+    _protanToggleAll() {
+        Actions.toggleColorBlindShaderEffect(true, 1, false);
+    }
+    _deuterToggleAll() {
+        Actions.toggleColorBlindShaderEffect(true, 2, false);
+    }
+    _tritanToggleAll() {
+        Actions.toggleColorBlindShaderEffect(true, 3, false);
+    }
+    _protanSimToggleAll() {
+        Actions.toggleColorBlindShaderEffect(true, 1, true);
+    }
+    _deuterSimToggleAll() {
+        Actions.toggleColorBlindShaderEffect(true, 2, true);
+    }
+    _tritanSimToggleAll() {
+        Actions.toggleColorBlindShaderEffect(true, 3, true);
+    }
+    _mixerGbrToggleAll() {
+        Actions.toggleColorMixerEffect(true, 1);
     }
     _desaturateAll() {
         Actions.toggleDesaturateEffect(false);
@@ -993,5 +1152,7 @@ const ActionTrigger = class ActionTrigger {
     _removeEffectsAll() {
         Actions.removeAllEffects(true);
     }
+    _makeThumbnailWin() {
+        Actions.makeThumbnailWindow();
+    }
 };
-

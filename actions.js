@@ -19,7 +19,6 @@ const GObject                = imports.gi.GObject;
 const GLib                   = imports.gi.GLib;
 const Clutter                = imports.gi.Clutter;
 const St                     = imports.gi.St;
-const Shell                  = imports.gi.Shell;
 const Main                   = imports.ui.main;
 const Meta                   = imports.gi.Meta;
 const WorkspaceSwitcherPopup = imports.ui.workspaceSwitcherPopup;
@@ -31,8 +30,14 @@ const Me                     = ExtensionUtils.getCurrentExtension();
 const Settings               = Me.imports.settings;
 const ExtManager             = Main.extensionManager;
 
+let Shaders                  = null;
+let WinTmb                   = null;
+
 let GNOME40;
 
+
+//let LOG = print;
+let LOG = function() {return;};
 
 var Actions = class {
     constructor() {
@@ -56,6 +61,10 @@ var Actions = class {
         this._recentWorkspace       = -1;
         this._currentWorkspace      = -1;
 
+        this.windowThumbnails       = [];
+
+        this.shaderLib                = null;
+
         this._mainPanelVisible      = Main.panel.is_visible();
 
         this._connectRecentWorkspace();
@@ -63,16 +72,53 @@ var Actions = class {
         GNOME40 = Settings.GNOME40;
     }
 
-    clean() {
+    clean(full = true) {
+        // don't reset effects and destroy thumbnails if extension is enabled (GS calls ext. disable() before locking the screen f.e.)
+        if (full) {
+            this._mainPanelVisible ?
+                Main.panel.show() :
+                Main.panel.hide();
+            this.removeAllEffects();
+            this._resetSettings();
+            for (let sig of this._signalsCollector) {
+                sig[0].disconnect(sig[1]);
+            }
+            this.shaderLib = null;
+            this.Shaders   = null;
+        }
+            LOG(`[${Me.metadata.name}]     disable: ${this._signalsCollector.length} signals are being disconnected..`);
+        //global.workspace_manager.disconnect(this._signalsCollector.pop());
+        this._removeThumbnails(full);
         this._destroyDimmerActors();
-        this.removeAllEffects();
-        global.workspace_manager.disconnect(this._signalsCollector.pop());
-        this._mainPanelVisible ?
-            Main.panel.show() :
-            Main.panel.hide();
-        this._resetSettings();
 
     }
+
+    resume() {
+        this._resumeThumbnailsIfExist();
+    }
+
+    _resumeThumbnailsIfExist() {
+        this.windowThumbnails.forEach(
+            (t) => { if (t) t.show(); }
+        );
+    }
+
+    _removeThumbnails(full = true) {
+        if (full) {
+
+            this.windowThumbnails.forEach(
+                (t) => { if (t) t.destroy(); }
+            );
+            this.windowThumbnails = [];
+        }
+
+        else {
+            this.windowThumbnails.forEach(
+                (t) => { if (t) t.hide(); }
+            );
+        }
+    }
+
     _resetSettings() {
         this._a11yAppsSettings      = null;
         this._a11yMagnifierSettings = null;
@@ -82,12 +128,8 @@ var Actions = class {
 
     }
 
-    removeAllEffects(force = false) {
-        this._getShellSettings();
-        let enabled = this._shellSettings.get_strv('enabled-extensions');
-        // don't reset effects if extension is enabled (GS calls ext. disable() before locking screen f.e.)
-        if (!force && enabled.indexOf(Me.metadata.uuid) > -1)
-            return;
+    removeAllEffects(full = false) {
+        LOG(`[${Me.metadata.name}] _removeAllEffects`);
         for (let actor of global.get_window_actors()) {
                 this._removeEffects(actor);
         }
@@ -104,14 +146,23 @@ var Actions = class {
                         'contrast',
                         'lightness-invert',
                         'desaturate',
-                        'color-tint' ];
+                        'color-tint',
+                        'color-blind' ];
         for (let effect of effects) {
             obj.remove_effect_by_name(effect);
         }
         if (!glob) {
-            let winActor = obj.get_meta_window().get_compositor_private();
-            this._getWindowSurface(winActor).opacity = 255;
+            this._getWindowSurface(obj.get_meta_window()).opacity = 255;
         }
+    }
+
+    extensionEnabled() {
+        this._getShellSettings();
+        let enabled = this._shellSettings.get_strv('enabled-extensions');
+        print ("Index:", enabled.indexOf(Me.metadata.uuid));
+        if (enabled.indexOf(Me.metadata.uuid) > -1)
+            return true;
+        return false;
     }
 
     _getShellSettings() {
@@ -160,10 +211,14 @@ var Actions = class {
     }
 
     _connectRecentWorkspace() {
-        this._signalsCollector.push((global.workspace_manager).connect('workspace-switched', this._onWorkspaceSwitched.bind(this)));
+        LOG(`[${Me.metadata.name}] _connectRecentWorkspace`);
+        let actor = global.workspace_manager;
+        let connection = actor.connect('workspace-switched', this._onWorkspaceSwitched.bind(this));
+        this._signalsCollector.push([actor, connection]);
     }
     _onWorkspaceSwitched(display, prev, current, direction) {
         if (current !== this._currentWorkspace) {
+            LOG(`[${Me.metadata.name}]     _connectRecentWorkspace callback: setting new recent WS`);
             this._recentWorkspace  = this._currentWorkspace;
             this._currentWorkspace = current;
         }
@@ -174,9 +229,14 @@ var Actions = class {
         }
         this._dimmerActors = [];
     }
-    _getFocusedWindow() {
-        return global.display.focus_window;
-
+    _getFocusedWindow(sameWorkspace = false) {
+        let win = global.display.focus_window;
+        if (    !win ||
+                (sameWorkspace && (global.workspace_manager.get_active_workspace() !== win.get_workspace()) )
+            ) {
+            return null;
+        }
+        return win;
         /*let windows = global.display.get_tab_list(Meta.TabList.NORMAL_ALL, null);
         for (let win of windows) {
             if (win.has_focus()) {
@@ -187,7 +247,8 @@ var Actions = class {
         return null;*/
     }
 
-    _getWindowSurface(windowActor) {
+    _getWindowSurface(metaWindow) {
+        let windowActor = metaWindow.get_compositor_private();
         for (let child of windowActor.get_children()) {
             if (child.constructor.name.indexOf('MetaSurfaceActor') > -1) {
                 return child;
@@ -196,10 +257,20 @@ var Actions = class {
         return null;
     }
 
+    _getShaders() {
+        if (!Shaders) {
+            Shaders = GNOME40 ? Me.imports.shaders40 : Me.imports.shaders3;
+            this.shaderLib = Shaders.shaderLib;
+        }
+    }
+
+    /////////////////////////////////////////////////////////////////////////////
     toggleOverview() {
+            LOG(`[${Me.metadata.name}]   toggleOverview`);
         Main.overview.toggle();
     }
     showApplications() {
+            LOG(`[${Me.metadata.name}]   showApplications`);
         if (Main.overview.dash.showAppsButton.checked)
             Main.overview.hide();
         else {
@@ -215,14 +286,17 @@ var Actions = class {
         }
     }
     runCommand(command) {
+            LOG(`[${Me.metadata.name}]   runCommand`);
         Util.spawnCommandLine(command);
     }
     moveToWorkspace(index) {
+            LOG(`[${Me.metadata.name}]   moveToWorkspace`);
         if (index < 0)  return;
         let maxIndex = global.workspaceManager.n_workspaces - 1;
         if (maxIndex < index) {
             index = maxIndex;
         }
+            LOG(`[${Me.metadata.name}]   moveToWorkspace: moving to ${index}`);
         let ws = global.workspaceManager.get_workspace_by_index(index);
         Main.wm.actionMoveWorkspace(ws);
         // another option
@@ -239,59 +313,85 @@ var Actions = class {
         global.workspace_manager.reorder_workspace(activeWs, targetIdx);
     }
     lockScreen() {
+            LOG(`[${Me.metadata.name}]   lockScreen`);
         //Main.screenShield.lock(true);
         SystemActions.getDefault().activateLockScreen();
     }
     suspendToRam () {
+            LOG(`[${Me.metadata.name}]   suspendToRam`);
         SystemActions.getDefault().activateSuspend();
     }
     powerOff() {
+            LOG(`[${Me.metadata.name}]   powerOff`);
         SystemActions.getDefault().activatePowerOff();
     }
     logOut() {
+            LOG(`[${Me.metadata.name}]   logOut`);
         SystemActions.getDefault().activateLogout();
     }
     switchUser() {
+            LOG(`[${Me.metadata.name}]   switchUser`);
         SystemActions.getDefault().activateSwitchUser();
 
     }
     toggleLookingGlass() {
+            LOG(`[${Me.metadata.name}]   toggleLookingGlass`);
         if (Main.lookingGlass === null)
             Main.createLookingGlass();
         if (Main.lookingGlass !== null)
             Main.lookingGlass.toggle();
     }
     recentWindow() {
+            LOG(`[${Me.metadata.name}]   recentWindow`);
         global.display.get_tab_list(0, null)[1].activate(global.get_current_time());
     }
     closeWindow() {
-        let win = this._getFocusedWindow();
+            LOG(`[${Me.metadata.name}]   closeWindow`);
+        let win = this._getFocusedWindow(true);
         if (!win) return;
         win.delete(global.get_current_time());
     }
     killApplication() {
-        let win = this._getFocusedWindow();
+            LOG(`[${Me.metadata.name}]   killApplication`);
+        let win = this._getFocusedWindow(true);
         if (!win) return;
         win.kill();
     }
     toggleMaximizeWindow() {
-        let win = this._getFocusedWindow();
+            LOG(`[${Me.metadata.name}]   _maximizeWindow`);
+        let win = this._getFocusedWindow(true);
         if (!win) return;
         if (win.maximized_horizontally && win.maximized_vertically)
             win.unmaximize(Meta.MaximizeFlags.BOTH);
         else win.maximize(Meta.MaximizeFlags.BOTH);
     }
     minimizeWindow() {
-        global.display.get_tab_list(0, null)[0].minimize();
+            LOG(`[${Me.metadata.name}]   _minimizeWindow`);
+        let win = this._getFocusedWindow(true);
+        if (!win) return;
+        win.minimize();
+        //global.display.get_tab_list(0, null)[0].minimize();
+    }
+    unminimizeAll(workspace=true) {
+        let windows = global.display.get_tab_list(Meta.TabList.NORMAL_ALL, null);
+        let activeWorkspace = global.workspaceManager.get_active_workspace();
+        for (let win of windows) {
+            if (workspace && (activeWorkspace !== win.get_workspace()) ) {
+                continue;
+            }
+            win.unminimize();
+        }
     }
     toggleFullscreenWindow() {
-        let win = this._getFocusedWindow();
+            LOG(`[${Me.metadata.name}]   _maximizeWindow`);
+        let win = this._getFocusedWindow(true);
         if (!win) return;
         if (win.fullscreen) win.unmake_fullscreen();
         else win.make_fullscreen();
     }
     toggleAboveWindow() {
-        let win = this._getFocusedWindow();
+            LOG(`[${Me.metadata.name}]   _aboveWindow`);
+        let win = this._getFocusedWindow(true);
         if (!win) return;
         if (win.above) {
             win.unmake_above();
@@ -303,7 +403,8 @@ var Actions = class {
         }
     }
     toggleStickWindow() {
-        let win = this._getFocusedWindow();
+            LOG(`[${Me.metadata.name}]   _stickWindow`);
+        let win = this._getFocusedWindow(true);
         if (!win) return;
         if (win.is_on_all_workspaces()){
             win.unstick();
@@ -315,6 +416,7 @@ var Actions = class {
         }
     }
     restartGnomeShell() {
+            LOG(`[${Me.metadata.name}]   _restartGnomeShell`);
         if (!Meta.is_wayland_compositor()) {
             Meta.restart(_('Restarting Gnome Shell...'));
         }
@@ -326,11 +428,13 @@ var Actions = class {
         ExtManager.openExtensionPrefs(Me.metadata.uuid, '', {});
     }
     toggleShowPanel() {
+            LOG(`[${Me.metadata.name}]   togglePanel`);
         Main.panel.is_visible() ?
             Main.panel.hide()   :
             Main.panel.show();
     }
     toggleTheme() {
+            LOG(`[${Me.metadata.name}]   toggleTheme`);
         let intSettings = this._getInterfaceSettings();
         let theme = intSettings.get_string('gtk-theme');
         switch (theme) {
@@ -351,6 +455,7 @@ var Actions = class {
         }
     }
     openRunDialog() {
+            LOG(`[${Me.metadata.name}]   _runDialog`);
         Main.openRunDialog();
     }
 
@@ -359,6 +464,7 @@ var Actions = class {
     }
 
     togleShowDesktop(monitorIdx = -1) {
+            LOG(`[${Me.metadata.name}] _togleShowDesktop`);
         if (Main.overview.visible) return;
         let metaWorkspace = global.workspace_manager.get_active_workspace();
         let windows = metaWorkspace.list_windows();
@@ -391,6 +497,7 @@ var Actions = class {
     }
     
     switchWorkspace(direction) {
+                LOG(`[${Me.metadata.name}] switchWorkspace`);
             let n_workspaces = global.workspaceManager.n_workspaces;
             let lastWsIndex =  n_workspaces - (this._wsSwitchIgnoreLast ? 2 : 1);
             let motion;
@@ -409,12 +516,13 @@ var Actions = class {
             }
     
             if (this._wsSwitchIndicator) {
-                if (Main.wm._workspaceSwitcherPopup == null)
+                if (Main.wm._workspaceSwitcherPopup == null) {
                     Main.wm._workspaceSwitcherPopup = new WorkspaceSwitcherPopup.WorkspaceSwitcherPopup();
                     Main.wm._workspaceSwitcherPopup.reactive = false;
                     Main.wm._workspaceSwitcherPopup.connect('destroy', () => {
                         Main.wm._workspaceSwitcherPopup = null;
                     });
+                }
                 // Do not show wokspaceSwithcer in overview
                 if (!Main.overview.visible) {
                     let motion = direction ? Meta.MotionDirection.DOWN : Meta.MotionDirection.UP
@@ -426,6 +534,7 @@ var Actions = class {
     }
     
     switchWindow(direction, wsOnly = false, monitorIndex = -1) {
+            LOG(`[${Me.metadata.name}] switchWindow`);
         let workspaceManager = global.workspace_manager;
         let workspace = wsOnly ? workspaceManager.get_active_workspace() : null;
         // get all windows, skip-taskbar included
@@ -439,10 +548,12 @@ var Actions = class {
         // ... and filter out not modal windows and duplicates
         let modals = windows.map(w => 
             w.get_transient_for() ? w.get_transient_for() : null
-            ).filter((w, i, a) => w !==null && a.indexOf(w) == i);
+            ).filter((w, i, a) => w !== null && a.indexOf(w) == i);
+                                                                                    LOG(`[${Me.metadata.name}]     _switchWindow: Modals Parents: ${modals.map(w => w ? w.wm_class:w)}`);
         // filter out skip_taskbar windows and windows with modals
         // top modal windows should stay
         windows = windows.filter( w => modals.indexOf(w) && !w.is_skip_taskbar());
+                                                                                    LOG(`[${Me.metadata.name}]     _switchWindow: Windows: ${windows.map(w => w ? w.title:w)}`);
         if (this._winSkipMinimized)
             windows = windows.filter(win => !win.minimized);
     
@@ -458,10 +569,13 @@ var Actions = class {
         let targetIdx = currentIdx + direction;
         if (targetIdx > windows.length - 1) targetIdx = this._winSwitchWrap ? 0 : currentIdx;
         else if (targetIdx < 0) targetIdx = this._winSwitchWrap ? windows.length - 1 : currentIdx;
+            LOG(`[${Me.metadata.name}]     _switchWindow: Current win: ${windows[currentIdx].title} -> Target win: ${windows[targetIdx].title}`);
+            LOG(`[${Me.metadata.name}]     _switchWindow: Current idx: ${currentIdx} -> Target idx: ${targetIdx}`);
         windows[targetIdx].activate(global.get_current_time());
     }
     
     adjustVolume(direction) {
+            LOG(`[${Me.metadata.name}] adjustVolume`);
         let mixerControl = Volume.getMixerControl();
         let sink = mixerControl.get_default_sink();
         if (direction === 0) {
@@ -474,6 +588,7 @@ var Actions = class {
             volume = volume + step;
             if (volume > max) volume = max;
             if (volume <   0) volume = 0;
+            LOG(`[${Me.metadata.name}]     _adjustVolume: Adjusting Volume to: ${volume}`);
             sink.volume = volume;
             sink.push_volume();
         }
@@ -490,10 +605,14 @@ var Actions = class {
         return actor;
     }
 
+    toggleNightLight() {
+        let settings = this._getColorSettings();
+        settings.set_boolean('night-light-enabled', !settings.get_boolean('night-light-enabled'));
+    }
+
     adjustWindowOpacity(step = 0, toggleValue = 0) {
-        let metaWindow = this._getFocusedWindow();
-        let windowActor = metaWindow.get_compositor_private();
-        let windowSurface = this._getWindowSurface(windowActor);
+        let metaWindow = this._getFocusedWindow(true);
+        let windowSurface = this._getWindowSurface(metaWindow);
 
         let value;
         if (toggleValue) {
@@ -580,57 +699,98 @@ var Actions = class {
 
     }
 
-    toggleNightLight() {
-        let settings = this._getColorSettings();
-        settings.set_boolean('night-light-enabled', !settings.get_boolean('night-light-enabled'));
-    }
-
     toggleColorTintEffect(color, window = true) {
         let name = 'color-tint';
         let effect = Clutter.ColorizeEffect;
         if (window)
-            this._toggleWindowEffect(name, effect, color);
+            this._toggleWindowEffect(name, effect, ['tint', color]);
         else
-            this._toggleGlobalEffect(name, effect, color);
+            this._toggleGlobalEffect(name, effect, ['tint', color]);
     }
 
-    toggleLightnessInvertEffect(window = true) {
-        let name = 'lightness-invert';
+    toggleLightnessInvertEffect(window = true, whiteShift = true) {
+        let name = 'inversion';
+        this._getShaders();
         let effect;
-        if (GNOME40) effect = Shell.InvertLightnessEffect;
-        else         effect = InvertLightnessEffect;
+        whiteShift ? effect = Shaders.InvertLightnessShiftEffect
+                   : effect = Shaders.InvertLightnessEffect;
         if (window)
             this._toggleWindowEffect(name, effect);
         else
             this._toggleGlobalEffect(name, effect);
     }
     
-    _toggleGlobalEffect(name, effect, tint = null) {
-        if (Main.uiGroup.get_effect(name))
-            Main.uiGroup.remove_effect_by_name(name);
+    toggleColorsInvertEffect(window = true) {
+        let name = 'inversion';
+        this._getShaders();
+        let effect;
+        effect = Shaders.ColorInversionEffect;
+        if (window)
+            this._toggleWindowEffect(name, effect);
         else
-            if (tint)
-                Main.uiGroup.add_effect_with_name(name, new effect({tint:tint}));
-            else
-                Main.uiGroup.add_effect_with_name(name, new effect());
+            this._toggleGlobalEffect(name, effect);
     }
 
-    _toggleWindowEffect(name, effect, tint = null) {
-        global.get_window_actors().forEach(function(actor) {
+    toggleColorBlindShaderEffect(window = true, mode = 0, simulate = false) {
+        let name = 'color-blind';
+        this._getShaders();
+        this.shaderLib.daltonSimulation = simulate ? 1 : 0;
+        let effect;
+        if (mode === 1 && !simulate) effect = Shaders.ColorMixerProtan;
+        if (mode === 2 && !simulate) effect = Shaders.ColorMixerDeuter;
+        if (mode === 3 && !simulate) effect = Shaders.ColorMixerTritan;
+        if (mode === 1 && simulate)  effect = Shaders.ColorMixerProtanSimulation;
+        if (mode === 2 && simulate)  effect = Shaders.ColorMixerDeuterSimulation;
+        if (mode === 3 && simulate)  effect = Shaders.ColorMixerTritanSimulation;
+        if (window)
+            this._toggleWindowEffect(name, effect);
+        else
+            this._toggleGlobalEffect(name, effect);
+    }
+
+    toggleColorMixerEffect(window = true, mode = 1) {
+        let name = 'color-mixer';
+        this._getShaders();
+        let effect = Shaders.ColorMixerEffect2;
+        if (window)
+            this._toggleWindowEffect(name, effect);
+        else
+            this._toggleGlobalEffect(name, effect);
+    }
+
+    _toggleGlobalEffect(name, effect, property = []) {
+        if (Main.uiGroup.get_effect(name)) {
+            Main.uiGroup.remove_effect_by_name(name);
+        }
+        else {
+            let eff = new effect();
+            if (property.length) {
+                eff[property[0]] = property[1];
+            }
+            Main.uiGroup.add_effect_with_name(name, eff);
+        }
+    }
+
+    _toggleWindowEffect(name, effect, property = []) {
+        global.get_window_actors().forEach( (actor) => {
             let meta_window = actor.get_meta_window();
             if(meta_window.has_focus()) {
-                if(actor.get_effect(name))
+                if(actor.get_effect(name)) {
                     actor.remove_effect_by_name(name);
-                else
-                    if (tint)
-                        actor.add_effect_with_name(name, new effect({tint:tint}));    
-                    else
-                        actor.add_effect_with_name(name, new effect());
+                }
+                else {
+                    let eff = new effect();
+                    if (property.length) {
+                       eff[property[0]] = property[1];
+                    }
+                    actor.add_effect_with_name(name, eff);
+                }
             }
         });
     }
     
     toggleDimmMonitors(alpha, text, monitorIdx = -1) {
+        LOG(`[${Me.metadata.name}] toggleDimmMonitors`);
         // reverse order to avoid conflicts after dimmer removed
         let createNew = true;
         if (monitorIdx === -1 && (this._dimmerActors.length === Main.layoutManager.monitors.length)) {
@@ -710,6 +870,7 @@ var Actions = class {
         //Main.magnifier.setActive(true); // simple way to activate zoom
     }
     toggleKeyboard(monitorIndex = 0) {
+            LOG(`[${Me.metadata.name}]   toggleKeyboard`);
         let visible = Main.keyboard.visible;
         let appSettings = this._getA11yAppSettings();
         if (visible)
@@ -722,6 +883,7 @@ var Actions = class {
         }
     }
     toggleScreenReader() {
+            LOG(`[${Me.metadata.name}]   togglescreenReader`);
         let appSettings = this._getA11yAppSettings();
         appSettings.set_boolean(
                         'screen-reader-enabled',
@@ -729,53 +891,26 @@ var Actions = class {
         );
     }
     toggleLargeText() {
+            LOG(`[${Me.metadata.name}]   largeText`);
         let intSettings = this._getInterfaceSettings();
         if (intSettings.get_double('text-scaling-factor') > 1)
             intSettings.reset('text-scaling-factor');
         else intSettings.set_double('text-scaling-factor', 1.25);
     }
+    makeThumbnailWindow() {
+        if (!WinTmb) {
+            WinTmb = Me.imports.wintmb;
+        }
+        let winActor = this._getFocusedActor();
+        if (!winActor) return;
+        if (!this.windowThumbnails.length) {
+            let conS = Main.overview.connect('showing', () => { this.windowThumbnails.forEach((t) => {t.hide();}); });
+            let conH = Main.overview.connect('hidden',  () => { this.windowThumbnails.forEach((t) => {t.show();}); });
+            this._signalsCollector.push([Main.overview, conS]);
+            this._signalsCollector.push([Main.overview, conH]);
+        }
+        this.windowThumbnails.push(new WinTmb.WindowThumbnail(winActor, this));
+    }
 
 }
-//Code taken from True color invert extension
-/////////////////////////////////////////////////////////////////////
-const InvertLightnessEffect = GObject.registerClass(
-class InvertLightnessEffect extends Clutter.ShaderEffect {
-
-    vfunc_get_static_shader_source() {
-        return `
-            uniform bool invert_color;
-            uniform float opacity = 1.0;
-            uniform sampler2D tex;
-
-            /**
-             * based on shift_whitish.glsl https://github.com/vn971/linux-color-inversion
-             */
-            void main() {
-                vec4 c = texture2D(tex, cogl_tex_coord_in[0].st);
-                
-                /* shifted */
-                float white_bias = .17;
-                float m = 1.0 + white_bias;
-                
-                float shift = white_bias + c.a - min(c.r, min(c.g, c.b)) - max(c.r, max(c.g, c.b));
-                
-                c = vec4((shift + c.r) / m, 
-                        (shift + c.g) / m, 
-                        (shift + c.b) / m, 
-                        c.a);
-                    
-                /* non-shifted */
-                // float shift = c.a - min(c.r, min(c.g, c.b)) - max(c.r, max(c.g, c.b));
-                // c = vec4(shift + c.r, shift + c.g, shift + c.b, c.a);
-
-                cogl_color_out = c;
-            }
-        `;
-    }
-
-    vfunc_paint_target(paint_context) {
-        this.set_uniform_value("tex", 0);
-        super.vfunc_paint_target(paint_context);
-    }
-});
 
