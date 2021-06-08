@@ -1,3 +1,5 @@
+// This is a part of Custom Hot Corners - Extended, the Gnome Shell extension
+'use strict';
 var ShaderLib = class {
     constructor() {
         this.daltonSimulation = 0;
@@ -105,7 +107,7 @@ var ShaderLib = class {
                 vec4 c = texture2D(tex, cogl_tex_coord_in[0].st);
                 #if (INVERSION_MODE < 2)
                     /* INVERSION_MODE ? shifted : non-shifted */
-                    float white_bias = INVERSION_MODE * c.a * .04;
+                    float white_bias = INVERSION_MODE * c.a * .02;
                     float m = 1.0 + white_bias;
                     float shift = white_bias + c.a - min(c.r, min(c.g, c.b)) - max(c.r, max(c.g, c.b));
                     c = vec4(  ((shift + c.r) / m), 

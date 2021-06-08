@@ -36,8 +36,6 @@ let WinTmb                   = null;
 let GNOME40;
 
 
-//let LOG = print;
-let LOG = function() {return;};
 
 var Actions = class {
     constructor() {
@@ -86,7 +84,6 @@ var Actions = class {
             this.shaderLib = null;
             this.Shaders   = null;
         }
-            LOG(`[${Me.metadata.name}]     disable: ${this._signalsCollector.length} signals are being disconnected..`);
         //global.workspace_manager.disconnect(this._signalsCollector.pop());
         this._removeThumbnails(full);
         this._destroyDimmerActors();
@@ -129,7 +126,6 @@ var Actions = class {
     }
 
     removeAllEffects(full = false) {
-        LOG(`[${Me.metadata.name}] _removeAllEffects`);
         for (let actor of global.get_window_actors()) {
                 this._removeEffects(actor);
         }
@@ -159,7 +155,6 @@ var Actions = class {
     extensionEnabled() {
         this._getShellSettings();
         let enabled = this._shellSettings.get_strv('enabled-extensions');
-        print ("Index:", enabled.indexOf(Me.metadata.uuid));
         if (enabled.indexOf(Me.metadata.uuid) > -1)
             return true;
         return false;
@@ -211,14 +206,12 @@ var Actions = class {
     }
 
     _connectRecentWorkspace() {
-        LOG(`[${Me.metadata.name}] _connectRecentWorkspace`);
         let actor = global.workspace_manager;
         let connection = actor.connect('workspace-switched', this._onWorkspaceSwitched.bind(this));
         this._signalsCollector.push([actor, connection]);
     }
     _onWorkspaceSwitched(display, prev, current, direction) {
         if (current !== this._currentWorkspace) {
-            LOG(`[${Me.metadata.name}]     _connectRecentWorkspace callback: setting new recent WS`);
             this._recentWorkspace  = this._currentWorkspace;
             this._currentWorkspace = current;
         }
@@ -266,11 +259,9 @@ var Actions = class {
 
     /////////////////////////////////////////////////////////////////////////////
     toggleOverview() {
-            LOG(`[${Me.metadata.name}]   toggleOverview`);
         Main.overview.toggle();
     }
     showApplications() {
-            LOG(`[${Me.metadata.name}]   showApplications`);
         if (Main.overview.dash.showAppsButton.checked)
             Main.overview.hide();
         else {
@@ -286,17 +277,14 @@ var Actions = class {
         }
     }
     runCommand(command) {
-            LOG(`[${Me.metadata.name}]   runCommand`);
         Util.spawnCommandLine(command);
     }
     moveToWorkspace(index) {
-            LOG(`[${Me.metadata.name}]   moveToWorkspace`);
         if (index < 0)  return;
         let maxIndex = global.workspaceManager.n_workspaces - 1;
         if (maxIndex < index) {
             index = maxIndex;
         }
-            LOG(`[${Me.metadata.name}]   moveToWorkspace: moving to ${index}`);
         let ws = global.workspaceManager.get_workspace_by_index(index);
         Main.wm.actionMoveWorkspace(ws);
         // another option
@@ -313,52 +301,42 @@ var Actions = class {
         global.workspace_manager.reorder_workspace(activeWs, targetIdx);
     }
     lockScreen() {
-            LOG(`[${Me.metadata.name}]   lockScreen`);
         //Main.screenShield.lock(true);
         SystemActions.getDefault().activateLockScreen();
     }
     suspendToRam () {
-            LOG(`[${Me.metadata.name}]   suspendToRam`);
         SystemActions.getDefault().activateSuspend();
     }
     powerOff() {
-            LOG(`[${Me.metadata.name}]   powerOff`);
         SystemActions.getDefault().activatePowerOff();
     }
     logOut() {
-            LOG(`[${Me.metadata.name}]   logOut`);
         SystemActions.getDefault().activateLogout();
     }
     switchUser() {
-            LOG(`[${Me.metadata.name}]   switchUser`);
         SystemActions.getDefault().activateSwitchUser();
 
     }
     toggleLookingGlass() {
-            LOG(`[${Me.metadata.name}]   toggleLookingGlass`);
         if (Main.lookingGlass === null)
             Main.createLookingGlass();
         if (Main.lookingGlass !== null)
             Main.lookingGlass.toggle();
     }
     recentWindow() {
-            LOG(`[${Me.metadata.name}]   recentWindow`);
         global.display.get_tab_list(0, null)[1].activate(global.get_current_time());
     }
     closeWindow() {
-            LOG(`[${Me.metadata.name}]   closeWindow`);
         let win = this._getFocusedWindow(true);
         if (!win) return;
         win.delete(global.get_current_time());
     }
     killApplication() {
-            LOG(`[${Me.metadata.name}]   killApplication`);
         let win = this._getFocusedWindow(true);
         if (!win) return;
         win.kill();
     }
     toggleMaximizeWindow() {
-            LOG(`[${Me.metadata.name}]   _maximizeWindow`);
         let win = this._getFocusedWindow(true);
         if (!win) return;
         if (win.maximized_horizontally && win.maximized_vertically)
@@ -366,7 +344,6 @@ var Actions = class {
         else win.maximize(Meta.MaximizeFlags.BOTH);
     }
     minimizeWindow() {
-            LOG(`[${Me.metadata.name}]   _minimizeWindow`);
         let win = this._getFocusedWindow(true);
         if (!win) return;
         win.minimize();
@@ -383,14 +360,12 @@ var Actions = class {
         }
     }
     toggleFullscreenWindow() {
-            LOG(`[${Me.metadata.name}]   _maximizeWindow`);
         let win = this._getFocusedWindow(true);
         if (!win) return;
         if (win.fullscreen) win.unmake_fullscreen();
         else win.make_fullscreen();
     }
     toggleAboveWindow() {
-            LOG(`[${Me.metadata.name}]   _aboveWindow`);
         let win = this._getFocusedWindow(true);
         if (!win) return;
         if (win.above) {
@@ -403,7 +378,6 @@ var Actions = class {
         }
     }
     toggleStickWindow() {
-            LOG(`[${Me.metadata.name}]   _stickWindow`);
         let win = this._getFocusedWindow(true);
         if (!win) return;
         if (win.is_on_all_workspaces()){
@@ -416,7 +390,6 @@ var Actions = class {
         }
     }
     restartGnomeShell() {
-            LOG(`[${Me.metadata.name}]   _restartGnomeShell`);
         if (!Meta.is_wayland_compositor()) {
             Meta.restart(_('Restarting Gnome Shell...'));
         }
@@ -428,13 +401,11 @@ var Actions = class {
         ExtManager.openExtensionPrefs(Me.metadata.uuid, '', {});
     }
     toggleShowPanel() {
-            LOG(`[${Me.metadata.name}]   togglePanel`);
         Main.panel.is_visible() ?
             Main.panel.hide()   :
             Main.panel.show();
     }
     toggleTheme() {
-            LOG(`[${Me.metadata.name}]   toggleTheme`);
         let intSettings = this._getInterfaceSettings();
         let theme = intSettings.get_string('gtk-theme');
         switch (theme) {
@@ -455,7 +426,6 @@ var Actions = class {
         }
     }
     openRunDialog() {
-            LOG(`[${Me.metadata.name}]   _runDialog`);
         Main.openRunDialog();
     }
 
@@ -464,7 +434,6 @@ var Actions = class {
     }
 
     togleShowDesktop(monitorIdx = -1) {
-            LOG(`[${Me.metadata.name}] _togleShowDesktop`);
         if (Main.overview.visible) return;
         let metaWorkspace = global.workspace_manager.get_active_workspace();
         let windows = metaWorkspace.list_windows();
@@ -497,7 +466,6 @@ var Actions = class {
     }
     
     switchWorkspace(direction) {
-                LOG(`[${Me.metadata.name}] switchWorkspace`);
             let n_workspaces = global.workspaceManager.n_workspaces;
             let lastWsIndex =  n_workspaces - (this._wsSwitchIgnoreLast ? 2 : 1);
             let motion;
@@ -534,7 +502,6 @@ var Actions = class {
     }
     
     switchWindow(direction, wsOnly = false, monitorIndex = -1) {
-            LOG(`[${Me.metadata.name}] switchWindow`);
         let workspaceManager = global.workspace_manager;
         let workspace = wsOnly ? workspaceManager.get_active_workspace() : null;
         // get all windows, skip-taskbar included
@@ -549,11 +516,9 @@ var Actions = class {
         let modals = windows.map(w => 
             w.get_transient_for() ? w.get_transient_for() : null
             ).filter((w, i, a) => w !== null && a.indexOf(w) == i);
-                                                                                    LOG(`[${Me.metadata.name}]     _switchWindow: Modals Parents: ${modals.map(w => w ? w.wm_class:w)}`);
         // filter out skip_taskbar windows and windows with modals
         // top modal windows should stay
         windows = windows.filter( w => modals.indexOf(w) && !w.is_skip_taskbar());
-                                                                                    LOG(`[${Me.metadata.name}]     _switchWindow: Windows: ${windows.map(w => w ? w.title:w)}`);
         if (this._winSkipMinimized)
             windows = windows.filter(win => !win.minimized);
     
@@ -569,13 +534,10 @@ var Actions = class {
         let targetIdx = currentIdx + direction;
         if (targetIdx > windows.length - 1) targetIdx = this._winSwitchWrap ? 0 : currentIdx;
         else if (targetIdx < 0) targetIdx = this._winSwitchWrap ? windows.length - 1 : currentIdx;
-            LOG(`[${Me.metadata.name}]     _switchWindow: Current win: ${windows[currentIdx].title} -> Target win: ${windows[targetIdx].title}`);
-            LOG(`[${Me.metadata.name}]     _switchWindow: Current idx: ${currentIdx} -> Target idx: ${targetIdx}`);
         windows[targetIdx].activate(global.get_current_time());
     }
     
     adjustVolume(direction) {
-            LOG(`[${Me.metadata.name}] adjustVolume`);
         let mixerControl = Volume.getMixerControl();
         let sink = mixerControl.get_default_sink();
         if (direction === 0) {
@@ -588,7 +550,6 @@ var Actions = class {
             volume = volume + step;
             if (volume > max) volume = max;
             if (volume <   0) volume = 0;
-            LOG(`[${Me.metadata.name}]     _adjustVolume: Adjusting Volume to: ${volume}`);
             sink.volume = volume;
             sink.push_volume();
         }
@@ -790,7 +751,6 @@ var Actions = class {
     }
     
     toggleDimmMonitors(alpha, text, monitorIdx = -1) {
-        LOG(`[${Me.metadata.name}] toggleDimmMonitors`);
         // reverse order to avoid conflicts after dimmer removed
         let createNew = true;
         if (monitorIdx === -1 && (this._dimmerActors.length === Main.layoutManager.monitors.length)) {
@@ -870,7 +830,6 @@ var Actions = class {
         //Main.magnifier.setActive(true); // simple way to activate zoom
     }
     toggleKeyboard(monitorIndex = 0) {
-            LOG(`[${Me.metadata.name}]   toggleKeyboard`);
         let visible = Main.keyboard.visible;
         let appSettings = this._getA11yAppSettings();
         if (visible)
@@ -883,7 +842,6 @@ var Actions = class {
         }
     }
     toggleScreenReader() {
-            LOG(`[${Me.metadata.name}]   togglescreenReader`);
         let appSettings = this._getA11yAppSettings();
         appSettings.set_boolean(
                         'screen-reader-enabled',
@@ -891,7 +849,6 @@ var Actions = class {
         );
     }
     toggleLargeText() {
-            LOG(`[${Me.metadata.name}]   largeText`);
         let intSettings = this._getInterfaceSettings();
         if (intSettings.get_double('text-scaling-factor') > 1)
             intSettings.reset('text-scaling-factor');

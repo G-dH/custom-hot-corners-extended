@@ -117,6 +117,9 @@
     <key name='invert-light-win-ce' type='as'>
       <default>[]</default>
     </key>
+    <key name='invert-light-shift-win-ce' type='as'>
+      <default>[]</default>
+    </key>
     <key name='tint-red-toggle-win-ce' type='as'>
       <default>[]</default>
     </key>
@@ -168,6 +171,9 @@
     <key name='invert-light-all-ce' type='as'>
       <default>[]</default>
     </key>
+    <key name='invert-light-shift-all-ce' type='as'>
+      <default>[]</default>
+    </key>
     <key name='tint-red-toggle-all-ce' type='as'>
       <default>[]</default>
     </key>
@@ -214,6 +220,15 @@
       <default>[]</default>
     </key>
     <key name='keyboard-ce' type='as'>
+      <default>[]</default>
+    </key>
+    <key name='deuter-toggle-all-ce' type='as'>
+      <default>[]</default>
+    </key>
+    <key name='protan-toggle-all-ce' type='as'>
+      <default>[]</default>
+    </key>
+    <key name='tritan-toggle-all-ce' type='as'>
       <default>[]</default>
     </key>
     <key name='hide-panel-ce' type='as'>

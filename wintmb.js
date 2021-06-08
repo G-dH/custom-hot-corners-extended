@@ -1,3 +1,18 @@
+/* This is a part of Custom Hot Corners - Extended, the Gnome Shell extension
+ * Copyright 2021 GdH <georgdh@gmail.com>
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
 'use strict';
 
 const GObject                = imports.gi.GObject;
@@ -18,7 +33,7 @@ class WindowThumbnail extends St.Bin {
         this.connect('button-release-event', this._onBtnReleased.bind(this));
         this.connect('button-press-event', this._onBtnPressed.bind(this));
         this.connect('scroll-event', this._onScrollEvent.bind(this));
-        //this.connect('motion-event', this._onMouseMove.bind(this));
+        //this.connect('motion-event', this._onMouseMove.bind(this)); // may be useful in the future..
 
         this._delegate = this;
         this._draggable = DND.makeDraggable(this, {dragActorOpacity: 200});
@@ -29,23 +44,22 @@ class WindowThumbnail extends St.Bin {
         this._draggable.connect('drag-cancelled', this._end_drag.bind(this));
 
         this.clone = new Clutter.Clone({reactive: true});
-        this.set_child(this.clone);
-        //this._remove();
         Main.layoutManager.addChrome(this);
 
 
         this.window = this.w.get_compositor_private();
 
-            //if (this.window_thumbnail.window && this.window_thumbnail.window.get_size()[0] && this.window_thumbnail.window.get_texture()) {
         this.max_width = 25 / 100 * global.display.get_size()[0];
         this.max_height = 25 / 100 * global.display.get_size()[1];
 
         this.clone.set_source(this.window);
         this._setThumbnailSize(true);
+        this.set_child(this.clone);
 
         this.set_position(winActor.x,winActor.y);
         this.show();
         this.window_id = this.w.get_id();
+        this.tmbRedrawDirection = true;
 
         // remove thumbnail content and hide thumbnail if its window is destroyed
         this.windowConnect = this.window.connect('destroy', () => {
@@ -56,25 +70,28 @@ class WindowThumbnail extends St.Bin {
     }
 
     _setThumbnailSize(resetScale = false) {
-        [this.owidth, this.oheight] = this.window.get_size();
+        let size = this.window.get_size();
         if (resetScale)
-            this.scale = Math.min(1.0, this.max_width / this.owidth, this.max_height / this.oheight);
-        let size = [this.scale * this.owidth, this.scale * this.oheight];
-        //this.clone.set_size(...size);
-        this.set_size(...size);
+            this.scale = Math.min(1.0, this.max_width / this.window.width, this.max_height / this.window.height);
+        this._setSize();
     }
 
     _setSize() {
-        //this.clone.set_size(this.scale * this.owidth * 2, this.scale * this.oheight * 2);
-        this.set_size(this.scale * this.owidth, this.scale * this.oheight);
+        // when this.clone source window resize, this.clone and this. actor resize accordingly
+        this.scale_x = this.scale;
+        this.scale_y = this.scale;
+        // when scale of this. actor change, this.clone resize accordingly,
+        // but the reactive area of the actor doesn't change until the actor is redrawn
+        // don't know how to do it better..
+        this.set_position(this.x,this.y + (this.tmbRedrawDirection? 1 : -1));
+        // switch direction of the move for each resize
+        this.tmbRedrawDirection = !this.tmbRedrawDirection;
     }
 
     _onMouseMove(actor, event) {
         let [pos_x,pos_y] = event.get_coords();
         let state = event.get_state();
         if (this._ctrlPressed(state)) {
-            print (pos_x, pos_y);
-
         }
     }
 
@@ -89,7 +106,6 @@ class WindowThumbnail extends St.Bin {
             case Clutter.BUTTON_PRIMARY:
                 //if (this._ctrlPressed(state))
                 this.reverseTmbWheelFunc = !this.reverseTmbWheelFunc;
-                print (this.reverseTmbWheelFunc);
                     return;
                 break;
             case Clutter.BUTTON_SECONDARY:
@@ -113,21 +129,21 @@ class WindowThumbnail extends St.Bin {
         switch (direction) {
             case Clutter.ScrollDirection.UP:
                 if (this._shiftPressed(state))
-                    this.opacity = Math.min(255, this.opacity += 24);
+                    this.opacity = Math.min(255, this.opacity + 24);
                 else if (this.reverseTmbWheelFunc !== this._ctrlPressed(state)){
                     this._switchSourceWin(-1);
                 }
                 else if (this.reverseTmbWheelFunc === this._ctrlPressed(state))
-                    this.scale = Math.max(0.1, this.scale -= 0.025);
+                    this.scale = Math.max(0.1, this.scale - 0.025);
                 break;
             case Clutter.ScrollDirection.DOWN:
                 if (this._shiftPressed(state))
-                    this.opacity = Math.max(48, this.opacity -= 24);
+                    this.opacity = Math.max(48, this.opacity - 24);
                 else if (this.reverseTmbWheelFunc !== this._ctrlPressed(state)){
                     this._switchSourceWin(+1);
                 }
                 else if (this.reverseTmbWheelFunc === this._ctrlPressed(state))
-                    this.scale = Math.min(1, this.scale += 0.025);
+                    this.scale = Math.min(1, this.scale + 0.025);
                 break;
             default:
                 return Clutter.EVENT_PROPAGATE;
@@ -139,11 +155,10 @@ class WindowThumbnail extends St.Bin {
 
     _remove() {
         if (this.clone) {
-            this.w.disconnect(this.windowConnect);
+            this.window.disconnect(this.windowConnect);
             this.clone.set_source(null);
         }
         this.parent.windowThumbnails.splice(this.parent.windowThumbnails.indexOf(this), 1);
-        this.window.disconnect(this.windowConnect);
         this.destroy();
     }
 

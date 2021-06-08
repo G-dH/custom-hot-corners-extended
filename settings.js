@@ -1,6 +1,6 @@
-/* Copyright 2020 Jan Runge <janrunx@gmail.com>
+/* This is a part of Custom Hot Corners - Extended, the Gnome Shell extension*
+ * Copyright 2020 Jan Runge <janrunx@gmail.com>
  * Copyright 2021 GdH <georgdh@gmail.com>
- *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -369,7 +369,7 @@ var actionList = [
         [   1, 'next-win-all'          ,   _('Next Window (all)'),                 true],
 
         [null, ''                      ,   _('Windows - Control'),                 true],
-        [   1, 'make-thumbnail-win'    ,   _('Make draggable Window Thumbnail'),   true],
+        [   1, 'make-thumbnail-win'    ,   _('Window Thumbnail (PIP)'),              true],
         [   1, 'close-win'             ,   _('Close Window'),                     false],
         [   1, 'kill-app'              ,   _('Kill Application'),                  true],
         [   1, 'maximize-win'          ,   _('Maximize Window'),                  false],
@@ -409,7 +409,7 @@ var actionList = [
         [   1, 'contrast-high-all'     ,   _('High Contrast (global)'),            true],
         [   1, 'contrast-low-all'      ,   _('Low Contrast (global)'),             true],
         [   1, 'invert-light-all'      ,   _('Invert Lightness (global)'),         true],
-        [   1, 'invert-light-shift-all',  _('Invert Lightness Shifted (global)'), true],
+        [   1, 'invert-light-shift-all',  _('Invert Lightness - White to Grey (global)'), true],
         [   1, 'night-light-toggle'    ,   _('Toggle Night Light (Display settings)'), true],
         [   1, 'tint-red-toggle-all'   ,   _('Red Tint Mono (global)'),            true],
         [   1, 'tint-green-toggle-all' ,   _('Green Tint Mono (global)'),          true],
