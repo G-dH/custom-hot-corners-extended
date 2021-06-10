@@ -41,8 +41,6 @@ const _                      = Settings._;
 const listTriggers           = Settings.listTriggers();
 const Triggers               = Settings.Triggers;
 
-const Performance = Me.imports.performance;
-
 let _origUpdateHotCorners;
 let _cornersCollector;
 let _timeoutsCollector;
@@ -82,19 +80,16 @@ function enable() {
             GLib.PRIORITY_DEFAULT,
             500,
             () => {
-                    Performance.start('enable');
                     if (!Actions)
                         Actions = new ActionLib.Actions();
                     else Actions.resume();
                     _origUpdateHotCorners = Main.layoutManager._updateHotCorners;
-                    _extensionEnabled = true;
                     _initMscOptions();
+                    _extensionEnabled = true;
                     if (!actionTrigger)
                         actionTrigger = new ActionTrigger(_mscOptions);
                     _replace_updateHotCornersFunc();
                     _updateWatch();
-                    Performance.end();
-                    log(`[${Me.metadata.name}] extension enabled`);
                     return false;
             }
     );
@@ -106,7 +101,6 @@ function _replace_updateHotCornersFunc() {
 }
 
 function disable() {
-    Performance.start('disable');
     _timeoutsCollector.forEach( c => GLib.Source.remove(c));
     _timeoutsCollector=[];
     _removeActionTimeout();
@@ -127,8 +121,6 @@ function disable() {
     _extensionEnabled = false;
     Main.layoutManager._updateHotCorners = _origUpdateHotCorners;
     Main.layoutManager._updateHotCorners();
-    Performance.end();
-    log(`[${Me.metadata.name}] extension ${fullDisable? 'disabled' : 'suspended'}`);
 }
 
 function _initMscOptions() {
@@ -158,6 +150,7 @@ function _removeHotCorners() {
 }
 
 function _updateMscOptions(doNotUpdateHC = false) {
+    if (!Actions._mscOptions) Actions._mscOptions = _mscOptions;
     Actions._wsSwitchIgnoreLast = _mscOptions.wsSwitchIgnoreLast;
     Actions._wsSwitchWrap       = _mscOptions.wsSwitchWrap;
     Actions._wsSwitchIndicator  = _mscOptions.wsSwitchIndicator;
@@ -282,7 +275,7 @@ function _updateWatch() {
                         if (Main.layoutManager.hotCorners !== _myCorners) {
                             _updateHotCorners();
                             //Main.notify(Me.metadata.name, `Hot Corners had to be updated because of external override`);
-                            log(Me.metadata.name, `Hot Corners had to be updated because of external override`);
+                            //log(Me.metadata.name, `Hot Corners had to be updated because of external override`);
                         }
                         if (!_watch.active) {
                             _timeoutsCollector.splice(_timeoutsCollector.indexOf(_watch.timeout), 1);
