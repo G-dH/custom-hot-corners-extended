@@ -68,6 +68,7 @@ var Actions = class {
         this._connectRecentWorkspace();
 
         GNOME40 = Settings.GNOME40;
+        this._mscOptions = null;
     }
 
     clean(full = true) {
@@ -866,7 +867,7 @@ var Actions = class {
             this._signalsCollector.push([Main.overview, conS]);
             this._signalsCollector.push([Main.overview, conH]);
         }
-        this.windowThumbnails.push(new WinTmb.WindowThumbnail(winActor, this));
+        this.windowThumbnails.push(new WinTmb.WindowThumbnail(winActor, this, this._mscOptions.actionEventDelay));
     }
 
 }
