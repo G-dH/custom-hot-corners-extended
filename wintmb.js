@@ -25,9 +25,11 @@ const Meta                   = imports.gi.Meta;
 
 var   WindowThumbnail = GObject.registerClass(
 class WindowThumbnail extends St.Bin {
-    _init(winActor, that) {
-        this.reverseTmbWheelFunc = false;
-        this.parent = that;
+    _init(winActor, parent, actionTimeout) {
+        this._actionTimeoutId = null;
+        this._scrollTimeout = actionTimeout;
+        this._reverseTmbWheelFunc = false;
+        this._parent = parent;
         this.w = winActor.get_meta_window();
         super._init({visible: true, reactive: true, can_focus: true, track_hover: true});
         this.connect('button-release-event', this._onBtnReleased.bind(this));
@@ -46,17 +48,18 @@ class WindowThumbnail extends St.Bin {
         this.clone = new Clutter.Clone({reactive: true});
         Main.layoutManager.addChrome(this);
 
-
         this.window = this.w.get_compositor_private();
 
         this.max_width = 25 / 100 * global.display.get_size()[0];
         this.max_height = 25 / 100 * global.display.get_size()[1];
 
         this.clone.set_source(this.window);
-        this._setThumbnailSize(true);
+        this._setSize(true);
         this.set_child(this.clone);
 
-        this.set_position(winActor.x,winActor.y);
+        // the main reason for the +2 is to avoid immediete button release event
+        // switching the control mode when triggerd on full screen window
+        this.set_position(winActor.x + 2,winActor.y + 2);
         this.show();
         this.window_id = this.w.get_id();
         this.tmbRedrawDirection = true;
@@ -69,14 +72,9 @@ class WindowThumbnail extends St.Bin {
         });
     }
 
-    _setThumbnailSize(resetScale = false) {
-        let size = this.window.get_size();
+    _setSize(resetScale = false) {
         if (resetScale)
             this.scale = Math.min(1.0, this.max_width / this.window.width, this.max_height / this.window.height);
-        this._setSize();
-    }
-
-    _setSize() {
         // when this.clone source window resize, this.clone and this. actor resize accordingly
         this.scale_x = this.scale;
         this.scale_y = this.scale;
@@ -105,7 +103,7 @@ class WindowThumbnail extends St.Bin {
         switch (button) {
             case Clutter.BUTTON_PRIMARY:
                 //if (this._ctrlPressed(state))
-                this.reverseTmbWheelFunc = !this.reverseTmbWheelFunc;
+                this._reverseTmbWheelFunc = !this._reverseTmbWheelFunc;
                     return;
                 break;
             case Clutter.BUTTON_SECONDARY:
@@ -125,24 +123,26 @@ class WindowThumbnail extends St.Bin {
 
     _onScrollEvent(actor, event) {
         let direction = event.get_scroll_direction();
+        if (direction === 4) return;
+        if (this._actionTimeoutActive()) return;
         let state = event.get_state();
         switch (direction) {
             case Clutter.ScrollDirection.UP:
                 if (this._shiftPressed(state))
                     this.opacity = Math.min(255, this.opacity + 24);
-                else if (this.reverseTmbWheelFunc !== this._ctrlPressed(state)){
+                else if (this._reverseTmbWheelFunc !== this._ctrlPressed(state)){
                     this._switchSourceWin(-1);
                 }
-                else if (this.reverseTmbWheelFunc === this._ctrlPressed(state))
+                else if (this._reverseTmbWheelFunc === this._ctrlPressed(state))
                     this.scale = Math.max(0.1, this.scale - 0.025);
                 break;
             case Clutter.ScrollDirection.DOWN:
                 if (this._shiftPressed(state))
                     this.opacity = Math.max(48, this.opacity - 24);
-                else if (this.reverseTmbWheelFunc !== this._ctrlPressed(state)){
+                else if (this._reverseTmbWheelFunc !== this._ctrlPressed(state)){
                     this._switchSourceWin(+1);
                 }
-                else if (this.reverseTmbWheelFunc === this._ctrlPressed(state))
+                else if (this._reverseTmbWheelFunc === this._ctrlPressed(state))
                     this.scale = Math.min(1, this.scale + 0.025);
                 break;
             default:
@@ -158,7 +158,7 @@ class WindowThumbnail extends St.Bin {
             this.window.disconnect(this.windowConnect);
             this.clone.set_source(null);
         }
-        this.parent.windowThumbnails.splice(this.parent.windowThumbnails.indexOf(this), 1);
+        this._parent.windowThumbnails.splice(this._parent.windowThumbnails.indexOf(this), 1);
         this.destroy();
     }
 
@@ -194,6 +194,8 @@ class WindowThumbnail extends St.Bin {
         let win = w.get_compositor_private();
         this.clone.set_source(win);
         this.window.disconnect(this.windowConnect);
+        // the new thumbnail should be the same height as the previous one
+        this.scale = (this.scale * this.window.height) / win.height;
         this.window = win;
         this.windowConnect = this.window.connect('destroy', () => {
             if (this) {
@@ -201,7 +203,27 @@ class WindowThumbnail extends St.Bin {
             }
         });
         this.w = w;
-        this._setThumbnailSize();
+        let scale = this._setSize();
     }
+
+    _actionTimeoutActive() {
+        if (this._actionTimeoutId)
+            return true;
+        this._actionTimeoutId = GLib.timeout_add(
+                GLib.PRIORITY_DEFAULT,
+                // timeout for resizing should be shorter than for window switching
+                this._reverseTmbWheelFunc ? this._scrollTimeout : this._scrollTimeout / 2,
+                this._removeActionTimeout.bind(this)
+            );
+        return false;
+    }
+
+    _removeActionTimeout() {
+        if (this._actionTimeoutId) {
+            GLib.Source.remove(this._actionTimeoutId);
+        }
+        this._actionTimeoutId = null;
+        return false;
+}
 
 });
