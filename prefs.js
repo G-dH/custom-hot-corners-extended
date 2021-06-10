@@ -49,7 +49,7 @@ function buildPrefsWidget() {
     prefsWidget.attach(notebook, 0, 0, 1, 1);
 
     const display = Gdk.Display.get_default();
-    let num_monitors = GNOME40 ?
+    let num_monitors = display.get_monitors ?
                             display.get_monitors().get_n_items() :
                             display.get_n_monitors();
 
@@ -59,7 +59,7 @@ function buildPrefsWidget() {
     let leftHandMouse = mouseSettings.get_boolean('left-handed');
 
     for (let monitorIndex = 0; monitorIndex < num_monitors; ++monitorIndex) {
-        const monitor = GNOME40 ?
+        const monitor = display.get_monitors ?
                             display.get_monitors().get_item(monitorIndex) :
                             display.get_monitor(monitorIndex);
         const geometry = monitor.get_geometry();
@@ -96,8 +96,9 @@ function buildPrefsWidget() {
     return prefsWidget;
 }
 
-const MonitorPage
-= GObject.registerClass(class MonitorPage extends Gtk.Notebook {
+const MonitorPage = GObject.registerClass(
+class MonitorPage extends Gtk.Notebook {
+
     _init(constructProperties = {tab_pos: Gtk.PositionType.TOP}) {
         super._init(constructProperties);
 
@@ -130,14 +131,15 @@ const MonitorPage
             // Gtk4 doesn't. Just a note, irrelevant to the actual program.
 
         }
-        if (!GNOME40) this.show_all();
+        this.show_all && this.show_all();
         this._alreadyBuilt = true;
     }
 });
 
 
-const OptionsPage
-= GObject.registerClass(class OptionsPage extends Gtk.Box {
+const OptionsPage = GObject.registerClass(
+class OptionsPage extends Gtk.Box {
+
     _init(constructProperties = {   orientation: Gtk.Orientation.VERTICAL,
                                     spacing:       10,
                                     homogeneous: false,
@@ -154,27 +156,30 @@ const OptionsPage
         if (this._alreadyBuilt) return false;
 
         let optionsList = [];
+        // options item format:
+        // [text, tooltip, widget, settings-variable]
     
         optionsList.push(
             _optionsItem(
                 _makeTitle(_('Global options:')),
-                null,
-                null));
+                null, null, null
+            )
+        );
     
-        let watchCornersSwitch = _newGtkSwitch();
         optionsList.push(
             _optionsItem(
                 _('Watch hot corners for external overrides'),
                 _('Update corners when something (usualy other extensions) change them'),
-                watchCornersSwitch)
+                _newGtkSwitch(), 'watchCorners'
+            )
         );
     
-        let fullscreenGlobalSwitch = _newGtkSwitch();
         optionsList.push(
             _optionsItem(
-                    _('Enable all corner triggers in fullscreen mode'),
-                    _('When off, each trigger can be set independently'),
-                    fullscreenGlobalSwitch)
+                    _('Enable all triggers in fullscreen mode'),
+                    _('When off, each trigger can be enabled independently'),
+                    _newGtkSwitch(), 'fullscreenGlobal'
+            )
         );
     
         let actionDelayAdjustment = new Gtk.Adjustment({
@@ -186,81 +191,106 @@ const OptionsPage
             hexpand: true,
             xalign: 0.5
         });
+        actionDelaySpinBtn.is_spinbutton = true;
             actionDelaySpinBtn.set_adjustment(actionDelayAdjustment);
     
         optionsList.push(
             _optionsItem(
                 _('Minimum delay between actions (ms)'),
                 _('Prevents accidental double-action. Ignored by volume control'),
-                actionDelaySpinBtn));
+                actionDelaySpinBtn,
+                'actionEventDelay'
+            )
+        );
     
-        let rippleAnimationSwitch = _newGtkSwitch();
         optionsList.push(
             _optionsItem(
                 _('Show ripple animations'),
                 _('When you trigger an action, ripples are animated in the corner'),
-                rippleAnimationSwitch));
+                _newGtkSwitch(),
+                'rippleAnimation'
+            )
+        );
     
-        let barrierFallbackSwitch = _newGtkSwitch();
         optionsList.push(
             _optionsItem(
                 _('Use fallback hot corner triggers'),
                 _('When pressure barriers don`t work, on virtual systems for example'),
-                barrierFallbackSwitch));
+                _newGtkSwitch(),
+                'barrierFallback'
+            )
+        );
         
-        let cornersVisibleSwitch = _newGtkSwitch();
         optionsList.push(
             _optionsItem(
                 _('Make active corners / edges visible'),
                 _('Pressure barriers are not included'),
-                cornersVisibleSwitch));
+                _newGtkSwitch(),
+                'cornersVisible'
+            )
+        );
     
         optionsList.push(
             _optionsItem(
                 _makeTitle(_('Workspace switcher:')),
                 null,
-                null));
+                null
+            )
+        );
     
-        let wrapWsSwitch = _newGtkSwitch();
         optionsList.push(
             _optionsItem(
                 _('Wraparound'),
                 null,
-                wrapWsSwitch));
+                _newGtkSwitch(),
+                'wsSwitchWrap'
+            )
+        );
     
-        let ignoreLastWsSwitch = _newGtkSwitch();
         optionsList.push(
             _optionsItem(
                 _('Ignore last (empty) workspace'),
                 null,
-                ignoreLastWsSwitch));
+                _newGtkSwitch(),
+                'wsSwitchIgnoreLast'
+            )
+        );
     
-        let wsIndicatorSwitch = _newGtkSwitch();
         optionsList.push(
             _optionsItem(
                 _('Show workspace indicator while switching'),
                 null,
-                wsIndicatorSwitch));
+                _newGtkSwitch(),
+                'wsSwitchIndicator'
+            )
+        );
     
         optionsList.push(
             _optionsItem(
                 _makeTitle(_('Window switcher:')),
                 null,
-                null));
+                null
+            )
+        );
     
-        let winWrapSwitch = _newGtkSwitch();
         optionsList.push(
             _optionsItem(
                 _('Wraparound'),
                 null,
-                winWrapSwitch));
+                _newGtkSwitch(),
+                'winSwitchWrap'
+            )
+        );
     
-        let winSkipMinimizedSwitch = _newGtkSwitch();
         optionsList.push(
             _optionsItem(
                 _('Skip minimized'),
                 null,
-                winSkipMinimizedSwitch));
+                _newGtkSwitch(),
+                'winSkipMinimized'
+            )
+        );
+
         let frame;
         let frameBox;
         for (let item of optionsList) {
@@ -274,13 +304,8 @@ const OptionsPage
                     selection_mode: null,
                     can_focus: false,
                 });
-                if (GNOME40) {
-                    this.append(frame);
-                    frame.set_child(frameBox);
-                } else {
-                    this.add(frame);
-                    frame.add(frameBox);
-                }
+                this[this.add?'add':'append'](frame);
+                frame[frame.add?'add':'set_child'](frameBox);
                 continue;
             }
             let box = new Gtk.Box({
@@ -294,78 +319,14 @@ const OptionsPage
                 spacing: 20,
             });
             for (let i of item[0]) {
-                GNOME40 ?
-                    box.append(i) :
-                    box.add(i);
+                box[box.add?'add':'append'](i);
             }
             if (item.length === 2) box.set_tooltip_text(item[1]);
-            GNOME40 ?
-                frameBox.append(box):
-                frameBox.add(box);
+
+            frameBox[frameBox.add?'add':'append'](box);
         }
     
-        watchCornersSwitch.active = mscOptions.watchCorners;
-        watchCornersSwitch.connect('notify::active', () => {
-                    mscOptions.watchCorners = watchCornersSwitch.active;
-        });
-    
-        fullscreenGlobalSwitch.active = mscOptions.fullscreenGlobal;
-        fullscreenGlobalSwitch.connect('notify::active', () => {
-                    mscOptions.fullscreenGlobal = fullscreenGlobalSwitch.active;
-        });
-    
-        cornersVisibleSwitch.active = mscOptions.cornersVisible;
-        cornersVisibleSwitch.connect('notify::active', () => {
-                    mscOptions.cornersVisible = cornersVisibleSwitch.active;
-        });
-    
-        winWrapSwitch.active = mscOptions.winSwitchWrap;
-        winWrapSwitch.connect('notify::active', () =>{
-                    mscOptions.winSwitchWrap = winWrapSwitch.active;
-                });
-        winSkipMinimizedSwitch.active = mscOptions.winSkipMinimized;
-        winSkipMinimizedSwitch.connect('notify::active', () =>{
-                    mscOptions.winSkipMinimized = winSkipMinimizedSwitch.active;
-                });
-        ignoreLastWsSwitch.active = mscOptions.wsSwitchIgnoreLast;
-        ignoreLastWsSwitch.connect('notify::active', () =>{
-                    mscOptions.wsSwitchIgnoreLast = ignoreLastWsSwitch.active;
-                });
-        wrapWsSwitch.active = mscOptions.wsSwitchWrap;
-        wrapWsSwitch.connect('notify::active', () =>{
-                    mscOptions.wsSwitchWrap = wrapWsSwitch.active;
-                });
-        wsIndicatorSwitch.active = mscOptions.wsSwitchIndicator;
-        wsIndicatorSwitch.connect('notify::active', () =>{
-                    mscOptions.wsSwitchIndicator = wsIndicatorSwitch.active;
-                });
-        barrierFallbackSwitch.active = mscOptions.barrierFallback;
-        barrierFallbackSwitch.connect('notify::active', () =>{
-                    mscOptions.barrierFallback = barrierFallbackSwitch.active;
-                });
-        actionDelaySpinBtn.value = mscOptions.actionEventDelay;
-        actionDelaySpinBtn.timeout_id = null;
-        actionDelaySpinBtn.connect('value-changed', () => {
-                    actionDelaySpinBtn.update();
-                    if (actionDelaySpinBtn.timeout_id) {
-                        GLib.Source.remove(actionDelaySpinBtn.timeout_id);
-                    }
-                    actionDelaySpinBtn.timeout_id = GLib.timeout_add(
-                        GLib.PRIORITY_DEFAULT,
-                        500,
-                        () => {
-                            mscOptions.actionEventDelay = actionDelaySpinBtn.value;
-                            actionDelaySpinBtn.timeout_id = null;
-                            return false;
-                        }
-                    );
-                });
-    
-        rippleAnimationSwitch.active = mscOptions.rippleAnimation;
-        rippleAnimationSwitch.connect('notify::active', () =>{
-                    mscOptions.rippleAnimation = rippleAnimationSwitch.active;
-                });
-        if (!GNOME40) this.show_all();
+        this.show_all && this.show_all();
         this._alreadyBuilt = true;
     }
 });
@@ -373,14 +334,17 @@ const OptionsPage
 
 
 function _newGtkSwitch() {
-    return new Gtk.Switch({
+    let sw = new Gtk.Switch({
         halign: Gtk.Align.END,
         valign: Gtk.Align.CENTER,
-        hexpand: true
+        hexpand: true,
+        visible: true
     });
+    sw.is_switch = true;
+    return sw;
 }
 
-function _optionsItem(text, tooltip, widget) {
+function _optionsItem(text, tooltip, widget, variable) {
     let item = [[],];
     let label;
     if (widget) {
@@ -392,6 +356,33 @@ function _optionsItem(text, tooltip, widget) {
     item[0].push(label);
     if (widget) item[0].push(widget);
     if (tooltip) item.push(tooltip);
+
+    if (widget && widget.is_switch) {
+        widget.active = mscOptions[variable];
+        widget.connect('notify::active', () => {
+                    mscOptions[variable] = widget.active;
+        });
+    }
+
+    else if (widget && widget.is_spinbutton) {
+        widget.value = mscOptions[variable];
+        widget.timeout_id = null;
+        widget.connect('value-changed', () => {
+            widget.update();
+            if (widget.timeout_id) {
+                GLib.Source.remove(widget.timeout_id);
+            }
+            widget.timeout_id = GLib.timeout_add(
+                GLib.PRIORITY_DEFAULT,
+                500,
+                () => {
+                    mscOptions[variable] = widget.value;
+                    widget.timeout_id = null;
+                    return false;
+                }
+            );
+        });
+    }
 
     return item;
 }
@@ -408,8 +399,9 @@ const _d40exclude = [
                     //    'invertLightWin',
 ];
 
-const CornerPage
-= GObject.registerClass(class CornerPage extends Gtk.Grid {
+const CornerPage = GObject.registerClass(
+class CornerPage extends Gtk.Grid {
+
     _init(constructProperties = {
                 column_homogeneous: false,
                 row_homogeneous: false,
@@ -478,7 +470,7 @@ const CornerPage
         }
         const ew = this._buildExpandWidget(this._corner);
         this.attach(ew, 0, 6, 3, 1);
-        if (!GNOME40) this.show_all();
+        this.show_all && this.show_all();
     }
 
     _buildTriggerWidget(trigger) {
@@ -545,7 +537,7 @@ const CornerPage
         });
 
         if (GNOME40) {
-            // Gtk3 implement button icon as added Gtk.Image child, Gtk4 does not
+            // Gtk3 implements button icon as an added Gtk.Image child, Gtk4 does not
             settingsBtn.set_icon_name('emblem-system-symbolic');
             appButton.set_icon_name('find-location-symbolic');
         } else {
@@ -558,23 +550,6 @@ const CornerPage
     
         comboGrid.attach(actionCombo, 0, 0, 1, 1);
         comboGrid.attach(settingsBtn, 1, 0, 1, 1);
-    
-        const fullscreenLabel = new Gtk.Label({
-            label: _('Enable in fullscreen mode'),
-            halign: Gtk.Align.START
-        });
-        const fullscreenSwitch = _newGtkSwitch();
-    
-        popupGrid.attach(fullscreenLabel, 0, 0, 1, 1);
-        popupGrid.attach(fullscreenSwitch, 1, 0, 1, 1);
-        if (!GNOME40) {
-            popupGrid.show_all();
-            cornerPopover.add(popupGrid);
-        } else cornerPopover.set_child(popupGrid);
-        fullscreenSwitch.active = this._corner.getFullscreen(trigger);
-        fullscreenSwitch.connect('notify::active', () => {
-            this._corner.setFullscreen(trigger, fullscreenSwitch.active);
-        });
     
         cw.attach(comboGrid, 0, 0, 1, 1);
         cw.attach(commandEntryRevealer, 0, 1, 1, 1);
@@ -669,11 +644,29 @@ const CornerPage
             );
         });
     
+
+        const fullscreenLabel = new Gtk.Label({
+            label: _('Enable in fullscreen mode'),
+            halign: Gtk.Align.START
+        });
+        const fullscreenSwitch = _newGtkSwitch();
+    
+        popupGrid.attach(fullscreenLabel, 0, 0, 1, 1);
+        popupGrid.attach(fullscreenSwitch, 1, 0, 1, 1);
+
+        popupGrid.show_all && popupGrid.show_all();
+        cornerPopover[cornerPopover.add?'add':'set_child'](popupGrid);
+
+        fullscreenSwitch.active = this._corner.getFullscreen(trigger);
+        fullscreenSwitch.connect('notify::active', () => {
+            this._corner.setFullscreen(trigger, fullscreenSwitch.active);
+        });
+
         if (trigger === Settings.Triggers.PRESSURE) {
             this._buildPressureSettings(popupGrid);
         }
    
-        if (!GNOME40) cw.show_all();
+        cw.show_all && cw.show_all();
         return cw;
     }
 
@@ -766,7 +759,7 @@ const CornerPage
         popupGrid.attach(pressureLabel,               0, 3, 1, 1);
         popupGrid.attach(pressureThresholdSpinButton, 1, 3, 1, 1);
 
-        if (!GNOME40) popupGrid.show_all();
+        popupGrid.show_all && popupGrid.show_all();
 
 
         barrierSizeSpinButtonH.value = this._corner.barrierSizeH;
@@ -886,9 +879,9 @@ const CornerPage
         vExpandSwitch.connect('notify::active', () => {
             this._corner.vExpand = vExpandSwitch.active;
         });
-        GNOME40 ?
-            frame.set_child(ew):
-            frame.add(ew);
+        //GNOME40 ?
+            frame[frame.add?'add':'set_child'](ew);
+        //    frame.add(ew);
         return frame;
     }
 
@@ -922,21 +915,20 @@ const CornerPage
             wrap: true
         });
         grid.attach(cmdLabel, 0, 1, 2, 1);
-        GNOME40 ?
-            dialog.get_content_area().append(grid) :
-            dialog.get_content_area().add(grid);
+        dialog.get_content_area()[dialog.get_content_area()?'add':'append'](grid);
         dialog._appChooser.connect('application-selected', (w, appInfo) => {
                 cmdLabel.set_text(appInfo.get_commandline());
             }
         );
-        GNOME40 ? dialog.show()
-                : dialog.show_all();
+        dialog.show_all && dialog.show_all();
+//                       : dialog.show();
         return dialog;
     }
 });
 
-const KeyboardPage
-= GObject.registerClass(class KeyboardPage extends Gtk.ScrolledWindow {
+const KeyboardPage = GObject.registerClass(
+class KeyboardPage extends Gtk.ScrolledWindow {
+
     _init(params) {
         super._init({margin_start: 12, margin_end: 12, margin_top: 12, margin_bottom: 12});
         this._alreadyBuilt = false;
@@ -944,10 +936,7 @@ const KeyboardPage
 
     buildPage() {
         if (this._alreadyBuilt) return false;
-        let add;
-        GNOME40 ?
-            add = 'set_child':
-            add = 'add';
+
         this.grid = new Gtk.Grid({margin_top: 6, hexpand: true});
         let lbl = new Gtk.Label({
             use_markup: true,
@@ -959,8 +948,8 @@ const KeyboardPage
         });
         let frame = new Gtk.Frame({
                 label_widget: lbl });
-        this[add](frame);
-        frame[add](this.grid);
+        this[this.add?'add':'set_child'](frame);
+        frame[frame.add?'add':'set_child'](this.grid);
         this.treeView = new Gtk.TreeView({hexpand: true});
         this.grid.attach(this.treeView, 0,0,1,1);
         let model = new Gtk.TreeStore();
@@ -1048,7 +1037,7 @@ const KeyboardPage
         this.treeView.append_column(actions);
         this.treeView.append_column(accels);
 
-        if (!GNOME40) this.show_all();
+        this.show_all && this.show_all();
 
         return this._alreadyBuilt = true;
     }
