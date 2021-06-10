@@ -13,6 +13,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
+'use strict';
 const GObject                = imports.gi.GObject;
 const Clutter                = imports.gi.Clutter;
 const ExtensionUtils         = imports.misc.extensionUtils;
@@ -24,7 +25,7 @@ var   InvertLightnessEffect = GObject.registerClass(
 class InvertLightnessEffect extends Clutter.ShaderEffect {
 
     vfunc_get_static_shader_source() {
-        return shaderLib.getInversion(1);
+        return shaderLib.getInversion(0);
     }
 
     vfunc_paint_target(node, paint_context) {
