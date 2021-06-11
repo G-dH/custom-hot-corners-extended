@@ -26,6 +26,7 @@ const Meta                   = imports.gi.Meta;
 var   WindowThumbnail = GObject.registerClass(
 class WindowThumbnail extends St.Bin {
     _init(winActor, parent, actionTimeout) {
+        this._initTbmbWidth = 300; // px
         this._actionTimeoutId = null;
         this._scrollTimeout = actionTimeout;
         this._reverseTmbWheelFunc = false;
@@ -50,8 +51,8 @@ class WindowThumbnail extends St.Bin {
 
         this.window = this.w.get_compositor_private();
 
-        this.max_width = 25 / 100 * global.display.get_size()[0];
-        this.max_height = 25 / 100 * global.display.get_size()[1];
+        //this.max_width = 25 / 100 * global.display.get_size()[0];
+        //this.max_height = 25 / 100 * global.display.get_size()[1];
 
         this.clone.set_source(this.window);
         this._setSize(true);
@@ -74,7 +75,8 @@ class WindowThumbnail extends St.Bin {
 
     _setSize(resetScale = false) {
         if (resetScale)
-            this.scale = Math.min(1.0, this.max_width / this.window.width, this.max_height / this.window.height);
+            //this.scale = Math.min(1.0, this.max_width / this.window.width, this.max_height / this.window.height);
+            this.scale = Math.min(1.0, this._initTbmbWidth / this.window.width );
         // when this.clone source window resize, this.clone and this. actor resize accordingly
         this.scale_x = this.scale;
         this.scale_y = this.scale;
