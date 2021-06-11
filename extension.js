@@ -90,6 +90,7 @@ function enable() {
                         actionTrigger = new ActionTrigger(_mscOptions);
                     _replace_updateHotCornersFunc();
                     _updateWatch();
+                    log(`[${Me.metadata.name}] extension enabled`);
                     return false;
             }
     );
@@ -121,6 +122,7 @@ function disable() {
     _extensionEnabled = false;
     Main.layoutManager._updateHotCorners = _origUpdateHotCorners;
     Main.layoutManager._updateHotCorners();
+    log(`[${Me.metadata.name}] extension ${fullDisable? 'disabled' : 'suspended'}`);
 }
 
 function _initMscOptions() {
@@ -275,7 +277,7 @@ function _updateWatch() {
                         if (Main.layoutManager.hotCorners !== _myCorners) {
                             _updateHotCorners();
                             //Main.notify(Me.metadata.name, `Hot Corners had to be updated because of external override`);
-                            //log(Me.metadata.name, `Hot Corners had to be updated because of external override`);
+                            log(Me.metadata.name, `Hot Corners had to be updated because of external override`);
                         }
                         if (!_watch.active) {
                             _timeoutsCollector.splice(_timeoutsCollector.indexOf(_watch.timeout), 1);
@@ -1045,5 +1047,8 @@ const ActionTrigger = class ActionTrigger {
     }
     _makeThumbnailWin() {
         Actions.makeThumbnailWindow();
+    }
+    _removeWinThumbnails() {
+        Actions._removeThumbnails(true);
     }
 };

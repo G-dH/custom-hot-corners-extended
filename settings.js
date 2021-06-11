@@ -360,7 +360,7 @@ var actionList = [
         [   1, 'reorder-ws-next'       ,   _(`Reorder Workspace - ${GNOME40? _('Right') : _('Down')}`),true],
 
         [null, ''                      ,   _('Windows - Navigation'),              true],
-        [   1, 'recent-win'            ,   _('Recent Window (Alt+Tab)'),          false],
+        [   1, 'recent-win'            ,   _('Recent Window'),          false],
         [   1, 'prev-win-mon'          ,   _('Previous Window (this monitor)'),   false],
         [   1, 'prev-win-ws'           ,   _('Previous Window (current WS)'),      true],
         [   1, 'prev-win-all'          ,   _('Previous Window (all)'),             true],
@@ -370,6 +370,7 @@ var actionList = [
 
         [null, ''                      ,   _('Windows - Control'),                 true],
         [   1, 'make-thumbnail-win'    ,   _('Window Thumbnail (PIP)'),              true],
+        [   1, 'remove-win-thumbnails' ,   _('Remove all Window Thumbnails'),      true],
         [   1, 'close-win'             ,   _('Close Window'),                     false],
         [   1, 'kill-app'              ,   _('Kill Application'),                  true],
         [   1, 'maximize-win'          ,   _('Maximize Window'),                  false],

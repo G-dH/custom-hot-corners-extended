@@ -869,6 +869,4 @@ var Actions = class {
         }
         this.windowThumbnails.push(new WinTmb.WindowThumbnail(winActor, this, this._mscOptions.actionEventDelay));
     }
-
 }
-

@@ -114,6 +114,9 @@
     <key name='make-thumbnail-win-ce' type='as'>
       <default>[]</default>
     </key>
+    <key name='remove-win-thumbnails-ce' type='as'>
+      <default>[]</default>
+    </key>
     <key name='invert-light-win-ce' type='as'>
       <default>[]</default>
     </key>
