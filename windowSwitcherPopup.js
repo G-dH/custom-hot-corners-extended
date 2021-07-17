@@ -451,6 +451,15 @@ class WindowSwitcherPopup extends AltTab.WindowSwitcherPopup {
                 //this._items[this._selectedIndex].window.activate(global.get_current_time());
                 //this.fadeAndDestroy();
         }
+        else if (keysym === Clutter.KEY_f    || keysym === Clutter.KEY_F) {
+                if (this._selectedIndex > -1) {
+                    let win = this._items[this._selectedIndex].window;
+                    let id = win.get_id();
+                    this._actions.fullscreenWinOnEmptyWs(win);
+                    this.show();
+                    this._select(this._getItemIndexByID(id));
+                }
+        }
         // close all windows of the same class displayed in selector
         else if (keysym === Clutter.KEY_c    || keysym === Clutter.KEY_C) {
                 if (this.selectedIndex < 0) return;
@@ -729,7 +738,8 @@ class WindowSwitcherPopup extends AltTab.WindowSwitcherPopup {
 
         if (this._searchEntry) {
             const filterParetn = (wList, pattern)=> {return wList.filter((w) => {
-                    return this._match(w.title, pattern);
+                    // search in window title and app name
+                    return this._match(w.title + Shell.WindowTracker.get_default().get_window_app(w).get_name(), pattern);
                 });
             };
             let winListP = filterParetn(winList, this._searchEntry);
