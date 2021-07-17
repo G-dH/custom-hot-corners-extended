@@ -6,10 +6,10 @@ EXTRA_DIST = settings.js \
              metadata.json \
              prefs.js \
              actions.js \
-             wintmb.js \
-             shaders3.js \
-             shaders40.js \
-             shaderLib.js
+             winTmb.js \
+             shaders.js \
+             windowSwitcherPopup.js \
+             stylesheet.css
 
 topextensiondir = $(datadir)/gnome-shell/extensions
 extensiondir = $(topextensiondir)/$(uuid)
@@ -18,10 +18,10 @@ extension_DATA = settings.js \
                  metadata.json \
                  prefs.js \
                  actions.js \
-                 wintmb.js \
-             	 shaders3.js \
-             	 shaders40.js \
-             	 shaderLib.js \
+                 winTmb.js \
+                 shaders.js \
+                 windowSwitcherPopup.js \
+                 stylesheet.css \
                  README.md \
                  LICENSE
 
