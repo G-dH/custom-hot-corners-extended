@@ -32,7 +32,7 @@ const ExtensionUtils         = imports.misc.extensionUtils;
 const Me                     = ExtensionUtils.getCurrentExtension();
 const Settings               = Me.imports.settings;
 const ActionLib              = Me.imports.actions;
-let   Actions;
+var   actions;
 let   actionTrigger;
 
 // gettext
@@ -40,6 +40,8 @@ const _                      = Settings._;
 
 const listTriggers           = Settings.listTriggers();
 const Triggers               = Settings.Triggers;
+
+//const Performance = Me.imports.performance;
 
 let _origUpdateHotCorners;
 let _cornersCollector;
@@ -49,11 +51,11 @@ let _actionTimeoutId;
 
 let _mscOptions;
 
-let _fullscreenGlobal;
-let _cornersVisible;
-let _actionEventDelay;
-let _rippleAnimation;
-let _barrierFallback;
+let FULLSCREEN_GLOBAL;
+let CORNERS_VISIBLE;
+let ACTION_TIMEOUT;
+let RIPPLE_ANIMATION;
+let BARRIER_FALLBACK;
 
 let _extensionEnabled;
 
@@ -68,7 +70,6 @@ function init() {
     _actorsCollector      = [];
     _actionTimeoutId      = null;
     _extensionEnabled     = false;
-    _barrierFallback      = false;
     _watch                = {};
 }
 
@@ -80,9 +81,12 @@ function enable() {
             GLib.PRIORITY_DEFAULT,
             500,
             () => {
-                    if (!Actions)
-                        Actions = new ActionLib.Actions();
-                    else Actions.resume();
+                    //Performance.start('enable');
+                    if (!actions) {
+                        actions = new ActionLib.Actions();
+                        Main.extensionManager.gdhActions = actions;
+                    }
+                    else actions.resume();
                     _origUpdateHotCorners = Main.layoutManager._updateHotCorners;
                     _initMscOptions();
                     _extensionEnabled = true;
@@ -90,7 +94,7 @@ function enable() {
                         actionTrigger = new ActionTrigger(_mscOptions);
                     _replace_updateHotCornersFunc();
                     _updateWatch();
-                    log(`[${Me.metadata.name}] extension enabled`);
+                    //Performance.end();
                     return false;
             }
     );
@@ -108,27 +112,28 @@ function disable() {
     _removeHotCorners();
     _mscOptions.destroy();
     // don't destroy Actions and lose effects and thumbnails because of the screen lock, for example
-    let fullDisable = !Actions.extensionEnabled();
+    let fullDisable = !actions.extensionEnabled();
     if (fullDisable) {
-        Actions.clean(true);
-        Actions = null;
+        actions.clean(true);
+        actions = null;
         actionTrigger.clean(true);
         actionTrigger = null;
     } else {
-        Actions.clean(false);
+        actions.clean(false);
         actionTrigger.clean(false);
     }
     // This restores the original hot corners
     _extensionEnabled = false;
     Main.layoutManager._updateHotCorners = _origUpdateHotCorners;
-    Main.layoutManager._updateHotCorners();
+    // Update corners with the original function can be problem when some other extension changed the code before and calls its own objects (lake Dash to Panel)
+    //Main.layoutManager._updateHotCorners();
     log(`[${Me.metadata.name}] extension ${fullDisable? 'disabled' : 'suspended'}`);
 }
 
 function _initMscOptions() {
     _mscOptions = new Settings.MscOptions();
-    _mscOptions.connect('changed', ()=> _updateMscOptions());
-    _updateMscOptions(true);
+    _mscOptions.connect('changed', (settings, key) => _updateMscOptions(key));
+    _updateMscOptions(null, true);
 }
 
 function _removeHotCorners() {
@@ -145,28 +150,29 @@ function _removeHotCorners() {
         }
     }
     Main.layoutManager.hotCorners = [];
-    _updateWatchCorners();
+    _updateWatchedCorners();
     // when some other extension steal my hot corners I still need to be able to destroy all actors I made
     _actorsCollector.filter(a => a !== null).forEach(a => a.destroy());
     _actorsCollector = [];
 }
 
-function _updateMscOptions(doNotUpdateHC = false) {
-    if (!Actions._mscOptions) Actions._mscOptions = _mscOptions;
-    Actions._wsSwitchIgnoreLast = _mscOptions.wsSwitchIgnoreLast;
-    Actions._wsSwitchWrap       = _mscOptions.wsSwitchWrap;
-    Actions._wsSwitchIndicator  = _mscOptions.wsSwitchIndicator;
-    Actions._winSwitchWrap      = _mscOptions.winSwitchWrap;
-    Actions._winSkipMinimized   = _mscOptions.winSkipMinimized;
-    _actionEventDelay   = _mscOptions.actionEventDelay;
-    _fullscreenGlobal   = _mscOptions.fullscreenGlobal;
-    _rippleAnimation    = _mscOptions.rippleAnimation;
-    if (_cornersVisible !== _mscOptions.cornersVisible) {
-        _cornersVisible = _mscOptions.cornersVisible;
+function _updateMscOptions(key, doNotUpdateHC = false) {
+    if (!actions._mscOptions) actions._mscOptions = _mscOptions;
+    actions.WS_IGNORE_LAST      = _mscOptions.wsSwitchIgnoreLast;
+    actions.WS_WRAPAROUND       = _mscOptions.wsSwitchWrap;
+    actions.WS_INDICATOR_MODE   = _mscOptions.wsSwitchIndicatorMode;
+    actions.WIN_WRAPAROUND      = _mscOptions.winSwitchWrap;
+    actions.WIN_SKIP_MINIMIZED  = _mscOptions.winSkipMinimized;
+    actions._updateAltTabInjection(_mscOptions.winSwitcherPopupInjectAlttab);
+    ACTION_TIMEOUT        = _mscOptions.actionEventDelay;
+    FULLSCREEN_GLOBAL     = _mscOptions.fullscreenGlobal;
+    RIPPLE_ANIMATION      = _mscOptions.rippleAnimation;
+    if (CORNERS_VISIBLE !== _mscOptions.cornersVisible) {
+        CORNERS_VISIBLE = _mscOptions.cornersVisible;
         if (!doNotUpdateHC) _updateHotCorners();
     }
-    if (_barrierFallback !==  _mscOptions.barrierFallback) {
-        _barrierFallback = _mscOptions.barrierFallback;
+    if (BARRIER_FALLBACK !==  _mscOptions.barrierFallback) {
+        BARRIER_FALLBACK = _mscOptions.barrierFallback;
         if (!doNotUpdateHC)
             _updateHotCorners();
     }
@@ -176,7 +182,7 @@ function _updateMscOptions(doNotUpdateHC = false) {
 function _updateHotCorners() {
     _removeHotCorners();
     Main.layoutManager.hotCorners=[];
-    _updateWatchCorners();
+    _updateWatchedCorners();
     let primaryIndex = Main.layoutManager.primaryIndex;
     // avoid creating new corners if this extension is disabled...
     // ...since this method overrides the original one in GS and something can store pointer to this replacement
@@ -199,7 +205,7 @@ function _updateHotCorners() {
             }
             if (_shouldExistHotCorner(corner)) {
                 Main.layoutManager.hotCorners.push(new CustomHotCorner(corner));
-                _updateWatchCorners();
+                _updateWatchedCorners();
             }
         }
     }
@@ -247,7 +253,8 @@ function _updateCorner(corner, key, trigger) {
         case 'fullscreen':
             corner.fullscreen[trigger] = corner.getFullscreen(trigger);
             break;
-        case 'barrier-size':
+        case 'barrier-size-h':
+        case 'barrier-size-v':
             _rebuildHotCorner(corner);
             break;
         case 'pressure-threshold':
@@ -274,6 +281,10 @@ function _updateWatch() {
                     GLib.PRIORITY_DEFAULT,
                     3000,
                     () => {
+                        // some extensions can replace the function i.e Dash to Panel
+                        if (Main.layoutManager._updateHotCorners !== _updateHotCorners) {
+                            Main.layoutManager._updateHotCorners = _updateHotCorners;
+                        }
                         if (Main.layoutManager.hotCorners !== _myCorners) {
                             _updateHotCorners();
                             //Main.notify(Me.metadata.name, `Hot Corners had to be updated because of external override`);
@@ -290,7 +301,7 @@ function _updateWatch() {
     }
 }
 
-function _updateWatchCorners() {
+function _updateWatchedCorners() {
     _myCorners = Main.layoutManager.hotCorners;
 }
 
@@ -298,7 +309,7 @@ function _rebuildHotCorner(corner) {
     _destroyHotCorner(corner);
     if (_shouldExistHotCorner(corner)) {
         Main.layoutManager.hotCorners.push(new CustomHotCorner(corner));
-        _updateWatchCorners();
+        _updateWatchedCorners();
     }
 }
 
@@ -313,7 +324,7 @@ function _destroyHotCorner(corner) {
                     a.destroy();
                 }
                 Main.layoutManager.hotCorners[i]._actors = [];
-                hc[i].setBarrierSize(0, false);
+                hc[i].setBarrierSize([0, 0], false);
                 Main.layoutManager.hotCorners[i].destroy();
                 Main.layoutManager.hotCorners.splice(i, 1);
                 corner.hotCornerExists = false;
@@ -342,7 +353,7 @@ class CustomHotCorner extends Layout.HotCorner {
         );
         this.setBarrierSize([corner.barrierSizeH, corner.barrierSizeV], false);
 
-        if (this._corner.action[Triggers.PRESSURE] !== 'disabled' && !_barrierFallback) {
+        if (this._corner.action[Triggers.PRESSURE] !== 'disabled' && !BARRIER_FALLBACK) {
             this._pressureBarrier.connect('trigger', this._onPressureTriggered.bind(this));
 
         } 
@@ -358,13 +369,14 @@ class CustomHotCorner extends Layout.HotCorner {
     }
 
     // Overridden to allow all 4 monitor corners
-    setBarrierSize(size, forignAccess=true) {
+    setBarrierSize(size, forignAccess = true) {
         if (forignAccess) return;
         // Use code of parent class to remove old barriers but new barriers
         // must be created here since the properties are construct only.
         super.setBarrierSize(0);
-        let sizeH = size[0];
-        let sizeV = size[1];
+        let geometry = global.display.get_monitor_geometry(this._corner.monitorIndex);
+        let sizeH = Math.floor(size[0]/100*geometry.width);
+        let sizeV = Math.floor(size[1]/100*geometry.height);
         if (sizeH > 0 && sizeV > 0) {
             const BD = Meta.BarrierDirection;
             // for X11 session:
@@ -395,6 +407,10 @@ class CustomHotCorner extends Layout.HotCorner {
 
             this._pressureBarrier.addBarrier(this._verticalBarrier);
             this._pressureBarrier.addBarrier(this._horizontalBarrier);
+
+            if (CORNERS_VISIBLE) {
+                this._drawBarriers(sizeH, sizeV);
+            }
         }
     }
 
@@ -411,6 +427,56 @@ class CustomHotCorner extends Layout.HotCorner {
             }
         }
         return {'x': x,'y': y};
+    }
+
+    _drawBarriers(sizeH, sizeV) {
+        // show horizontal barrier
+        this._actor = new Clutter.Actor({
+            name: 'barrier-h',
+            x: this._corner.x - (this._corner.left ? 0 : sizeH),
+            y: this._corner.y + (this._corner.top ? 1 : -1),
+            width: sizeH,
+            height: 1,
+            reactive: false,
+            background_color: new Clutter.Color({
+                red:   0,
+                green: 255,
+                blue:  0,
+                alpha: 180
+            })
+
+        });
+        this._connectActorEvents(this._actor);
+        this._actor.connect('destroy', () => {
+                    this._actor = null;
+        });
+        Main.layoutManager.addChrome(this._actor);
+        _actorsCollector.push(this._actor);
+        this._actors.push(this._actor);
+
+        // show vertical barrier
+        this._actor = new Clutter.Actor({
+            name: 'barrier-h',
+            x: this._corner.x + (this._corner.left ? 1 : -1),
+            y: this._corner.y - (this._corner.top ? 0 : sizeV),
+            width: 1,
+            height: sizeV,
+            reactive: false,
+            background_color: new Clutter.Color({
+                red:   0,
+                green: 255,
+                blue:  0,
+                alpha: 180
+            })
+
+        });
+        this._connectActorEvents(this._actor);
+        this._actor.connect('destroy', () => {
+                    this._actor = null;
+        });
+        Main.layoutManager.addChrome(this._actor);
+        _actorsCollector.push(this._actor);
+        this._actors.push(this._actor);
     }
 
     // Overridden original function
@@ -450,8 +516,8 @@ class CustomHotCorner extends Layout.HotCorner {
                 red:   255,
                 green: 120,
                 blue:  0,
-                //alpha: _cornersVisible ? ((h || v) ? 50 : 120) : 0
-                alpha: _cornersVisible ? 255 : 0
+                //alpha: CORNERS_VISIBLE ? ((h || v) ? 50 : 120) : 0
+                alpha: CORNERS_VISIBLE ? 255 : 0
             })
 
         });
@@ -477,8 +543,8 @@ class CustomHotCorner extends Layout.HotCorner {
                     red:   255,
                     green: 120,
                     blue:  0,
-                    //alpha: _cornersVisible ? ((h || v) ? 50 : 120) : 0
-                    alpha: _cornersVisible ? 255 : 0
+                    //alpha: CORNERS_VISIBLE ? ((h || v) ? 50 : 120) : 0
+                    alpha: CORNERS_VISIBLE ? 255 : 0
                 })
             });
             this._connectActorEvents(this._actorV);
@@ -491,21 +557,21 @@ class CustomHotCorner extends Layout.HotCorner {
         }
         // Fallback hot corners as a part of base actor
         if ( this._corner.action[Triggers.PRESSURE] !== 'disabled' &&
-             (! global.display.supports_extended_barriers() || _barrierFallback) ) {
-            let fSize = 3;
-            this._cornerActor = new Clutter.Actor({
-                name: 'hot-corner',
-                x: (this._corner.left ? 0 : (this._actor.width  - 1) - (fSize - 1)),
-                y: (this._corner.top  ? 0 : (this._actor.height - 1) - (fSize - 1)),
-                width: fSize, height: fSize,
-                reactive: true,
-                visible: true,
-                background_color: new Clutter.Color({
-                    red:   0,
-                    green: 255,
-                    blue:  0,
-                    //alpha: _cornersVisible ? ((h || v) ? 50 : 120) : 0
-                    alpha: _cornersVisible ? 255 : 0})
+            (! global.display.supports_extended_barriers() || BARRIER_FALLBACK) ) {
+                let fSize = 3;
+                this._cornerActor = new Clutter.Actor({ 
+                    name:             'hot-corner',
+                    x:                (this._corner.left ? 0 : (this._actor.width  - 1) - (fSize - 1)),
+                    y:                (this._corner.top  ? 0 : (this._actor.height - 1) - (fSize - 1)),
+                    width:            fSize,
+                    height:           fSize,
+                    reactive:         true,
+                    visible:          true,
+                    background_color: new Clutter.Color({ red:   0,
+                                                          green: 255,
+                                                          blue:  0,
+                                                          //alpha: CORNERS_VISIBLE ? ((h || v) ? 50 : 120) : 0
+                                                          alpha: CORNERS_VISIBLE ? 255 : 0})
             });
             this._actor.add_child(this._cornerActor);
             this._cornerActor.connect('enter-event', this._onPressureTriggered.bind(this));
@@ -523,7 +589,7 @@ class CustomHotCorner extends Layout.HotCorner {
     _shouldCreateActor() {
         let answer = false;
         for (let trigger of listTriggers) {
-            if (trigger === Triggers.PRESSURE && (global.display.supports_extended_barriers() && ! _barrierFallback)) {
+            if (trigger === Triggers.PRESSURE && (global.display.supports_extended_barriers() && ! BARRIER_FALLBACK)) {
                 continue;
             }
             answer = answer || (this._corner.action[trigger] !== 'disabled');
@@ -543,23 +609,16 @@ class CustomHotCorner extends Layout.HotCorner {
         this._ripples.playAnimation(this._corner.x, this._corner.y);
     }
 
-    _ctrlPressed(state) {
-        return (state & Clutter.ModifierType.CONTROL_MASK) != 0;
+    _ctrlPressed(mods) {
+        return (mods & Clutter.ModifierType.CONTROL_MASK) != 0;
     }
 
     _onPressureTriggered() {
         if (this._corner.ctrl[Triggers.PRESSURE]) {
             // neither the 'enter' nor pressure 'trigger' events contain modifier state
-            if (!Meta.is_wayland_compositor()) {
-                // and default keymap modifier state is always 0 on Wayland
-                let keymap = Gdk.Keymap.get_for_display(Gdk.Display.get_default());
-                let state = keymap.get_modifier_state();
-                if (!this._ctrlPressed(state))
-                    return;
-            } else {
-                Main.notify(Me.metadata.name, _(`'Ctrl' option is not Wayland compatible` ));
+            let [_x, _y, mods] = global.get_pointer();
+            if (!this._ctrlPressed(mods))
                 return;
-            }
         }
         this._runAction(Triggers.PRESSURE);
     }
@@ -567,20 +626,20 @@ class CustomHotCorner extends Layout.HotCorner {
         //if (event.get_click_count() > 1) return; // ignore second click of double clicks
         let button = event.get_button();
         let trigger;
-        let state = event.get_state();
+        let mods = event.get_state();
         switch (button) {
             case Clutter.BUTTON_PRIMARY:
-                if (this._corner.ctrl[Triggers.BUTTON_PRIMARY] && !this._ctrlPressed(state))
+                if (this._corner.ctrl[Triggers.BUTTON_PRIMARY] && !this._ctrlPressed(mods))
                     return;
                 trigger = Triggers.BUTTON_PRIMARY;
                 break;
             case Clutter.BUTTON_SECONDARY:
-                if (this._corner.ctrl[Triggers.BUTTON_SECONDARY] && !this._ctrlPressed(state))
+                if (this._corner.ctrl[Triggers.BUTTON_SECONDARY] && !this._ctrlPressed(mods))
                     return;
                 trigger = Triggers.BUTTON_SECONDARY;
                 break;
             case Clutter.BUTTON_MIDDLE:
-                if (this._corner.ctrl[Triggers.BUTTON_MIDDLE] && !this._ctrlPressed(state))
+                if (this._corner.ctrl[Triggers.BUTTON_MIDDLE] && !this._ctrlPressed(mods))
                     return;
                 trigger = Triggers.BUTTON_MIDDLE;
                 break;
@@ -592,19 +651,19 @@ class CustomHotCorner extends Layout.HotCorner {
     }
     _onCornerScrolled(actor, event) {
         let direction = event.get_scroll_direction();
-        let state = event.get_state();
+        let mods = event.get_state();
         if (_notValidScroll(direction)) return;
         let trigger;
         switch (direction) {
             case Clutter.ScrollDirection.UP:
-            //case Clutter.ScrollDirection.LEFT:
-                if (this._corner.ctrl[Triggers.SCROLL_UP] && !this._ctrlPressed(state))
+            case Clutter.ScrollDirection.LEFT:
+                if (this._corner.ctrl[Triggers.SCROLL_UP] && !this._ctrlPressed(mods))
                     return;
                 trigger = Triggers.SCROLL_UP;
                 break;
             case Clutter.ScrollDirection.DOWN:
-            //case Clutter.ScrollDirection.RIGHT:
-                if (this._corner.ctrl[Triggers.SCROLL_DOWN] && !this._ctrlPressed(state))
+            case Clutter.ScrollDirection.RIGHT:
+                if (this._corner.ctrl[Triggers.SCROLL_DOWN] && !this._ctrlPressed(mods))
                     return;
                 trigger = Triggers.SCROLL_DOWN;
                 break;
@@ -620,8 +679,8 @@ class CustomHotCorner extends Layout.HotCorner {
             || this._corner.action[trigger] == 'disabled'
             ) return;
         if (    (!this._monitor.inFullscreen) ||
-                ( this._monitor.inFullscreen  && (this._corner.fullscreen[trigger] || _fullscreenGlobal))) {
-            if (_rippleAnimation) this._rippleAnimation();
+                ( this._monitor.inFullscreen  && (this._corner.fullscreen[trigger] || FULLSCREEN_GLOBAL))) {
+            if (RIPPLE_ANIMATION) this._rippleAnimation();
             actionTrigger.runAction(  this._corner.action[trigger],
                                       this._corner.monitorIndex,
                                       this._corner.workspaceIndex[trigger],
@@ -650,7 +709,7 @@ function _actionTimeoutActive(trigger) {
 
     _actionTimeoutId = GLib.timeout_add(
             GLib.PRIORITY_DEFAULT,
-            _actionEventDelay,
+            ACTION_TIMEOUT,
             _removeActionTimeout
         );
     _timeoutsCollector.push(_actionTimeoutId);
@@ -681,10 +740,11 @@ const ActionTrigger = class ActionTrigger {
         this._bindShortcuts();
     }
 
-    runAction(action, monitorIndex = 0, workspaceIndex = 0, command = '') {
+    runAction(action, monitorIndex = 0, workspaceIndex = 0, command = '', keyboard = false) {
         this._monitorIndex = monitorIndex;
         this._command = command;
         this._workspaceIndex = workspaceIndex;
+        this._triggeredByKeyboard = keyboard;
         let actionFunction = this.m.get(action).bind(this) || function () {};
         actionFunction();
     }
@@ -714,9 +774,14 @@ const ActionTrigger = class ActionTrigger {
                                 Meta.KeyBindingFlags.NONE,
                                 Shell.ActionMode.ALL,
                                 () => {
-                                        this.runAction(action);
+                                        this._runKeyAction(action);
                                 }
         );
+    }
+
+    _runKeyAction(action) {
+        // notify the trigger that the action was invoked by the keyboard
+        this.runAction(action, 0, 0, '', true);
     }
 
     _updateKeyBinding(settings, key) {
@@ -750,21 +815,21 @@ const ActionTrigger = class ActionTrigger {
     }
 
     _toggleOverview() {
-        Actions.toggleOverview();
+        actions.toggleOverview();
     }
     _showApplications() {
-        Actions.showApplications();
+        actions.showApplications();
     }
     _showDesktop() {
-        Actions.togleShowDesktop();
+        actions.togleShowDesktop();
     }
     _showDesktopMon() {
-        Actions.togleShowDesktop(this._monitorIndex);
+        actions.togleShowDesktop(global.display.get_current_monitor());
     }
     _blackScreen() {
         let opacity = 255;
         let note = Me.metadata.name;
-        Actions.toggleDimmMonitors(
+        actions.toggleDimmMonitors(
             opacity,
             note
         );
@@ -772,239 +837,378 @@ const ActionTrigger = class ActionTrigger {
     _blackScreenMon() {
         let opacity = 255;
         let note = Me.metadata.name;
-        Actions.toggleDimmMonitors(
+        actions.toggleDimmMonitors(
             opacity,
             note,
-            this._monitorIndex
+            global.display.get_current_monitor()
         );
     }
     _runCommand() {
-        Actions.runCommand(this._command);
+        actions.runCommand(this._command);
     }
     _runDialog() {
-        Actions.openRunDialog();
+        actions.openRunDialog();
     }
     _moveToWorkspace() {
-        Actions.moveToWorkspace(this._workspaceIndex - 1);
+        actions.moveToWorkspace(this._workspaceIndex - 1);
     }
     _prevWorkspace() {
-        Actions.switchWorkspace(Clutter.ScrollDirection.UP);
+        actions.switchWorkspace(Clutter.ScrollDirection.UP);
     }
     _nextWorkspace() {
-        Actions.switchWorkspace(Clutter.ScrollDirection.DOWN);
+        actions.switchWorkspace(Clutter.ScrollDirection.DOWN);
+    }
+    _prevWorkspaceOverview() {
+        actions.switchWorkspace(Clutter.ScrollDirection.UP);
+        Main.overview.show();
+    }
+    _nextWorkspaceOverview() {
+        actions.switchWorkspace(Clutter.ScrollDirection.DOWN);
+        Main.overview.show();
     }
     _recentWorkspace() {
-        Actions.moveToRecentWorkspace();
+        actions.moveToRecentWorkspace();
     }
     _reorderWsPrev() {
-        Actions.reorderWorkspace(-1);
+        actions.reorderWorkspace(-1);
     }
     _reorderWsNext() {
-        Actions.reorderWorkspace(+1);
+        actions.reorderWorkspace(+1);
     }
     _prevWinAll() {
-        Actions.switchWindow( -1, false, -1);
+        actions.switchWindow( -1, false, -1);
     }
     _nextWinAll() {
-        Actions.switchWindow( +1, false, -1);
+        actions.switchWindow( +1, false, -1);
     }
     _prevWinWs() {
-        Actions.switchWindow( -1, true, -1);
+        actions.switchWindow( -1, true, -1);
     }
     _nextWinWs() {
-        Actions.switchWindow( +1, true, -1);
+        actions.switchWindow( +1, true, -1);
     }
     _prevWinMon() {
-        Actions.switchWindow( -1, true, this._monitorIndex);
+        actions.switchWindow( -1, true, global.display.get_current_monitor());
     }
     _nextWinMon() {
-        Actions.switchWindow( +1, true, this._monitorIndex);
+        actions.switchWindow( +1, true, global.display.get_current_monitor());
     }
     _recentWin() {
-        Actions.recentWindow();
+        actions.switchToRecentWindow();
+    }
+
+    _getShortcut(key) {
+        let settings = Settings.getSettings(
+            'org.gnome.shell.extensions.custom-hot-corners-extended.shortcuts',
+            '/org/gnome/shell/extensions/custom-hot-corners-extended/shortcuts/');
+        return settings.get_strv(key).toString();
+    }
+    _winSwitcherPopupAll() {
+        // arguments: monitor-index        = -1/index
+        //            position-pointer     = null-> gsettings/true/false,
+        //            filter-mode          = 1 - all windows, 2 - current ws, 3 - current monitor
+        //            sort-mode            = 0 -> gsettings, 1 - default MRU, 2 - currentMonFirst, 3 - sortByApps, 4 - sortByWs
+        //            timeout              = int (ms)
+        //            triggered-keyboard   = true/false
+        //            shortcut             = null/shortcut from gsettings to string
+        //            filter-focused-app   = true/false
+        actions.showWindowSwitcherPopup({   'monitor-index':      -1,
+                                            'position-pointer':   null,
+                                            'filter-mode':        1,
+                                            'sort-mode':          0,
+                                            'timeout':            0,
+                                            'triggered-keyboard': this._triggeredByKeyboard,
+                                            'shortcut':           this._getShortcut('win-switcher-popup-all-ce'),
+                                            'filter-focused-app': false,
+                                            'filter-pattern':     null
+                                        });
+    }
+    _winSwitcherPopupWs() {
+        actions.showWindowSwitcherPopup({   'monitor-index':      -1,
+                                            'position-pointer':   null,
+                                            'filter-mode':        2,
+                                            'sort-mode':          0,
+                                            'timeout':            0,
+                                            'triggered-keyboard': this._triggeredByKeyboard,
+                                            'shortcut':           this._getShortcut('win-switcher-popup-ws-ce'),
+                                            'filter-focused-app': false,
+                                            'filter-pattern':     null
+                                        });
+    }
+    _winSwitcherPopupMon() {
+        actions.showWindowSwitcherPopup({   'monitor-index':      -1,
+                                            'position-pointer':   null,
+                                            'filter-mode':        3,
+                                            'sort-mode':          0,
+                                            'timeout':            0,
+                                            'triggered-keyboard': this._triggeredByKeyboard,
+                                            'shortcut':           this._getShortcut('win-switcher-popup-ws-ce'),
+                                            'filter-focused-app': false,
+                                            'filter-pattern':     null
+                                        });
+    }
+    _winSwitcherPopupApps() {
+        actions.showWindowSwitcherPopup({   'monitor-index':      -1,
+                                            'position-pointer':   null,
+                                            'filter-mode':        1,
+                                            'sort-mode':          0,
+                                            'timeout':            0,
+                                            'triggered-keyboard': this._triggeredByKeyboard,
+                                            'shortcut':           this._getShortcut('win-switcher-popup-apps-ce'),
+                                            'filter-focused-app': false,
+                                            'filter-pattern':     null
+                                        });
+    }
+    _winSwitcherPopupClass() {
+        actions.showWindowSwitcherPopup({   'monitor-index':      -1,
+                                            'position-pointer':   null,
+                                            'filter-mode':        1,
+                                            'sort-mode':          0,
+                                            'timeout':            0,
+                                            'triggered-keyboard': this._triggeredByKeyboard,
+                                            'shortcut':           this._getShortcut('win-switcher-popup-class-ce'),
+                                            'filter-focused-app': true,
+                                            'filter-pattern':     null
+                                        });
+    }
+    _winSwitcherPopupWsFirst() {
+        actions.showWindowSwitcherPopup({   'monitor-index':      -1,
+                                            'position-pointer':   null,
+                                            'filter-mode':        1,
+                                            'sort-mode':          2,
+                                            'timeout':            0,
+                                            'triggered-keyboard': this._triggeredByKeyboard,
+                                            'shortcut':           this._getShortcut('win-switcher-popup-ws-first-ce'),
+                                            'filter-focused-app': false,
+                                            'filter-pattern':     null
+                                        });
+    }
+    _prevWorkspacePopup() {
+        actions.switchWorkspace(Clutter.ScrollDirection.UP, false);
+        actions.showWindowSwitcherPopup({   'monitor-index':      -1,
+                                            'position-pointer':   false,
+                                            'filter-mode':        2,
+                                            'sort-mode':          0,
+                                            'timeout':            0,
+                                            'triggered-keyboard': this._triggeredByKeyboard,
+                                            'shortcut':           null,
+                                            'filter-focused-app': false,
+                                            'filter-pattern':     null
+                                        });
+    }
+    _nextWorkspacePopup() {
+        actions.switchWorkspace(Clutter.ScrollDirection.DOWN, false);
+        actions.showWindowSwitcherPopup({   'monitor-index':      -1,
+                                            'position-pointer':   false,
+                                            'filter-mode':        2,
+                                            'sort-mode':          0,
+                                            'timeout':            0,
+                                            'triggered-keyboard': this._triggeredByKeyboard,
+                                            'shortcut':           null,
+                                            'filter-focused-app': false,
+                                            'filter-pattern':     null
+                                        });
+    }
+    _winSwitcherPopupSearch() {
+        actions.showWindowSwitcherPopup({   'monitor-index':      -1,
+                                            'position-pointer':   null,
+                                            'filter-mode':        1,
+                                            'sort-mode':          0,
+                                            'timeout':            0,
+                                            'triggered-keyboard': this._triggeredByKeyboard,
+                                            'shortcut':           this._getShortcut('win-switcher-popup-all-ce'),
+                                            'filter-focused-app': false,
+                                            'filter-pattern':     ''
+                                        });
+    }
+    _appSwitcherPopupAll() {
+        actions.showAppSwitcherPopup();
     }
     _closeWin() {
-        Actions.closeWindow();
+        actions.closeWindow();
     }
     _killApp() {
-        Actions.killApplication();
+        actions.killApplication();
     }
     _maximizeWin() {
-        Actions.toggleMaximizeWindow();
+        actions.toggleMaximizeWindow();
     }
     _minimizeWin() {
-        Actions.minimizeWindow();
+        actions.minimizeWindow();
+    }
+    _fullscreenOnEmptyWs() {
+        actions.fullscreenWinOnEmptyWs();
     }
     _unminimizeAllWs() {
-        Actions.unminimizeAll(true);
+        actions.unminimizeAll(true);
     }
     _fullscreenWin() {
-        Actions.toggleFullscreenWindow();
+        actions.toggleFullscreenWindow();
     }
     _aboveWin() {
-        Actions.toggleAboveWindow();
+        actions.toggleAboveWindow();
     }
     _stickWin() {
-        Actions.toggleStickWindow();
+        actions.toggleStickWindow();
     }
     _restartShell() {
-        Actions.restartGnomeShell();
+        actions.restartGnomeShell();
     }
     _volumeUp() {
-        Actions.adjustVolume(1);
+        actions.adjustVolume(1);
     }
     _volumeDown() {
-        Actions.adjustVolume(-1);
+        actions.adjustVolume(-1);
     }
     _muteSound() {
-        Actions.adjustVolume(0);
+        actions.adjustVolume(0);
     }
     _lockScreen() {
-        Actions.lockScreen();
+        actions.lockScreen();
     }
     _suspend() {
-        Actions.suspendToRam();
+        actions.suspendToRam();
     }
     _powerOff() {
-        Actions.powerOff();
+        actions.powerOff();
     }
     _logOut() {
-        Actions.logOut();
+        actions.logOut();
     }
     _switchUser() {
-        Actions.switchUser();
+        actions.switchUser();
     }
     _lookingGlass() {
-        Actions.toggleLookingGlass()
+        actions.toggleLookingGlass()
     }
     _prefs() {
-        Actions.openPreferences();
+        actions.openPreferences();
     }
     _toggleZoom() {
-        Actions.zoom(0);
+        actions.zoom(0);
     }
     _zoomIn(){
-        Actions.zoom(0.25);
+        actions.zoom(0.25);
     }
     _zoomOut(){
-        Actions.zoom(-0.25);
+        actions.zoom(-0.25);
     }
     _keyboard() {
-        Actions.toggleKeyboard(this._monitorIndex);
+        actions.toggleKeyboard(global.display.get_current_monitor());
     }
     _screenReader() {
-        Actions.toggleScreenReader();
+        actions.toggleScreenReader();
     }
     _largeText() {
-        Actions.toggleLargeText()
+        actions.toggleLargeText()
     }
     _hidePanel() {
-        Actions.toggleShowPanel();
+        actions.toggleShowPanel();
     }
     _toggleTheme() {
-        Actions.toggleTheme();
+        actions.toggleTheme();
 
     }
     _invertLightAll() {
-        Actions.toggleLightnessInvertEffect(false, false);
+        actions.toggleLightnessInvertEffect(false, false);
     }
     _invertLightWin() {
-        Actions.toggleLightnessInvertEffect(true, false);
+        actions.toggleLightnessInvertEffect(true, false);
     }
     _invertLightShiftAll() {
-        Actions.toggleLightnessInvertEffect(false, true);
+        actions.toggleLightnessInvertEffect(false, true);
     }
     _invertLightShiftWin() {
-        Actions.toggleLightnessInvertEffect(true, true);
+        actions.toggleLightnessInvertEffect(true, true);
     }
     _invertColorsWin() {
-        Actions.toggleColorsInvertEffect(true);
+        actions.toggleColorsInvertEffect(true);
     }
     _protanToggleAll() {
-        Actions.toggleColorBlindShaderEffect(true, 1, false);
+        actions.toggleColorBlindShaderEffect(true, 1, false);
     }
     _deuterToggleAll() {
-        Actions.toggleColorBlindShaderEffect(true, 2, false);
+        actions.toggleColorBlindShaderEffect(true, 2, false);
     }
     _tritanToggleAll() {
-        Actions.toggleColorBlindShaderEffect(true, 3, false);
+        actions.toggleColorBlindShaderEffect(true, 3, false);
     }
     _protanSimToggleAll() {
-        Actions.toggleColorBlindShaderEffect(true, 1, true);
+        actions.toggleColorBlindShaderEffect(true, 1, true);
     }
     _deuterSimToggleAll() {
-        Actions.toggleColorBlindShaderEffect(true, 2, true);
+        actions.toggleColorBlindShaderEffect(true, 2, true);
     }
     _tritanSimToggleAll() {
-        Actions.toggleColorBlindShaderEffect(true, 3, true);
+        actions.toggleColorBlindShaderEffect(true, 3, true);
     }
     _mixerGbrToggleAll() {
-        Actions.toggleColorMixerEffect(true, 1);
+        actions.toggleColorMixerEffect(true, 1);
     }
     _desaturateAll() {
-        Actions.toggleDesaturateEffect(false);
+        actions.toggleDesaturateEffect(false);
     }
     _desaturateWin() {
-        Actions.toggleDesaturateEffect(true);
+        actions.toggleDesaturateEffect(true);
     }
     _brightUpAll() {
-        Actions.adjustSwBrightnessContrast(+0.025);
+        actions.adjustSwBrightnessContrast(+0.025);
     }
     _brightDownAll() {
-        Actions.adjustSwBrightnessContrast(-0.025);
+        actions.adjustSwBrightnessContrast(-0.025);
     }
     _brightUpWin() {
-        Actions.adjustSwBrightnessContrast(+0.025, true);
+        actions.adjustSwBrightnessContrast(+0.025, true);
     }
     _brightDownWin() {
-        Actions.adjustSwBrightnessContrast(-0.025, true);
+        actions.adjustSwBrightnessContrast(-0.025, true);
     }
     _contrastUpAll() {
-        Actions.adjustSwBrightnessContrast(+0.025, false, false);
+        actions.adjustSwBrightnessContrast(+0.025, false, false);
     }
     _contrastDownAll() {
-        Actions.adjustSwBrightnessContrast(-0.025, false, false);
+        actions.adjustSwBrightnessContrast(-0.025, false, false);
     }
     _contrastUpWin() {
-        Actions.adjustSwBrightnessContrast(+0.025, true, false);
+        actions.adjustSwBrightnessContrast(+0.025, true, false);
     }
     _contrastDownWin() {
-        Actions.adjustSwBrightnessContrast(-0.025, true, false);
+        actions.adjustSwBrightnessContrast(-0.025, true, false);
     }
     _contrastHighWin() {
-        Actions.adjustSwBrightnessContrast(null, true, false, 0.2);
+        actions.adjustSwBrightnessContrast(null, true, false, 0.2);
     }
     _contrastHighAll() {
-        Actions.adjustSwBrightnessContrast(null, false, false, 0.2);
+        actions.adjustSwBrightnessContrast(null, false, false, 0.2);
     }
     _contrastLowWin() {
-        Actions.adjustSwBrightnessContrast(null, true, false, -0.1);
+        actions.adjustSwBrightnessContrast(null, true, false, -0.1);
     }
     _contrastLowAll() {
-        Actions.adjustSwBrightnessContrast(null, false, false, -0.1);
+        actions.adjustSwBrightnessContrast(null, false, false, -0.1);
     }
     _opacityUpWin() {
-        Actions.adjustWindowOpacity(+12);
+        actions.adjustWindowOpacity(+12);
     }
     _opacityDownWin() {
-        Actions.adjustWindowOpacity(-12);
+        actions.adjustWindowOpacity(-12);
     }
     _opacityToggleWin() {
-        Actions.adjustWindowOpacity(0, 200);
+        actions.adjustWindowOpacity(0, 200);
     }
     _opacityToggleHcWin() {
-        Actions.adjustWindowOpacity(0, 200);
-        Actions.adjustSwBrightnessContrast(null, true, false, 0.2);
+        actions.adjustWindowOpacity(0, 200);
+        actions.adjustSwBrightnessContrast(null, true, false, 0.2);
     }
     _opacityToggleLcWin() {
-        Actions.adjustWindowOpacity(0, 240);
-        Actions.adjustSwBrightnessContrast(null, true, false, 0.05);
+        actions.adjustWindowOpacity(0, 240);
+        actions.adjustSwBrightnessContrast(null, true, false, 0.05);
     }
     _nightLightToggle() {
-        Actions.toggleNightLight();
+        actions.toggleNightLight();
     }
     _tintRedToggleWin(){
-        Actions.toggleColorTintEffect(
+        actions.toggleColorTintEffect(
             new Clutter.Color({
                 red:    255,
                 green:  200,
@@ -1013,7 +1217,7 @@ const ActionTrigger = class ActionTrigger {
             true);
     }
     _tintRedToggleAll(){
-        Actions.toggleColorTintEffect(
+        actions.toggleColorTintEffect(
             new Clutter.Color({
                 red:    255,
                 green:  200,
@@ -1022,7 +1226,7 @@ const ActionTrigger = class ActionTrigger {
             false);
     }
     _tintGreenToggleWin(){
-        Actions.toggleColorTintEffect(
+        actions.toggleColorTintEffect(
             new Clutter.Color({
                 red:    200,
                 green:  255,
@@ -1031,7 +1235,7 @@ const ActionTrigger = class ActionTrigger {
             true);
     }
     _tintGreenToggleAll(){
-        Actions.toggleColorTintEffect(
+        actions.toggleColorTintEffect(
             new Clutter.Color({
                 red:    200,
                 green:  255,
@@ -1040,15 +1244,27 @@ const ActionTrigger = class ActionTrigger {
             false);
     }
     _removeEffectsWin() {
-        Actions.removeWinEffects(true);
+        actions.removeWinEffects(true);
     }
     _removeEffectsAll() {
-        Actions.removeAllEffects(true);
+        actions.removeAllEffects(true);
     }
     _makeThumbnailWin() {
-        Actions.makeThumbnailWindow();
+        actions.makeThumbnailWindow();
     }
     _removeWinThumbnails() {
-        Actions._removeThumbnails(true);
+        actions._removeThumbnails(true);
+    }
+    _showCustomMenu1() {
+        actions.showCustomMenu(this, 1);
+    }
+    _showCustomMenu2() {
+        actions.showCustomMenu(this, 2);
+    }
+    _showCustomMenu3() {
+        actions.showCustomMenu(this, 3);
+    }
+    _showCustomMenu4() {
+        actions.showCustomMenu(this, 4);
     }
 };
