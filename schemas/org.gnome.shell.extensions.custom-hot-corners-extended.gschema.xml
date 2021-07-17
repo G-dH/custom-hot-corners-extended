@@ -67,6 +67,9 @@
     <key name='win-switcher-popup-timeout' type='i'>
       <default>1500</default>
     </key>
+    <key name='win-thumbnail-scale' type='i'>
+      <default>15</default>
+    </key>
     <key name='ws-switch-ignore-last' type='b'>
       <default>false</default>
     </key>
