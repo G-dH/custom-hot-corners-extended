@@ -428,8 +428,13 @@ var Actions = class {
         if (win.fullscreen) win.unmake_fullscreen();
         else win.make_fullscreen();
     }
-    fullscreenWinOnEmptyWs(nextWs = false) {
-        let win = this._getFocusedWindow(true);
+    fullscreenWinOnEmptyWs(metaWindow = null, nextWs = false) {
+        let win;
+        if (!metaWindow)
+            win = this._getFocusedWindow(true);
+        else
+            win = metaWindow;
+
         if (!win) return;
         if (win.fullscreen) {
             win.unmake_fullscreen();
