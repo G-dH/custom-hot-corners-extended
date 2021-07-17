@@ -201,7 +201,7 @@
     <key name='fullscreen-win-ce' type='as'>
       <default>[]</default>
     </key>
-    <key name='fullscreen-on-empty-ws' type='as'>
+    <key name='fullscreen-on-empty-ws-ce' type='as'>
       <default>[]</default>
     </key>
     <key name='above-win-ce' type='as'>
