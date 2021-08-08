@@ -111,7 +111,7 @@ function buildPrefsWidget() {
 const MonitorPage = GObject.registerClass(
 class MonitorPage extends Gtk.Notebook {
 
-    _init(constructProperties = {tab_pos: Gtk.PositionType.TOP}) {
+    _init(constructProperties = {tab_pos: Gtk.PositionType.TOP, visible: true}) {
         super._init(constructProperties);
 
         this._corners = [];
@@ -697,22 +697,24 @@ class CornerPage extends Gtk.Grid {
             visible: true
         });
         dialog._appChooser = new Gtk.AppChooserWidget({
-            show_all: true
+            show_all: true,
+            hexpand: true,
+            visible :true
         });
         let appInfo = dialog._appChooser.get_app_info();
         grid.attach(dialog._appChooser, 0, 0, 2, 1);
         const cmdLabel = new Gtk.Label({
             label:"",
-            wrap: true
+            wrap: true,
+            visible :true
         });
         grid.attach(cmdLabel, 0, 1, 2, 1);
-        dialog.get_content_area()[dialog.get_content_area()?'add':'append'](grid);
+        dialog.get_content_area()[dialog.get_content_area().add ? 'add' : 'append'](grid);
         dialog._appChooser.connect('application-selected', (w, appInfo) => {
                 cmdLabel.set_text(appInfo.get_commandline());
             }
         );
-        dialog.show_all && dialog.show_all();
-//                       : dialog.show();
+        dialog.show();
         return dialog;
     }
 });
