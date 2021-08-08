@@ -11,7 +11,7 @@ A GNOME Shell Extension which allows you to control and navigate Gnome Shell env
 - Mouse buttons and a scroll wheel can be used as triggers in addition to hot corners
 - Each trigger can be set to work only when *Ctrl* key is pressed
 - Each direcion of a scroll wheel rotation is configurable independently
-- Each trigger can activate one of many actions including command execution, workspace and window navigation, window control, power manager actions, sound volume control, color filters (for windows and global), accessibility features and more
+- Each trigger can activate one of many actions including command execution, workspace and window navigation, window control, power manager actions, sound volume control, color filters (for windows and global), accessibility features and more.
 - Preferences window provides an app chooser dialog for "Run preset Command" action configuration - easy use as an application launcher
 - Each corner's area reactive to mouse clicks and scrolls can be extended both horizontally and/or vertically to cover most lenght of the monitor's edges. If the adjacent corner is not set to expand in related direction, the corner can be expanded to 7/8 of the monitor's width/height. If two adjacents corners are set to expand to each other's direction, then it is 1/2 of the length for each. You can see the result of expansion settings by activation of the *Make active corners/edges visible* option.
 - Fallback hot corner triggers as option - useful on virtualized systems where pressure barriers are supported by the system but ignored by the pointer.
@@ -19,13 +19,14 @@ A GNOME Shell Extension which allows you to control and navigate Gnome Shell env
 - The `Monitor 1` settings are always used on the primary monitor
 - Corners can be watched for unwanted overrides from other extensions and automatically updated when needed within 3 seconds
 - You can set keyboard shortcuts for any actions on the menu.
-- You can set up to 4 Custom Menus with own selection of actions and trigger them as an action. 
+- You can set up to 4 Custom Menus with own selection of actions and trigger them as an action.
 
 ## Changelog:
 
 **v9**:
 - *Ctrl* "safety lock" finally works with Wayland
 - Pressure barrier sizes are now adjustable by scale controllers on the main corner page along with clickable area expansion for better orientation in settings.
+- Barrier size is now adjustable in percentage of the monitor's width/heigt instead of pixels.
 - Option *Make active corners/edges visible* now show the pressure barriers too.
 - Added action *Window Thumbnail (PIP)* - make a thumbnail preview (like Picture in Picture) of the active window which you can drag and drop anywhere on the screen. Thumbnail size can be adjusted by a mouse scroll wheel and you can even change the source window of the thumbnail. You can make as many thumbnails as you want, not just one.
 - Added new shader filters - you'll find color blind vision simulation and correction filters in Accessibility menu. Inversion filters have been enhanced - Invert Lightness, Invert Lightness - Wite to Grey (for lower contrast at night time) and full color inversion, now all gamma corrected to make deep dark shades distinguishable.
@@ -57,6 +58,7 @@ Window thumbnails are scaled-down window clones that can be used to monitor wind
 ![Extension configuration window](screenshot.png)
 ![Extension configuration window](screenshot1.png)
 ![Extension configuration window](screenshot4.png)
+![Extension configuration window](screenshot5.png)
 
 ## Installation
 
