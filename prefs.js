@@ -22,9 +22,9 @@ const Settings       = Me.imports.settings;
 const triggers       = Settings.listTriggers();
 const triggerLabels  = Settings.TriggerLabels;
 const actionList     = Settings.actionList;
-let   notebook;
 let   mscOptions;
-
+let   _excludedItems = [];
+let   notebook;
 
 // gettext
 const _  = Settings._;
@@ -37,13 +37,25 @@ function init() {
     ExtensionUtils.initTranslations(Me.metadata['gettext-domain']);
     GNOME40 = Settings.GNOME40;
     WAYLAND = GLib.getenv('XDG_SESSION_TYPE') === 'wayland';
+    const AATWS = Settings.extensionEnabled('advanced-alt-tab@G-dH.github.com') || Settings.extensionEnabled('advanced-alt-tab@G-dH.github.com-dev');
     mscOptions = new Settings.MscOptions();
+    if (!AATWS) {
+        _excludedItems.push('win-switcher-popup-ws');
+        _excludedItems.push('win-switcher-popup-mon');
+        _excludedItems.push('win-switcher-popup-ws-first');
+        _excludedItems.push('win-switcher-popup-apps');
+        _excludedItems.push('win-switcher-popup-class');
+        _excludedItems.push('win-switcher-popup-search');
+        _excludedItems.push('prev-workspace-popup');
+        _excludedItems.push('next-workspace-popup');
+    }
 }
 
 function buildPrefsWidget() {
-    const prefsWidget = new Gtk.Grid();
+    const prefsWidget = new Gtk.Grid({visible: true});
     notebook = new Gtk.Notebook({
-        tab_pos: Gtk.PositionType.LEFT
+        tab_pos: Gtk.PositionType.LEFT,
+        visible: true
     });
     
     prefsWidget.attach(notebook, 0, 0, 1, 1);
@@ -73,7 +85,7 @@ function buildPrefsWidget() {
         monitorPage._leftHandMouse = leftHandMouse;
 
         let labelText = _('Monitor') + ' ' + (monitorIndex + 1) + (monitorIndex === 0? '\n' + _('(primary)') : '');
-        const label = new Gtk.Label({ label: labelText, halign: Gtk.Align.START});
+        const label = new Gtk.Label({ label: labelText, halign: Gtk.Align.START });
         notebook.append_page(monitorPage, label);
         monitorPage.connect('switch-page', (notebook, page, index) => {
             page.buildPage();
@@ -90,10 +102,9 @@ function buildPrefsWidget() {
     notebook.connect('switch-page', (notebook, page, index) => {
             page.buildPage();
     });
-    if (!GNOME40) {
+    /*if (!GNOME40) {
         //prefsWidget.connect('destroy', Gtk.main_quit);
-        prefsWidget.show_all();
-    }
+    }*/
     return prefsWidget;
 }
 
@@ -120,7 +131,7 @@ class MonitorPage extends Gtk.Notebook {
                     margin_start: 10,
                     vexpand: true,
                     hexpand: true,
-                    pixel_size: 40
+                    pixel_size: 40,
                 });
             label.set_from_file(`${Me.dir.get_path()}/icons/${this._corners[i].top ? 'Top':'Bottom'}${this._corners[i].left ? 'Left':'Right'}.svg`);
             let cPage = new CornerPage();
@@ -148,7 +159,8 @@ class CornerPage extends Gtk.Grid {
                 margin_top:     20,
                 margin_bottom:  10,
                 column_spacing: 10,
-                row_spacing:    10      }) {
+                row_spacing:    10,
+          }) {
 
         super._init(constructProperties);
 
@@ -163,17 +175,16 @@ class CornerPage extends Gtk.Grid {
         this._alreadyBuilt = true;
         for (let trigger of triggers) {
 
-            const ctrlBtn = new Gtk.CheckButton(
+            const ctrlBtn = new Gtk.CheckButton({
             //const ctrlBtn = new Gtk.ToggleButton(
-                {
                     label: _('Ctrl'),
                     halign: Gtk.Align.START,
                     valign: Gtk.Align.CENTER,
                     vexpand: false,
                     hexpand: false,
                     tooltip_text: _('When checked, pressed Ctrl key is needed to trigger the action'),
-                    margin_bottom : 10
-                });
+                    margin_bottom : 10,
+            });
 
             ctrlBtn.connect('notify::active', ()=> {
                 this._corner.setCtrl(trigger, ctrlBtn.active);
@@ -186,7 +197,7 @@ class CornerPage extends Gtk.Grid {
                 margin_bottom : 10,
                 vexpand: true,
                 hexpand: true,
-                pixel_size: 40
+                pixel_size: 40,
             });
             let iconPath;
             if (trigger === 0) {
@@ -215,7 +226,7 @@ class CornerPage extends Gtk.Grid {
     _buildTriggerWidget(trigger) {
         const cw = new Gtk.Grid({
             valign: Gtk.Align.CENTER,
-            margin_bottom : 10
+            margin_bottom : 10,
         });
     
         const popupGrid = new Gtk.Grid({
@@ -224,16 +235,19 @@ class CornerPage extends Gtk.Grid {
             margin_top:    10,
             margin_bottom: 10,
             column_spacing: 12,
-            row_spacing: 8
+            row_spacing: 8,
+            visible: true
         });
     
         const comboGrid = new Gtk.Grid();
         const cmdGrid = new Gtk.Grid({
-            margin_top: 8
+            margin_top: 8,
+            visible: true
         });
     
         const commandEntryRevealer = new Gtk.Revealer({
-            child: cmdGrid
+            child: cmdGrid,
+            visible: true
         });
     
         const wsIndexAdjustment = new Gtk.Adjustment({
@@ -276,15 +290,15 @@ class CornerPage extends Gtk.Grid {
             margin_start: 4
         });
 
-        if (GNOME40) {
-            // Gtk3 implements button icon as an added Gtk.Image child, Gtk4 does not
+        // Gtk3 implements button icon as an added Gtk.Image child, Gtk4 does not
+        if (settingsBtn.set_icon_name) {
             settingsBtn.set_icon_name('emblem-system-symbolic');
             appButton.set_icon_name('find-location-symbolic');
         } else {
             settingsBtn.add(Gtk.Image.new_from_icon_name('emblem-system-symbolic', Gtk.IconSize.BUTTON));
             appButton.add(Gtk.Image.new_from_icon_name('find-location-symbolic', Gtk.IconSize.BUTTON));
         }
-    
+
         cmdGrid.attach(commandEntry, 0, 0, 1, 1);
         cmdGrid.attach(appButton, 1, 0, 1, 1);
     
@@ -294,9 +308,7 @@ class CornerPage extends Gtk.Grid {
         cw.attach(comboGrid, 0, 0, 1, 1);
         cw.attach(commandEntryRevealer, 0, 1, 1, 1);
         cw.attach(wsIndexRevealer, 0, 2, 1, 1);
-    
-        
-    
+
         let comboRenderer = new Gtk.CellRendererText();
     
         actionCombo.pack_start(comboRenderer, true);
@@ -307,7 +319,7 @@ class CornerPage extends Gtk.Grid {
                 cell.set_sensitive(sensitive);
             }
         );
-    
+
         let cmdConnected = false;
         let cmdBtnConnected = false;
         let _connectCmdBtn = function() {
@@ -415,7 +427,7 @@ class CornerPage extends Gtk.Grid {
         let iter, iter2;
         for (let i = 0; i < actionList.length; i++){
             let item = actionList[i];
-            if (GNOME40 && _d40exclude.indexOf(item[1]) > -1) continue;
+            if (_excludedItems.indexOf(item[1]) > -1) continue;
             if (!item[0]){
                 iter  = actionTreeStore.append(null);
                 actionTreeStore.set(iter, [0], [item[1]]);
@@ -544,7 +556,7 @@ class CornerPage extends Gtk.Grid {
     _buildBarrierSizeAdjustment() {
         const label = new Gtk.Label({
                         label: _('Barrier size:'),
-                        tooltip_text: _('Set horizontal and vertical size of the barrier that reacts to mouse pointer pressure.') + '\n' +
+                        tooltip_text: _('Set horizontal and vertical size of the barrier that reacts to the mouse pointer pressure (hot corner).') + '\n' +
                                       _('Size can be set in percentage of the screen width and height.'),
                         halign: Gtk.Align.START
         })
@@ -666,7 +678,7 @@ class CornerPage extends Gtk.Grid {
     _chooseAppDialog() {
         const dialog = new Gtk.Dialog({
             title: (_('Choose Application')),
-            transient_for: GNOME40 ?
+            transient_for:      notebook.get_root   ?
                                 notebook.get_root() :
                                 notebook.get_toplevel(),
             use_header_bar: true,
@@ -681,7 +693,8 @@ class CornerPage extends Gtk.Grid {
             margin_top:     10,
             margin_bottom:  10,
             column_spacing: 10,
-            row_spacing:    15
+            row_spacing:    15,
+            visible: true
         });
         dialog._appChooser = new Gtk.AppChooserWidget({
             show_all: true
@@ -708,14 +721,14 @@ const KeyboardPage = GObject.registerClass(
 class KeyboardPage extends Gtk.ScrolledWindow {
 
     _init(params) {
-        super._init({margin_start: 12, margin_end: 12, margin_top: 12, margin_bottom: 12});
+        super._init({margin_start: 12, margin_end: 12, margin_top: 12, margin_bottom: 12, visible: true});
         this._alreadyBuilt = false;
     }
 
     buildPage() {
         if (this._alreadyBuilt) return false;
 
-        this.grid = new Gtk.Grid({margin_top: 6, hexpand: true});
+        this.grid = new Gtk.Grid({margin_top: 6, hexpand: true, visible: true});
         let lbl = new Gtk.Label({
             use_markup: true,
             label: _makeTitle(_("Keyboard Shortcuts:")),
@@ -834,7 +847,7 @@ class KeyboardPage extends Gtk.ScrolledWindow {
         let iter, iter2;
         for (let i = 0; i < actionList.length; i++){
             let item = actionList[i];
-            if ((GNOME40 && _d40exclude.indexOf(item[1]) > -1) || !item[3]) continue;
+            if ((_excludedItems.indexOf(item[1]) > -1) || !item[3]) continue;
             let a = [0, 0];
             if (item[1] && (item[1] in this.keybindings && this.keybindings[item[1]][0])) {
                 let binding = this.keybindings[item[1]][0];
@@ -889,7 +902,8 @@ const OptionsPage = GObject.registerClass(
 class OptionsPage extends Gtk.ScrolledWindow {
 
     _init(constructProperties = {   hscrollbar_policy: Gtk.PolicyType.NEVER,
-                                    vscrollbar_policy: Gtk.PolicyType.AUTOMATIC
+                                    vscrollbar_policy: Gtk.PolicyType.AUTOMATIC,
+                                    visible: true
                                 }) {
         super._init(constructProperties);
 
@@ -904,7 +918,8 @@ class OptionsPage extends Gtk.ScrolledWindow {
                                     margin_start:  12,
                                     margin_end:    20,
                                     margin_top:    12,
-                                    margin_bottom: 12    })
+                                    margin_bottom: 12,
+                                    visible: true    })
 
         let optionsList = [];
         // options item format:
@@ -1073,87 +1088,6 @@ class OptionsPage extends Gtk.ScrolledWindow {
             )
         );
 
-        optionsList.push(
-            _optionsItem(
-                _makeTitle(_('Window Switcher pop-up:')),
-                null,
-                null
-            )
-        );
-
-        optionsList.push(
-            _optionsItem(
-                _('Replace Gnome Window Switcher pop-up'),
-                _('The original AltTab Window Switcher Popup will be replaced by this extended version.'),
-                _newGtkSwitch(),
-                'winSwitcherPopupInjectAlttab'
-            )
-        );
-
-        let popupTimeoutAdjustment = new Gtk.Adjustment({
-                upper:          60000,
-                lower:            100,
-                step_increment:   100,
-                page_increment:  1000 });
-
-        optionsList.push(
-            _optionsItem(
-                _('Pop-up timeout (ms)'),
-                _('When the switcher pop-up is activated by a mouse, after this period of inactivity the pop-up switcher disappears.'),
-                _newSpinButton(popupTimeoutAdjustment),
-                'winSwitcherPopupTimeout'
-            )
-        );
-
-        optionsList.push(
-            _optionsItem(
-                _('Place the Switcher at mouse pointer'),
-                null,
-                _newGtkSwitch(),
-                'winSwitcherPopupPointer'
-            )
-        );
-
-        optionsList.push(
-            _optionsItem(
-                _('Default Switcher position'),
-                null,
-                _newComboBox(),
-                'winSwitcherPopupPosition',
-                [   [_('Top'),  1],
-                    [_('Center'), 2],
-                    [_('Bottom'), 3]
-                ]
-            )
-        );
-
-        optionsList.push(
-            _optionsItem(
-                _('Default Window Order'),
-                null,
-                _newComboBox(),
-                'winSwitcherPopupWinOrder',
-                [   [_('Default MRU'),           1],
-                    [_('Current monitor first'), 2],
-                    [_('Group applications'),    3],
-                    [_('By workspaces'),         4]
-                ]
-            )
-        );
-
-        optionsList.push(
-            _optionsItem(
-                _('Default Window Filter mode'),
-                null,
-                _newComboBox(),
-                'winSwitcherPopupWinFilter',
-                [   [_('All Windows'),       1],
-                    [_('Current Workspace'), 2],
-                    [_('Current Monitor'),   3]
-                ]
-            )
-        );
-
 
         let frame;
         let frameBox;
@@ -1183,6 +1117,7 @@ class OptionsPage extends Gtk.ScrolledWindow {
                 margin_bottom:4,
                 hexpand: true,
                 spacing: 20,
+                visible: true
             });
             for (let i of item[0]) {
                 box[box.add?'add':'append'](i);
@@ -1204,7 +1139,6 @@ function _newGtkSwitch() {
         halign: Gtk.Align.END,
         valign: Gtk.Align.CENTER,
         hexpand: true,
-        visible: true
     });
     sw.is_switch = true;
     return sw;
@@ -1229,7 +1163,6 @@ function _newComboBox() {
                                             halign: Gtk.Align.END,
                                             valign: Gtk.Align.CENTER,
                                             hexpand: true,
-                                            visible: true
         });
         const renderer = new Gtk.CellRendererText();
         comboBox.pack_start(renderer, true);
@@ -1305,14 +1238,10 @@ function _makeTitle(label) {
   return '<b>'+label+'</b>';
 }
 
-const _d40exclude = [
-];
-
-
 const CustomMenusPage = GObject.registerClass(
 class CustomMenusPage extends Gtk.Notebook {
     _init() {
-        super._init({tab_pos: Gtk.PositionType.TOP});
+        super._init({tab_pos: Gtk.PositionType.TOP, visible: true});
         this._menusCount = 4;
         this._alreadyBuilt = false;
         this.buildPage();
@@ -1338,7 +1267,7 @@ class CustomMenusPage extends Gtk.Notebook {
 const CustomMenuPage = GObject.registerClass(
 class CustomMenuPage extends Gtk.ScrolledWindow {
     _init(menuIndex) {
-        super._init({margin_start: 12, margin_end: 12, margin_top: 12, margin_bottom: 12});
+        super._init({margin_start: 12, margin_end: 12, margin_top: 12, margin_bottom: 12, visible: true});
         this._alreadyBuilt= false;
         this._menuIndex = menuIndex;
     }
@@ -1347,7 +1276,7 @@ class CustomMenuPage extends Gtk.ScrolledWindow {
         if (this._alreadyBuilt) return;
 
         this.menuItems = mscOptions[`customMenu${this._menuIndex}`];
-        this.grid = new Gtk.Grid({margin_top: 6, hexpand: true});
+        this.grid = new Gtk.Grid({margin_top: 6, hexpand: true, visible: true});
         let lbl = new Gtk.Label({
             use_markup: true,
             label: _makeTitle(_('Select Custom Menu Items:')),
@@ -1421,7 +1350,7 @@ class CustomMenuPage extends Gtk.ScrolledWindow {
         let iter, iter1, iter2;
         for (let i = 0; i < actionList.length; i++){
             let item = actionList[i];
-            if ((GNOME40 && _d40exclude.indexOf(item[1]) > -1) || !item[3]) continue;
+            if ((_excludedItems.indexOf(item[1]) > -1) || !item[3]) continue;
 
             if (!item[0]){
                 iter1 = this.treeView.model.append(null);
