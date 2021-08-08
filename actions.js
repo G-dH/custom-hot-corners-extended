@@ -25,6 +25,7 @@ const WorkspaceSwitcherPopup = imports.ui.workspaceSwitcherPopup;
 const Volume                 = imports.ui.status.volume;
 const PopupMenu              = imports.ui.popupMenu;
 const BoxPointer             = imports.ui.boxpointer;
+const AltTab                 = imports.ui.altTab;
 const Util                   = imports.misc.util;
 const ExtensionUtils         = imports.misc.extensionUtils;
 const SystemActions          = imports.misc.systemActions;
@@ -32,7 +33,6 @@ const Me                     = ExtensionUtils.getCurrentExtension();
 const Settings               = Me.imports.settings;
 
 let WindowSwitcherPopup      = null;
-let AltTab                   = null;
 let Shaders                  = null;
 let WinTmb                   = null;
 let _origAltTabWSP           = null;
@@ -101,7 +101,6 @@ var Actions = class {
         //global.workspace_manager.disconnect(this._signalsCollector.pop());
         this._removeThumbnails(full);
         this._destroyDimmerActors();
-        this._removeAltTabInjection();
         this._removeCustomMenus();
 
     }
@@ -169,24 +168,6 @@ var Actions = class {
         }
     }
 
-    _updateAltTabInjection(state) {
-        if (state && !_origAltTabWSP) {
-            if (!AltTab) AltTab = imports.ui.altTab;
-            if (!WindowSwitcherPopup)
-                WindowSwitcherPopup = Me.imports.windowSwitcherPopup.WindowSwitcherPopup;
-
-            _origAltTabWSP = AltTab.WindowSwitcherPopup;
-            AltTab.WindowSwitcherPopup = WindowSwitcherPopup;
-        } else if (!state &&_origAltTabWSP)
-            this._removeAltTabInjection();
-    }
-
-    _removeAltTabInjection() {
-        if (_origAltTabWSP)
-            AltTab.WindowSwitcherPopup = _origAltTabWSP;
-        _origAltTabWSP = null;
-    }
-
     _removeCustomMenus() {
         for (let i = 1; i < 5; i++) {
             if (this.customMenu[i]) {
@@ -196,10 +177,15 @@ var Actions = class {
         }
     }
 
-    extensionEnabled() {
+    extensionEnabled(uuid = null) {
         this._getShellSettings();
         let enabled = this._shellSettings.get_strv('enabled-extensions');
-        if (enabled.indexOf(Me.metadata.uuid) > -1)
+        enabled = enabled.indexOf(Me.metadata.uuid) > -1;
+        let disabled = this._shellSettings.get_strv('disabled-extensions');
+        disabled = disabled.indexOf(Me.metadata.uuid) > -1;
+        let disableUser = this._shellSettings.get_boolean('disable-user-extensions');
+
+        if(enabled && !disabled && !disableUser)
             return true;
         return false;
     }
@@ -268,8 +254,8 @@ var Actions = class {
     }
     _getFocusedWindow(sameWorkspace = false) {
         let win = global.display.get_focus_window();
-        if (    !win ||
-                (sameWorkspace && (global.workspace_manager.get_active_workspace() !== win.get_workspace()) )
+        if ( !win ||
+             (sameWorkspace && (global.workspace_manager.get_active_workspace() !== win.get_workspace()) )
             ) {
             return null;
         }
@@ -1065,7 +1051,8 @@ var Actions = class {
         let monitorHeight = get_current_monitor_geometry().height;
         let scale = this._mscOptions.winThumbnailScale;
         this.windowThumbnails.push(new WinTmb.WindowThumbnail(metaWin, this, {  'actionTimeout': this._mscOptions.actionEventDelay,
-                                                                                'heightScale' : Math.floor(scale / 100 * monitorHeight)
+                                                                                'height' : Math.floor(scale / 100 * monitorHeight),
+                                                                                'thumbnailsOnScreen' : this.windowThumbnails.length
                                                                              })
         );
     }
@@ -1079,33 +1066,39 @@ var Actions = class {
     showWindowSwitcherPopup( args = {   'monitor-index':     -1,
                                         'position-pointer':   null,
                                         'filter-mode':       -1,
-                                        'sort-mode':          0,
+                                        'group-mode':         0,
                                         'timeout':            0,
                                         'triggered-keyboard': false,
                                         'shortcut':           '',
                                         'filter-focused-app': false,
                                         'filter-pattern':     null   }) {
-        if (!WindowSwitcherPopup) {
-            WindowSwitcherPopup = Me.imports.windowSwitcherPopup.WindowSwitcherPopup;
-        }
-        let altTabPopup = new WindowSwitcherPopup();
-        // behaviour variables
-        altTabPopup.KEYBOARD_TRIGGERED = args['triggered-keyboard'];
-        altTabPopup._selectApp         = args['filter-focused-app'] ? altTabPopup._getWindowApp(this._getFocusedWindow()) : null;
-        if ( args['timeout'])                   altTabPopup.NO_MODS_TIMEOUT  = args['timeout']
-        if ( args['position-pointer'] !== null) altTabPopup.POSITION_POINTER = args['position-pointer'];
-        if ( args['sort-mode']        !== 0)    altTabPopup.SORT_MODE        = args['sort-mode'];
-        if ( args['filter-mode']       > -1)    altTabPopup.WIN_FILTER_MODE  = args['filter-mode'];
-        if ( args['monitor-index']     > -1)    altTabPopup._monitorIndex    = args['monitor-index'];
-        if ( args['filter-pattern']   !== null) {
-            altTabPopup._searchEntry     = args['filter-pattern'];
-            altTabPopup._modifierMask    = 0;
-        }
-        if (!args['triggered-keyboard'])        altTabPopup._modifierMask    = 0;
 
-        altTabPopup.connect('destroy', ()=> altTabPopup = null);
-        altTabPopup._keyBind = args['shortcut']? args['shortcut'].replace(/<.+>/, '') : '';
-        altTabPopup.show();
+        const WindowSwitcherPopup = AltTab.WindowSwitcherPopup;
+        let altTabPopup = new WindowSwitcherPopup();
+        const advancedSwitcherEnabled = altTabPopup.showOrig ? true : false;
+        if (advancedSwitcherEnabled) {
+            // behaviour variables
+            altTabPopup.KEYBOARD_TRIGGERED = args['triggered-keyboard'];
+            altTabPopup._selectApp         = args['filter-focused-app'] ? altTabPopup._getWindowApp(this._getFocusedWindow()) : null;
+            if ( args['timeout'])                   altTabPopup.NO_MODS_TIMEOUT  = args['timeout']
+            if ( args['position-pointer'] !== null) altTabPopup.POSITION_POINTER = args['position-pointer'];
+            if ( args['group-mode']       !== 0)    altTabPopup.GROUP_MODE       = args['group-mode'];
+            if ( args['filter-mode']       > -1)    altTabPopup.WIN_FILTER_MODE  = args['filter-mode'];
+            if ( args['monitor-index']     > -1)    altTabPopup._monitorIndex    = args['monitor-index'];
+            if ( args['filter-pattern']   !== null) {
+                altTabPopup._searchEntry     = args['filter-pattern'];
+                altTabPopup._modifierMask    = 0;
+            } else altTabPopup._searchEntry = null;
+            if (!args['triggered-keyboard'])        altTabPopup._modifierMask    = 0;
+    
+            altTabPopup.connect('destroy', ()=> altTabPopup = null);
+            altTabPopup._keyBind = args['shortcut']? args['shortcut'].replace(/<.+>/, '') : '';
+            altTabPopup.show();
+        // if Advanced Alt+Tab Window Switcher not available, use default popup
+        } else {
+            altTabPopup._resetNoModsTimeout = ()=> {return};
+            altTabPopup.show(0, 0, 0);
+        }
     }
 
     showCustomMenu(actionTrigger, menuIndex) {
