@@ -2,7 +2,11 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ([2.69])
+<<<<<<< HEAD
 AC_INIT([custom-hot-corners-extended], [0.8], [GdH])
+=======
+AC_INIT([custom-hot-corners-extended], [0.9], [GdH])
+>>>>>>> devel
 AM_INIT_AUTOMAKE([foreign])
 
 AC_SUBST([uuid], [$PACKAGE_NAME@G-dH.github.com])
