@@ -21,7 +21,6 @@ const Meta                   = imports.gi.Meta;
 const Shell                  = imports.gi.Shell;
 const GObject                = imports.gi.GObject;
 const GLib                   = imports.gi.GLib;
-const Gdk                    = imports.gi.Gdk;
 
 const Main                   = imports.ui.main;
 const Layout                 = imports.ui.layout;
@@ -81,7 +80,6 @@ function enable() {
             GLib.PRIORITY_DEFAULT,
             500,
             () => {
-                    //Performance.start('enable');
                     if (!actions) {
                         actions = new ActionLib.Actions();
                         Main.extensionManager.gdhActions = actions;
@@ -94,7 +92,6 @@ function enable() {
                         actionTrigger = new ActionTrigger(_mscOptions);
                     _replace_updateHotCornersFunc();
                     _updateWatch();
-                    //Performance.end();
                     return false;
             }
     );
@@ -163,7 +160,6 @@ function _updateMscOptions(key, doNotUpdateHC = false) {
     actions.WS_INDICATOR_MODE   = _mscOptions.wsSwitchIndicatorMode;
     actions.WIN_WRAPAROUND      = _mscOptions.winSwitchWrap;
     actions.WIN_SKIP_MINIMIZED  = _mscOptions.winSkipMinimized;
-    actions._updateAltTabInjection(_mscOptions.winSwitcherPopupInjectAlttab);
     ACTION_TIMEOUT        = _mscOptions.actionEventDelay;
     FULLSCREEN_GLOBAL     = _mscOptions.fullscreenGlobal;
     RIPPLE_ANIMATION      = _mscOptions.rippleAnimation;
@@ -907,7 +903,7 @@ const ActionTrigger = class ActionTrigger {
         // arguments: monitor-index        = -1/index
         //            position-pointer     = null-> gsettings/true/false,
         //            filter-mode          = 1 - all windows, 2 - current ws, 3 - current monitor
-        //            sort-mode            = 0 -> gsettings, 1 - default MRU, 2 - currentMonFirst, 3 - sortByApps, 4 - sortByWs
+        //            group-mode           = 0 -> default, 1 - None, 2 - currentMonFirst, 3 - Apps, 4 - Workspaces
         //            timeout              = int (ms)
         //            triggered-keyboard   = true/false
         //            shortcut             = null/shortcut from gsettings to string
@@ -915,7 +911,7 @@ const ActionTrigger = class ActionTrigger {
         actions.showWindowSwitcherPopup({   'monitor-index':      -1,
                                             'position-pointer':   null,
                                             'filter-mode':        1,
-                                            'sort-mode':          0,
+                                            'group-mode':         0,
                                             'timeout':            0,
                                             'triggered-keyboard': this._triggeredByKeyboard,
                                             'shortcut':           this._getShortcut('win-switcher-popup-all-ce'),
@@ -927,7 +923,7 @@ const ActionTrigger = class ActionTrigger {
         actions.showWindowSwitcherPopup({   'monitor-index':      -1,
                                             'position-pointer':   null,
                                             'filter-mode':        2,
-                                            'sort-mode':          0,
+                                            'group-mode':         0,
                                             'timeout':            0,
                                             'triggered-keyboard': this._triggeredByKeyboard,
                                             'shortcut':           this._getShortcut('win-switcher-popup-ws-ce'),
@@ -939,7 +935,7 @@ const ActionTrigger = class ActionTrigger {
         actions.showWindowSwitcherPopup({   'monitor-index':      -1,
                                             'position-pointer':   null,
                                             'filter-mode':        3,
-                                            'sort-mode':          0,
+                                            'group-mode':         0,
                                             'timeout':            0,
                                             'triggered-keyboard': this._triggeredByKeyboard,
                                             'shortcut':           this._getShortcut('win-switcher-popup-ws-ce'),
@@ -951,7 +947,7 @@ const ActionTrigger = class ActionTrigger {
         actions.showWindowSwitcherPopup({   'monitor-index':      -1,
                                             'position-pointer':   null,
                                             'filter-mode':        1,
-                                            'sort-mode':          0,
+                                            'group-mode':         3,
                                             'timeout':            0,
                                             'triggered-keyboard': this._triggeredByKeyboard,
                                             'shortcut':           this._getShortcut('win-switcher-popup-apps-ce'),
@@ -963,7 +959,7 @@ const ActionTrigger = class ActionTrigger {
         actions.showWindowSwitcherPopup({   'monitor-index':      -1,
                                             'position-pointer':   null,
                                             'filter-mode':        1,
-                                            'sort-mode':          0,
+                                            'group-mode':         0,
                                             'timeout':            0,
                                             'triggered-keyboard': this._triggeredByKeyboard,
                                             'shortcut':           this._getShortcut('win-switcher-popup-class-ce'),
@@ -975,7 +971,7 @@ const ActionTrigger = class ActionTrigger {
         actions.showWindowSwitcherPopup({   'monitor-index':      -1,
                                             'position-pointer':   null,
                                             'filter-mode':        1,
-                                            'sort-mode':          2,
+                                            'group-mode':         2,
                                             'timeout':            0,
                                             'triggered-keyboard': this._triggeredByKeyboard,
                                             'shortcut':           this._getShortcut('win-switcher-popup-ws-first-ce'),
@@ -988,7 +984,7 @@ const ActionTrigger = class ActionTrigger {
         actions.showWindowSwitcherPopup({   'monitor-index':      -1,
                                             'position-pointer':   false,
                                             'filter-mode':        2,
-                                            'sort-mode':          0,
+                                            'group-mode':         0,
                                             'timeout':            0,
                                             'triggered-keyboard': this._triggeredByKeyboard,
                                             'shortcut':           null,
@@ -1001,7 +997,7 @@ const ActionTrigger = class ActionTrigger {
         actions.showWindowSwitcherPopup({   'monitor-index':      -1,
                                             'position-pointer':   false,
                                             'filter-mode':        2,
-                                            'sort-mode':          0,
+                                            'group-mode':         0,
                                             'timeout':            0,
                                             'triggered-keyboard': this._triggeredByKeyboard,
                                             'shortcut':           null,
@@ -1013,7 +1009,7 @@ const ActionTrigger = class ActionTrigger {
         actions.showWindowSwitcherPopup({   'monitor-index':      -1,
                                             'position-pointer':   null,
                                             'filter-mode':        1,
-                                            'sort-mode':          0,
+                                            'group-mode':         0,
                                             'timeout':            0,
                                             'triggered-keyboard': this._triggeredByKeyboard,
                                             'shortcut':           this._getShortcut('win-switcher-popup-all-ce'),
@@ -1251,6 +1247,10 @@ const ActionTrigger = class ActionTrigger {
     }
     _makeThumbnailWin() {
         actions.makeThumbnailWindow();
+    }
+    _minimizeToThumbnail() {
+        actions.makeThumbnailWindow();
+        actions.minimizeWindow();
     }
     _removeWinThumbnails() {
         actions._removeThumbnails(true);
