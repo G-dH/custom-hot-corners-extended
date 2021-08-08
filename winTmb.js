@@ -26,10 +26,11 @@ const DND                    = imports.ui.dnd;
 var   WindowThumbnail = GObject.registerClass(
 class WindowThumbnail extends St.Bin {
     _init(metaWin, parent, args) {
-        this._initTmbHeight = args.heightScale;
+        this._initTmbHeight = args.height;
         this._minimumHeight = Math.floor(5 / 100 * global.display.get_monitor_geometry(global.display.get_current_monitor()).height);
         this._actionTimeoutId = null;
         this._scrollTimeout = args.actionTimeout;
+        this._positionOffset = args.thumbnailsOnScreen;
         this._reverseTmbWheelFunc = false;
         this._parent = parent;
         this.w = metaWin;
@@ -75,7 +76,7 @@ class WindowThumbnail extends St.Bin {
         const offset = 20;
         let monitor = Main.layoutManager.monitors[global.display.get_current_monitor()];
         let x = Math.min(monitor.x + monitor.width  - (this.window.width  * this.scale) - offset);
-        let y = Math.min(monitor.y + monitor.height - (this.window.height * this.scale) - offset);
+        let y = Math.min(monitor.y + monitor.height - (this.window.height * this.scale) - offset - ((this._positionOffset * this._initTmbHeight) % (monitor.height - this._initTmbHeight)));
         return [x,y];
     }
 
