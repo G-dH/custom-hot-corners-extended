@@ -28,13 +28,12 @@ A GNOME Shell Extension which allows you to control and navigate Gnome Shell env
 - Pressure barrier sizes are now adjustable by scale controllers on the main corner page along with clickable area expansion for better orientation in settings.
 - Barrier size is now adjustable in percentage of the monitor's width/heigt instead of pixels.
 - Option *Make active corners/edges visible* now show the pressure barriers too.
-- Added action *Window Thumbnail (PIP)* - make a thumbnail preview (like Picture in Picture) of the active window which you can drag and drop anywhere on the screen. Thumbnail size can be adjusted by a mouse scroll wheel and you can even change the source window of the thumbnail. You can make as many thumbnails as you want, not just one.
-- Added new shader filters - you'll find color blind vision simulation and correction filters in Accessibility menu. Inversion filters have been enhanced - Invert Lightness, Invert Lightness - Wite to Grey (for lower contrast at night time) and full color inversion, now all gamma corrected to make deep dark shades distinguishable.
-- Added actions to trigger default Window Switcher Pop-up. When you install and enable the `Advanced Alt+TAb Window Switcher` extension you'll be able to use more actions with diffrent settigs of the pop-up switcher, including position on the screen.
-- Added action to trigger default App Switcher Pop-up.
-- Added 4 custom menus to action menu - you can populate up to 4 different menus with actions of your choice and trigger them the same way as other single actions.
-- Added `Minimize to thumbnail` action - live window thumbnail of the focused window will be created and window will be minimized.
-- Workspace switcher has new optional switching indicator - overlay index. Shows big transparent index number of switched workspace on the bottom half of the screen.
+- Added action **Window Thumbnail (PIP)** - make a thumbnail preview (like Picture in Picture) of the active window which you can drag and drop anywhere on the screen. Thumbnail size can be adjusted by a mouse scroll wheel and you can even change the source window of the thumbnail. You can make as many thumbnails as you want, not just one.
+- Added new shader filters - color blind vision simulation and correction filters in Accessibility menu. Inversion filters have been enhanced - Invert Lightness, Invert Lightness - Wite to Grey (for lower contrast at night time) and full color inversion, now all gamma corrected to make deep dark shades distinguishable.
+- Added actions to trigger default Window and App Switcher Pop-ups. When you install and enable the **Advanced Alt+TAb Window Switcher** extension you'll be able to use more actions with diffrent settigs of this extended window switcher pop-up.
+- Added 4 **Custom Menus** to action menu - you can populate up to 4 different menus with actions of your choice and trigger them the same way as other single actions.
+- Added **Minimize to thumbnail** action - live window thumbnail of the focused window will be created and window will be minimized.
+- Workspace switcher has **new** optional **workspace switcher indicator - overlay index**. Shows a big transparent index number of switched workspace on the bottom half of the screen.
 
 **v8**:
 - **Optional keyboard shortcuts for most actions** - CHC-E offers many unique actions which can be now used even without a mouse
@@ -45,7 +44,8 @@ A GNOME Shell Extension which allows you to control and navigate Gnome Shell env
 
 ### DND Window Thumbnails
 
-Window thumbnails are scaled-down window clones that can be used to monitor windows not currently visible on the screen. By pressing `T` hotkey you can create thumbnail of the selected window and place it at bottom right of the monitor with mouse pointer. You can create as many clones as you want and place them anywhere on the screen. Each thumbnail can be independently resized, you can adjust its opacity, even change its source window. When the thumbnail's source window close, thumbnail will be removed.
+Window thumbnails are scaled-down window clones that can be used to monitor windows not currently visible on the screen. Default position for the thumbnail is bottom right corner of the current monitor. You can create as many clones as you want and place them anywhere on the screen. Each thumbnail can be independently resized, you can adjust its opacity, even change its source window. When the thumbnail's source window close, thumbnail is removed too.
+The code is based on window preview of *BaBar Task Bar* extension.
 
     Double click          - activate source window
     Primary cLick         - toggle scroll wheel function (resize / source)
@@ -60,7 +60,7 @@ Window thumbnails are scaled-down window clones that can be used to monitor wind
 ![Extension configuration window](screenshot4.png)
 ![Extension configuration window](screenshot5.png)
 
-## Installation
+### Installation
 
 Install the extension from the from the [GNOME extension website](https://extensions.gnome.org/extension/4167/custom-hot-corners-extended/) or from git repository with the following steps (which require the GNU Build System):
 
