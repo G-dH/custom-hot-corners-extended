@@ -8,7 +8,6 @@ EXTRA_DIST = settings.js \
              actions.js \
              winTmb.js \
              shaders.js \
-             windowSwitcherPopup.js \
              stylesheet.css
 
 topextensiondir = $(datadir)/gnome-shell/extensions
@@ -20,7 +19,6 @@ extension_DATA = settings.js \
                  actions.js \
                  winTmb.js \
                  shaders.js \
-                 windowSwitcherPopup.js \
                  stylesheet.css \
                  README.md \
                  LICENSE
