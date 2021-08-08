@@ -14,7 +14,9 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 'use strict';
+
 const {GLib, Gio} = imports.gi;
 
 const ExtensionUtils = imports.misc.extensionUtils;
@@ -23,8 +25,7 @@ const Me = ExtensionUtils.getCurrentExtension();
 const Config = imports.misc.config;
 var   shellVersion = Config.PACKAGE_VERSION;
 var   GNOME40 = shellVersion.startsWith("40")?
-                    GNOME40 = true:
-                    GNOME40 = false;
+                    true : false;
 
 const Gettext = imports.gettext.domain(Me.metadata['gettext-domain']);
 var _ = Gettext.gettext;
@@ -112,42 +113,6 @@ var MscOptions = class MscOptions {
     }
     set winThumbnailScale(scale) {
         this._gsettings.set_int('win-thumbnail-scale', scale);
-    }
-    get winSwitcherPopupTimeout() {
-        return this._gsettings.get_int('win-switcher-popup-timeout');
-    }
-    set winSwitcherPopupTimeout(timeout) {
-        this._gsettings.set_int('win-switcher-popup-timeout', timeout);
-    }
-    get winSwitcherPopupPosition() {
-        return this._gsettings.get_int('win-switcher-popup-position');
-    }
-    set winSwitcherPopupPosition(position) {
-        this._gsettings.set_int('win-switcher-popup-position', position);
-    }
-    get winSwitcherPopupPointer() {
-        return this._gsettings.get_boolean('win-switcher-popup-pointer');
-    }
-    set winSwitcherPopupPointer(bool_val) {
-        this._gsettings.set_boolean('win-switcher-popup-pointer', bool_val);
-    }
-    get winSwitcherPopupWinFilter() {
-        return this._gsettings.get_int('win-switcher-popup-win-filter');
-    }
-    set winSwitcherPopupWinFilter(filterMode) {
-        this._gsettings.set_int('win-switcher-popup-win-filter', filterMode);
-    }
-    get winSwitcherPopupWinOrder() {
-        return this._gsettings.get_int('win-switcher-popup-win-order');
-    }
-    set winSwitcherPopupWinOrder(orderMode) {
-        this._gsettings.set_int('win-switcher-popup-win-order', orderMode);
-    }
-    get winSwitcherPopupInjectAlttab() {
-        return this._gsettings.get_boolean('win-switcher-popup-inject-alttab');
-    }
-    set winSwitcherPopupInjectAlttab(bool_val) {
-        this._gsettings.set_boolean('win-switcher-popup-inject-alttab', bool_val);
     }
     get wsSwitchIgnoreLast() {
         return this._gsettings.get_boolean('ws-switch-ignore-last');
@@ -407,6 +372,24 @@ function getSettings(schema, path) {
     return new Gio.Settings(args);
 }
 
+function extensionEnabled(uuid = null) {
+    const settings = getSettings( 'org.gnome.shell',
+                            '/org/gnome/shell/');
+
+    uuid = uuid ? uuid : Me.metadata.uuid;
+
+    let enabled = settings.get_strv('enabled-extensions');
+    enabled = enabled.indexOf(uuid) > -1;
+    let disabled = settings.get_strv('disabled-extensions');
+    disabled = disabled.indexOf(uuid) > -1;
+    let disableUser = settings.get_boolean('disable-user-extensions');
+    if(enabled && !disabled && !disableUser)
+        return true;
+    return false;
+}
+
+const winSwitcherPopup = extensionEnabled('advanced-alt-tab@G-dH.github.com-dev');
+
 //      [root/submenu, action key,      action name,                                accelerator, icon name
 var actionList = [
         [   0, 'disabled'              ,   _('-'),                                       false,  ''],
@@ -435,6 +418,7 @@ var actionList = [
         [   1, 'reorder-ws-prev'       ,   _(`Reorder Workspace - ${GNOME40? _('Left') : _('Up')}`),  true,  GNOME40 ? 'go-previous-symbolic':'go-up-symbolic'],
         [   1, 'reorder-ws-next'       ,   _(`Reorder Workspace - ${GNOME40? _('Right'): _('Down')}`),true,  GNOME40 ? 'go-next-symbolic':'go-down-symbolic'  ],
 
+        [null, 'win-navigation-submenu',   _('Windows - Navigation'),                     true,  'focus-windows-symbolic'],
         [   1, 'recent-win'            ,   _('Switch to Recent Window'),                  true,  'document-open-recent-symbolic'],
         [   1, 'prev-win-mon'          ,   _('Previous Window (current monitor)'),        true,  'go-previous-symbolic'],
         [   1, 'prev-win-ws'           ,   _('Previous Window (current WS)'),             true,  'go-previous-symbolic'],
@@ -444,13 +428,13 @@ var actionList = [
         [   1, 'next-win-all'          ,   _('Next Window (all)'),                        true,  'go-next-symbolic'],
 
         [null, 'win-switcher-popup-submenu', _('Windows - Switcher Popups'),              true,  'focus-windows-symbolic'],
-        [   1, 'win-switcher-popup-all',   _('Window Switcher Popup (all win.)'),         true,  'focus-windows-symbolic'],
-        [   1, 'win-switcher-popup-ws' ,   _('Window Switcher Popup (current WS)'),       true,  'focus-windows-symbolic'],
+        [   1, 'win-switcher-popup-all',   _('Window Switcher Popup (all windows)'),      true,  'focus-windows-symbolic'],
+        [   1, 'win-switcher-popup-ws' ,   _('Window Switcher Popup (current ws)'),       true,  'focus-windows-symbolic'],
         [   1, 'win-switcher-popup-mon',   _('Window Switcher Popup (current monitor)'),  true,  'focus-windows-symbolic'],
-        [   1, 'win-switcher-popup-ws-first', _('Window Switcher Popup (current WS first)') ,true,  'focus-windows-symbolic'],
+        [   1, 'win-switcher-popup-ws-first', _('Window Switcher Popup (current ws first)') ,true,  'focus-windows-symbolic'],
         [   1, 'win-switcher-popup-apps',  _('Window Switcher Popup (sorted by apps)'),   true,  'focus-windows-symbolic'],
         [   1, 'win-switcher-popup-class', _('Window Switcher Popup (focused app only)'), true,  'focus-windows-symbolic'],
-        [   1, 'win-switcher-popup-search', _('Window Switcher Popup (search mode)'),         true,  'focus-windows-symbolic'],
+        [   1, 'win-switcher-popup-search', _('Window Switcher Popup (type to search)'),  true,  'focus-windows-symbolic'],
         [   1, 'app-switcher-popup-all',   _('App Switcher Popup (all)'),                 true,  'focus-windows-symbolic'],
 
         [null, 'win-control-submenu'   ,   _('Windows - Control'),                        true,  'focus-windows-symbolic'],
@@ -460,13 +444,14 @@ var actionList = [
         [   1, 'fullscreen-win'        ,   _('Fullscreen Window (toggle)'),               true,  'view-fullscreen-symbolic'],
         [   1, 'fullscreen-on-empty-ws',   _('Fullscreen Window on Empty WS (toggle)'),   true,  'window-maximize-symbolic'],
         [   1, 'above-win'             ,   _('Win Always on Top (toggle)'),               true,  'go-top-symbolic'],
-        [   1, 'stick-win'             ,   _('Win Always on Visible WS (tgl)'),           true,  'view-pin-symbolic'],
-        [   1, 'kill-app'              ,   _('Kill Application'),                         true,  'process-stop-symbolic'],
-        [   1, 'remove-win-thumbnails' ,   _('Remove all Window Thumbnails'),             true,  ''],
+        [   1, 'stick-win'             ,   _('Win Always on Visible WS (toggle)'),        true,  'view-pin-symbolic'],
+        [   1, 'kill-app'              ,   _('Kill Application (kill -9)'),               true,  'process-stop-symbolic'],
         [   1, 'unminimize-all-ws'     ,   _('Unminimize All (workspace)'),               true,  'window-restore-symbolic'],
 
         [null, 'win-thumbnails-submenu',   _('DND Window Thumbnails (Clones / PIP)'),     true,  ''],
-        [   1, 'make-thumbnail-win'    ,   _('Create Window Thumbnail (at bottom/right)'),true,  ''],
+        [   1, 'make-thumbnail-win'    ,   _('Create Window Thumbnail (at bottom-right)'),true,  ''],
+        [   1, 'minimize-to-thumbnail' ,   _('Minimize Window to Thumbnail')             ,true,  ''],
+        [   1, 'remove-win-thumbnails' ,   _('Remove all Window Thumbnails'),             true,  ''],
 
         [null, 'win-adjust-submenu'    ,   _('Windows - Visual Adjustments'),             true,  'view-reveal-symbolic'],
         [   1, 'bright-up-win'         ,   _('Brightness Up (window)'),                   true,  'display-brightness-symbolic'],
@@ -505,9 +490,9 @@ var actionList = [
         [   1, 'remove-effects-all'    ,   _('Remove All Effects (global)'),              true,  'window-close-symbolic'],
 
         [null, 'access-submenu'        ,   _('Universal Access'),                         true,  'preferences-desktop-accessibility-symbolic'],
-        [   1, 'toggle-zoom'           ,   _('Zoom Toggle'),                              true,  'zoom-in-symbolic'],
-        [   1, 'zoom-in'               ,   _('Zoom In'),                                  true,  'zoom-in-symbolic'],
-        [   1, 'zoom-out'              ,   _('Zoom Out'),                                 true,  'zoom-out-symbolic'],
+        [   1, 'toggle-zoom'           ,   _('Magnifier - Zoom 2x (toggle)'),             true,  'zoom-in-symbolic'],
+        [   1, 'zoom-in'               ,   _('Magnifier - Zoom In'),                      true,  'zoom-in-symbolic'],
+        [   1, 'zoom-out'              ,   _('Magnifier - Zoom Out'),                     true,  'zoom-out-symbolic'],
         [   1, 'screen-reader'         ,   _('Screen Reader (toggle)'),                   true,  'audio-speakers-symbolic'],
         [   1, 'large-text'            ,   _('Large Text (toggle)'),                      true,  'insert-text-symbolic'],
         [   1, 'keyboard'              ,   _('Screen Keyboard (toggle)'),                 true,  'input-keyboard-symbolic'],

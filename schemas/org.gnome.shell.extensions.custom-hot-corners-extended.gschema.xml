@@ -49,24 +49,6 @@
     <key name='win-switch-skip-minimized' type='b'>
       <default>false</default>
     </key>
-    <key name='win-switcher-popup-position' type='i'>
-      <default>2</default>
-    </key>
-    <key name='win-switcher-popup-pointer' type='b'>
-      <default>true</default>
-    </key>
-    <key name='win-switcher-popup-inject-alttab' type='b'>
-      <default>false</default>
-    </key>
-    <key name='win-switcher-popup-win-order' type='i'>
-      <default>1</default>
-    </key>
-    <key name='win-switcher-popup-win-filter' type='i'>
-      <default>1</default>
-    </key>
-    <key name='win-switcher-popup-timeout' type='i'>
-      <default>1500</default>
-    </key>
     <key name='win-thumbnail-scale' type='i'>
       <default>15</default>
     </key>
@@ -196,6 +178,9 @@
       <default>[]</default>
     </key>
     <key name='minimize-win-ce' type='as'>
+      <default>[]</default>
+    </key>
+    <key name='minimize-to-thumbnail-ce' type='as'>
       <default>[]</default>
     </key>
     <key name='fullscreen-win-ce' type='as'>
