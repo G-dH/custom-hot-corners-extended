@@ -1058,7 +1058,7 @@ class OptionsPage extends Gtk.ScrolledWindow {
 
         optionsList.push(
             _optionsItem(
-                _makeTitle(_('DND Windows Thumbnails:')),
+                _makeTitle(_('DND Window Thumbnails:')),
                 _('Window thumbnails are overlay clones of windows, can be draged by mouse anywhere on the screen.') + '\n'
                 + _('Thumbnail control:') + '\n    '
                 + _('Double click:    \t\tactivate source window') +  '\n    '
