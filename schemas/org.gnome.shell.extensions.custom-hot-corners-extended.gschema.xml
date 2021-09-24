@@ -147,10 +147,16 @@
     <key name='win-switcher-popup-class-ce' type='as'>
       <default>[]</default>
     </key>
+    <key name='win-switcher-popup-search-ce' type='as'>
+      <default>[]</default>
+    </key>
     <key name='app-switcher-popup-all-ce' type='as'>
       <default>[]</default>
     </key>
-    <key name='win-switcher-popup-search-ce' type='as'>
+    <key name='app-switcher-popup-ws-ce' type='as'>
+      <default>[]</default>
+    </key>
+    <key name='app-switcher-popup-mon-ce' type='as'>
       <default>[]</default>
     </key>
     <key name='prev-win-mon-ce' type='as'>

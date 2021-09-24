@@ -46,6 +46,8 @@ function init() {
         _excludedItems.push('win-switcher-popup-apps');
         _excludedItems.push('win-switcher-popup-class');
         _excludedItems.push('win-switcher-popup-search');
+        _excludedItems.push('app-switcher-popup-ws');
+        _excludedItems.push('app-switcher-popup-mon');
         _excludedItems.push('prev-workspace-popup');
         _excludedItems.push('next-workspace-popup');
     }
@@ -92,8 +94,8 @@ function buildPrefsWidget() {
         });
     }
     const optionsPage = new OptionsPage();
-    notebook.append_page(new CustomMenusPage, new Gtk.Label({ label: _('Custom')+'\n'+_('Menus'), halign: Gtk.Align.START}));
     notebook.append_page(new KeyboardPage(), new Gtk.Label({ label: _('Keyboard'), halign: Gtk.Align.START}));
+    notebook.append_page(new CustomMenusPage, new Gtk.Label({ label: _('Custom')+'\n'+_('Menus'), halign: Gtk.Align.START}));
     notebook.append_page(optionsPage , new Gtk.Label({ label: _('Options'), halign: Gtk.Align.START}));
 
 
@@ -509,7 +511,7 @@ class CornerPage extends Gtk.Grid {
         const expTitle = new Gtk.Label({
             use_markup: true,
             label: _makeTitle(_("Corner to edge expansions: ")),
-            tooltip_text: _("You can activate 'Make active corners/edges visible' option in Options page to see the results of this settings.")
+            tooltip_text: _("You can activate 'Make active corners/edges visible' option in Options to see the results of this settings.")
             
         });
         const frame = new Gtk.Frame({
@@ -555,8 +557,8 @@ class CornerPage extends Gtk.Grid {
 
     _buildBarrierSizeAdjustment() {
         const label = new Gtk.Label({
-                        label: _('Barrier size:'),
-                        tooltip_text: _('Set horizontal and vertical size of the barrier that reacts to the mouse pointer pressure (hot corner).') + '\n' +
+                        label: _('Hot barrier size:'),
+                        tooltip_text: _('Set horizontal and vertical size of the barrier that reacts to the mouse pointer pressure (part of hot corner).') + '\n' +
                                       _('Size can be set in percentage of the screen width and height.'),
                         halign: Gtk.Align.START
         })
@@ -1041,7 +1043,7 @@ class OptionsPage extends Gtk.ScrolledWindow {
         optionsList.push(
             _optionsItem(
                 _('Wraparound'),
-                null,
+                _('Whether the switcher should continue from the last window to the first and vice versa.'),
                 _newGtkSwitch(),
                 'winSwitchWrap'
             )

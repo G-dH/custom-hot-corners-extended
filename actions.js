@@ -15,22 +15,23 @@
 */
 'use strict';
 
-const GObject                = imports.gi.GObject;
-const GLib                   = imports.gi.GLib;
-const Clutter                = imports.gi.Clutter;
-const St                     = imports.gi.St;
-const Meta                   = imports.gi.Meta;
+const {GObject, GLib, Clutter, St, Meta, Shell} = imports.gi;
+
 const Main                   = imports.ui.main;
 const WorkspaceSwitcherPopup = imports.ui.workspaceSwitcherPopup;
 const Volume                 = imports.ui.status.volume;
 const PopupMenu              = imports.ui.popupMenu;
 const BoxPointer             = imports.ui.boxpointer;
 const AltTab                 = imports.ui.altTab;
+
 const Util                   = imports.misc.util;
-const ExtensionUtils         = imports.misc.extensionUtils;
 const SystemActions          = imports.misc.systemActions;
+const ExtensionUtils         = imports.misc.extensionUtils;
 const Me                     = ExtensionUtils.getCurrentExtension();
 const Settings               = Me.imports.settings;
+
+// gettext
+const _                      = Settings._;
 
 let WindowSwitcherPopup      = null;
 let Shaders                  = null;
@@ -379,6 +380,11 @@ var Actions = class {
         let win = this._getFocusedWindow(true);
         if (!win) return;
         win.delete(global.get_current_time());
+    }
+    quitApplication() {
+        let win = this._getFocusedWindow(true);
+        if (!win) return;
+        Shell.WindowTracker.get_default().get_window_app(win).request_quit();
     }
     killApplication() {
         let win = this._getFocusedWindow(true);
@@ -1071,7 +1077,8 @@ var Actions = class {
                                         'triggered-keyboard': false,
                                         'shortcut':           '',
                                         'filter-focused-app': false,
-                                        'filter-pattern':     null   }) {
+                                        'filter-pattern':     null,
+                                        'apps':               false }) {
 
         const WindowSwitcherPopup = AltTab.WindowSwitcherPopup;
         let altTabPopup = new WindowSwitcherPopup();
@@ -1087,15 +1094,20 @@ var Actions = class {
             if ( args['monitor-index']     > -1)    altTabPopup._monitorIndex    = args['monitor-index'];
             if ( args['filter-pattern']   !== null) {
                 altTabPopup._searchEntry     = args['filter-pattern'];
-                altTabPopup._modifierMask    = 0;
-            } else altTabPopup._searchEntry = null;
+                //altTabPopup._modifierMask    = 0;
+            } //else altTabPopup._searchEntry = null;
             if (!args['triggered-keyboard'])        altTabPopup._modifierMask    = 0;
-    
+            if ( args['apps']) {
+                altTabPopup._switcherMode   = 1; //SwitcherModes.APPS;
+                altTabPopup.SHOW_APPS       = true;
+            }
             altTabPopup.connect('destroy', ()=> altTabPopup = null);
             altTabPopup._keyBind = args['shortcut']? args['shortcut'].replace(/<.+>/, '') : '';
             altTabPopup.show();
         // if Advanced Alt+Tab Window Switcher not available, use default popup
         } else {
+            if (args['apps'])
+               altTabPopup = new AltTab.AppSwitcherPopup();
             altTabPopup._resetNoModsTimeout = ()=> {return};
             altTabPopup.show(0, 0, 0);
         }

@@ -16,11 +16,7 @@
  */
 'use strict';
 
-const Clutter                = imports.gi.Clutter;
-const Meta                   = imports.gi.Meta;
-const Shell                  = imports.gi.Shell;
-const GObject                = imports.gi.GObject;
-const GLib                   = imports.gi.GLib;
+const {GObject, GLib, Clutter, Meta, Shell} = imports.gi;
 
 const Main                   = imports.ui.main;
 const Layout                 = imports.ui.layout;
@@ -82,14 +78,15 @@ function enable() {
             () => {
                     if (!actions) {
                         actions = new ActionLib.Actions();
-                        Main.extensionManager.gdhActions = actions;
-                    }
-                    else actions.resume();
+                    } else
+                        actions.resume();
                     _origUpdateHotCorners = Main.layoutManager._updateHotCorners;
                     _initMscOptions();
                     _extensionEnabled = true;
                     if (!actionTrigger)
                         actionTrigger = new ActionTrigger(_mscOptions);
+                    else
+                        actionTrigger._bindShortcuts();
                     _replace_updateHotCornersFunc();
                     _updateWatch();
                     return false;
@@ -747,8 +744,8 @@ const ActionTrigger = class ActionTrigger {
 
     clean(full = true) {
         if (full) {
-            this._removeShortcuts();
         }
+        this._removeShortcuts();
         this._disconnectSettingsKB();
 
     }
@@ -856,10 +853,12 @@ const ActionTrigger = class ActionTrigger {
     }
     _prevWorkspaceOverview() {
         actions.switchWorkspace(Clutter.ScrollDirection.UP);
+        Main.overview.dash.showAppsButton.checked = false;
         Main.overview.show();
     }
     _nextWorkspaceOverview() {
         actions.switchWorkspace(Clutter.ScrollDirection.DOWN);
+        Main.overview.dash.showAppsButton.checked = false;
         Main.overview.show();
     }
     _recentWorkspace() {
@@ -938,7 +937,7 @@ const ActionTrigger = class ActionTrigger {
                                             'group-mode':         0,
                                             'timeout':            0,
                                             'triggered-keyboard': this._triggeredByKeyboard,
-                                            'shortcut':           this._getShortcut('win-switcher-popup-ws-ce'),
+                                            'shortcut':           this._getShortcut('win-switcher-popup-mon-ce'),
                                             'filter-focused-app': false,
                                             'filter-pattern':     null
                                         });
@@ -1018,10 +1017,52 @@ const ActionTrigger = class ActionTrigger {
                                         });
     }
     _appSwitcherPopupAll() {
-        actions.showAppSwitcherPopup();
+        actions.showWindowSwitcherPopup({   'monitor-index':      -1,
+                                            'position-pointer':   null,
+                                            'filter-mode':        1,
+                                            'group-mode':         0,
+                                            'timeout':            0,
+                                            'triggered-keyboard': this._triggeredByKeyboard,
+                                            'shortcut':           this._getShortcut('app-switcher-popup-all-ce'),
+                                            'filter-focused-app': false,
+                                            'filter-pattern':     '',
+                                            'apps':               true
+                                        });
     }
+    _appSwitcherPopupWs() {
+        actions.showWindowSwitcherPopup({   'monitor-index':      -1,
+                                            'position-pointer':   null,
+                                            'filter-mode':        2,
+                                            'group-mode':         0,
+                                            'timeout':            0,
+                                            'triggered-keyboard': this._triggeredByKeyboard,
+                                            'shortcut':           this._getShortcut('app-switcher-popup-ws-ce'),
+                                            'filter-focused-app': false,
+                                            'filter-pattern':     '',
+                                            'apps':               true
+                                        });
+    }
+    _appSwitcherPopupMon() {
+        actions.showWindowSwitcherPopup({   'monitor-index':      -1,
+                                            'position-pointer':   null,
+                                            'filter-mode':        3,
+                                            'group-mode':         0,
+                                            'timeout':            0,
+                                            'triggered-keyboard': this._triggeredByKeyboard,
+                                            'shortcut':           this._getShortcut('app-switcher-popup-mon-ce'),
+                                            'filter-focused-app': false,
+                                            'filter-pattern':     '',
+                                            'apps':               true
+                                        });
+    }
+    /*_appSwitcherPopupAll() {
+        actions.showAppSwitcherPopup();
+    }*/
     _closeWin() {
         actions.closeWindow();
+    }
+    _quitApp() {
+        actions.quitApplication();
     }
     _killApp() {
         actions.killApplication();
