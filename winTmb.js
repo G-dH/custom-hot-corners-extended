@@ -15,11 +15,8 @@
 */
 'use strict';
 
-const GObject                = imports.gi.GObject;
-const GLib                   = imports.gi.GLib;
-const St                     = imports.gi.St;
-const Clutter                = imports.gi.Clutter;
-const Meta                   = imports.gi.Meta;
+const {GObject, GLib, Clutter, St, Meta} = imports.gi;
+
 const Main                   = imports.ui.main;
 const DND                    = imports.ui.dnd;
 

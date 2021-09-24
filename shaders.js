@@ -14,8 +14,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 'use strict';
-const GObject                = imports.gi.GObject;
-const Clutter                = imports.gi.Clutter;
+
+const {GObject, Clutter}     = imports.gi;
 const ExtensionUtils         = imports.misc.extensionUtils;
 const Me                     = ExtensionUtils.getCurrentExtension();
 
