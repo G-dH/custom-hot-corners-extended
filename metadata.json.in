@@ -1,9 +1,10 @@
 {
-    "description": "Navigate and control the Gnome Shell environment by a mouse through the corners and edges of your monitors",
+    "description": "Give a function to any corner or edge of your monitors. Mouse pointer pressure, clicks and scrolls over the corners/edges can trigger any of dozens of built-in actions.\nThis extension is a big collection of actions that lets you navigate and control the Gnome Shell environment and opened windows and launch applications and scripts not only through the corners and edges of your monitors, but also by the custom keyboard shortcuts.\n\nRestart your Gnome Shell after each update of the extension to load new code, and reload this site to get rid of the error message, before you post a bug report.\nPlease report bugs/issues on GitHub linked below and add output from these two commands:\njournalctl /usr/bin/gnome-shell --since \"2 days ago\" | grep corners-extended\njournalctl /usr/bin/gjs --since \"2 days ago\" | grep corners-extended",
     "shell-version": [
-    	"3.36",
-    	"3.38",
-    	"40"
+        "3.36",
+        "3.38",
+        "40",
+        "41"
     ],
     "name": "Custom Hot Corners - Extended",
     "uuid": "@uuid@",
