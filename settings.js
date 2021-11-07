@@ -24,8 +24,7 @@ const Me = ExtensionUtils.getCurrentExtension();
 
 const Config = imports.misc.config;
 var   shellVersion = Config.PACKAGE_VERSION;
-var   GNOME40 = shellVersion.startsWith("40")?
-                    true : false;
+var   GNOME40 = shellVersion.startsWith("40") ? true : false;
 
 const Gettext = imports.gettext.domain(Me.metadata['gettext-domain']);
 var _ = Gettext.gettext;
@@ -36,17 +35,18 @@ var Triggers ={
     BUTTON_SECONDARY: 2,
     BUTTON_MIDDLE:    3,
     SCROLL_UP:        4,
-    SCROLL_DOWN:      5
-}
+    SCROLL_DOWN:      5,
+};
+
 Object.freeze(Triggers);
 
-var TriggerLabels = [   
+var TriggerLabels = [
     _('Hot Corner'),
     _('Primary Button'),
     _('Secondary Button'),
     _('Middle Button'),
     _('Scroll Up'),
-    _('Scroll Down')
+    _('Scroll Down'),
 ];
 
 const _schema = 'org.gnome.shell.extensions.custom-hot-corners-extended';
@@ -78,115 +78,151 @@ var MscOptions = class MscOptions {
         const path = `${_path}/${schm}/`;
         return getSettings(schema, path);
     }
+
     get watchCorners() {
         return this._gsettings.get_boolean('watch-corners');
     }
+
     set watchCorners(bool_val) {
         this._gsettings.set_boolean('watch-corners', bool_val);
     }
+
     get fullscreenGlobal() {
         return this._gsettings.get_boolean('fullscreen-global');
     }
+
     set fullscreenGlobal(bool_val) {
         this._gsettings.set_boolean('fullscreen-global', bool_val);
     }
+
     get cornersVisible() {
         return this._gsettings.get_boolean('corners-visible');
     }
+
     set cornersVisible(bool_val) {
         this._gsettings.set_boolean('corners-visible', bool_val);
     }
+
     get winSwitchWrap() {
         return this._gsettings.get_boolean('win-switch-wrap');
     }
+
     set winSwitchWrap(bool_val) {
         this._gsettings.set_boolean('win-switch-wrap', bool_val);
     }
+
     get winSkipMinimized() {
         return this._gsettings.get_boolean('win-switch-skip-minimized');
     }
+
     set winSkipMinimized(bool_val) {
         this._gsettings.set_boolean('win-switch-skip-minimized', bool_val);
     }
+
     get winThumbnailScale() {
         return this._gsettings.get_int('win-thumbnail-scale');
     }
+
     set winThumbnailScale(scale) {
         this._gsettings.set_int('win-thumbnail-scale', scale);
     }
+
     get wsSwitchIgnoreLast() {
         return this._gsettings.get_boolean('ws-switch-ignore-last');
     }
+
     set wsSwitchIgnoreLast(bool_val) {
         this._gsettings.set_boolean('ws-switch-ignore-last', bool_val);
     }
+
     get wsSwitchWrap() {
         return this._gsettings.get_boolean('ws-switch-wrap');
     }
+
     set wsSwitchWrap(bool_val) {
         this._gsettings.set_boolean('ws-switch-wrap', bool_val);
     }
+
     get wsSwitchIndicator() {
         return this._gsettings.get_boolean('ws-switch-indicator');
     }
+
     set wsSwitchIndicator(bool_val) {
         this._gsettings.set_boolean('ws-switch-indicator', bool_val);
     }
+
     get wsSwitchIndicatorMode() {
         return this._gsettings.get_int('ws-switch-indicator-mode');
     }
+
     set wsSwitchIndicatorMode(mode) {
         this._gsettings.set_int('ws-switch-indicator-mode', mode);
     }
+
     get actionEventDelay() {
         return this._gsettings.get_int('action-event-delay');
     }
+
     set actionEventDelay(delay) {
         this._gsettings.set_int('action-event-delay', delay);
     }
+
     get rippleAnimation() {
         return this._gsettings.get_boolean('ripple-animation');
     }
+
     set rippleAnimation(bool_val) {
         this._gsettings.set_boolean('ripple-animation', bool_val);
     }
+
     get barrierFallback() {
         return this._gsettings.get_boolean('barrier-fallback');
     }
+
     set barrierFallback(bool_val) {
         this._gsettings.set_boolean('barrier-fallback', bool_val);
     }
+
     get customMenu1() {
         return this._gsettings.get_strv('custom-menu-1');
     }
+
     set customMenu1(list) {
         this._gsettings.set_strv('custom-menu-1', list);
     }
+
     get customMenu2() {
         return this._gsettings.get_strv('custom-menu-2');
     }
+
     set customMenu2(list) {
         this._gsettings.set_strv('custom-menu-2', list);
     }
+
     get customMenu3() {
         return this._gsettings.get_strv('custom-menu-3');
     }
+
     set customMenu3(list) {
         this._gsettings.set_strv('custom-menu-3', list);
     }
+
     get customMenu4() {
         return this._gsettings.get_strv('custom-menu-4');
     }
+
     set customMenu4(list) {
         this._gsettings.set_strv('custom-menu-4', list);
     }
+
     getKeyBind(key) {
         return this._gsettingsKB.get_strv(key);
     }
+
     setKeyBind(key, value) {
         this._gsettingsKB.set_strv(key, value);
     }
-}
+};
 
 var Corner = class Corner {
     constructor(loadIndex, monitorIndex, top, left, x, y) {
@@ -204,7 +240,7 @@ var Corner = class Corner {
         this.fullExpandVertical = false;
 
         this.action = {};
-        this.ctrl ={};
+        this.ctrl = {};
         this.command = {};
         this.fullscreen = {};
         this.workspaceIndex = {};
@@ -232,20 +268,19 @@ var Corner = class Corner {
 
     connect(name, callback, trigger) {
         const id = this._gsettings[trigger].connect(name, callback);
-        this._connectionIds.push([this._gsettings[trigger],id]);
+        this._connectionIds.push([this._gsettings[trigger], id]);
         return id;
     }
 
     destroy() {
-        //log(`[${Me.metadata.name}] Settings.Corner.destroy: Disconnecting corner gsettings..`);
+        // log(`[${Me.metadata.name}] Settings.Corner.destroy: Disconnecting corner gsettings..`);
         this._connectionIds.forEach(id => id[0].disconnect(id[1]));
     }
 
     _loadSettingsForTrigges() {
         let gsettings = {};
-        for (let trigger of listTriggers()) {
-            gsettings[trigger]= this._loadSettings(trigger);
-        }
+        for (let trigger of listTriggers())
+            gsettings[trigger] = this._loadSettings(trigger);
         return gsettings;
     }
 
@@ -313,6 +348,7 @@ var Corner = class Corner {
     set barrierSizeH(size) {
         this._gsettings[Triggers.PRESSURE].set_int('barrier-size-h', size);
     }
+
     get barrierSizeV() {
         return this._gsettings[Triggers.PRESSURE].get_int('barrier-size-v');
     }
@@ -337,7 +373,7 @@ var Corner = class Corner {
         path += `monitor-${this._loadIndex}-${v}-${h}-${trigger}/`;
         return getSettings(schema, path);
     }
-}
+};
 
 /**
  * Copied from Gnome Shells extensionUtils.js and adapted to allow
@@ -364,13 +400,13 @@ function getSettings(schema, path) {
         );
     }
 
-    const args = { settings_schema: schemaObj };
+    const args = {settings_schema: schemaObj};
     if (path) {
         args.path = path;
     }
 
     return new Gio.Settings(args);
-}
+};
 
 function extensionEnabled(uuid = null) {
     const settings = getSettings( 'org.gnome.shell',

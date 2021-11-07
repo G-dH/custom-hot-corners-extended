@@ -21,31 +21,31 @@ const Me                     = ExtensionUtils.getCurrentExtension();
 
 var   InvertLightnessEffect = GObject.registerClass(
 class InvertLightnessEffect extends Clutter.ShaderEffect {
-
     vfunc_get_static_shader_source() {
         return ShaderLib.getInversion(0);
     }
 
     vfunc_paint_target(node, paint_context) {
-        this.set_uniform_value("tex", 0);
+        this.set_uniform_value('tex', 0);
         if (paint_context === undefined)
-             super.vfunc_paint_target(node);
-        else super.vfunc_paint_target(node, paint_context);
+            super.vfunc_paint_target(node);
+        else
+            super.vfunc_paint_target(node, paint_context);
     }
 });
 
 var   InvertLightnessShiftEffect = GObject.registerClass(
 class InvertLightnessShiftEffect extends Clutter.ShaderEffect {
-
     vfunc_get_static_shader_source() {
         return ShaderLib.getInversion(1);
     }
 
     vfunc_paint_target(node, paint_context) {
-        this.set_uniform_value("tex", 0);
+        this.set_uniform_value('tex', 0);
         if (paint_context === undefined)
-             super.vfunc_paint_target(node);
-        else super.vfunc_paint_target(node, paint_context);
+            super.vfunc_paint_target(node);
+        else
+            super.vfunc_paint_target(node, paint_context);
     }
 });
 
@@ -56,10 +56,11 @@ class ColorInversionEffect extends Clutter.ShaderEffect {
     }
 
     vfunc_paint_target(node, paint_context) {
-        this.set_uniform_value("tex", 0);
+        this.set_uniform_value('tex', 0);
         if (paint_context === undefined)
-             super.vfunc_paint_target(node);
-        else super.vfunc_paint_target(node, paint_context);
+            super.vfunc_paint_target(node);
+        else
+            super.vfunc_paint_target(node, paint_context);
     }
 });
 
@@ -70,10 +71,11 @@ class ColorMixerEffect1 extends Clutter.ShaderEffect {
     }
 
     vfunc_paint_target(node, paint_context) {
-        this.set_uniform_value("tex", 0);
+        this.set_uniform_value('tex', 0);
         if (paint_context === undefined)
-             super.vfunc_paint_target(node);
-        else super.vfunc_paint_target(node, paint_context);
+            super.vfunc_paint_target(node);
+        else
+            super.vfunc_paint_target(node, paint_context);
     }
 });
 
@@ -84,16 +86,16 @@ class ColorMixerEffect2 extends Clutter.ShaderEffect {
     }
 
     vfunc_paint_target(node, paint_context) {
-        this.set_uniform_value("tex", 0);
+        this.set_uniform_value('tex', 0);
         if (paint_context === undefined)
-             super.vfunc_paint_target(node);
-        else super.vfunc_paint_target(node, paint_context);
+            super.vfunc_paint_target(node);
+        else
+            super.vfunc_paint_target(node, paint_context);
     }
 });
 
 var   ColorMixerProtan = GObject.registerClass(
 class ColorMixerProtan extends Clutter.ShaderEffect {
-
     vfunc_get_static_shader_source() {
         return ShaderLib.getDaltonism(1);
     }
@@ -101,14 +103,14 @@ class ColorMixerProtan extends Clutter.ShaderEffect {
     vfunc_paint_target(node, paint_context) {
         this.set_uniform_value('tex', 0);
         if (paint_context === undefined)
-             super.vfunc_paint_target(node);
-        else super.vfunc_paint_target(node, paint_context);
+            super.vfunc_paint_target(node);
+        else
+            super.vfunc_paint_target(node, paint_context);
     }
 });
 
 var   ColorMixerDeuter = GObject.registerClass(
 class ColorMixerDeuter extends Clutter.ShaderEffect {
-
     vfunc_get_static_shader_source() {
         return ShaderLib.getDaltonism(2);
     }
@@ -116,14 +118,14 @@ class ColorMixerDeuter extends Clutter.ShaderEffect {
     vfunc_paint_target(node, paint_context) {
         this.set_uniform_value('tex', 0);
         if (paint_context === undefined)
-             super.vfunc_paint_target(node);
-        else super.vfunc_paint_target(node, paint_context);
+            super.vfunc_paint_target(node);
+        else
+            super.vfunc_paint_target(node, paint_context);
     }
 });
 
 var   ColorMixerTritan = GObject.registerClass(
 class ColorMixerTritan extends Clutter.ShaderEffect {
-
     vfunc_get_static_shader_source() {
         return ShaderLib.getDaltonism(3);
     }
@@ -131,14 +133,14 @@ class ColorMixerTritan extends Clutter.ShaderEffect {
     vfunc_paint_target(node, paint_context) {
         this.set_uniform_value('tex', 0);
         if (paint_context === undefined)
-             super.vfunc_paint_target(node);
-        else super.vfunc_paint_target(node, paint_context);
+            super.vfunc_paint_target(node);
+        else
+            super.vfunc_paint_target(node, paint_context);
     }
 });
 
 var   ColorMixerProtanSimulation = GObject.registerClass(
 class ColorMixerProtanSimulation extends Clutter.ShaderEffect {
-
     vfunc_get_static_shader_source() {
         return ShaderLib.getDaltonism(1);
     }
@@ -146,14 +148,14 @@ class ColorMixerProtanSimulation extends Clutter.ShaderEffect {
     vfunc_paint_target(node, paint_context) {
         this.set_uniform_value('tex', 0);
         if (paint_context === undefined)
-             super.vfunc_paint_target(node);
-        else super.vfunc_paint_target(node, paint_context);
+            super.vfunc_paint_target(node);
+        else
+            super.vfunc_paint_target(node, paint_context);
     }
 });
 
 var   ColorMixerDeuterSimulation = GObject.registerClass(
 class ColorMixerDeuterSimulation extends Clutter.ShaderEffect {
-
     vfunc_get_static_shader_source() {
         return ShaderLib.getDaltonism(2);
     }
@@ -161,14 +163,14 @@ class ColorMixerDeuterSimulation extends Clutter.ShaderEffect {
     vfunc_paint_target(node, paint_context) {
         this.set_uniform_value('tex', 0);
         if (paint_context === undefined)
-             super.vfunc_paint_target(node);
-        else super.vfunc_paint_target(node, paint_context);
+            super.vfunc_paint_target(node);
+        else
+            super.vfunc_paint_target(node, paint_context);
     }
 });
 
 var   ColorMixerTritanSimulation = GObject.registerClass(
 class ColorMixerTritanSimulation extends Clutter.ShaderEffect {
-
     vfunc_get_static_shader_source() {
         return ShaderLib.getDaltonism(3);
     }
@@ -176,8 +178,9 @@ class ColorMixerTritanSimulation extends Clutter.ShaderEffect {
     vfunc_paint_target(node, paint_context) {
         this.set_uniform_value('tex', 0);
         if (paint_context === undefined)
-             super.vfunc_paint_target(node);
-        else super.vfunc_paint_target(node, paint_context);
+            super.vfunc_paint_target(node);
+        else
+            super.vfunc_paint_target(node, paint_context);
     }
 });
 
@@ -254,7 +257,7 @@ var ShaderLib = class {
                     cogl_color_out = correction.rgba;
                 #endif
             }
-        `
+        `;
     }
 
     static getChanellMix(mode) {
@@ -309,5 +312,4 @@ var ShaderLib = class {
             }
         `;
     }
-
-}
+};
