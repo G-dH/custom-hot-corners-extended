@@ -15,7 +15,7 @@
 */
 'use strict';
 
-const {GObject, GLib, Clutter, St, Meta, Shell} = imports.gi;
+const {GLib, Clutter, St, Meta, Shell} = imports.gi;
 
 const Main                   = imports.ui.main;
 const WorkspaceSwitcherPopup = imports.ui.workspaceSwitcherPopup;
@@ -40,15 +40,15 @@ let _origAltTabWSP           = null;
 
 let GNOME40;
 
-const ws_indicator_mode = { 'DISABLE':       0,
-                            'DEFAULT':       1,
-                            'INDEX':         2
-                        }
+const ws_indicator_mode = {
+    'DISABLE': 0,
+    'DEFAULT': 1,
+    'INDEX':   2,
+};
 
-var get_current_monitor_geometry = function () {
+function get_current_monitor_geometry() {
     return global.display.get_monitor_geometry(global.display.get_current_monitor());
 }
-
 
 var Actions = class {
     constructor() {
@@ -83,27 +83,26 @@ var Actions = class {
 
         GNOME40 = Settings.GNOME40;
         this._mscOptions = null;
-
     }
 
     clean(full = true) {
         // don't reset effects and destroy thumbnails if extension is enabled (GS calls ext. disable() before locking the screen f.e.)
         if (full) {
-            this._mainPanelVisible ?
-                Main.panel.show() :
-                Main.panel.hide();
+            this._mainPanelVisible
+                ? Main.panel.show()
+                : Main.panel.hide();
             this.removeAllEffects();
             this._resetSettings();
-            for (let sig of this._signalsCollector) {
+
+            for (let sig of this._signalsCollector)
                 sig[0].disconnect(sig[1]);
-            }
+
             this.Shaders   = null;
         }
-        //global.workspace_manager.disconnect(this._signalsCollector.pop());
+        // global.workspace_manager.disconnect(this._signalsCollector.pop());
         this._removeThumbnails(full);
         this._destroyDimmerActors();
         this._removeCustomMenus();
-
     }
 
     resume() {
@@ -112,22 +111,28 @@ var Actions = class {
 
     _resumeThumbnailsIfExist() {
         this.windowThumbnails.forEach(
-            (t) => { if (t) t.show(); }
+            t => {
+                if (t)
+                    t.show();
+            }
         );
     }
 
     _removeThumbnails(full = true) {
         if (full) {
-
             this.windowThumbnails.forEach(
-                (t) => { if (t) t.destroy(); }
+                t => {
+                    if (t)
+                        t.destroy();
+                }
             );
             this.windowThumbnails = [];
-        }
-
-        else {
+        } else {
             this.windowThumbnails.forEach(
-                (t) => { if (t) t.hide(); }
+                t => {
+                    if (t)
+                        t.hide();
+                }
             );
         }
     }
@@ -138,15 +143,13 @@ var Actions = class {
         this._interfaceSettings     = null;
         this._shellSettings         = null;
         this._colorSettings         = null;
-
     }
 
     removeAllEffects(full = false) {
-        for (let actor of global.get_window_actors()) {
-                this._removeEffects(actor);
-        }
-            // remove global effect
-        this._removeEffects(Main.uiGroup, true);//.remove_effect_by_name(effect);
+        for (let actor of global.get_window_actors())
+            this._removeEffects(actor);
+        // remove global effect
+        this._removeEffects(Main.uiGroup, true); // .remove_effect_by_name(effect);
     }
 
     removeWinEffects() {
@@ -154,19 +157,21 @@ var Actions = class {
     }
 
     _removeEffects(actor = null, glob = false) {
-        if (actor === null) return;
-        let effects = [ 'brightness',
-                        'contrast',
-                        'inversion',
-                        'desaturate',
-                        'color-tint',
-                        'color-blind' ];
-        for (let effect of effects) {
+        if (actor === null)
+            return;
+        let effects = [
+            'brightness',
+            'contrast',
+            'inversion',
+            'desaturate',
+            'color-tint',
+            'color-blind',
+        ];
+
+        for (let effect of effects)
             actor.remove_effect_by_name(effect);
-        }
-        if (!glob && actor.metaWindow._opacityCE) {
+        if (!glob && actor.metaWindow._opacityCE)
             this._getWindowSurface(actor.get_meta_window()).opacity = 255;
-        }
     }
 
     _removeCustomMenus() {
@@ -186,7 +191,7 @@ var Actions = class {
         disabled = disabled.indexOf(Me.metadata.uuid) > -1;
         let disableUser = this._shellSettings.get_boolean('disable-user-extensions');
 
-        if(enabled && !disabled && !disableUser)
+        if (enabled && !disabled && !disableUser)
             return true;
         return false;
     }
@@ -194,8 +199,9 @@ var Actions = class {
     _getShellSettings() {
         if (!this._shellSettings) {
             this._shellSettings = Settings.getSettings(
-                            'org.gnome.shell',
-                            '/org/gnome/shell/');
+                'org.gnome.shell',
+                '/org/gnome/shell/'
+            );
         }
         return this._shellSettings;
     }
@@ -203,8 +209,9 @@ var Actions = class {
     _getA11yAppSettings() {
         if (!this._a11yAppsSettings) {
             this._a11yAppsSettings = Settings.getSettings(
-                            'org.gnome.desktop.a11y.applications',
-                            '/org/gnome/desktop/a11y/applications/');
+                'org.gnome.desktop.a11y.applications',
+                '/org/gnome/desktop/a11y/applications/'
+            );
         }
         return this._a11yAppsSettings;
     }
@@ -241,27 +248,26 @@ var Actions = class {
         let connection = actor.connect('workspace-switched', this._onWorkspaceSwitched.bind(this));
         this._signalsCollector.push([actor, connection]);
     }
+
     _onWorkspaceSwitched(display, prev, current, direction) {
         if (current !== this._currentWorkspace) {
             this._recentWorkspace  = this._currentWorkspace;
             this._currentWorkspace = current;
         }
     }
+
     _destroyDimmerActors() {
-        for (let actor of this._dimmerActors) {
+        for (let actor of this._dimmerActors)
             actor.destroy();
-        }
         this._dimmerActors = [];
     }
+
     _getFocusedWindow(sameWorkspace = false) {
         let win = global.display.get_focus_window();
-        if ( !win ||
-             (sameWorkspace && (global.workspace_manager.get_active_workspace() !== win.get_workspace()) )
-            ) {
+        if (!win || (sameWorkspace && (global.workspace_manager.get_active_workspace() !== win.get_workspace())))
             return null;
-        }
         return win;
-        /*let windows = global.display.get_tab_list(Meta.TabList.NORMAL_ALL, null);
+        /* let windows = global.display.get_tab_list(Meta.TabList.NORMAL_ALL, null);
         for (let win of windows) {
             if (win.has_focus()) {
                 return win;
@@ -274,9 +280,8 @@ var Actions = class {
     _getWindowSurface(metaWindow) {
         let windowActor = metaWindow.get_compositor_private();
         for (let child of windowActor.get_children()) {
-            if (child.constructor.name.indexOf('MetaSurfaceActor') > -1) {
+            if (child.constructor.name.indexOf('MetaSurfaceActor') > -1)
                 return child;
-            }
         }
         return null;
     }
@@ -285,10 +290,12 @@ var Actions = class {
         let actor = null;
         for (let act of global.get_window_actors()) {
             let meta_window = act.get_meta_window();
-            if(meta_window.has_focus())
+            if (meta_window.has_focus())
                 actor = act;
         }
-        if (!actor) log (`[${Me.metadata.name}] Warning: no focused window found`);
+
+        /* if (!actor)
+            log (`[${Me.metadata.name}] Warning: no focused window found`); */
         return actor;
     }
 
@@ -301,21 +308,23 @@ var Actions = class {
     }
 
     _getShaders() {
-        if (!Shaders) {
+        if (!Shaders)
             Shaders = Me.imports.shaders;
-        }
     }
 
     /////////////////////////////////////////////////////////////////////////////
     toggleOverview() {
         Main.overview.toggle();
     }
+
     showApplications() {
-        if (Main.overview.dash.showAppsButton.checked)
+        if (Main.overview.dash.showAppsButton.checked) {
             Main.overview.hide();
-        else {
+        } else {
             // Pressing the apps btn before overview activation avoids icons animation in GS 3.36/3.38
-            Main.overview.dash.showAppsButton.checked = true;
+            // but in GS40 with Dash to Dock and its App button set to "no animation", this whole sequence is problematic
+            if (!GNOME40)
+                Main.overview.dash.showAppsButton.checked = true;
             // in 3.36 pressing the button is usualy enough to activate overview, but not always
             Main.overview.show();
             // pressing apps btn before overview has no effect in GS 40, so once again
@@ -325,109 +334,137 @@ var Actions = class {
             // Main.overview.viewSelector._toggleAppsPage();  // GS 36/38
         }
     }
+
     runCommand(command) {
         Util.spawnCommandLine(command);
     }
+
     moveToWorkspace(index) {
-        if (index < 0)  return;
+        if (index < 0)
+            return;
         let maxIndex = global.workspaceManager.n_workspaces - 1;
-        if (maxIndex < index) {
+        if (maxIndex < index)
             index = maxIndex;
-        }
         let ws = global.workspaceManager.get_workspace_by_index(index);
         Main.wm.actionMoveWorkspace(ws);
         // another option
-        //ws.activate(global.get_current_time());
+        // ws.activate(global.get_current_time());
     }
+
     moveToRecentWorkspace() {
         this.moveToWorkspace(this._recentWorkspace);
     }
+
     reorderWorkspace(direction = 0) {
-        if (!Main.overview.visible) return;
+        if (!Main.overview.visible)
+            return;
         let activeWs = global.workspace_manager.get_active_workspace();
         let activeWsIdx = activeWs.index();
         let targetIdx = activeWsIdx + direction;
-        if (targetIdx < 0 || targetIdx > (global.workspace_manager.get_n_workspaces() - 1)) return;
+        if (targetIdx < 0 || targetIdx > (global.workspace_manager.get_n_workspaces() - 1))
+            return;
         global.workspace_manager.reorder_workspace(activeWs, targetIdx);
     }
+
     lockScreen() {
         //Main.screenShield.lock(true);
         SystemActions.getDefault().activateLockScreen();
     }
+
     suspendToRam () {
         SystemActions.getDefault().activateSuspend();
     }
+
     powerOff() {
         SystemActions.getDefault().activatePowerOff();
     }
+
     logOut() {
         SystemActions.getDefault().activateLogout();
     }
+
     switchUser() {
         SystemActions.getDefault().activateSwitchUser();
-
     }
+
     toggleLookingGlass() {
         if (Main.lookingGlass === null)
             Main.createLookingGlass();
         if (Main.lookingGlass !== null)
             Main.lookingGlass.toggle();
     }
+
     switchToRecentWindow() {
         global.display.get_tab_list(0, null)[1].activate(global.get_current_time());
     }
+
     closeWindow() {
         let win = this._getFocusedWindow(true);
-        if (!win) return;
+        if (!win)
+            return;
         win.delete(global.get_current_time());
     }
+
     quitApplication() {
         let win = this._getFocusedWindow(true);
-        if (!win) return;
+        if (!win)
+            return;
         Shell.WindowTracker.get_default().get_window_app(win).request_quit();
     }
+
     killApplication() {
         let win = this._getFocusedWindow(true);
-        if (!win) return;
+        if (!win)
+            return;
         win.kill();
     }
+
     toggleMaximizeWindow() {
         let win = this._getFocusedWindow(true);
-        if (!win) return;
+        if (!win)
+            return;
         if (win.maximized_horizontally && win.maximized_vertically)
             win.unmaximize(Meta.MaximizeFlags.BOTH);
         else win.maximize(Meta.MaximizeFlags.BOTH);
     }
+
     minimizeWindow() {
         let win = this._getFocusedWindow(true);
-        if (!win) return;
+        if (!win)
+            return;
         win.minimize();
         //global.display.get_tab_list(0, null)[0].minimize();
     }
-    unminimizeAll(workspace=true) {
+
+    unminimizeAll(workspace = true) {
         let windows = global.display.get_tab_list(Meta.TabList.NORMAL_ALL, null);
         let activeWorkspace = global.workspaceManager.get_active_workspace();
         for (let win of windows) {
-            if (workspace && (activeWorkspace !== win.get_workspace()) ) {
+            if (workspace && (activeWorkspace !== win.get_workspace()))
                 continue;
-            }
             win.unminimize();
         }
     }
+
     toggleFullscreenWindow() {
         let win = this._getFocusedWindow(true);
-        if (!win) return;
-        if (win.fullscreen) win.unmake_fullscreen();
-        else win.make_fullscreen();
+        if (!win)
+            return;
+        if (win.fullscreen)
+            win.unmake_fullscreen();
+        else
+            win.make_fullscreen();
     }
-    fullscreenWinOnEmptyWs(metaWindow = null, nextWs = false) {
+
+    fullscreenWinOnEmptyWs(metaWindow = null) {
         let win;
         if (!metaWindow)
             win = this._getFocusedWindow(true);
         else
             win = metaWindow;
 
-        if (!win) return;
+        if (!win)
+            return;
         if (win.fullscreen) {
             win.unmake_fullscreen();
             if (win._originalWS) {
@@ -440,52 +477,56 @@ var Actions = class {
             win.make_fullscreen();
             if (ws.n_windows > 1) {
                 win._originalWS = ws;
-                let lastWs = global.workspaceManager.n_workspaces-1;
+                let lastWs = global.workspaceManager.n_workspaces - 1;
                 lastWs = global.workspaceManager.get_workspace_by_index(lastWs);
                 //Main.wm.actionMoveWorkspace(lastWs);
                 win.change_workspace(lastWs);
-                global.workspace_manager.reorder_workspace(lastWs, ws.index()+1);
+                global.workspace_manager.reorder_workspace(lastWs, ws.index() + 1);
             }
             win.activate(global.get_current_time());
         }
     }
+
     toggleAboveWindow(metaWindow) {
         let win = metaWindow || this._getFocusedWindow(true);
-        if (!win) return;
+        if (!win)
+            return;
         if (win.is_above()) {
             win.unmake_above();
             //Main.notify(Me.metadata.name, _(`Disabled: Always on Top \n\n${win.title}` ));
-        }
-        else {
+        } else {
             win.make_above();
             //Main.notify(Me.metadata.name, _(`Enabled: Always on Top \n\n${win.title}` ));
         }
     }
+
     toggleStickWindow(metaWindow) {
         let win = metaWindow || this._getFocusedWindow(true);
-        if (!win) return;
-        if (win.is_on_all_workspaces()){
+        if (!win)
+            return;
+        if (win.is_on_all_workspaces()) {
             win.unstick();
             //Main.notify(Me.metadata.name, _(`Disabled: Always on Visible Workspace \n\n${win.title}` ));
-        }
-        else{
+        } else{
             win.stick();
             //Main.notify(Me.metadata.name, _(`Enabled: Always on Visible Workspace \n\n${win.title}` ));
         }
     }
+
     restartGnomeShell() {
-        if (!Meta.is_wayland_compositor()) {
+        if (!Meta.is_wayland_compositor())
             Meta.restart(_('Restarting Gnome Shell...'));
-        }
-        else {
+        else
             Main.notify(Me.metadata.name, _('Gnome Shell - Restart is unavailable in Wayland session' ));
-        }
     }
+
     toggleShowPanel() {
-        Main.panel.is_visible() ?
-            Main.panel.hide()   :
+        if (Main.panel.is_visible())
+            Main.panel.hide()
+        else
             Main.panel.show();
     }
+
     toggleTheme() {
         let intSettings = this._getInterfaceSettings();
         let theme = intSettings.get_string('gtk-theme');
@@ -506,6 +547,7 @@ var Actions = class {
                 Main.notify(Me.metadata.name, _('Theme switcher works with Adwaita/Adwaita-dark and Yaru-light/Yaru-dark themes only'));
         }
     }
+
     openRunDialog() {
         Main.openRunDialog();
     }
@@ -515,36 +557,36 @@ var Actions = class {
     }
 
     togleShowDesktop(monitorIndex = -1) {
-        if (Main.overview.visible) return;
+        if (Main.overview.visible)
+            return;
         let metaWorkspace = global.workspace_manager.get_active_workspace();
         let windows = metaWorkspace.list_windows();
         let wins = [];
         for (let win of windows) {
-            if ( (monitorIndex < 0 ? true : win.get_monitor() === monitorIndex) &&
+            if ((monitorIndex < 0 ? true : win.get_monitor() === monitorIndex) &&
                     (!(win.minimized ||
                     win.window_type === Meta.WindowType.DESKTOP ||
                     win.window_type === Meta.WindowType.DOCK ||
                     win.skip_taskbar
                 ))) {
-    
                 wins.push(win);
             }
         }
+
         if (wins.length !== 0) {
-            for (let win of wins) {
+            for (let win of wins)
                 win.minimize();
-            }
             this._minimizedWindows = wins;
-        }
-        else if (this._minimizedWindows !== 0) {
+        } else if (this._minimizedWindows !== 0) {
             for (let win of this._minimizedWindows) {
-                if (win) {
+                if (win)
                     win.unminimize();
-                }
             }
+
             this._minimizedWindows = [];
         }
     }
+
     // direction 0/1
     switchWorkspace(direction, noIndicator = false) {
             let n_workspaces = global.workspaceManager.n_workspaces;
@@ -618,8 +660,8 @@ var Actions = class {
 */
                 // Do not show wokspaceSwithcer in overview
                 if (!Main.overview.visible) {
-                    let motion = direction ? (vertical? Meta.MotionDirection.DOWN : Meta.MotionDirection.RIGHT)
-                                           : (vertical? Meta.MotionDirection.UP   : Meta.MotionDirection.LEFT);
+                    let motion = direction ? (vertical ? Meta.MotionDirection.DOWN : Meta.MotionDirection.RIGHT)
+                                           : (vertical ? Meta.MotionDirection.UP   : Meta.MotionDirection.LEFT);
                     Main.wm._workspaceSwitcherPopup.display(motion, ws.index());
                 }
             }
@@ -651,7 +693,7 @@ var Actions = class {
                         y: position.length ? position[1] : geometry.y + (geometry.height / 2),
                         width: geometry.width,
                         style_class: 'workspace-overlay',
-                        reactive: true
+                        reactive: true,
             });
             Main.layoutManager.addChrome(this._wsOverlay);
         } else if (this._wsOverlay) {
@@ -701,7 +743,8 @@ var Actions = class {
         if (this.WIN_SKIP_MINIMIZED)
             windows = windows.filter(win => !win.minimized);
     
-        if (!windows.length) return;
+        if (!windows.length)
+            return;
     
         let currentWin  = windows[0];
         // tab list is sorted by MRU order, active window is allways idx 0
@@ -711,8 +754,10 @@ var Actions = class {
             });
         const currentIdx = windows.indexOf(currentWin);
         let targetIdx = currentIdx + direction;
-        if (targetIdx > windows.length - 1) targetIdx = this.WIN_WRAPAROUND ? 0 : currentIdx;
-        else if (targetIdx < 0) targetIdx = this.WIN_WRAPAROUND ? windows.length - 1 : currentIdx;
+        if (targetIdx > windows.length - 1)
+            targetIdx = this.WIN_WRAPAROUND ? 0 : currentIdx;
+        else if (targetIdx < 0)
+            targetIdx = this.WIN_WRAPAROUND ? windows.length - 1 : currentIdx;
         windows[targetIdx].activate(global.get_current_time());
     }
     
@@ -721,14 +766,15 @@ var Actions = class {
         let sink = mixerControl.get_default_sink();
         if (direction === 0) {
             sink.change_is_muted(!sink.is_muted);
-        }
-        else {
+        } else {
             let volume = sink.volume;
             let max = mixerControl.get_vol_max_norm();
             let step = direction * 2048;
             volume = volume + step;
-            if (volume > max) volume = max;
-            if (volume <   0) volume = 0;
+            if (volume > max)
+                volume = max;
+            if (volume <   0)
+                volume = 0;
             sink.volume = volume;
             sink.push_volume();
         }
@@ -741,44 +787,51 @@ var Actions = class {
 
     adjustWindowOpacity(step = 0, toggleValue = 0) {
         let metaWindow = this._getFocusedWindow(true);
-        if (!metaWindow) return;
+        if (!metaWindow)
+            return;
 
         let windowSurface = this._getWindowSurface(metaWindow);
-        if (!windowSurface) return;
+        if (!windowSurface)
+            return;
 
         if (!metaWindow._opacityCE)
             metaWindow._opacityCE = true;
 
         let value;
         if (toggleValue) {
-            value = windowSurface.opacity === 255 ?
-                        toggleValue : 255;
+            value = windowSurface.opacity === 255
+                        ? toggleValue
+                        : 255;
         } else {
             value = windowSurface.opacity;
             value += step;
-            if (value > 255) value = 255;
-            if (value < 32) value = 32;
+            if (value > 255)
+                value = 255;
+            if (value < 32)
+                value = 32;
         }
+
         windowSurface.opacity = value;
     }
 
-    adjustSwBrightnessContrast(step = 0, window=false, brightness = true, valueO = null) {
+    adjustSwBrightnessContrast(step = 0, window = false, brightness = true, valueO = null) {
         // brightness/contrast range: -1 all black/gray, 0 normal, 1 all white/extreme contrast
         // step with +/- value from range
-        let name = brightness ?
-                        'brightness':
-                        'contrast';
+        let name = brightness ? 'brightness' : 'contrast';
         let brightnessContrast, value;
-        const getBCValue = function() {
+
+        const getBCValue = function () {
             return brightness ?
                             brightnessContrast.get_brightness()[0] : // Clutter returns value in [r,g,b] format
                             brightnessContrast.get_contrast()[0];
-        }
-        const setBCValue = function(val) {
+        };
+
+        const setBCValue = function (val) {
             return brightness ?
                             brightnessContrast.set_brightness(val) :
                             brightnessContrast.set_contrast(val);
-        }
+        };
+
         if (window) {
             let actor = this._getFocusedActor();
             if (!actor) return;
@@ -792,21 +845,23 @@ var Actions = class {
             }
             brightnessContrast = Main.uiGroup.get_effect(name);
         }
+
         if (!valueO) {
             value = getBCValue();
             // multiply to avoid value shifting
-            value = Math.round((value * 1000) + (step *1000));
+            value = Math.round((value * 1000) + (step * 1000));
             let max = brightness ? 0 : 300;
             if (value > max) value = max;
             if (value < -750) value = -750;
             value /= 1000;
         } else {
             value = valueO;
-            if (valueO === Math.round(getBCValue()*1000)/1000) {
+            if (valueO === Math.round(getBCValue() * 1000) / 1000)
                 value = 0;
-            }
         }
+
         setBCValue(value);
+
         // notify when normal contrast is reached
         if (!valueO && value === 0) {
             brightness ?
@@ -871,12 +926,18 @@ var Actions = class {
         this._getShaders();
         Shaders.ShaderLib.daltonSimulation = simulate ? 1 : 0;
         let effect;
-        if (mode === 1 && !simulate) effect = Shaders.ColorMixerProtan;
-        if (mode === 2 && !simulate) effect = Shaders.ColorMixerDeuter;
-        if (mode === 3 && !simulate) effect = Shaders.ColorMixerTritan;
-        if (mode === 1 && simulate)  effect = Shaders.ColorMixerProtanSimulation;
-        if (mode === 2 && simulate)  effect = Shaders.ColorMixerDeuterSimulation;
-        if (mode === 3 && simulate)  effect = Shaders.ColorMixerTritanSimulation;
+        if (mode === 1 && !simulate)
+            effect = Shaders.ColorMixerProtan;
+        if (mode === 2 && !simulate)
+            effect = Shaders.ColorMixerDeuter;
+        if (mode === 3 && !simulate)
+            effect = Shaders.ColorMixerTritan;
+        if (mode === 1 && simulate)
+            effect = Shaders.ColorMixerProtanSimulation;
+        if (mode === 2 && simulate)
+            effect = Shaders.ColorMixerDeuterSimulation;
+        if (mode === 3 && simulate)
+            effect = Shaders.ColorMixerTritanSimulation;
         if (window)
             this._toggleWindowEffect(name, effect);
         else
@@ -896,12 +957,10 @@ var Actions = class {
     _toggleGlobalEffect(name, effect, property = []) {
         if (Main.uiGroup.get_effect(name)) {
             Main.uiGroup.remove_effect_by_name(name);
-        }
-        else {
+        } else {
             let eff = new effect();
-            if (property.length) {
+            if (property.length)
                 eff[property[0]] = property[1];
-            }
             Main.uiGroup.add_effect_with_name(name, eff);
         }
     }
@@ -909,15 +968,14 @@ var Actions = class {
     _toggleWindowEffect(name, effect, property = []) {
         global.get_window_actors().forEach( (actor) => {
             let meta_window = actor.get_meta_window();
-            if(meta_window.has_focus()) {
-                if(actor.get_effect(name)) {
+            if (meta_window.has_focus()) {
+                if (actor.get_effect(name)) {
                     actor.remove_effect_by_name(name);
                 }
                 else {
                     let eff = new effect();
-                    if (property.length) {
+                    if (property.length)
                        eff[property[0]] = property[1];
-                    }
                     actor.add_effect_with_name(name, eff);
                 }
             }
@@ -960,7 +1018,7 @@ var Actions = class {
                         height: geometry.height,
                         style: 'background-color: #000000; color: #444444; font-size: 1em;',
                         opacity: alpha,
-                        reactive: true
+                        reactive: true,
                     });
                     actor.connect('button-press-event', () => this.toggleDimmMonitors(null, null, monitorIndex));
                     //global.stage.add_actor(actor);  // actor added like this is transparent for the mouse pointer events
@@ -985,10 +1043,10 @@ var Actions = class {
             );
         } else {
 
-            if (!appSettings.get_boolean('screen-magnifier-enabled')) {
+            if (!appSettings.get_boolean('screen-magnifier-enabled'))
                magSettings.set_double('mag-factor', 1);
-            }
             let value = magSettings.get_double('mag-factor') + step;
+
             if (value <= 1) {
                 value = 1;
                 // when Zoom = 1 enabled, graphics artefacts might follow mouse pointer
@@ -996,24 +1054,26 @@ var Actions = class {
                     appSettings.set_boolean('screen-magnifier-enabled', false);
                     return;
             }
+
             if (value > 5) value = 5;
             magSettings.set_double('mag-factor', value);
+
             if (!appSettings.get_boolean('screen-magnifier-enabled'))
                appSettings.set_boolean('screen-magnifier-enabled', true);
         }
-        //Main.magnifier.setActive(true); // simple way to activate zoom
+        // Main.magnifier.setActive(true); // simple way to activate zoom
     }
 
     toggleKeyboard(monitorIndex = -1) {
-        if (monitorIndex < 0) monitorIndex = global.display.get_current_monitor();
+        if (monitorIndex < 0)
+            monitorIndex = global.display.get_current_monitor();
         let visible = Main.keyboard.visible;
         let appSettings = this._getA11yAppSettings();
         if (visible)
             appSettings.set_boolean('screen-keyboard-enabled', false);
         else {
-            if (!appSettings.get_boolean('screen-keyboard-enabled')) {
+            if (!appSettings.get_boolean('screen-keyboard-enabled'))
                 appSettings.set_boolean('screen-keyboard-enabled', true);
-            }
             Main.keyboard.open(monitorIndex);
         }
     }
@@ -1034,17 +1094,19 @@ var Actions = class {
     }
 
     makeThumbnailWindow(metaWindow = null) {
-        if (!WinTmb) {
+        if (!WinTmb)
             WinTmb = Me.imports.winTmb;
-        }
+
         let metaWin;
         if (metaWindow) {
             metaWin = metaWindow;
         } else {
             let actor = this._getFocusedActor();
-            metaWin = actor? actor.get_meta_window() : null;
+            metaWin = actor ? actor.get_meta_window() : null;
         }
-        if (!metaWin) return;
+
+        if (!metaWin)
+            return;
 
         if (!this.tmbConnected) {
             let conS = Main.overview.connect('showing', () => { this.windowThumbnails.forEach((t) => {t.hide();}); });
@@ -1056,68 +1118,76 @@ var Actions = class {
 
         let monitorHeight = get_current_monitor_geometry().height;
         let scale = this._mscOptions.winThumbnailScale;
-        this.windowThumbnails.push(new WinTmb.WindowThumbnail(metaWin, this, {  'actionTimeout': this._mscOptions.actionEventDelay,
-                                                                                'height' : Math.floor(scale / 100 * monitorHeight),
-                                                                                'thumbnailsOnScreen' : this.windowThumbnails.length
-                                                                             })
+        this.windowThumbnails.push(new WinTmb.WindowThumbnail(metaWin, this, {
+            'actionTimeout': this._mscOptions.actionEventDelay,
+            'height' : Math.floor(scale / 100 * monitorHeight),
+            'thumbnailsOnScreen' : this.windowThumbnails.length,
+            })
         );
     }
 
-    showAppSwitcherPopup(){
+    showAppSwitcherPopup() {
         let appSwitcher = new AltTab.AppSwitcherPopup();
-        appSwitcher._resetNoModsTimeout = ()=> {return};
+        appSwitcher._resetNoModsTimeout = () => {};
         appSwitcher.show(0,0,0);
     }
 
-    showWindowSwitcherPopup( args = {   'monitor-index':     -1,
-                                        'position-pointer':   null,
-                                        'filter-mode':       -1,
-                                        'group-mode':         0,
-                                        'timeout':            0,
-                                        'triggered-keyboard': false,
-                                        'shortcut':           '',
-                                        'filter-focused-app': false,
-                                        'filter-pattern':     null,
-                                        'apps':               false }) {
-
+    showWindowSwitcherPopup( args = {
+        'monitor-index':     -1,
+        'position-pointer':   null,
+        'filter-mode':       -1,
+        'group-mode':         0,
+        'timeout':            0,
+        'triggered-keyboard': false,
+        'shortcut':           '',
+        'filter-focused-app': false,
+        'filter-pattern':     null,
+        'apps':               false,
+    }) {
         const WindowSwitcherPopup = AltTab.WindowSwitcherPopup;
         let altTabPopup = new WindowSwitcherPopup();
         const advancedSwitcherEnabled = altTabPopup.showOrig ? true : false;
+
         if (advancedSwitcherEnabled) {
             // behaviour variables
             altTabPopup.KEYBOARD_TRIGGERED = args['triggered-keyboard'];
-            altTabPopup._selectApp         = args['filter-focused-app'] ? altTabPopup._getWindowApp(this._getFocusedWindow()) : null;
-            if ( args['timeout'])                   altTabPopup.NO_MODS_TIMEOUT  = args['timeout']
-            if ( args['position-pointer'] !== null) altTabPopup.POSITION_POINTER = args['position-pointer'];
-            if ( args['group-mode']       !== 0)    altTabPopup.GROUP_MODE       = args['group-mode'];
-            if ( args['filter-mode']       > -1)    altTabPopup.WIN_FILTER_MODE  = args['filter-mode'];
-            if ( args['monitor-index']     > -1)    altTabPopup._monitorIndex    = args['monitor-index'];
-            if ( args['filter-pattern']   !== null) {
+            altTabPopup._singleApp         = args['filter-focused-app'] ? Shell.WindowTracker.get_default().get_window_app(this._getFocusedWindow()).get_id() : null;
+            if ( args['timeout'])
+                altTabPopup.NO_MODS_TIMEOUT  = args['timeout'];
+            if ( args['position-pointer'] !== null)
+                altTabPopup.POSITION_POINTER = args['position-pointer'];
+            if ( args['group-mode']       !== 0)
+                altTabPopup.GROUP_MODE       = args['group-mode'];
+            if ( args['filter-mode']       > -1)
+                altTabPopup.WIN_FILTER_MODE  = args['filter-mode'];
+            if ( args['monitor-index']     > -1)
+                altTabPopup._monitorIndex    = args['monitor-index'];
+            if ( args['filter-pattern']   !== null)
                 altTabPopup._searchEntry     = args['filter-pattern'];
-                //altTabPopup._modifierMask    = 0;
-            } //else altTabPopup._searchEntry = null;
-            if (!args['triggered-keyboard'])        altTabPopup._modifierMask    = 0;
+            if (!args['triggered-keyboard'])
+                altTabPopup._modifierMask    = 0;
             if ( args['apps']) {
                 altTabPopup._switcherMode   = 1; //SwitcherModes.APPS;
                 altTabPopup.SHOW_APPS       = true;
             }
-            altTabPopup.connect('destroy', ()=> altTabPopup = null);
-            altTabPopup._keyBind = args['shortcut']? args['shortcut'].replace(/<.+>/, '') : '';
+            altTabPopup.connect('destroy', () => altTabPopup = null);
+            altTabPopup._keyBind = args['shortcut'] ? args['shortcut'].replace(/<.+>/, '') : '';
             altTabPopup.show();
         // if Advanced Alt+Tab Window Switcher not available, use default popup
         } else {
             if (args['apps'])
                altTabPopup = new AltTab.AppSwitcherPopup();
-            altTabPopup._resetNoModsTimeout = ()=> {return};
+            altTabPopup._resetNoModsTimeout = () => {};
             altTabPopup.show(0, 0, 0);
         }
     }
 
     showCustomMenu(actionTrigger, menuIndex) {
-        if (!this._mscOptions[`customMenu${menuIndex}`].length) return;
+        if (!this._mscOptions[`customMenu${menuIndex}`].length)
+            return;
         if (!this.customMenu[menuIndex]) {
             this.customMenu[menuIndex] = new CustomMenuPopup(Main.layoutManager);
-            this.customMenu[menuIndex].act.connect('destroy', ()=>{
+            this.customMenu[menuIndex].act.connect('destroy', () => {
                 Main.layoutManager.uiGroup.remove_actor(this.customMenu[menuIndex].actor);    
             });
             Main.layoutManager.uiGroup.add_actor(this.customMenu[menuIndex].actor);
@@ -1137,9 +1207,9 @@ var Actions = class {
             this.customMenu[menuIndex]._getMenuItems()[0].active = true;
         }
     }
-}
+};
 
-var   CustomMenuPopup = class CustomMenuPopup extends PopupMenu.PopupMenu {
+var CustomMenuPopup = class CustomMenuPopup extends PopupMenu.PopupMenu {
     constructor(layoutManager) {
         super(layoutManager.dummyCursor, 0, St.Side.TOP);
         this.menuItems = [];
@@ -1153,8 +1223,7 @@ var   CustomMenuPopup = class CustomMenuPopup extends PopupMenu.PopupMenu {
         this.act.manager = new PopupMenu.PopupMenuManager(this.act);
         this.act.manager.addMenu(this.act.menu);
         
-        //this.actor.connect('hide', this.destroy.bind(this));
-
+        // this.actor.connect('hide', this.destroy.bind(this));
     }
 
     destroy() {
@@ -1172,24 +1241,25 @@ var   CustomMenuPopup = class CustomMenuPopup extends PopupMenu.PopupMenu {
 
             let action  = item[1];
             let section = item[0] === null;
+
             if (this.menuItems.indexOf(action) < 0) {
                 if (section) submenu = null;
                 continue;
             }
+
             let name = item[2];
             let icon = item[4];
+
             if (item[0] === 0) submenu = null;
             if (section) {
                 submenu = new PopupMenu.PopupSubMenuMenuItem(name, true);
                 submenu.icon.icon_name = icon;
                 this.addMenuItem(submenu);
             } else if (submenu) {
-                submenu.menu.addAction(name, ()=> this.actionTrigger.runAction(action), icon);
+                submenu.menu.addAction(name, () => this.actionTrigger.runAction(action), icon);
             } else {
-                this.addAction(name, ()=> this.actionTrigger.runAction(action), icon);
+                this.addAction(name, () => this.actionTrigger.runAction(action), icon);
             }
-
         }
     }
 };
-
