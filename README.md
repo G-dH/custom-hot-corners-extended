@@ -6,7 +6,7 @@ A GNOME Shell Extension which allows you to control and navigate Gnome Shell env
 
 
 ## Features:
-- Gnome 3.36, 3.38 and 40 compatibility
+- Gnome 3.36, 3.38, 40 and 41 compatibility
 - Hot corners with adjustable barrier sizes, both vertical and horizontal independently and usable as hot edges
 - Mouse buttons and a scroll wheel can be used as triggers in addition to hot corners
 - Each trigger can be set to work only when *Ctrl* key is pressed
