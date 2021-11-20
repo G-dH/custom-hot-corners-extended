@@ -356,14 +356,15 @@ var Actions = class {
     }
 
     reorderWorkspace(direction = 0) {
-        if (!Main.overview.visible)
-            return;
+        //if (!Main.overview.visible)
+        //    return;
         let activeWs = global.workspace_manager.get_active_workspace();
         let activeWsIdx = activeWs.index();
         let targetIdx = activeWsIdx + direction;
-        if (targetIdx < 0 || targetIdx > (global.workspace_manager.get_n_workspaces() - 1))
-            return;
-        global.workspace_manager.reorder_workspace(activeWs, targetIdx);
+        if (targetIdx > 0 || targetIdx < (global.workspace_manager.get_n_workspaces() - 1)) {
+            global.workspace_manager.reorder_workspace(activeWs, targetIdx);
+        }
+        this.showWorkspaceIndex();
     }
 
     lockScreen() {
@@ -531,11 +532,12 @@ var Actions = class {
         let intSettings = this._getInterfaceSettings();
         let theme = intSettings.get_string('gtk-theme');
         switch (theme) {
-            case 'Yaru-light':
+            case 'Yaru-light' || 'Yaru':
                 intSettings.set_string('gtk-theme', 'Yaru-dark');
                 break;
             case 'Yaru-dark':
-                intSettings.set_string('gtk-theme', 'Yaru-light');
+                let theme = GNOME40 ? 'Yaru' : 'Yaru-light'
+                intSettings.set_string('gtk-theme', theme);
                 break;
             case 'Adwaita':
                 intSettings.set_string('gtk-theme', 'Adwaita-dark');
@@ -544,7 +546,7 @@ var Actions = class {
                 intSettings.set_string('gtk-theme', 'Adwaita');
                 break;
             default:
-                Main.notify(Me.metadata.name, _('Theme switcher works with Adwaita/Adwaita-dark and Yaru-light/Yaru-dark themes only'));
+                Main.notify(Me.metadata.name, _('Theme switcher works with Adwaita/Adwaita-dark and Yaru(-light)/Yaru-dark themes only'));
         }
     }
 
@@ -602,68 +604,12 @@ var Actions = class {
                 targetIdx = activeIdx;
             }
             let ws = global.workspaceManager.get_workspace_by_index(targetIdx);
-            /*if (!ws || ws.index() === activeIdx) {
-                return Clutter.EVENT_STOP;
-            }*/
-
+ 
             const showIndicator = !noIndicator && this.WS_INDICATOR_MODE > 0;
 
             // show default workspace indicator popup
             if (showIndicator && this.WS_INDICATOR_MODE === ws_indicator_mode.DEFAULT) {
-                const vertical = global.workspaceManager.layout_rows === -1;
-                if (Main.wm._workspaceSwitcherPopup == null) {
-                    Main.wm._workspaceSwitcherPopup = new WorkspaceSwitcherPopup.WorkspaceSwitcherPopup();
-                    Main.wm._workspaceSwitcherPopup.reactive = false;
-                    Main.wm._workspaceSwitcherPopup.connect('destroy', () => {
-                        Main.wm._workspaceSwitcherPopup = null;
-                    });
-                }
-
-/*                if (this.WS_INDICATOR_MODE !== ws_indicator_mode.DEFAULT) {
-                    const WS_INDICATOR_MODE = this.WS_INDICATOR_MODE;
-                    const func = function() {
-                        let workArea = Main.layoutManager.getWorkAreaForMonitor(Main.layoutManager.primaryIndex);
-                        let [, containerNatHeight] = Main.wm._workspaceSwitcherPopup._container.get_preferred_height(global.screen_width);
-                        let [, containerNatWidth] = Main.wm._workspaceSwitcherPopup._container.get_preferred_width(containerNatHeight);
-                        let offsetX;
-                        let offsetY;
-                        if (WS_INDICATOR_MODE === ws_indicator_mode.DEFAULT_LEFT) {
-                            if (vertical) {
-                                offsetX = 80;
-                                offsetY = Math.floor((workArea.height - containerNatHeight) / 2);
-                            } else {
-                                offsetX = Math.floor((workArea.width - containerNatWidth) / 2);
-                                offsetY = 80;
-                            }
-                        } else {
-                            if (vertical) {
-                                offsetX = Math.floor((workArea.width - containerNatWidth) - 80);
-                                offsetY = Math.floor((workArea.height - containerNatHeight) / 2);
-                            } else {
-                                offsetX = Math.floor((workArea.width - containerNatWidth) / 2);
-                                offsetY = Math.floor((workArea.height - containerNatHeight) - 80);
-                            }
-                        }
-                        this._container.x = workArea.x + offsetX;
-                        this._container.y = workArea.y + offsetY;
-                    }
-                    let origin = Main.wm._workspaceSwitcherPopup['_redisplay'];
-                    Main.wm._workspaceSwitcherPopup['_redisplay'] = function() {
-                        let ret;
-                        ret = origin.apply(this, arguments);
-                        if (ret === undefined)
-                            ret = func.apply(this, arguments);
-                        return ret;
-                    }
-
-                }
-*/
-                // Do not show wokspaceSwithcer in overview
-                if (!Main.overview.visible) {
-                    let motion = direction ? (vertical ? Meta.MotionDirection.DOWN : Meta.MotionDirection.RIGHT)
-                                           : (vertical ? Meta.MotionDirection.UP   : Meta.MotionDirection.LEFT);
-                    Main.wm._workspaceSwitcherPopup.display(motion, ws.index());
-                }
+                this._showWsSwitcherPopup(direction, ws.index());
             }
 
             Main.wm.actionMoveWorkspace(ws);
@@ -671,6 +617,22 @@ var Actions = class {
             // show workspace index overlay if wanted
             if (this.WS_INDICATOR_MODE === ws_indicator_mode.INDEX && showIndicator)
                 this.showWorkspaceIndex();
+    }
+
+    _showWsSwitcherPopup(direction, wsIndex) {
+        if (!Main.overview.visible) {
+            const vertical = global.workspaceManager.layout_rows === -1;
+            if (Main.wm._workspaceSwitcherPopup == null) {
+                Main.wm._workspaceSwitcherPopup = new WorkspaceSwitcherPopup.WorkspaceSwitcherPopup();
+                Main.wm._workspaceSwitcherPopup.reactive = false;
+                Main.wm._workspaceSwitcherPopup.connect('destroy', () => {
+                    Main.wm._workspaceSwitcherPopup = null;
+                });
+            }
+            let motion = direction ? (vertical ? Meta.MotionDirection.DOWN : Meta.MotionDirection.RIGHT)
+                                   : (vertical ? Meta.MotionDirection.UP   : Meta.MotionDirection.LEFT);
+            Main.wm._workspaceSwitcherPopup.display(motion, wsIndex);
+        }
     }
 
     showWorkspaceIndex(position = [], timeout = 600, names = {}) {
@@ -1194,6 +1156,10 @@ var Actions = class {
         }
         this.customMenu[menuIndex].menuItems      = this._mscOptions[`customMenu${menuIndex}`];
         this.customMenu[menuIndex].actionList     = Settings.actionList;
+        let focusedWin = this._getFocusedWindow() ? this._getFocusedWindow().get_title() : null
+        if (focusedWin && focusedWin.length > 40)
+            focusedWin = `${focusedWin.substring(0, 40)}...`;
+        this.customMenu[menuIndex].focusedWindow  = focusedWin;
         this.customMenu[menuIndex].actionTrigger  = actionTrigger;
         this.customMenu[menuIndex].removeAll();
         this.customMenu[menuIndex].buildMenu();
@@ -1201,10 +1167,10 @@ var Actions = class {
         Main.layoutManager.setDummyCursorGeometry(global.get_pointer()[0], global.get_pointer()[1], 0, 0);
 
         //Main.osdWindowManager.hideAll();
-        let firstItem = this.customMenu[menuIndex]._getMenuItems()[0];
+        let firstItem = this.customMenu[menuIndex]._getMenuItems()[1];
         if (firstItem) {
             this.customMenu[menuIndex].open(BoxPointer.PopupAnimation.FULL);
-            this.customMenu[menuIndex]._getMenuItems()[0].active = true;
+            this.customMenu[menuIndex]._getMenuItems()[1].active = true;
         }
     }
 };
@@ -1214,6 +1180,7 @@ var CustomMenuPopup = class CustomMenuPopup extends PopupMenu.PopupMenu {
         super(layoutManager.dummyCursor, 0, St.Side.TOP);
         this.menuItems = [];
         this.actionList = [];
+        this.focusedWindow = null;
         this.actionTrigger = null;
         this.actor.add_style_class_name('background-menu');
 
@@ -1235,6 +1202,11 @@ var CustomMenuPopup = class CustomMenuPopup extends PopupMenu.PopupMenu {
     }
 
     buildMenu() {
+        if (this.focusedWindow === null)
+            this.focusedWindow = _('No window has focus!');
+        let win = new PopupMenu.PopupMenuItem(`Win: ${this.focusedWindow}`);
+        win.sensitive = false;
+        this.addMenuItem(win, 0);
         let submenu = null;
         for (let i = 0; i < this.actionList.length; i++) {
             let item = this.actionList[i];
@@ -1246,8 +1218,8 @@ var CustomMenuPopup = class CustomMenuPopup extends PopupMenu.PopupMenu {
                 if (section) submenu = null;
                 continue;
             }
-
-            let name = item[2];
+            // add space between icon and name
+            let name = ` ${item[2]}`;
             let icon = item[4];
 
             if (item[0] === 0) submenu = null;
