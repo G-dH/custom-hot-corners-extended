@@ -49,6 +49,8 @@ function init() {
         _excludedItems.push('prev-workspace-popup');
         _excludedItems.push('next-workspace-popup');
     }
+    if (!Settings.extensionEnabled('arcmenu@arcmenu.com'))
+        _excludedItems.push('toggle-arcmenu');
 }
 
 function buildPrefsWidget() {
@@ -155,7 +157,8 @@ class CornerPage extends Gtk.Grid {
         margin_top: 20,
         margin_bottom: 10,
         column_spacing: 10,
-        row_spacing: 10,
+        row_spacing: Settings.GNOME40 ? 2 : 15,
+        vexpand: true,
     }) {
         super._init(constructProperties);
 
@@ -178,7 +181,6 @@ class CornerPage extends Gtk.Grid {
                 vexpand: false,
                 hexpand: false,
                 tooltip_text: _('When checked, pressed Ctrl key is needed to trigger the action'),
-                margin_bottom: 10,
             });
 
             ctrlBtn.connect('notify::active', () => {
@@ -189,10 +191,11 @@ class CornerPage extends Gtk.Grid {
             const trgIcon = new Gtk.Image({
                 halign: Gtk.Align.START,
                 margin_start: 10,
-                margin_bottom: 10,
                 vexpand: true,
                 hexpand: true,
                 pixel_size: 40,
+                // pixel_size has no effect in Gtk3, the size is the same as declared in svg image
+                // in Gtk4 image has always some extra margin and therefore it's tricky to adjust row height
             });
             let iconPath;
             if (trigger === 0) {
@@ -223,7 +226,6 @@ class CornerPage extends Gtk.Grid {
     _buildTriggerWidget(trigger) {
         const cw = new Gtk.Grid({
             valign: Gtk.Align.CENTER,
-            margin_bottom: 10,
         });
 
         const popupGrid = new Gtk.Grid({
@@ -236,9 +238,12 @@ class CornerPage extends Gtk.Grid {
             visible: true,
         });
 
-        const comboGrid = new Gtk.Grid();
+        const comboGrid = new Gtk.Grid({
+            column_spacing: 4,
+        });
         const cmdGrid = new Gtk.Grid({
-            margin_top: 8,
+            margin_top: 4,
+            column_spacing: 4,
             visible: true,
         });
 
@@ -254,7 +259,7 @@ class CornerPage extends Gtk.Grid {
             page_increment: 10,
         });
         const workspaceIndexSpinButton = new Gtk.SpinButton({
-            margin_top: 8,
+            margin_top: 4,
             xalign: 0.5,
         });
         const wsIndexRevealer = new Gtk.Revealer({
@@ -264,7 +269,7 @@ class CornerPage extends Gtk.Grid {
         const commandEntry = new Gtk.Entry({hexpand: true});
         const appButton = new Gtk.Button({
             valign: Gtk.Align.END,
-            margin_start: 4,
+            //margin_start: 4,
         });
 
         const actionTreeStore = new Gtk.TreeStore();
@@ -283,7 +288,7 @@ class CornerPage extends Gtk.Grid {
         const settingsBtn = new Gtk.MenuButton({
             popover: cornerPopover,
             valign: Gtk.Align.CENTER,
-            margin_start: 4,
+            //margin_start: 4,
         });
 
         // Gtk3 implements button icon as an added Gtk.Image child, Gtk4 does not
@@ -347,7 +352,6 @@ class CornerPage extends Gtk.Grid {
         // if (commandEntryRevealer.reveal_child) _connectCmdBtn();
         // commandEntry.text = this._corner.getCommand(trigger);
 
-
         actionCombo.connect('changed', () => {
             this._corner.setAction(trigger, actionCombo.get_active_id());
             commandEntryRevealer.reveal_child = this._corner.getAction(trigger) === 'run-command';
@@ -394,7 +398,6 @@ class CornerPage extends Gtk.Grid {
             );
         });
 
-
         const fullscreenLabel = new Gtk.Label({
             label: _('Enable in fullscreen mode'),
             halign: Gtk.Align.START,
@@ -414,7 +417,6 @@ class CornerPage extends Gtk.Grid {
 
         if (trigger === Settings.Triggers.PRESSURE)
             this._buildPressureSettings(popupGrid);
-
 
         cw.show_all && cw.show_all();
         return cw;
@@ -440,12 +442,7 @@ class CornerPage extends Gtk.Grid {
                 iterDict[item[1]] = iter2;
             }
         }
-        // action keys has been changed, translate old keys to new and store them
-        // will be removed from the next version
         let action = this._corner.getAction(trigger);
-        if (Settings.transitionMap.has(action))
-            action = Settings.transitionMap.get(action);
-
         if (iterDict[action])
             actionCombo.set_active_iter(iterDict[action]);
     }
@@ -495,11 +492,10 @@ class CornerPage extends Gtk.Grid {
 
     _buildExpandsionWidget() {
         const grid = new Gtk.Grid({
-            row_spacing: 8,
+            row_spacing: Settings.GNOME40 ? 0 : 10,
             column_spacing: 8,
             margin_start: 10,
             margin_end: 10,
-            margin_top: 10,
             margin_bottom: 10,
             halign: Gtk.Align.FILL,
             visible: true,
@@ -511,7 +507,7 @@ class CornerPage extends Gtk.Grid {
 
         });
         const frame = new Gtk.Frame({
-
+            margin_top: 10,
         });
 
         frame.set_label_widget(expTitle);
