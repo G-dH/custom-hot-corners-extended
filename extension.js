@@ -1,5 +1,4 @@
-/* Copyright 2017 Jan Runge <janrunx@gmail.com>
- * Copyright 2021 GdH <georgdh@gmail.com>
+/* Copyright 2021 GdH <georgdh@gmail.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -177,7 +176,6 @@ function _updateMscOptions(key, doNotUpdateHC = false) {
         if (!doNotUpdateHC)
             _updateHotCorners();
     }
-
     _updateWatch();
 }
 
@@ -209,7 +207,6 @@ function _updateHotCorners() {
                 // corner has it's own connect method defined in settings, this is not direct gsettings connect
                 corner.connect('changed', (settings, key) => _updateCorner(corner, key, trigger), trigger);
             }
-
             if (_shouldExistHotCorner(corner)) {
                 Main.layoutManager.hotCorners.push(new CustomHotCorner(corner));
                 _updateWatchedCorners();
@@ -234,7 +231,6 @@ function _setExpansionLimits(corners) {
             corner.fullExpandVertical   = !nextCorner.vExpand;
             corner.fullExpandHorizontal = !prevCorner.hExpand;
         }
-
     }
 }
 
@@ -301,12 +297,10 @@ function _updateWatch() {
                     // Main.notify(Me.metadata.name, `Hot Corners had to be updated because of external override`);
                     log(Me.metadata.name, 'Hot Corners had to be updated because of external override');
                 }
-
                 if (!_watch.active) {
                     _timeoutsCollector.splice(_timeoutsCollector.indexOf(_watch.timeout), 1);
                     _watch.timeout = null;
                 }
-
                 return _watch.active;
             }
         );
@@ -330,14 +324,17 @@ function _rebuildHotCorner(corner) {
 function _destroyHotCorner(corner) {
     let hc = Main.layoutManager.hotCorners;
     for (let i = 0; i < hc.length; i++) {
-        if (hc[i]._corner.top  === corner.top &&
+        if (hc[i] && !hc[i]._corner) {
+            if (hc[i].destroy)
+                hc[i].destroy();
+        }
+        else if (hc[i]._corner.top  === corner.top &&
             hc[i]._corner.left === corner.left &&
             hc[i]._corner.monitorIndex === corner.monitorIndex) {
             for (let a of Main.layoutManager.hotCorners[i]._actors) {
                 _actorsCollector.splice(_actorsCollector.indexOf(a), 1);
                 a.destroy();
             }
-
             Main.layoutManager.hotCorners[i]._actors = [];
             hc[i].setBarrierSize([0, 0], false);
             Main.layoutManager.hotCorners[i].destroy();
@@ -357,9 +354,6 @@ class CustomHotCorner extends Layout.HotCorner {
         this._monitor = monitor;
         this._actors  = [];
         this._corner.hotCornerExists = true;
-
-
-
         this._enterd = false;
         this._pressureBarrier = new Layout.PressureBarrier(
             corner.pressureThreshold,
@@ -371,7 +365,6 @@ class CustomHotCorner extends Layout.HotCorner {
         if (this._corner.action[Triggers.PRESSURE] !== 'disabled' && !BARRIER_FALLBACK) {
             this._pressureBarrier.connect('trigger', this._onPressureTriggered.bind(this));
         }
-
         this._setupCornerActorsIfNeeded(Main.layoutManager);
 
         let ltr = Clutter.get_default_text_direction() === Clutter.TextDirection.LTR;
@@ -385,7 +378,6 @@ class CustomHotCorner extends Layout.HotCorner {
     setBarrierSize(size, forignAccess = true) {
         if (forignAccess)
             return;
-
         // Use code of parent class to remove old barriers but new barriers
         // must be created here since the properties are construct only.
         super.setBarrierSize(0);
@@ -439,7 +431,6 @@ class CustomHotCorner extends Layout.HotCorner {
             if (this._corner.y + 1 === c._corner.y)
                 y =  true;
         }
-
         return {'x': x, 'y': y};
     }
 
@@ -484,7 +475,6 @@ class CustomHotCorner extends Layout.HotCorner {
                 blue:  0,
                 alpha: 180,
             }),
-
         });
 
         this._connectActorEvents(this._actor);
@@ -521,7 +511,6 @@ class CustomHotCorner extends Layout.HotCorner {
             hSize = aSize;
             aSize = vSize;
         }
-
 
         // base clickable actor, normal size or expanded
         this._actor = new Clutter.Actor({
@@ -606,7 +595,6 @@ class CustomHotCorner extends Layout.HotCorner {
         if (this._shouldConnect([Triggers.SCROLL_UP, Triggers.SCROLL_DOWN])) {
             actor.connect('scroll-event', this._onCornerScrolled.bind(this));
         }
-
     }
 
     _shouldCreateActor() {
@@ -698,7 +686,6 @@ class CustomHotCorner extends Layout.HotCorner {
             default:
                 return Clutter.EVENT_PROPAGATE;
         }
-
         this._runAction(trigger);
         return Clutter.EVENT_STOP;
     }
@@ -762,7 +749,6 @@ const ActionTrigger = class ActionTrigger {
                 this.m.set(action[1], func);
             }
         }
-
         this._shortcutsBindingIds = [];
         this._gsettingsKBid = 0;
         this._bindShortcuts();
@@ -1248,7 +1234,6 @@ const ActionTrigger = class ActionTrigger {
 
     _toggleTheme() {
         actions.toggleTheme();
-
     }
 
     _invertLightAll() {
@@ -1456,5 +1441,12 @@ const ActionTrigger = class ActionTrigger {
 
     _showCustomMenu4() {
         actions.showCustomMenu(this, 4);
+    }
+
+    _toggleArcmenu() {
+        if (global.toggleArcMenu)
+            global.toggleArcMenu();
+        else
+            Main.notify(Me.metadata.name, `Error: ArcMenu trigger not available...`);
     }
 };
