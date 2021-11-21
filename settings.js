@@ -215,6 +215,15 @@ var MscOptions = class MscOptions {
         this._gsettings.set_strv('custom-menu-4', list);
     }
 
+    // extensions that we support and need to know whether they are available
+    get supportedExetensions() {
+        return this._gsettings.get_strv('supported-active-extensions');
+    }
+
+    set supportedExetensions(list) {
+        this._gsettings.set_strv('supported-active-extensions', list);
+    }
+
     getKeyBind(key) {
         return this._gsettingsKB.get_strv(key);
     }
@@ -415,9 +424,9 @@ function extensionEnabled(uuid = null) {
     uuid = uuid ? uuid : Me.metadata.uuid;
 
     let enabled = settings.get_strv('enabled-extensions');
-    enabled = enabled.indexOf(uuid) > -1;
+    enabled = enabled.includes(uuid);
     let disabled = settings.get_strv('disabled-extensions');
-    disabled = disabled.indexOf(uuid) > -1;
+    disabled = disabled.includes(uuid);
     let disableUser = settings.get_boolean('disable-user-extensions');
     if(enabled && !disabled && !disableUser)
         return true;
@@ -429,7 +438,7 @@ const winSwitcherPopup = extensionEnabled('advanced-alt-tab@G-dH.github.com-dev'
 //      [root/submenu, action key,      action name,                                accelerator, icon name
 var actionList = [
         [   0, 'disabled'              ,   _('-'),                                       false,  ''],
-        [   0, 'toggle-arcmenu'        ,   _('Open ArcMenu'),                             true,  'view-grid-symbolic'],
+        [   0, 'toggle-arcmenu'        ,   _('Open ArcMenu'),                            false,  'view-grid-symbolic'],
         [   0, 'toggle-overview'       ,   _('Show Activities Overview'),                 true,  'view-grid-symbolic'],
         [   0, 'show-applications'     ,   _('Show Application Grid'),                    true,  'view-app-grid-symbolic'],
 
