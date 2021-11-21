@@ -56,6 +56,7 @@ let _extensionEnabled;
 let _myCorners = [null, null];
 let _watch;
 let _delayId;
+let _delaySupportId
 
 
 function init() {
@@ -89,7 +90,17 @@ function enable() {
                 actionTrigger._bindShortcuts();
             _replace_updateHotCornersFunc();
             _updateWatch();
-            return false;
+            _delaySupportId = GLib.timeout_add(
+                GLib.PRIORITY_DEFAULT,
+                500,
+                () => {
+                    // delay to be sure that all extensions are loaded and active
+                    _updateSupportedExtensionsAvailability();
+                    return GLib.SOURCE_REMOVE;
+                }
+            );
+            _delaySupportId = 0;
+            return GLib.SOURCE_REMOVE;
         }
     );
 }
@@ -102,6 +113,8 @@ function _replace_updateHotCornersFunc() {
 function disable() {
     if (_delayId)
         GLib.source_remove(_delayId);
+    if (_delaySupportId)
+        GLib.source_remove(_delaySupportId);
     _timeoutsCollector.forEach(c => GLib.Source.remove(c));
     _timeoutsCollector = [];
     _removeActionTimeout();
@@ -109,6 +122,7 @@ function disable() {
     _mscOptions.destroy();
     // don't destroy Actions and lose effects and thumbnails because of the screen lock, for example
     let fullDisable = !actions.extensionEnabled();
+    _updateSupportedExtensionsAvailability(true);
     if (fullDisable) {
         actions.clean(true);
         actions = null;
@@ -130,6 +144,19 @@ function _initMscOptions() {
     _mscOptions = new Settings.MscOptions();
     _mscOptions.connect('changed', (settings, key) => _updateMscOptions(key));
     _updateMscOptions(null, true);
+}
+
+function _updateSupportedExtensionsAvailability(reset = false) {
+    let supportedExetensions = [];
+    if (!reset) {
+        // test ArcMenu
+        if (global.toggleArcMenu)
+            supportedExetensions.push('ArcMenu');
+        // test AATWS
+        if (imports.ui.altTab.WindowSwitcherPopup.prototype.showOrig)
+            supportedExetensions.push('AATWS');
+    }
+    this._mscOptions.supportedExetensions = supportedExetensions;
 }
 
 function _removeHotCorners() {
@@ -864,7 +891,7 @@ const ActionTrigger = class ActionTrigger {
         actions.runCommand(this._command);
     }
 
-    _runDialog() {
+    _runPrompt() {
         actions.openRunDialog();
     }
 
