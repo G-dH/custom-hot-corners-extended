@@ -35,9 +35,11 @@ function init() {
     // log(`initializing ${Me.metadata.name} Preferences`);
     ExtensionUtils.initTranslations(Me.metadata['gettext-domain']);
     // WAYLAND = GLib.getenv('XDG_SESSION_TYPE') === 'wayland';
-    const AATWS = Settings.extensionEnabled('advanced-alt-tab@G-dH.github.com') || Settings.extensionEnabled('advanced-alt-tab@G-dH.github.com-dev');
     mscOptions = new Settings.MscOptions();
-    if (!AATWS) {
+    const AATWS_enabled = Settings.extensionEnabled('advanced-alt-tab@G-dH.github.com') || Settings.extensionEnabled('advanced-alt-tab@G-dH.github.com-dev');
+    const AATWS_detected = mscOptions.supportedExetensions.includes('AATWS');
+    // in gsettings enabled-extension key can remain unistalled extensions
+    if (!AATWS_enabled || (AATWS_enabled && !AATWS_detected)) {
         _excludedItems.push('win-switcher-popup-ws');
         _excludedItems.push('win-switcher-popup-mon');
         _excludedItems.push('win-switcher-popup-ws-first');
@@ -49,8 +51,11 @@ function init() {
         _excludedItems.push('prev-workspace-popup');
         _excludedItems.push('next-workspace-popup');
     }
-    if (!Settings.extensionEnabled('arcmenu@arcmenu.com'))
-        _excludedItems.push('toggle-arcmenu');
+    const ArcMenu_enabled = Settings.extensionEnabled('arcmenu@arcmenu.com');
+    const ArcMenu_detected = mscOptions.supportedExetensions.includes('ArcMenu');
+    if (!ArcMenu_enabled || (ArcMenu_enabled && !ArcMenu_detected)) {
+           _excludedItems.push('toggle-arcmenu');
+    }
 }
 
 function buildPrefsWidget() {
@@ -427,7 +432,7 @@ class CornerPage extends Gtk.Grid {
         let iter, iter2;
         for (let i = 0; i < actionList.length; i++) {
             let item = actionList[i];
-            if (_excludedItems.indexOf(item[1]) > -1)
+            if (_excludedItems.includes(item[1]))
                 continue;
             if (!item[0]) {
                 iter  = actionTreeStore.append(null);
@@ -838,7 +843,7 @@ class KeyboardPage extends Gtk.ScrolledWindow {
         let iter, iter2;
         for (let i = 0; i < actionList.length; i++) {
             let item = actionList[i];
-            if ((_excludedItems.indexOf(item[1]) > -1) || !item[3])
+            if (_excludedItems.includes(item[1]) || !item[3])
                 continue;
             let a = [0, 0];
             if (item[1] && (item[1] in this.keybindings && this.keybindings[item[1]][0])) {
@@ -1350,7 +1355,7 @@ class CustomMenuPage extends Gtk.ScrolledWindow {
         let iter, iter1, iter2;
         for (let i = 0; i < actionList.length; i++) {
             let item = actionList[i];
-            if ((_excludedItems.indexOf(item[1]) > -1) || !item[3])
+            if (_excludedItems.includes(item[1]) || !item[3])
                 continue;
 
             if (!item[0]) {
@@ -1367,7 +1372,7 @@ class CustomMenuPage extends Gtk.ScrolledWindow {
                 this.treeView.model.set(iter2, [0, 1], [item[1], item[2]]);
                 iter = iter2;
             }
-            this.treeView.model.set_value(iter, 2, this.menuItems.indexOf(item[1]) > -1);
+            this.treeView.model.set_value(iter, 2, this.menuItems.includes(item[1]));
         }
     }
 });
