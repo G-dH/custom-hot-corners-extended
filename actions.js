@@ -183,12 +183,12 @@ var Actions = class {
         }
     }
 
-    extensionEnabled(uuid = null) {
+    extensionEnabled(uuid = '') {
         this._getShellSettings();
         let enabled = this._shellSettings.get_strv('enabled-extensions');
-        enabled = enabled.indexOf(Me.metadata.uuid) > -1;
+        enabled = enabled.includes(Me.metadata.uuid);
         let disabled = this._shellSettings.get_strv('disabled-extensions');
-        disabled = disabled.indexOf(Me.metadata.uuid) > -1;
+        disabled = disabled.includes(Me.metadata.uuid);
         let disableUser = this._shellSettings.get_boolean('disable-user-extensions');
 
         if (enabled && !disabled && !disableUser)
@@ -280,7 +280,7 @@ var Actions = class {
     _getWindowSurface(metaWindow) {
         let windowActor = metaWindow.get_compositor_private();
         for (let child of windowActor.get_children()) {
-            if (child.constructor.name.indexOf('MetaSurfaceActor') > -1)
+            if (child.constructor.name.includes('MetaSurfaceActor'))
                 return child;
         }
         return null;
@@ -1214,7 +1214,7 @@ var CustomMenuPopup = class CustomMenuPopup extends PopupMenu.PopupMenu {
             let action  = item[1];
             let section = item[0] === null;
 
-            if (this.menuItems.indexOf(action) < 0) {
+            if (!this.menuItems.includes(action)) {
                 if (section) submenu = null;
                 continue;
             }
