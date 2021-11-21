@@ -24,7 +24,7 @@ const Me = ExtensionUtils.getCurrentExtension();
 
 const Config = imports.misc.config;
 var   shellVersion = Config.PACKAGE_VERSION;
-var   GNOME40 = shellVersion.startsWith("40") ? true : false;
+var   GNOME40 = shellVersion.startsWith("4") ? true : false;
 
 const Gettext = imports.gettext.domain(Me.metadata['gettext-domain']);
 var _ = Gettext.gettext;
