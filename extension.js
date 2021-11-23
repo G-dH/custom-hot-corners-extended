@@ -132,10 +132,10 @@ function disable() {
         actions.clean(false);
         actionTrigger.clean(false);
     }
-    // This restores the original hot corners
     _extensionEnabled = false;
+    // restore original hot corners
     Main.layoutManager._updateHotCorners = _origUpdateHotCorners;
-    // Update corners with the original function can be problem when some other extension changed the code before and calls its own objects (lake Dash to Panel)
+    // Update corners with the original function can be problem when some other extension changed the code before and calls its own objects (like Dash to Panel)
     // Main.layoutManager._updateHotCorners();
     log(`[${Me.metadata.name}] extension ${fullDisable ? 'disabled' : 'suspended'}`);
 }
@@ -1352,11 +1352,11 @@ const ActionTrigger = class ActionTrigger {
     }
 
     _contrastHighWin() {
-        actions.adjustSwBrightnessContrast(null, true, false, 0.2);
+        actions.adjustSwBrightnessContrast(null, true, false, 0.1);
     }
 
     _contrastHighAll() {
-        actions.adjustSwBrightnessContrast(null, false, false, 0.2);
+        actions.adjustSwBrightnessContrast(null, false, false, 0.1);
     }
 
     _contrastLowWin() {

@@ -469,22 +469,38 @@ var Actions = class {
         if (win.fullscreen) {
             win.unmake_fullscreen();
             if (win._originalWS) {
-                win.change_workspace(win._originalWS);
-                Main.wm.actionMoveWorkspace(win._originalWS);
+                let ws = false;
+                for(let i = 0; i < global.workspaceManager.n_workspaces; i++) {
+                    let w = global.workspaceManager.get_workspace_by_index(i);
+                    if (w === win._originalWS) {
+                        ws = true;
+                        break;
+                    }
+                }
+                if (ws) {
+                    win.change_workspace(win._originalWS);
+                    Main.wm.actionMoveWorkspace(win._originalWS);
+                }
                 win._originalWS = null;
             }
         } else {
             let ws = win.get_workspace();
             win.make_fullscreen();
-            if (ws.n_windows > 1) {
+            let nWindows = ws.list_windows().filter(
+                w => 
+                    //w.get_window_type() === Meta.WindowType.NORMAL &&
+                    !w.is_on_all_workspaces()
+                ).length;
+            if (nWindows > 1) {
                 win._originalWS = ws;
+                //ws.connect('destroy', () => win._originalWS = null);
                 let lastWs = global.workspaceManager.n_workspaces - 1;
                 lastWs = global.workspaceManager.get_workspace_by_index(lastWs);
                 //Main.wm.actionMoveWorkspace(lastWs);
                 win.change_workspace(lastWs);
                 global.workspace_manager.reorder_workspace(lastWs, ws.index() + 1);
+                win.activate(global.get_current_time());
             }
-            win.activate(global.get_current_time());
         }
     }
 

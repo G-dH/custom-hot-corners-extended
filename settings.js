@@ -512,9 +512,9 @@ var actionList = [
         [   1, 'contrast-low-win'      ,   _('Low Contrast (window)'),                    true,  'view-reveal-symbolic'],
         [   1, 'opacity-up-win'        ,   _('Opacity Up (window)'),                      true,  'view-reveal-symbolic'],
         [   1, 'opacity-down-win'      ,   _('Opacity Down (window)'),                    true,  'view-reveal-symbolic'],
-        [   1, 'opacity-toggle-win'    ,   _('Transparency o200 (window)'),               true,  'view-reveal-symbolic'],
-        [   1, 'opacity-toggle-hc-win' ,   _('Transparency o200/c0.20 (window)'),         true,  'view-reveal-symbolic'],
-        [   1, 'opacity-toggle-lc-win' ,   _('Transparency o240/c0.05 (window)'),         true,  'view-reveal-symbolic'],
+        [   1, 'opacity-toggle-win'    ,   _('Opacity 78% (window)'),                     true,  'view-reveal-symbolic'],
+        [   1, 'opacity-toggle-hc-win' ,   _('Opacity 78% for dark themes (window)'),     true,  'view-reveal-symbolic'],
+        [   1, 'opacity-toggle-lc-win' ,   _('Opacity 94% + bit of contrast (window)'),   true,  'view-reveal-symbolic'],
 
         [null, 'win-effects-submenu'   ,   _('Windows - Color Effects'),                  true,  'view-reveal-symbolic'],
         [   1, 'invert-light-win'      ,   _('Invert Lightness (window)'),                true,  'view-reveal-symbolic'],
