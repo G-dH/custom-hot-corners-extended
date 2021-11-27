@@ -37,7 +37,7 @@ const Triggers               = Settings.Triggers;
 
 // const Performance = Me.imports.performance;
 
-let _origUpdateHotCorners;
+let _origUpdateHotCorners = imports.ui.layout.LayoutManager.prototype._updateHotCorners;
 let _cornersCollector;
 let _timeoutsCollector;
 let _actorsCollector;
@@ -54,6 +54,7 @@ let BARRIER_FALLBACK;
 let _extensionEnabled;
 
 let _myCorners = [null, null];
+let _hotCornerEnabledOrig;
 let _watch;
 let _delayId;
 let _delaySupportId
@@ -70,6 +71,7 @@ function init() {
 }
 
 function enable() {
+    _hotCornerEnabledOrig = Main.layoutManager._interfaceSettings.get_boolean('enable-hot-corners');
     // delayed start because of aggresive beasts that steal my corners even under my watch
     // and don't slow down the screen unlock animation - the killer are keyboard shortcuts
     _delayId = GLib.timeout_add(
@@ -77,6 +79,7 @@ function enable() {
         500,
         () => {
             _delayId = 0;
+            Main.layoutManager._interfaceSettings.set_boolean('enable-hot-corners', false);
             if (!actions)
                 actions = new ActionLib.Actions();
             else
@@ -134,9 +137,11 @@ function disable() {
     }
     _extensionEnabled = false;
     // restore original hot corners
+    // some extensions also modify Main.layoutManager._updateHotCorners._updateHotCorners()
+    //   and so it'll be more secure to take the function from the source (which could be altered to but less likely)
+    Main.layoutManager._interfaceSettings.set_boolean('enable-hot-corners', _hotCornerEnabledOrig);
     Main.layoutManager._updateHotCorners = _origUpdateHotCorners;
-    // Update corners with the original function can be problem when some other extension changed the code before and calls its own objects (like Dash to Panel)
-    // Main.layoutManager._updateHotCorners();
+    Main.layoutManager._updateHotCorners();
     log(`[${Me.metadata.name}] extension ${fullDisable ? 'disabled' : 'suspended'}`);
 }
 
@@ -1475,5 +1480,17 @@ const ActionTrigger = class ActionTrigger {
             global.toggleArcMenu();
         else
             Main.notify(Me.metadata.name, `Error: ArcMenu trigger not available...`);
+    }
+
+    _mprisPlayPause() {
+        actions.mprisPlayerControler(0);
+    }
+
+    _mprisNext() {
+        actions.mprisPlayerControler(1);
+    }
+
+    _mprisPrev() {
+        actions.mprisPlayerControler(2);
     }
 };

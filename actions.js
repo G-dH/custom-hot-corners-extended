@@ -15,7 +15,7 @@
 */
 'use strict';
 
-const {GLib, Clutter, St, Meta, Shell} = imports.gi;
+const {GLib, Clutter, St, Meta, Shell, Gio} = imports.gi;
 
 const Main                   = imports.ui.main;
 const WorkspaceSwitcherPopup = imports.ui.workspaceSwitcherPopup;
@@ -487,7 +487,7 @@ var Actions = class {
             let ws = win.get_workspace();
             win.make_fullscreen();
             let nWindows = ws.list_windows().filter(
-                w => 
+                w =>
                     //w.get_window_type() === Meta.WindowType.NORMAL &&
                     !w.is_on_all_workspaces()
                 ).length;
@@ -1186,8 +1186,51 @@ var Actions = class {
         let firstItem = this.customMenu[menuIndex]._getMenuItems()[1];
         if (firstItem) {
             this.customMenu[menuIndex].open(BoxPointer.PopupAnimation.FULL);
-            this.customMenu[menuIndex]._getMenuItems()[1].active = true;
+            this.customMenu[menuIndex]._getMenuItems()[0].active = true;
         }
+    }
+
+    // actions 0 - PlayPause, 1 - Next, 2 - Prev
+    mprisPlayerControler(action = 0) {
+        const Methods = [
+            'PlayPause',
+            'Next',
+            'Previous'
+        ]
+        let method = Methods[action];
+        let session = Gio.DBus.session;
+        session.call(
+            'org.freedesktop.DBus',
+            "/org/freedesktop",
+            'org.freedesktop.DBus',
+            'ListNames',
+            null, null, Gio.DBusCallFlags.NONE,-1,null,
+            (connection, res) => {
+                try {
+                    let reply = connection.call_finish(res);
+                    let value = reply.get_child_value(0);
+                    let mprisServices = value.get_strv().filter(n => n.includes('org.mpris.MediaPlayer2'));
+                    // first in the list is usually the last created player, media keys in GNOME works the same way
+                    let player = mprisServices[0];
+                    this._executeMprisPlayerCommand(session, player, method);
+                } catch (e) {
+                    if (e instanceof Gio.DBusError) {
+                        Gio.DBusError.strip_remote_error(e);
+                    }
+                    logError(e);
+                }
+            }
+        );
+    }
+
+    _executeMprisPlayerCommand(session, player, method) {
+        session.call(
+            player,
+            "/org/mpris/MediaPlayer2",
+            'org.mpris.MediaPlayer2.Player',
+            method,
+            null, null, Gio.DBusCallFlags.NONE,-1,null
+        );
     }
 };
 
@@ -1218,11 +1261,11 @@ var CustomMenuPopup = class CustomMenuPopup extends PopupMenu.PopupMenu {
     }
 
     buildMenu() {
-        if (this.focusedWindow === null)
+        /*if (this.focusedWindow === null)
             this.focusedWindow = _('No window has focus!');
         let win = new PopupMenu.PopupMenuItem(`Win: ${this.focusedWindow}`);
         win.sensitive = false;
-        this.addMenuItem(win, 0);
+        this.addMenuItem(win, 0);*/
         let submenu = null;
         for (let i = 0; i < this.actionList.length; i++) {
             let item = this.actionList[i];

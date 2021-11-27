@@ -494,7 +494,7 @@ var actionList = [
         [   1, 'fullscreen-on-empty-ws',   _('Fullscreen window on Empty WS (toggle)'),   true,  'window-maximize-symbolic'],
         [   1, 'above-win'             ,   _('Always on Top window (toggle)'),            true,  'go-top-symbolic'],
         [   1, 'stick-win'             ,   _('Always on Visible WS window (toggle)'),     true,  'view-pin-symbolic'],
-        [   1, 'quit-app'               ,   _('Quit focused application'),                true,  'window-close-symbolic'],
+        [   1, 'quit-app'              ,   _('Quit focused application'),                 true,  'window-close-symbolic'],
         [   1, 'kill-app'              ,   _('Kill focused application (kill -9)'),       true,  'process-stop-symbolic'],
         [   1, 'unminimize-all-ws'     ,   _('Unminimize all windows (workspace)'),       true,  'window-restore-symbolic'],
 
@@ -567,10 +567,12 @@ var actionList = [
         [   1, 'log-out'               ,   _('Log Out Dialog'),                           true,  'system-log-out-symbolic'],
         [   1, 'switch-user'           ,   _('Switch User (if exists)'),                  true,  'system-switch-user-symbolic'],
 
-        [null, 'sound-submenu'         ,   _('Sound'),                                    true,  'audio-volume-medium-symbolic'],
+        [null, 'sound-submenu'         ,   _('Media'),                                    true,  'audio-volume-medium-symbolic'],
         [   1, 'volume-up'             ,   _('Volume Up'),                                true,  'audio-volume-high-symbolic'],
         [   1, 'volume-down'           ,   _('Volume Down'),                              true,  'audio-volume-low-symbolic'],
-        [   1, 'mute-sound'            ,   _('Volume Mute toggle'),                       true,  'audio-volume-muted-symbolic'],
+        [   1, 'mpris-play-pause'      ,   _('Media key - Play/Pause'),                  false,  'media-playback-start-symbolic'],
+        [   1, 'mpris-next'            ,   _('Media key - Next Track'),                  false,  'media-skip-forward-symbolic'],
+        [   1, 'mpris-prev'            ,   _('Media key - Previous Track'),              false,  'media-skip-backward-symbolic'],
 
         [null, 'debug-submenu'         ,   _('Debug'),                                    true,  'edit-find-symbolic'],
         [   1, 'looking-glass'         ,   _('Looking Glass (GS debugger)'),              true,  'edit-find-symbolic'],
