@@ -38,7 +38,7 @@ let Shaders                  = null;
 let WinTmb                   = null;
 let _origAltTabWSP           = null;
 
-let GNOME40;
+let _shellVersion;
 
 const ws_indicator_mode = {
     'DISABLE': 0,
@@ -81,7 +81,7 @@ var Actions = class {
 
         this._connectRecentWorkspace();
 
-        GNOME40 = Settings.GNOME40;
+        _shellVersion = Settings.shellVersion;
         this._mscOptions = null;
     }
 
@@ -323,7 +323,7 @@ var Actions = class {
         } else {
             // Pressing the apps btn before overview activation avoids icons animation in GS 3.36/3.38
             // but in GS40 with Dash to Dock and its App button set to "no animation", this whole sequence is problematic
-            if (!GNOME40)
+            if (_shellVersion < 40)
                 Main.overview.dash.showAppsButton.checked = true;
             // in 3.36 pressing the button is usualy enough to activate overview, but not always
             Main.overview.show();
@@ -552,7 +552,7 @@ var Actions = class {
                 intSettings.set_string('gtk-theme', 'Yaru-dark');
                 break;
             case 'Yaru-dark':
-                let theme = GNOME40 ? 'Yaru' : 'Yaru-light'
+                let theme = _shellVersion >= 40 ? 'Yaru' : 'Yaru-light'
                 intSettings.set_string('gtk-theme', theme);
                 break;
             case 'Adwaita':
@@ -667,13 +667,12 @@ var Actions = class {
             this._wsOverlay = new St.Label ({
                         name: 'ws-index',
                         text: text,
-                        x: position.length ? position[0] : geometry.x,
                         y: position.length ? position[1] : geometry.y + (geometry.height / 2),
-                        width: geometry.width,
                         style_class: 'workspace-overlay',
                         reactive: true,
             });
             Main.layoutManager.addChrome(this._wsOverlay);
+            this._wsOverlay.x = geometry.x + (geometry.width - this._wsOverlay.width) / 2;
         } else if (this._wsOverlay) {
             this._wsOverlay.set_text(text);
             if (this._wsOverlay._timeoutId) {
