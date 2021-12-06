@@ -669,29 +669,28 @@ class CustomHotCorner extends Layout.HotCorner {
     _onCornerClicked(actor, event) {
         // if (event.get_click_count() > 1) return; // ignore second click of double clicks
         let button = event.get_button();
-        let trigger;
+        let trigger = null;
         let mods = event.get_state();
         switch (button) {
             case Clutter.BUTTON_PRIMARY:
-                if (this._corner.ctrl[Triggers.BUTTON_PRIMARY] && !this._ctrlPressed(mods))
-                    return;
-                trigger = Triggers.BUTTON_PRIMARY;
+                if (!(this._corner.ctrl[Triggers.BUTTON_PRIMARY] && !this._ctrlPressed(mods)))
+                    trigger = Triggers.BUTTON_PRIMARY;
                 break;
             case Clutter.BUTTON_SECONDARY:
-                if (this._corner.ctrl[Triggers.BUTTON_SECONDARY] && !this._ctrlPressed(mods))
-                    return;
-                trigger = Triggers.BUTTON_SECONDARY;
+                if (!(this._corner.ctrl[Triggers.BUTTON_SECONDARY] && !this._ctrlPressed(mods)))
+                    trigger = Triggers.BUTTON_SECONDARY;
                 break;
             case Clutter.BUTTON_MIDDLE:
-                if (this._corner.ctrl[Triggers.BUTTON_MIDDLE] && !this._ctrlPressed(mods))
-                    return;
-                trigger = Triggers.BUTTON_MIDDLE;
+                if (!(this._corner.ctrl[Triggers.BUTTON_MIDDLE] && !this._ctrlPressed(mods)))
+                    trigger = Triggers.BUTTON_MIDDLE;
                 break;
             default:
                 return Clutter.EVENT_PROPAGATE;
         }
-        this._runAction(trigger);
-        return Clutter.EVENT_STOP;
+        if (trigger !== null && this._runAction(trigger))
+            return Clutter.EVENT_STOP;
+        else
+            return Clutter.EVENT_PROPAGATE;
     }
 
     _onCornerScrolled(actor, event) {
@@ -701,41 +700,42 @@ class CustomHotCorner extends Layout.HotCorner {
         if (_notValidScroll(direction))
             return;
 
-        let trigger;
+        let trigger = null;
         switch (direction) {
             case Clutter.ScrollDirection.UP:
             case Clutter.ScrollDirection.LEFT:
-                if (this._corner.ctrl[Triggers.SCROLL_UP] && !this._ctrlPressed(mods))
-                    return;
-                trigger = Triggers.SCROLL_UP;
+                if (!(this._corner.ctrl[Triggers.SCROLL_UP] && !this._ctrlPressed(mods)))
+                    trigger = Triggers.SCROLL_UP;
                 break;
             case Clutter.ScrollDirection.DOWN:
             case Clutter.ScrollDirection.RIGHT:
-                if (this._corner.ctrl[Triggers.SCROLL_DOWN] && !this._ctrlPressed(mods))
-                    return;
-                trigger = Triggers.SCROLL_DOWN;
+                if (!(this._corner.ctrl[Triggers.SCROLL_DOWN] && !this._ctrlPressed(mods)))
+                    trigger = Triggers.SCROLL_DOWN;
                 break;
             default:
                 return Clutter.EVENT_PROPAGATE;
         }
-        this._runAction(trigger);
-        return Clutter.EVENT_STOP;
+        if (trigger !== null && this._runAction(trigger))
+            return Clutter.EVENT_STOP;
+        else
+            return Clutter.EVENT_PROPAGATE;
     }
 
     _runAction(trigger) {
         if ((_actionTimeoutActive(trigger) && !['volumeUp', 'volumeDown'].includes(this._corner.action[trigger])) ||
             this._corner.action[trigger] === 'disabled')
-            return;
+            return false;
         if (!this._monitor.inFullscreen ||
             (this._monitor.inFullscreen && (this._corner.fullscreen[trigger] || FULLSCREEN_GLOBAL))) {
             if (RIPPLE_ANIMATION)
                 this._rippleAnimation();
-            actionTrigger.runAction(this._corner.action[trigger],
+            return actionTrigger.runAction(this._corner.action[trigger],
                                     this._corner.monitorIndex,
                                     this._corner.workspaceIndex[trigger],
                                     this._corner.command[trigger]
             );
         }
+        return false;
     }
 });
 
@@ -791,8 +791,13 @@ const ActionTrigger = class ActionTrigger {
         this._command = command;
         this._workspaceIndex = workspaceIndex;
         this._triggeredByKeyboard = keyboard;
-        let actionFunction = this.m.get(action).bind(this) || function () {};
-        actionFunction();
+        let actionFunction = this.m.get(action).bind(this);
+        if (actionFunction) {
+            actionFunction();
+            return true;
+        } else {
+            return false;
+        }
     }
 
     clean(full = true) {

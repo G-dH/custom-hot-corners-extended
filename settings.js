@@ -23,8 +23,7 @@ const ExtensionUtils = imports.misc.extensionUtils;
 const Me = ExtensionUtils.getCurrentExtension();
 
 const Config = imports.misc.config;
-var   shellVersion = Config.PACKAGE_VERSION;
-var   GNOME40 = shellVersion.startsWith("4") ? true : false;
+var shellVersion = parseFloat(Config.PACKAGE_VERSION);
 
 const Gettext = imports.gettext.domain(Me.metadata['gettext-domain']);
 var _ = Gettext.gettext;
@@ -434,7 +433,7 @@ function extensionEnabled(uuid = null) {
 }
 
 const winSwitcherPopup = extensionEnabled('advanced-alt-tab@G-dH.github.com-dev');
-
+const horizontal = shellVersion >= 40;
 //      [root/submenu, action key,      action name,                                accelerator, icon name
 var actionList = [
         [   0, 'disabled'              ,   _('-'),                                       false,  ''],
@@ -453,16 +452,16 @@ var actionList = [
         [   1, 'run-prompt'            ,   _('Show Run Command Prompt'),                 false,  'utilities-terminal-symbolic'],
 
         [null, 'workspaces-submenu'    ,   _('Workspaces'),                               true,  'video-display-symbolic'],
-        [   1, 'prev-workspace'        ,   _('Previous Workspace'),                      false,   GNOME40 ? 'go-previous-symbolic': 'go-up-symbolic'  ],
-        [   1, 'prev-workspace-overview',  _('Previous Workspace Overview'),              true,   GNOME40 ? 'go-previous-symbolic': 'go-up-symbolic'  ],
-        [   1, 'prev-workspace-popup'  ,   _('Previous Workspace with Win Switcher'),     true,   GNOME40 ? 'go-previous-symbolic': 'go-up-symbolic'  ],
-        [   1, 'next-workspace'        ,   _('Next Workspace'),                          false,   GNOME40 ? 'go-next-symbolic'    : 'go-down-symbolic'],
-        [   1, 'next-workspace-overview',  _('Next Workspace Overview'),                  true,   GNOME40 ? 'go-next-symbolic'    : 'go-down-symbolic'],
-        [   1, 'next-workspace-popup'  ,   _('Next Workspace with Win Switcher'),         true,   GNOME40 ? 'go-next-symbolic'    : 'go-down-symbolic'],
+        [   1, 'prev-workspace'        ,   _('Previous Workspace'),                      false,   horizontal ? 'go-previous-symbolic': 'go-up-symbolic'  ],
+        [   1, 'prev-workspace-overview',  _('Previous Workspace Overview'),              true,   horizontal ? 'go-previous-symbolic': 'go-up-symbolic'  ],
+        [   1, 'prev-workspace-popup'  ,   _('Previous Workspace with Win Switcher'),     true,   horizontal ? 'go-previous-symbolic': 'go-up-symbolic'  ],
+        [   1, 'next-workspace'        ,   _('Next Workspace'),                          false,   horizontal ? 'go-next-symbolic'    : 'go-down-symbolic'],
+        [   1, 'next-workspace-overview',  _('Next Workspace Overview'),                  true,   horizontal ? 'go-next-symbolic'    : 'go-down-symbolic'],
+        [   1, 'next-workspace-popup'  ,   _('Next Workspace with Win Switcher'),         true,   horizontal ? 'go-next-symbolic'    : 'go-down-symbolic'],
         [   1, 'recent-workspace'      ,   _('Switch to Recent Workspace'),               true,  'document-open-recent-symbolic'],
         [   1, 'move-to-workspace'     ,   _('Switch to Workspace #'),                   false,  'go-jump-symbolic'],
-        [   1, 'reorder-ws-prev'       ,   _(`Reorder Workspace - ${GNOME40? _('Left') : _('Up')}`),  true,  GNOME40 ? 'go-previous-symbolic':'go-up-symbolic'],
-        [   1, 'reorder-ws-next'       ,   _(`Reorder Workspace - ${GNOME40? _('Right'): _('Down')}`),true,  GNOME40 ? 'go-next-symbolic':'go-down-symbolic'  ],
+        [   1, 'reorder-ws-prev'       ,   _(`Reorder Workspace - ${horizontal? _('Left') : _('Up')}`),  true,  horizontal ? 'go-previous-symbolic':'go-up-symbolic'],
+        [   1, 'reorder-ws-next'       ,   _(`Reorder Workspace - ${horizontal? _('Right'): _('Down')}`),true,  horizontal ? 'go-next-symbolic':'go-down-symbolic'  ],
 
         [null, 'win-navigation-submenu',   _('Windows - Navigation'),                     true,  'focus-windows-symbolic'],
         [   1, 'recent-win'            ,   _('Switch to Recent Window'),                  true,  'document-open-recent-symbolic'],
@@ -491,7 +490,7 @@ var actionList = [
         [   1, 'maximize-win'          ,   _('Maximize window (toggle)'),                 true,  'window-maximize-symbolic'],
         [   1, 'minimize-win'          ,   _('Minimize window'),                          true,  'window-minimize-symbolic'],
         [   1, 'fullscreen-win'        ,   _('Fullscreen window (toggle)'),               true,  'view-fullscreen-symbolic'],
-        [   1, 'fullscreen-on-empty-ws',   _('Fullscreen window on Empty WS (toggle)'),   true,  'window-maximize-symbolic'],
+        [   1, 'fullscreen-on-empty-ws',   _('Fullscreen window on Empty WS (toggle)'),   true,  'view-fullscreen-symbolic'],
         [   1, 'above-win'             ,   _('Always on Top window (toggle)'),            true,  'go-top-symbolic'],
         [   1, 'stick-win'             ,   _('Always on Visible WS window (toggle)'),     true,  'view-pin-symbolic'],
         [   1, 'quit-app'              ,   _('Quit focused application'),                 true,  'window-close-symbolic'],

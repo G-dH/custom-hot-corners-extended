@@ -162,7 +162,7 @@ class CornerPage extends Gtk.Grid {
         margin_top: 20,
         margin_bottom: 10,
         column_spacing: 10,
-        row_spacing: Settings.GNOME40 ? 2 : 15,
+        row_spacing: Settings.GS40 ? 2 : 15,
         vexpand: true,
     }) {
         super._init(constructProperties);
@@ -185,7 +185,7 @@ class CornerPage extends Gtk.Grid {
                 valign: Gtk.Align.CENTER,
                 vexpand: false,
                 hexpand: false,
-                tooltip_text: _('When checked, pressed Ctrl key is needed to trigger the action'),
+                tooltip_text: _('If checked, pressed Ctrl key is needed to trigger the action'),
             });
 
             ctrlBtn.connect('notify::active', () => {
@@ -497,7 +497,7 @@ class CornerPage extends Gtk.Grid {
 
     _buildExpandsionWidget() {
         const grid = new Gtk.Grid({
-            row_spacing: Settings.GNOME40 ? 0 : 10,
+            row_spacing: Settings.GS40 ? 0 : 10,
             column_spacing: 8,
             margin_start: 10,
             margin_end: 10,
@@ -645,7 +645,7 @@ class CornerPage extends Gtk.Grid {
             label: _('Expand click area:'),
             tooltip_text:
                           `${_('Expand the area reactive to mouse clicks and scrolls along the edge of the monitor.')}\n${
-                              _('When adjacent corners are set to expand along the same edge, each of them allocate a half of the edge')}`,
+                              _('If adjacent corners are set to expand along the same edge, each of them allocate a half of the edge')}`,
             halign: Gtk.Align.START,
         });
 
@@ -944,7 +944,7 @@ class OptionsPage extends Gtk.ScrolledWindow {
         optionsList.push(
             _optionsItem(
                 _('Enable all triggers in fullscreen mode'),
-                _('When off, each trigger can be enabled independently'),
+                _('If disabled, each trigger can be enabled independently'),
                 _newGtkSwitch(), 'fullscreenGlobal'
             )
         );
@@ -976,7 +976,7 @@ class OptionsPage extends Gtk.ScrolledWindow {
         optionsList.push(
             _optionsItem(
                 _('Use fallback hot corner triggers'),
-                _('When pressure barriers don`t work, on virtual systems for example'),
+                _('If pressure barriers don`t work'),
                 _newGtkSwitch(),
                 'barrierFallback'
             )
