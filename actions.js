@@ -1120,6 +1120,7 @@ var Actions = class {
         'filter-focused-app': false,
         'filter-pattern':     null,
         'apps':               false,
+        'switch-ws':          false,
     }) {
         const WindowSwitcherPopup = AltTab.WindowSwitcherPopup;
         let altTabPopup = new WindowSwitcherPopup();
@@ -1150,6 +1151,9 @@ var Actions = class {
             altTabPopup.connect('destroy', () => altTabPopup = null);
             altTabPopup._keyBind = args['shortcut'] ? args['shortcut'].replace(/<.+>/, '') : '';
             altTabPopup.show();
+            if ( args['switch-ws'] !== false) {
+                altTabPopup._switchWorkspace(args['switch-ws']);
+            }
         // if Advanced Alt+Tab Window Switcher not available, use default popup
         } else {
             if (args['apps'])

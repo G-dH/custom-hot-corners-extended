@@ -1069,7 +1069,6 @@ const ActionTrigger = class ActionTrigger {
     }
 
     _prevWorkspacePopup() {
-        actions.switchWorkspace(Clutter.ScrollDirection.UP, false);
         actions.showWindowSwitcherPopup({
             'monitor-index':      -1,
             'position-pointer':   false,
@@ -1080,11 +1079,11 @@ const ActionTrigger = class ActionTrigger {
             'shortcut':           null,
             'filter-focused-app': false,
             'filter-pattern':     null,
+            'switch-ws':          Clutter.ScrollDirection.UP,
         });
     }
 
     _nextWorkspacePopup() {
-        actions.switchWorkspace(Clutter.ScrollDirection.DOWN, false);
         actions.showWindowSwitcherPopup({
             'monitor-index':      -1,
             'position-pointer':   false,
@@ -1095,6 +1094,7 @@ const ActionTrigger = class ActionTrigger {
             'shortcut':           null,
             'filter-focused-app': false,
             'filter-pattern':     null,
+            'switch-ws':          Clutter.ScrollDirection.DOWN,
         });
     }
 
