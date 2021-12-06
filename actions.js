@@ -1151,7 +1151,7 @@ var Actions = class {
             altTabPopup.connect('destroy', () => altTabPopup = null);
             altTabPopup._keyBind = args['shortcut'] ? args['shortcut'].replace(/<.+>/, '') : '';
             altTabPopup.show();
-            if ( args['switch-ws'] !== false) {
+            if ( args['switch-ws'] !== undefined && args['switch-ws'] !== false) {
                 altTabPopup._switchWorkspace(args['switch-ws']);
             }
         // if Advanced Alt+Tab Window Switcher not available, use default popup
