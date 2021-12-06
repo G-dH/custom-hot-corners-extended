@@ -33,7 +33,7 @@
       <default>false</default>
     </key>
   </schema>
-  <schema id='org.gnome.shell.extensions.custom-hot-corners-extended.misc'>
+  <schema path= '/org/gnome/shell/extensions/custom-hot-corners-extended/misc/' id='org.gnome.shell.extensions.custom-hot-corners-extended.misc'>
     <key name='watch-corners' type='b'>
       <default>true</default>
     </key>
@@ -58,11 +58,8 @@
     <key name='ws-switch-wrap' type='b'>
       <default>false</default>
     </key>
-    <key name='ws-switch-indicator' type='b'>
-      <default>false</default>
-    </key>
     <key name='ws-switch-indicator-mode' type='i'>
-      <default>4</default>
+      <default>2</default>
     </key>
     <key name='action-event-delay' type='i'>
       <default>100</default>
@@ -89,7 +86,7 @@
       <default>[]</default>
     </key>
   </schema>
-  <schema id='org.gnome.shell.extensions.custom-hot-corners-extended.shortcuts'>
+  <schema path='/org/gnome/shell/extensions/custom-hot-corners-extended/shortcuts/' id='org.gnome.shell.extensions.custom-hot-corners-extended.shortcuts'>
     <key name='toggle-overview-ce' type='as'>
       <default>[]</default>
     </key>
