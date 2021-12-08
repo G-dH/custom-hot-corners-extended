@@ -566,9 +566,10 @@ var actionList = [
         [   1, 'log-out'               ,   _('Log Out Dialog'),                           true,  'system-log-out-symbolic'],
         [   1, 'switch-user'           ,   _('Switch User (if exists)'),                  true,  'system-switch-user-symbolic'],
 
-        [null, 'sound-submenu'         ,   _('Media'),                                    true,  'audio-volume-medium-symbolic'],
+        [null, 'media-submenu'         ,   _('Media'),                                    true,  'audio-volume-medium-symbolic'],
         [   1, 'volume-up'             ,   _('Volume Up'),                                true,  'audio-volume-high-symbolic'],
         [   1, 'volume-down'           ,   _('Volume Down'),                              true,  'audio-volume-low-symbolic'],
+        [   1, 'mute-sound'            ,   _('Mute Audio (toggle)'),                      true,  'audio-volume-muted-symbolic'],
         [   1, 'mpris-play-pause'      ,   _('Media key - Play/Pause'),                  false,  'media-playback-start-symbolic'],
         [   1, 'mpris-next'            ,   _('Media key - Next Track'),                  false,  'media-skip-forward-symbolic'],
         [   1, 'mpris-prev'            ,   _('Media key - Previous Track'),              false,  'media-skip-backward-symbolic'],

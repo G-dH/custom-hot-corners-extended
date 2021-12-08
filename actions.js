@@ -548,7 +548,8 @@ var Actions = class {
         let intSettings = this._getInterfaceSettings();
         let theme = intSettings.get_string('gtk-theme');
         switch (theme) {
-            case 'Yaru-light' || 'Yaru':
+            case 'Yaru-light':
+            case 'Yaru':
                 intSettings.set_string('gtk-theme', 'Yaru-dark');
                 break;
             case 'Yaru-dark':
