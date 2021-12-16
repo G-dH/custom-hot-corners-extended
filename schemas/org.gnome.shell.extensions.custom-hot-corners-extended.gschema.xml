@@ -225,6 +225,31 @@
     <key name='unminimize-all-ws-ce' type='as'>
       <default>[]</default>
     </key>
+
+    <key name='move-win-to-prev-ws-ce' type='as'>
+      <default>[]</default>
+    </key>
+    <key name='move-win-to-prev-new-ws-ce' type='as'>
+      <default>[]</default>
+    </key>
+    <key name='move-win-to-next-ws-ce' type='as'>
+      <default>[]</default>
+    </key>
+    <key name='move-win-to-next-new-ws-ce' type='as'>
+      <default>[]</default>
+    </key>
+    <key name='move-app-to-prev-ws-ce' type='as'>
+      <default>[]</default>
+    </key>
+    <key name='move-app-to-prev-new-ws-ce' type='as'>
+      <default>[]</default>
+    </key>
+    <key name='move-app-to-next-ws-ce' type='as'>
+      <default>[]</default>
+    </key>
+    <key name='move-app-to-next-new-ws-ce' type='as'>
+      <default>[]</default>
+    </key>
     <key name='make-thumbnail-win-ce' type='as'>
       <default>[]</default>
     </key>
