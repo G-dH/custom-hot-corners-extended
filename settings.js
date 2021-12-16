@@ -448,7 +448,7 @@ var actionList = [
         [   1, 'black-screen-mon'      ,   _('Black Screen (current monitor)'),           true,  'video-display-symbolic'],
 
         [null, 'run-submenu'           ,   _('↓ Run Command'),                           false,  'utilities-terminal-symbolic'],
-        [   1, 'run-command'           ,   _('Run preset Command'),                      false,  'utilities-terminal-symbolic'],
+        [   1, 'run-command'           ,   _('Run preset Command ...'),                      false,  'utilities-terminal-symbolic'],
         [   1, 'run-prompt'            ,   _('Show Run Command Prompt'),                 false,  'utilities-terminal-symbolic'],
 
         [null, 'workspaces-submenu'    ,   _('↓ Workspaces'),                             true,  'video-display-symbolic'],
@@ -459,7 +459,7 @@ var actionList = [
         [   1, 'next-workspace-overview',  _('Next Workspace Overview'),                  true,   horizontal ? 'go-next-symbolic'    : 'go-down-symbolic'],
         [   1, 'next-workspace-popup'  ,   _('Next Workspace with Win Switcher'),         true,   horizontal ? 'go-next-symbolic'    : 'go-down-symbolic'],
         [   1, 'recent-workspace'      ,   _('Switch to Recent Workspace'),               true,  'document-open-recent-symbolic'],
-        [   1, 'move-to-workspace'     ,   _('Switch to Workspace #'),                   false,  'go-jump-symbolic'],
+        [   1, 'move-to-workspace'     ,   _('Switch to preset Workspace ...'),           false,  'go-jump-symbolic'],
         [   1, 'reorder-ws-prev'       ,   _(`Reorder Workspace - ${horizontal? _('Left') : _('Up')}`),  true,  horizontal ? 'go-previous-symbolic':'go-up-symbolic'],
         [   1, 'reorder-ws-next'       ,   _(`Reorder Workspace - ${horizontal? _('Right'): _('Down')}`),true,  horizontal ? 'go-next-symbolic':'go-down-symbolic'  ],
 
@@ -490,12 +490,22 @@ var actionList = [
         [   1, 'maximize-win'          ,   _('Maximize window (toggle)'),                 true,  'window-maximize-symbolic'],
         [   1, 'minimize-win'          ,   _('Minimize window'),                          true,  'window-minimize-symbolic'],
         [   1, 'fullscreen-win'        ,   _('Fullscreen window (toggle)'),               true,  'view-fullscreen-symbolic'],
-        [   1, 'fullscreen-on-empty-ws',   _('Fullscreen window on Empty WS (toggle)'),   true,  'view-fullscreen-symbolic'],
+        [   1, 'fullscreen-on-empty-ws',   _('Fullscreen window on New WS (toggle)'),     true,  'view-fullscreen-symbolic'],
         [   1, 'above-win'             ,   _('Always on Top window (toggle)'),            true,  'go-top-symbolic'],
         [   1, 'stick-win'             ,   _('Always on Visible WS window (toggle)'),     true,  'view-pin-symbolic'],
         [   1, 'quit-app'              ,   _('Quit focused application'),                 true,  'window-close-symbolic'],
         [   1, 'kill-app'              ,   _('Kill focused application (kill -9)'),       true,  'process-stop-symbolic'],
         [   1, 'unminimize-all-ws'     ,   _('Unminimize all windows (workspace)'),       true,  'window-restore-symbolic'],
+
+        [null, 'win-control-submenu'   ,   _('↓ Windows - Relocations'),                  true,  'focus-windows-symbolic'],
+        [   1, 'move-win-to-prev-ws'   ,   _('Move window to Previous workspace'),        true,  horizontal ? 'go-previous-symbolic': 'go-up-symbolic'  ],
+        [   1, 'move-win-to-prev-new-ws',  _('Move window to New workspace Prev'),        true,  horizontal ? 'go-previous-symbolic': 'go-up-symbolic'  ],
+        [   1, 'move-win-to-next-ws'   ,   _('Move window to Next workspace'),            true,  horizontal ? 'go-next-symbolic'    : 'go-down-symbolic'],
+        [   1, 'move-win-to-next-new-ws',  _('Move window to New workspace Next'),        true,  horizontal ? 'go-next-symbolic'    : 'go-down-symbolic'],
+        [   1, 'move-app-to-prev-ws',      _('Move app windows to Prev workspace'),       true,  horizontal ? 'go-previous-symbolic': 'go-up-symbolic'  ],
+        [   1, 'move-app-to-prev-new-ws',  _('Move app windows to New workspace Prev'),   true,  horizontal ? 'go-previous-symbolic': 'go-up-symbolic'  ],
+        [   1, 'move-app-to-next-ws',      _('Move app windows to Next workspace'),       true,  horizontal ? 'go-next-symbolic'    : 'go-down-symbolic'],
+        [   1, 'move-app-to-next-new-ws',  _('Move app windows to New workspace Next'),   true,  horizontal ? 'go-next-symbolic'    : 'go-down-symbolic'],
 
         [null, 'win-thumbnails-submenu',   _('↓ DND Window Thumbnails (Clones / PIP)'),   true,  ''],
         [   1, 'make-thumbnail-win'    ,   _('Create Window Thumbnail (at bottom-right)'),true,  ''],

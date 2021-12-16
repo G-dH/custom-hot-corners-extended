@@ -1498,4 +1498,36 @@ const ActionTrigger = class ActionTrigger {
     _mprisPrev() {
         actions.mprisPlayerControler(2);
     }
+
+    _moveWinToPrevWs() {
+        actions.moveWinToAdjacentWs(Clutter.ScrollDirection.UP);
+    }
+
+    _moveWinToNextWs() {
+        actions.moveWinToAdjacentWs(Clutter.ScrollDirection.DOWN);
+    }
+
+    _moveWinToPrevNewWs() {
+        actions.moveWinToNewWs(Clutter.ScrollDirection.UP);
+    }
+
+    _moveWinToNextNewWs() {
+        actions.moveWinToNewWs(Clutter.ScrollDirection.DOWN);
+    }
+
+    _moveAppToPrevWs() {
+        actions.moveWinToAdjacentWs(Clutter.ScrollDirection.UP, actions._getWindowsOfFocusedAppOnActiveWs());
+    }
+
+    _moveAppToNextWs() {
+        actions.moveWinToAdjacentWs(Clutter.ScrollDirection.DOWN, actions._getWindowsOfFocusedAppOnActiveWs());
+    }
+
+    _moveAppToPrevNewWs() {
+        actions.moveWinToNewWs(Clutter.ScrollDirection.UP, actions._getWindowsOfFocusedAppOnActiveWs());
+    }
+
+    _moveAppToNextNewWs() {
+        actions.moveWinToNewWs(Clutter.ScrollDirection.DOWN, actions._getWindowsOfFocusedAppOnActiveWs());
+    }
 };

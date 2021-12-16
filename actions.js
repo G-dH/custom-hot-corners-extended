@@ -15,7 +15,7 @@
 */
 'use strict';
 
-const {GLib, Clutter, St, Meta, Shell, Gio} = imports.gi;
+const { GLib, Clutter, St, Meta, Shell, Gio } = imports.gi;
 
 const Main                   = imports.ui.main;
 const WorkspaceSwitcherPopup = imports.ui.workspaceSwitcherPopup;
@@ -277,6 +277,24 @@ var Actions = class {
         return null;*/
     }
 
+    _getWindowApp(metaWindow) {
+        let tracker = Shell.WindowTracker.get_default();
+        return tracker.get_window_app(metaWindow);
+    }
+
+    _getWindowsOfFocusedAppOnActiveWs() {
+        let win = this._getFocusedWindow();
+        let app = this._getWindowApp(win);
+        let ws = global.workspaceManager.get_active_workspace();
+        let wsWidows = ws.list_windows();
+        let result = [];
+        wsWidows.forEach(w => {
+           if (this._getWindowApp(w).get_id() === app.get_id())
+                result.push(w);
+        });
+        return result;
+    }
+
     _getWindowSurface(metaWindow) {
         let windowActor = metaWindow.get_compositor_private();
         for (let child of windowActor.get_children()) {
@@ -305,6 +323,15 @@ var Actions = class {
                 return act;
         }
         return null;
+    }
+
+    _getMonitorByIndex(monitorIndex) {
+        let monitors = Main.layoutManager.monitors;
+        for (let monitor of monitors) {
+            if (monitor.index === monitorIndex)
+                return monitor;
+        }
+        return -1;
     }
 
     _getShaders() {
@@ -463,9 +490,10 @@ var Actions = class {
             win = this._getFocusedWindow(true);
         else
             win = metaWindow;
-
         if (!win)
             return;
+
+        // if property fullscreen === true, win was already maximized on new ws
         if (win.fullscreen) {
             win.unmake_fullscreen();
             if (win._originalWS) {
@@ -493,14 +521,80 @@ var Actions = class {
                 ).length;
             if (nWindows > 1) {
                 win._originalWS = ws;
-                //ws.connect('destroy', () => win._originalWS = null);
-                let lastWs = global.workspaceManager.n_workspaces - 1;
-                lastWs = global.workspaceManager.get_workspace_by_index(lastWs);
-                //Main.wm.actionMoveWorkspace(lastWs);
-                win.change_workspace(lastWs);
-                global.workspace_manager.reorder_workspace(lastWs, ws.index() + 1);
+                let newWsIndex = ws.index() + 1;
+                Main.wm.insertWorkspace(newWsIndex);
+                let newWs = global.workspace_manager.get_workspace_by_index(newWsIndex);
+                win.change_workspace(newWs);
                 win.activate(global.get_current_time());
             }
+        }
+    }
+
+    moveWinToNewWs(direction, windows = null) {
+        let selected
+        if (!windows)
+            selected = [this._getFocusedWindow(true)];
+        else
+            selected = windows;
+        if (!selected)
+            return;
+
+        let wsIndex = global.workspace_manager.get_active_workspace_index();
+            wsIndex = wsIndex + (direction === Clutter.ScrollDirection.UP ? 0 : 1);
+            Main.wm.insertWorkspace(wsIndex);
+            this.moveWinToAdjacentWs(direction, selected);
+    }
+
+    moveWinToAdjacentWs(direction, windows = null) {
+        let selected
+        if (!windows)
+            selected = [this._getFocusedWindow(true)];
+        else
+            selected = windows;
+        if (!selected)
+            return;
+
+        let wsIndex = global.workspace_manager.get_active_workspace_index();
+        wsIndex = wsIndex + (direction === Clutter.ScrollDirection.UP ? -1 : 1);
+        wsIndex = Math.min(wsIndex, global.workspace_manager.get_n_workspaces() - 1);
+        if (wsIndex < 0) {
+            this.moveWinToNewWs(direction, selected);
+            return;
+        }
+
+        let ws = global.workspace_manager.get_workspace_by_index(wsIndex);
+        if (selected.length > 1) {
+            this._moveWindowsToWS(selected, ws);
+            this.switchWorkspace(direction, true);
+        } else {
+            Main.wm.actionMoveWindow(selected[0], ws);
+        }
+        Main.wm.actionMoveWorkspace(ws);
+        this.showWorkspaceIndex();
+    }
+
+    _moveWindowsToWS(windows, workspace) {
+        let winList = windows;
+        winList.forEach(win => {
+            this._moveWindowToWs(win, workspace);
+        });
+        //this.showWorkspaceIndex();
+    }
+
+    _moveWindowToWs(metaWindow, workspace = null, monitorIndex = -1) {
+        let ws = workspace ? workspace : global.workspace_manager.get_active_workspace();
+        let win = metaWindow;
+        win.change_workspace(ws);
+        let targetMonitorIndex = monitorIndex > -1 ? monitorIndex : global.display.get_current_monitor();
+        let currentMonitorIndex = win.get_monitor();
+        if (currentMonitorIndex !== targetMonitorIndex) {
+            // move window to target monitor
+            let actor = this._getActorByMetaWin(win);
+            let targetMonitor  = this._getMonitorByIndex(targetMonitorIndex);
+
+            let x = targetMonitor.x + Math.max(Math.floor(targetMonitor.width - actor.width) / 2, 0);
+            let y = targetMonitor.y + Math.max(Math.floor(targetMonitor.height - actor.height) / 2, 0);
+            win.move_frame(true, x, y);
         }
     }
 
@@ -610,8 +704,7 @@ var Actions = class {
     switchWorkspace(direction, noIndicator = false) {
             let n_workspaces = global.workspaceManager.n_workspaces;
             let lastWsIndex =  n_workspaces - (this.WS_IGNORE_LAST ? 2 : 1);
-            let motion;
-    
+
             let activeWs  = global.workspaceManager.get_active_workspace();
             let activeIdx = activeWs.index();
             let targetIdx = this.WS_WRAPAROUND ? 
@@ -621,7 +714,7 @@ var Actions = class {
                 targetIdx = activeIdx;
             }
             let ws = global.workspaceManager.get_workspace_by_index(targetIdx);
- 
+
             const showIndicator = !noIndicator && this.WS_INDICATOR_MODE > 0;
 
             // show default workspace indicator popup
@@ -699,7 +792,7 @@ var Actions = class {
 
         return this._wsOverlay;
     }
-    
+
     switchWindow(direction, wsOnly = false, monitorIndex = -1) {
         let workspaceManager = global.workspace_manager;
         let workspace = wsOnly ? workspaceManager.get_active_workspace() : null;
@@ -720,10 +813,10 @@ var Actions = class {
         windows = windows.filter( w => modals.indexOf(w) && !w.is_skip_taskbar());
         if (this.WIN_SKIP_MINIMIZED)
             windows = windows.filter(win => !win.minimized);
-    
+
         if (!windows.length)
             return;
-    
+
         let currentWin  = windows[0];
         // tab list is sorted by MRU order, active window is allways idx 0
         // each window has index in global stable order list (as launched)
@@ -738,7 +831,7 @@ var Actions = class {
             targetIdx = this.WIN_WRAPAROUND ? windows.length - 1 : currentIdx;
         windows[targetIdx].activate(global.get_current_time());
     }
-    
+
     adjustVolume(direction) {
         let mixerControl = Volume.getMixerControl();
         let sink = mixerControl.get_default_sink();
@@ -856,7 +949,7 @@ var Actions = class {
         }
 
     }
-    
+
     toggleDesaturateEffect(window = true) {
         let name = 'desaturate';
         let effect = Clutter.DesaturateEffect;
@@ -887,7 +980,7 @@ var Actions = class {
         else
             this._toggleGlobalEffect(name, effect);
     }
-    
+
     toggleColorsInvertEffect(window = true) {
         let name = 'inversion';
         this._getShaders();
@@ -959,7 +1052,7 @@ var Actions = class {
             }
         });
     }
-    
+
     toggleDimmMonitors(alpha, text, monitorIndex = -1) {
         // reverse order to avoid conflicts after dimmer removed
         let createNew = true;
@@ -968,9 +1061,9 @@ var Actions = class {
                 createNew = false;
         }
         for (let i = this._dimmerActors.length - 1; i > -1;  i--) {
-    
+
             if (this._dimmerActors[i].name === `${monitorIndex}`) {
-    
+
                 let idx = this._dimmerActors.indexOf(this._dimmerActors[i]);
                 if (idx > -1) {
                     this._dimmerActors[i].destroy();
@@ -982,9 +1075,9 @@ var Actions = class {
         if (createNew) {
             if (monitorIndex === -1) this._destroyDimmerActors();
             let monitors = [...Main.layoutManager.monitors.keys()];
-    
+
             for (let monitor of monitors) {
-    
+
                 if ( (monitorIndex < 0 ? true : monitor === monitorIndex)) {
                     let geometry = global.display.get_monitor_geometry(monitor);
                     let actor = new St.Label ({
@@ -1252,7 +1345,7 @@ var CustomMenuPopup = class CustomMenuPopup extends PopupMenu.PopupMenu {
         this.act.menu = this;
         this.act.manager = new PopupMenu.PopupMenuManager(this.act);
         this.act.manager.addMenu(this.act.menu);
-        
+
         // this.actor.connect('hide', this.destroy.bind(this));
     }
 
