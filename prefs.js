@@ -59,10 +59,9 @@ function init() {
 }
 
 function buildPrefsWidget() {
-    const prefsWidget = new Gtk.Grid({visible: true});
+    const prefsWidget = new Gtk.Grid();
     notebook = new Gtk.Notebook({
         tab_pos: Gtk.PositionType.LEFT,
-        visible: true,
     });
 
     prefsWidget.attach(notebook, 0, 0, 1, 1);
@@ -110,13 +109,17 @@ function buildPrefsWidget() {
         page.buildPage();
     });
 
+    prefsWidget.show_all && prefsWidget.show_all();
     return prefsWidget;
 }
 
 const MonitorPage = GObject.registerClass(
 class MonitorPage extends Gtk.Notebook {
-    _init(constructProperties = {tab_pos: Gtk.PositionType.TOP, visible: true}) {
-        super._init(constructProperties);
+    _init(widgetProperties = {
+        tab_pos: Gtk.PositionType.TOP,
+        vexpand: true,
+    }) {
+        super._init(widgetProperties);
 
         this._corners = [];
         this._monitor = null;
@@ -153,19 +156,18 @@ class MonitorPage extends Gtk.Notebook {
 });
 
 const CornerPage = GObject.registerClass(
-class CornerPage extends Gtk.Grid {
-    _init(constructProperties = {
-        column_homogeneous: false,
-        row_homogeneous: false,
-        margin_start: 10,
-        margin_end: 10,
-        margin_top: 20,
-        margin_bottom: 10,
-        column_spacing: 10,
-        row_spacing: Settings.GS40 ? 2 : 15,
+class CornerPage extends Gtk.ListBox {
+    _init(widgetProperties = {
+        selection_mode: null,
+        can_focus: false,
+        margin_start: 0,
+        margin_end: 0,
+        margin_top: 10,
+        margin_bottom: 0,
         vexpand: true,
+
     }) {
-        super._init(constructProperties);
+        super._init(widgetProperties);
 
         this._alreadyBuilt = false;
         this._corner = null;
@@ -178,26 +180,37 @@ class CornerPage extends Gtk.Grid {
             return false;
         this._alreadyBuilt = true;
         for (let trigger of triggers) {
+            const grid = new Gtk.Grid({
+                column_spacing: 5,
+                margin_start: 5,
+                margin_end: 10,
+                margin_top: Settings.shellVersion >= 40 ? 5 : 10,
+                margin_bottom: Settings.shellVersion >= 40 ? 5 : 10,
+
+            });
             const ctrlBtn = new Gtk.CheckButton({
-            // const ctrlBtn = new Gtk.ToggleButton(
+            //const ctrlBtn = new Gtk.ToggleButton({
                 label: _('Ctrl'),
                 halign: Gtk.Align.START,
                 valign: Gtk.Align.CENTER,
                 vexpand: false,
                 hexpand: false,
                 tooltip_text: _('If checked, pressed Ctrl key is needed to trigger the action'),
+                //margin_end: 5,
             });
 
             ctrlBtn.connect('notify::active', () => {
                 this._corner.setCtrl(trigger, ctrlBtn.active);
             });
             ctrlBtn.set_active(this._corner.getCtrl(trigger));
+
             const cw = this._buildTriggerWidget(trigger);
             const trgIcon = new Gtk.Image({
                 halign: Gtk.Align.START,
                 margin_start: 10,
+                margin_end: 15,
                 vexpand: true,
-                hexpand: true,
+                hexpand: false,
                 pixel_size: 40,
                 // pixel_size has no effect in Gtk3, the size is the same as declared in svg image
                 // in Gtk4 image has always some extra margin and therefore it's tricky to adjust row height
@@ -215,14 +228,39 @@ class CornerPage extends Gtk.Grid {
                 }
                 iconPath = `${Me.dir.get_path()}/icons/Mouse-${iconIdx}.svg`;
             }
+
+            const fsBtn = new Gtk.ToggleButton({
+                halign: Gtk.Align.START,
+                valign: Gtk.Align.CENTER,
+                vexpand: false,
+                hexpand: false,
+                tooltip_text: _("If inactive, trigger doesn't work in fullscreen mode"),
+            });
+            if (fsBtn.set_icon_name)
+                fsBtn.set_icon_name('view-fullscreen-symbolic');
+            else
+                fsBtn.add(Gtk.Image.new_from_icon_name('view-fullscreen-symbolic', Gtk.IconSize.BUTTON));
+
+            fsBtn.connect('notify::active', () => {
+                this._corner.setFullscreen(trigger, fsBtn.active);
+            });
+            fsBtn.set_active(this._corner.getFullscreen(trigger));
+
             trgIcon.set_from_file(iconPath);
             trgIcon.set_tooltip_text(triggerLabels[trigger]);
-            this.attach(trgIcon, 0, trigger, 1, 1);
-            this.attach(ctrlBtn, 1, trigger, 1, 1);
-            this.attach(cw,      2, trigger, 1, 1);
+            grid.attach(trgIcon, 1, trigger, 1, 1);
+            grid.attach(ctrlBtn, 0, trigger, 1, 1);
+            if (trigger === Settings.Triggers.PRESSURE) {
+                grid.attach(cw,      2, trigger, 1, 1);
+                grid.attach(fsBtn,   3, trigger, 1, 1);
+            } else {
+                grid.attach(cw,      2, trigger, 1, 1);
+                grid.attach(fsBtn,   3, trigger, 2, 1);
+            }
+            this[this.add ? 'add' : 'append'](grid);
         }
         const ew = this._buildExpandsionWidget();
-        this.attach(ew, 0, 7, 3, 1);
+        this[this.add ? 'add' : 'append'](ew);
         this.show_all && this.show_all();
 
         this._alreadyBuilt = true;
@@ -233,28 +271,16 @@ class CornerPage extends Gtk.Grid {
             valign: Gtk.Align.CENTER,
         });
 
-        const popupGrid = new Gtk.Grid({
-            margin_start: 10,
-            margin_end: 10,
-            margin_top: 10,
-            margin_bottom: 10,
-            column_spacing: 12,
-            row_spacing: 8,
-            visible: true,
-        });
-
         const comboGrid = new Gtk.Grid({
             column_spacing: 4,
         });
         const cmdGrid = new Gtk.Grid({
             margin_top: 4,
             column_spacing: 4,
-            visible: true,
         });
 
         const commandEntryRevealer = new Gtk.Revealer({
             child: cmdGrid,
-            visible: true,
         });
 
         const wsIndexAdjustment = new Gtk.Adjustment({
@@ -289,27 +315,47 @@ class CornerPage extends Gtk.Grid {
             hexpand: true,
         });
 
-        const cornerPopover = new Gtk.Popover();
-        const settingsBtn = new Gtk.MenuButton({
-            popover: cornerPopover,
-            valign: Gtk.Align.CENTER,
-            //margin_start: 4,
-        });
+        let settingsBtn = null;
+        if (trigger === Settings.Triggers.PRESSURE) {
+            const cornerPopover = new Gtk.Popover();
+            const popupGrid = new Gtk.Grid({
+                margin_start: 10,
+                margin_end: 10,
+                margin_top: 10,
+                margin_bottom: 10,
+                column_spacing: 12,
+                row_spacing: 8,
+            });
 
-        // Gtk3 implements button icon as an added Gtk.Image child, Gtk4 does not
-        if (settingsBtn.set_icon_name) {
-            settingsBtn.set_icon_name('emblem-system-symbolic');
-            appButton.set_icon_name('find-location-symbolic');
-        } else {
-            settingsBtn.add(Gtk.Image.new_from_icon_name('emblem-system-symbolic', Gtk.IconSize.BUTTON));
-            appButton.add(Gtk.Image.new_from_icon_name('find-location-symbolic', Gtk.IconSize.BUTTON));
+            popupGrid.show_all && popupGrid.show_all();
+            cornerPopover[cornerPopover.add ? 'add' : 'set_child'](popupGrid);
+
+            this._buildPressureSettings(popupGrid);
+            settingsBtn = new Gtk.MenuButton({
+                popover: cornerPopover,
+                valign: Gtk.Align.CENTER,
+                //margin_start: 4,
+            });
+
+            // Gtk3 implements button icon as an added Gtk.Image child, Gtk4 does not
+            if (settingsBtn.set_icon_name)
+                settingsBtn.set_icon_name('emblem-system-symbolic');
+            else
+                settingsBtn.add(Gtk.Image.new_from_icon_name('emblem-system-symbolic', Gtk.IconSize.BUTTON));
         }
+
+        if (appButton.set_icon_name)
+            appButton.set_icon_name('find-location-symbolic');
+        else
+            appButton.add(Gtk.Image.new_from_icon_name('find-location-symbolic', Gtk.IconSize.BUTTON));
 
         cmdGrid.attach(commandEntry, 0, 0, 1, 1);
         cmdGrid.attach(appButton, 1, 0, 1, 1);
 
         comboGrid.attach(actionCombo, 0, 0, 1, 1);
-        comboGrid.attach(settingsBtn, 1, 0, 1, 1);
+        if (settingsBtn) {
+            comboGrid.attach(settingsBtn, 1, 0, 1, 1);
+        }
 
         cw.attach(comboGrid, 0, 0, 1, 1);
         cw.attach(commandEntryRevealer, 0, 1, 1, 1);
@@ -403,26 +449,6 @@ class CornerPage extends Gtk.Grid {
             );
         });
 
-        const fullscreenLabel = new Gtk.Label({
-            label: _('Enable in fullscreen mode'),
-            halign: Gtk.Align.START,
-        });
-        const fullscreenSwitch = _newGtkSwitch();
-
-        popupGrid.attach(fullscreenLabel, 0, 0, 1, 1);
-        popupGrid.attach(fullscreenSwitch, 1, 0, 1, 1);
-
-        popupGrid.show_all && popupGrid.show_all();
-        cornerPopover[cornerPopover.add ? 'add' : 'set_child'](popupGrid);
-
-        fullscreenSwitch.active = this._corner.getFullscreen(trigger);
-        fullscreenSwitch.connect('notify::active', () => {
-            this._corner.setFullscreen(trigger, fullscreenSwitch.active);
-        });
-
-        if (trigger === Settings.Triggers.PRESSURE)
-            this._buildPressureSettings(popupGrid);
-
         cw.show_all && cw.show_all();
         return cw;
     }
@@ -497,83 +523,88 @@ class CornerPage extends Gtk.Grid {
 
     _buildExpandsionWidget() {
         const grid = new Gtk.Grid({
-            row_spacing: Settings.GS40 ? 0 : 10,
+            row_spacing: Settings.shellVersion >= 40 ? 0 : 10,
             column_spacing: 8,
             margin_start: 10,
             margin_end: 10,
+            margin_top: 5,
             margin_bottom: 10,
             halign: Gtk.Align.FILL,
-            visible: true,
         });
         const expTitle = new Gtk.Label({
             use_markup: true,
-            label: _makeTitle(_('Corner to edge expansions: ')),
+            label: _makeTitle(_('Corner to edge expansions')),
             tooltip_text: _("You can activate 'Make active corners/edges visible' option in Options to see the results of this settings."),
 
         });
-        const frame = new Gtk.Frame({
+        /*const frame = new Gtk.Frame({
             margin_top: 10,
-        });
-
-        frame.set_label_widget(expTitle);
+            margin_bottom: 10,
+            margin_start: 10,
+            margin_end: 10,
+            valign: Gtk.Align.END,
+        });*/
 
         const hIcon = new Gtk.Image({
-            halign: Gtk.Align.START,
+            halign: Gtk.Align.CENTER,
             tooltip_text: _('Horizontal size/expansion'),
             hexpand: true,
             pixel_size: 40,
             margin_start: 10,
+            //yalign: 0.7,
         });
         hIcon.set_from_file(`${Me.dir.get_path()}/icons/${this._corner.top ? 'Top' : 'Bottom'}${this._corner.left ? 'Left' : 'Right'}HE.svg`);
         const vIcon = new Gtk.Image({
-            halign: Gtk.Align.START,
+            halign: Gtk.Align.CENTER,
             tooltip_text: _('Vertical size/expansion'),
             hexpand: true,
             pixel_size: 40,
             margin_start: 10,
+            //yalign: 0.7,
         });
         vIcon.set_from_file(`${Me.dir.get_path()}/icons/${this._corner.top ? 'Top' : 'Bottom'}${this._corner.left ? 'Left' : 'Right'}VE.svg`);
 
         const b = this._buildBarrierSizeAdjustment();
         const c = this._buildClickExpansionAdjustment();
+        //                    x, y, w, h
+        grid.attach(expTitle, 0, 0,  1, 1);
+        grid.attach(hIcon,    1, 0,  1, 1);
+        grid.attach(vIcon,    2, 0,  1, 1);
+        grid.attach(b[0],     0, 2,  1, 1);
+        grid.attach(b[1],     1, 2,  1, 1);
+        grid.attach(b[2],     2, 2,  1, 1);
 
-        grid.attach(b[0],   0, 0,  1, 1);
-        grid.attach(hIcon,  1, 0,  1, 2);
-        grid.attach(b[1],   2, 0, 10, 1);
-        grid.attach(vIcon, 12, 0,  1, 2);
-        grid.attach(b[2],  13, 0, 10, 1);
-
-        grid.attach(c[0],  0, 1,  1, 1);
-        grid.attach(c[1],  2, 1, 10, 1);
-        grid.attach(c[2], 13, 1, 10, 1);
+        grid.attach(c[0],     0, 3,  1, 1);
+        grid.attach(c[1],     1, 3,  1, 1);
+        grid.attach(c[2],     2, 3,  1, 1);
 
 
-        frame[frame.add ? 'add' : 'set_child'](grid);
-        return frame;
+        //frame[frame.add ? 'add' : 'set_child'](grid);
+        //return frame;
+        return grid;
     }
 
     _buildBarrierSizeAdjustment() {
         const label = new Gtk.Label({
-            label: _('Hot barrier size:'),
+            label: _('Hot corner barrier size:'),
             tooltip_text: `${_('Set horizontal and vertical size of the barrier that reacts to the mouse pointer pressure (part of hot corner).')}\n${
                 _('Size can be set in percentage of the screen width and height.')}`,
             halign: Gtk.Align.START,
+            hexpand: false,
         });
 
         const barrierAdjustmentH = new Gtk.Adjustment({
             lower: 1,
-            // upper: this._geometry.width,
             upper: 98,
             step_increment: 1,
-            page_increment: 1,
+            page_increment: 5,
         });
 
         const barrierAdjustmentV = new Gtk.Adjustment({
             lower: 1,
-            // upper: this._geometry.height,
             upper: 98,
             step_increment: 1,
-            page_increment: 1,
+            page_increment: 5,
         });
 
         const barrierSizeSliderH = new Gtk.Scale({
@@ -647,6 +678,7 @@ class CornerPage extends Gtk.Grid {
                           `${_('Expand the area reactive to mouse clicks and scrolls along the edge of the monitor.')}\n${
                               _('If adjacent corners are set to expand along the same edge, each of them allocate a half of the edge')}`,
             halign: Gtk.Align.START,
+            hexpand: false,
         });
 
         const hExpandSwitch = new Gtk.Switch({
@@ -690,19 +722,16 @@ class CornerPage extends Gtk.Grid {
             margin_bottom: 10,
             column_spacing: 10,
             row_spacing: 15,
-            visible: true,
         });
         dialog._appChooser = new Gtk.AppChooserWidget({
             show_all: true,
             hexpand: true,
-            visible: true,
         });
         // let appInfo = dialog._appChooser.get_app_info();
         grid.attach(dialog._appChooser, 0, 0, 2, 1);
         const cmdLabel = new Gtk.Label({
             label: '',
             wrap: true,
-            visible: true,
         });
         grid.attach(cmdLabel, 0, 1, 2, 1);
         dialog.get_content_area()[dialog.get_content_area().add ? 'add' : 'append'](grid);
@@ -710,6 +739,7 @@ class CornerPage extends Gtk.Grid {
             cmdLabel.set_text(appInfo.get_commandline());
         }
         );
+        dialog.show_all && dialog.show_all();
         dialog.show();
         return dialog;
     }
@@ -717,8 +747,11 @@ class CornerPage extends Gtk.Grid {
 
 const KeyboardPage = GObject.registerClass(
 class KeyboardPage extends Gtk.ScrolledWindow {
-    _init(params) {
-        super._init({margin_start: 12, margin_end: 12, margin_top: 12, margin_bottom: 12, visible: true});
+    _init(widgetProperties = {
+        hscrollbar_policy: Gtk.PolicyType.NEVER,
+        vscrollbar_policy: Gtk.PolicyType.AUTOMATIC,
+    }) {
+        super._init(widgetProperties);
         this._alreadyBuilt = false;
     }
 
@@ -726,17 +759,29 @@ class KeyboardPage extends Gtk.ScrolledWindow {
         if (this._alreadyBuilt)
             return false;
 
-        this.grid = new Gtk.Grid({margin_top: 6, hexpand: true, visible: true});
+        let box = new Gtk.Box({
+            orientation: Gtk.Orientation.VERTICAL,
+            spacing: 5,
+            homogeneous: false,
+            margin_start: 12,
+            margin_end: 20,
+            margin_top: 12,
+            margin_bottom: 12,
+        });
+        this[this.add ? 'add' : 'set_child'](box);
+        this.grid = new Gtk.Grid({margin_top: 6, hexpand: true,});
         let lbl = new Gtk.Label({
+            xalign: 0,
             use_markup: true,
-            label: _makeTitle(_('Keyboard Shortcuts:')),
+            label: _makeTitle(_('Keyboard Shortcuts')),
             tooltip_text: `${_('Click on the Shortcut Key cell to set new shortcut.')}\n${
                 _('Press Backspace key instead of the new shortcut to disable shortcut.')}\n${
                 _('Warning: Some system shortcuts can NOT be overriden here.')}\n${
                 _('Warning: Shortcuts, already used in this extension, will be ignored.')}`,
         });
-        let frame = new Gtk.Frame({label_widget: lbl});
-        this[this.add ? 'add' : 'set_child'](frame);
+        box[box.add ? 'add' : 'append'](lbl);
+        let frame = new Gtk.Frame();
+        box[box.add ? 'add' : 'append'](frame);
         frame[frame.add ? 'add' : 'set_child'](this.grid);
         this.treeView = new Gtk.TreeView({hexpand: true});
         this.grid.attach(this.treeView, 0, 0, 1, 1);
@@ -749,7 +794,7 @@ class KeyboardPage extends Gtk.ScrolledWindow {
         const actions     = new Gtk.TreeViewColumn({title: _('Action'), expand: true});
         const nameRender  = new Gtk.CellRendererText();
 
-        const accels      = new Gtk.TreeViewColumn({title: _('Shortcut Key'), min_width: 150});
+        const accels      = new Gtk.TreeViewColumn({title: _('Shortcut'), min_width: 150});
         const accelRender = new Gtk.CellRendererAccel({
             editable: true,
             accel_mode: Gtk.CellRendererAccelMode.GTK,
@@ -898,12 +943,11 @@ class KeyboardPage extends Gtk.ScrolledWindow {
 
 const OptionsPage = GObject.registerClass(
 class OptionsPage extends Gtk.ScrolledWindow {
-    _init(constructProperties = {
+    _init(widgetProperties = {
         hscrollbar_policy: Gtk.PolicyType.NEVER,
         vscrollbar_policy: Gtk.PolicyType.AUTOMATIC,
-        visible: true,
     }) {
-        super._init(constructProperties);
+        super._init(widgetProperties);
 
         this._alreadyBuilt = false;
     }
@@ -913,13 +957,12 @@ class OptionsPage extends Gtk.ScrolledWindow {
             return false;
         const mainBox = new Gtk.Box({
             orientation: Gtk.Orientation.VERTICAL,
-            spacing: 10,
+            spacing: 5,
             homogeneous: false,
             margin_start: 12,
             margin_end: 20,
             margin_top: 12,
             margin_bottom: 12,
-            visible: true,
         });
 
         let optionsList = [];
@@ -928,7 +971,7 @@ class OptionsPage extends Gtk.ScrolledWindow {
 
         optionsList.push(
             _optionsItem(
-                _makeTitle(_('Global options:')),
+                _makeTitle(_('Global options')),
                 null, null, null
             )
         );
@@ -993,7 +1036,7 @@ class OptionsPage extends Gtk.ScrolledWindow {
 
         optionsList.push(
             _optionsItem(
-                _makeTitle(_('Workspace switcher:')),
+                _makeTitle(_('Workspace switcher')),
                 null,
                 null
             )
@@ -1031,7 +1074,7 @@ class OptionsPage extends Gtk.ScrolledWindow {
 
         optionsList.push(
             _optionsItem(
-                _makeTitle(_('Window switcher:')),
+                _makeTitle(_('Window switcher')),
                 null,
                 null
             )
@@ -1057,7 +1100,7 @@ class OptionsPage extends Gtk.ScrolledWindow {
 
         optionsList.push(
             _optionsItem(
-                _makeTitle(_('DND Window Thumbnails:')),
+                _makeTitle(_('DND Window Thumbnails')),
                 `${_('Window thumbnails are overlay clones of windows, can be draged by mouse anywhere on the screen.')}\n${
                     _('Thumbnail control:')}\n    ${
                     _('Double click:    \t\tactivate source window')}\n    ${
@@ -1094,12 +1137,15 @@ class OptionsPage extends Gtk.ScrolledWindow {
         let frameBox;
         for (let item of optionsList) {
             if (!item[0][1]) {
-                let lbl = new Gtk.Label();
+                let lbl = new Gtk.Label({
+                    xalign: 0,
+                });
                 lbl.set_markup(item[0][0]);
+                mainBox[mainBox.add ? 'add' : 'append'](lbl);
                 if (item[1])
                     lbl.set_tooltip_text(item[1]);
                 frame = new Gtk.Frame({
-                    label_widget: lbl,
+                    margin_bottom: 10,
                 });
                 frameBox = new Gtk.ListBox({
                     selection_mode: null,
@@ -1118,7 +1164,6 @@ class OptionsPage extends Gtk.ScrolledWindow {
                 margin_bottom: 4,
                 hexpand: true,
                 spacing: 20,
-                visible: true,
             });
             for (let i of item[0])
                 box[box.add ? 'add' : 'append'](i);
@@ -1243,8 +1288,10 @@ function _makeTitle(label) {
 
 const CustomMenusPage = GObject.registerClass(
 class CustomMenusPage extends Gtk.Notebook {
-    _init() {
-        super._init({tab_pos: Gtk.PositionType.TOP, visible: true});
+    _init(widgetProperties ={
+        tab_pos: Gtk.PositionType.TOP,
+    }) {
+        super._init(widgetProperties);
         this._menusCount = 4;
         this._alreadyBuilt = false;
         this.buildPage();
@@ -1268,11 +1315,13 @@ class CustomMenusPage extends Gtk.Notebook {
     }
 });
 
-
 const CustomMenuPage = GObject.registerClass(
 class CustomMenuPage extends Gtk.ScrolledWindow {
-    _init(menuIndex) {
-        super._init({margin_start: 12, margin_end: 12, margin_top: 12, margin_bottom: 12, visible: true});
+    _init(menuIndex, widgetProperties = {
+        hscrollbar_policy: Gtk.PolicyType.NEVER,
+        vscrollbar_policy: Gtk.PolicyType.AUTOMATIC,
+    }) {
+        super._init(widgetProperties);
         this._alreadyBuilt = false;
         this._menuIndex = menuIndex;
     }
@@ -1280,16 +1329,27 @@ class CustomMenuPage extends Gtk.ScrolledWindow {
     buildPage() {
         if (this._alreadyBuilt)
             return;
-
+        let box = new Gtk.Box({
+            orientation: Gtk.Orientation.VERTICAL,
+            spacing: 5,
+            homogeneous: false,
+            margin_start: 12,
+            margin_end: 20,
+            margin_top: 12,
+            margin_bottom: 12,
+        });
+        this[this.add ? 'add' : 'set_child'](box);
         this.menuItems = mscOptions[`customMenu${this._menuIndex}`];
-        this.grid = new Gtk.Grid({margin_top: 6, hexpand: true, visible: true});
+        this.grid = new Gtk.Grid({margin_top: 6, hexpand: true,});
         let lbl = new Gtk.Label({
+            xalign: 0,
             use_markup: true,
-            label: _makeTitle(_('Select Custom Menu Items:')),
+            label: _makeTitle(_('Select items for Custom Menu' + ` ${this._menuIndex}`)),
             tooltip_text: `${_('Check items you want to have in the Custom Menu action.')}\n${_('You can decide whether the action menu items will be in its section submenu or in the root of the menu by checking/unchecking the section item')}`,
         });
-        let frame = new Gtk.Frame({label_widget: lbl});
-        this[this.add ? 'add' : 'set_child'](frame);
+        box[box.add ? 'add' : 'append'](lbl);
+        let frame = new Gtk.Frame();
+        box[box.add ? 'add' : 'append'](frame);
         frame[frame.add ? 'add' : 'set_child'](this.grid);
         this.treeView = new Gtk.TreeView({hexpand: true});
         this.grid.attach(this.treeView, 0, 0, 1, 1);
