@@ -441,21 +441,21 @@ var actionList = [
         [   0, 'toggle-overview'       ,   _('Show Activities Overview'),                 true,  'view-grid-symbolic'],
         [   0, 'show-applications'     ,   _('Show Application Grid'),                    true,  'view-app-grid-symbolic'],
 
-        [null, 'desktop-submenu'       ,   _('Desktop'),                                  true,  'video-display-symbolic'],
+        [null, 'desktop-submenu'       ,   _('↓ Desktop'),                                true,  'video-display-symbolic'],
         [   1, 'show-desktop'          ,   _('Show Desktop (all monitors)'),              true,  'preferences-desktop-wallpaper-symbolic'],
         [   1, 'show-desktop-mon'      ,   _('Show Desktop (current monitor)'),           true,  'preferences-desktop-wallpaper-symbolic'],
         [   1, 'black-screen'          ,   _('Black Screen (all monitors)'),              true,  'video-display-symbolic'],
         [   1, 'black-screen-mon'      ,   _('Black Screen (current monitor)'),           true,  'video-display-symbolic'],
 
-        [null, 'run-submenu'           ,   _('Run Command'),                             false,  'utilities-terminal-symbolic'],
+        [null, 'run-submenu'           ,   _('↓ Run Command'),                           false,  'utilities-terminal-symbolic'],
         [   1, 'run-command'           ,   _('Run preset Command'),                      false,  'utilities-terminal-symbolic'],
         [   1, 'run-prompt'            ,   _('Show Run Command Prompt'),                 false,  'utilities-terminal-symbolic'],
 
-        [null, 'workspaces-submenu'    ,   _('Workspaces'),                               true,  'video-display-symbolic'],
-        [   1, 'prev-workspace'        ,   _('Previous Workspace'),                      false,   horizontal ? 'go-previous-symbolic': 'go-up-symbolic'  ],
+        [null, 'workspaces-submenu'    ,   _('↓ Workspaces'),                             true,  'video-display-symbolic'],
+        [   1, 'prev-workspace'        ,   _('Previous Workspace'),                       true,   horizontal ? 'go-previous-symbolic': 'go-up-symbolic'  ],
         [   1, 'prev-workspace-overview',  _('Previous Workspace Overview'),              true,   horizontal ? 'go-previous-symbolic': 'go-up-symbolic'  ],
         [   1, 'prev-workspace-popup'  ,   _('Previous Workspace with Win Switcher'),     true,   horizontal ? 'go-previous-symbolic': 'go-up-symbolic'  ],
-        [   1, 'next-workspace'        ,   _('Next Workspace'),                          false,   horizontal ? 'go-next-symbolic'    : 'go-down-symbolic'],
+        [   1, 'next-workspace'        ,   _('Next Workspace'),                           true,   horizontal ? 'go-next-symbolic'    : 'go-down-symbolic'],
         [   1, 'next-workspace-overview',  _('Next Workspace Overview'),                  true,   horizontal ? 'go-next-symbolic'    : 'go-down-symbolic'],
         [   1, 'next-workspace-popup'  ,   _('Next Workspace with Win Switcher'),         true,   horizontal ? 'go-next-symbolic'    : 'go-down-symbolic'],
         [   1, 'recent-workspace'      ,   _('Switch to Recent Workspace'),               true,  'document-open-recent-symbolic'],
@@ -463,7 +463,7 @@ var actionList = [
         [   1, 'reorder-ws-prev'       ,   _(`Reorder Workspace - ${horizontal? _('Left') : _('Up')}`),  true,  horizontal ? 'go-previous-symbolic':'go-up-symbolic'],
         [   1, 'reorder-ws-next'       ,   _(`Reorder Workspace - ${horizontal? _('Right'): _('Down')}`),true,  horizontal ? 'go-next-symbolic':'go-down-symbolic'  ],
 
-        [null, 'win-navigation-submenu',   _('Windows - Navigation'),                     true,  'focus-windows-symbolic'],
+        [null, 'win-navigation-submenu',   _('↓ Windows - Navigation'),                   true,  'focus-windows-symbolic'],
         [   1, 'recent-win'            ,   _('Switch to Recent Window'),                  true,  'document-open-recent-symbolic'],
         [   1, 'prev-win-mon'          ,   _('Previous Window (current monitor)'),        true,  'go-previous-symbolic'],
         [   1, 'prev-win-ws'           ,   _('Previous Window (current WS)'),             true,  'go-previous-symbolic'],
@@ -472,7 +472,7 @@ var actionList = [
         [   1, 'next-win-ws'           ,   _('Next Window (current WS)'),                 true,  'go-next-symbolic'],
         [   1, 'next-win-all'          ,   _('Next Window (all)'),                        true,  'go-next-symbolic'],
 
-        [null, 'win-switcher-popup-submenu', _('Windows/App - Switcher Popups'),          true,  'focus-windows-symbolic'],
+        [null, 'win-switcher-popup-submenu', _('↓ Windows/App - Switcher Popups'),        true,  'focus-windows-symbolic'],
         [   1, 'win-switcher-popup-all',   _('Window Switcher Popup (all/default)'),      true,  'focus-windows-symbolic'],
         [   1, 'win-switcher-popup-ws' ,   _('Window Switcher Popup (current ws)'),       true,  'focus-windows-symbolic'],
         [   1, 'win-switcher-popup-mon',   _('Window Switcher Popup (current monitor)'),  true,  'focus-windows-symbolic'],
@@ -485,7 +485,7 @@ var actionList = [
         [   1, 'app-switcher-popup-mon',   _('App Switcher Popup (current monitor)'),     true,  'focus-windows-symbolic'],
         //[   1, 'app-switcher-popup-all-fav',_('App Switcher Popup (current monitor)'),    true,  'focus-windows-symbolic'],
 
-        [null, 'win-control-submenu'   ,   _('Windows - Control'),                        true,  'focus-windows-symbolic'],
+        [null, 'win-control-submenu'   ,   _('↓ Windows - Control'),                      true,  'focus-windows-symbolic'],
         [   1, 'close-win'             ,   _('Close window'),                             true,  'window-close-symbolic'],
         [   1, 'maximize-win'          ,   _('Maximize window (toggle)'),                 true,  'window-maximize-symbolic'],
         [   1, 'minimize-win'          ,   _('Minimize window'),                          true,  'window-minimize-symbolic'],
@@ -497,12 +497,12 @@ var actionList = [
         [   1, 'kill-app'              ,   _('Kill focused application (kill -9)'),       true,  'process-stop-symbolic'],
         [   1, 'unminimize-all-ws'     ,   _('Unminimize all windows (workspace)'),       true,  'window-restore-symbolic'],
 
-        [null, 'win-thumbnails-submenu',   _('DND Window Thumbnails (Clones / PIP)'),     true,  ''],
+        [null, 'win-thumbnails-submenu',   _('↓ DND Window Thumbnails (Clones / PIP)'),   true,  ''],
         [   1, 'make-thumbnail-win'    ,   _('Create Window Thumbnail (at bottom-right)'),true,  ''],
         [   1, 'minimize-to-thumbnail' ,   _('Minimize Window to Thumbnail')             ,true,  ''],
         [   1, 'remove-win-thumbnails' ,   _('Remove all Window Thumbnails'),             true,  ''],
 
-        [null, 'win-adjust-submenu'    ,   _('Windows - Visual Adjustments'),             true,  'view-reveal-symbolic'],
+        [null, 'win-adjust-submenu'    ,   _('↓ Windows - Visual Adjustments'),           true,  'view-reveal-symbolic'],
         [   1, 'bright-up-win'         ,   _('Brightness Up (window)'),                   true,  'display-brightness-symbolic'],
         [   1, 'bright-down-win'       ,   _('Brightness Down (window)'),                 true,  'display-brightness-symbolic'],
         [   1, 'contrast-up-win'       ,   _('Contrast Up (window)'),                     true,  'view-reveal-symbolic'],
@@ -515,7 +515,7 @@ var actionList = [
         [   1, 'opacity-toggle-hc-win' ,   _('Opacity 78% for dark themes (window)'),     true,  'view-reveal-symbolic'],
         [   1, 'opacity-toggle-lc-win' ,   _('Opacity 94% + bit of contrast (window)'),   true,  'view-reveal-symbolic'],
 
-        [null, 'win-effects-submenu'   ,   _('Windows - Color Effects'),                  true,  'view-reveal-symbolic'],
+        [null, 'win-effects-submenu'   ,   _('↓ Windows - Color Effects'),                true,  'view-reveal-symbolic'],
         [   1, 'invert-light-win'      ,   _('Invert Lightness (window)'),                true,  'view-reveal-symbolic'],
         [   1, 'invert-light-shift-win',   _('Invert Lightness - White to Grey (window)'),true,  'view-reveal-symbolic'],
         [   1, 'invert-colors-win'     ,   _('Invert Colors (window)'),                   true,  'view-reveal-symbolic'],
@@ -524,7 +524,7 @@ var actionList = [
         [   1, 'desaturate-win'        ,   _('Desaturate (window)'),                      true,  'view-reveal-symbolic'],
         [   1, 'remove-effects-win'    ,   _('Remove All Effects (window)'),              true,  'window-close-symbolic'],
 
-        [null, 'global-effects-submenu',   _('Global Effects'),                           true,  'view-reveal-symbolic'],
+        [null, 'global-effects-submenu',   _('↓ Global Effects'),                         true,  'view-reveal-symbolic'],
         [   1, 'bright-up-all'         ,   _('Brightness Up (global)'),                   true,  'display-brightness-symbolic'],
         [   1, 'bright-down-all'       ,   _('Brightness Down (global)'),                 true,  'display-brightness-symbolic'],
         [   1, 'contrast-up-all'       ,   _('Contrast Up (global)'),                     true,  'view-reveal-symbolic'],
@@ -538,7 +538,7 @@ var actionList = [
         [   1, 'desaturate-all'        ,   _('Desaturate (global)'),                      true,  'view-reveal-symbolic'],
         [   1, 'remove-effects-all'    ,   _('Remove All Effects (global)'),              true,  'window-close-symbolic'],
 
-        [null, 'access-submenu'        ,   _('Universal Access'),                         true,  'preferences-desktop-accessibility-symbolic'],
+        [null, 'access-submenu'        ,   _('↓ Universal Access'),                       true,  'preferences-desktop-accessibility-symbolic'],
         [   1, 'toggle-zoom'           ,   _('Magnifier - Zoom 2x (toggle)'),             true,  'zoom-in-symbolic'],
         [   1, 'zoom-in'               ,   _('Magnifier - Zoom In'),                      true,  'zoom-in-symbolic'],
         [   1, 'zoom-out'              ,   _('Magnifier - Zoom Out'),                     true,  'zoom-out-symbolic'],
@@ -554,19 +554,19 @@ var actionList = [
         [   1, 'tritan-sim-toggle-all' ,   _('Color Simulation - Tritanopia (window)'),   true,  'view-reveal-symbolic'],
         [   1, 'mixer-gbr-toggle-all'  ,   _('Color Mixer GBR'),                          true,  'view-reveal-symbolic'],
 
-        [null, 'gnome-submenu'         ,   _('Gnome'),                                    true,  'start-here-symbolic'],
+        [null, 'gnome-submenu'         ,   _('↓ Gnome'),                                  true,  'start-here-symbolic'],
         [   1, 'hide-panel'            ,   _('Hide Main Panel toggle'),                   true,  'focus-top-bar-symbolic'],
         [   1, 'toggle-theme'          ,   _('Light/Dark Gtk Theme toggle'),              true,  'view-reveal-symbolic'],
         [   1, 'night-light-toggle'    ,   _('Night Light toggle'),                       true,  'night-light-symbolic'],
 
-        [null, 'system-submenu'        ,   _('System'),                                   true,  'system-run-symbolic'],
+        [null, 'system-submenu'        ,   _('↓ System'),                                 true,  'system-run-symbolic'],
         [   1, 'lock-screen'           ,   _('Lock Screen'),                              true,  'changes-prevent-symbolic'],
         [   1, 'suspend'               ,   _('Suspend to RAM'),                           true,  'weather-clear-night-symbolic'],
         [   1, 'power-off'             ,   _('Power Off Dialog'),                         true,  'system-shutdown-symbolic'],
         [   1, 'log-out'               ,   _('Log Out Dialog'),                           true,  'system-log-out-symbolic'],
         [   1, 'switch-user'           ,   _('Switch User (if exists)'),                  true,  'system-switch-user-symbolic'],
 
-        [null, 'media-submenu'         ,   _('Media'),                                    true,  'audio-volume-medium-symbolic'],
+        [null, 'media-submenu'         ,   _('↓ Media'),                                  true,  'audio-volume-medium-symbolic'],
         [   1, 'volume-up'             ,   _('Volume Up'),                                true,  'audio-volume-high-symbolic'],
         [   1, 'volume-down'           ,   _('Volume Down'),                              true,  'audio-volume-low-symbolic'],
         [   1, 'mute-sound'            ,   _('Mute Audio (toggle)'),                      true,  'audio-volume-muted-symbolic'],
@@ -574,11 +574,11 @@ var actionList = [
         [   1, 'mpris-next'            ,   _('Media key - Next Track'),                  false,  'media-skip-forward-symbolic'],
         [   1, 'mpris-prev'            ,   _('Media key - Previous Track'),              false,  'media-skip-backward-symbolic'],
 
-        [null, 'debug-submenu'         ,   _('Debug'),                                    true,  'edit-find-symbolic'],
+        [null, 'debug-submenu'         ,   _('↓ Debug'),                                  true,  'edit-find-symbolic'],
         [   1, 'looking-glass'         ,   _('Looking Glass (GS debugger)'),              true,  'edit-find-symbolic'],
         [   1, 'restart-shell'         ,   _('Restart Gnome Shell (X11 only)'),           true,  'view-refresh-symbolic'],
 
-        [null, 'custom-menus-submenu'  ,   _('Custom Menus'),                             true,  'open-menu-symbolic'],
+        [null, 'custom-menus-submenu'  ,   _('↓ Custom Menus'),                           true,  'open-menu-symbolic'],
         [   1, 'show-custom-menu-1'    ,   _('Show Custom Menu 1'),                       true,  'open-menu-symbolic'],
         [   1, 'show-custom-menu-2'    ,   _('Show Custom Menu 2'),                       true,  'open-menu-symbolic'],
         [   1, 'show-custom-menu-3'    ,   _('Show Custom Menu 3'),                       true,  'open-menu-symbolic'],
