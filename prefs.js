@@ -131,7 +131,6 @@ class MonitorPage extends Gtk.Notebook {
     buildPage() {
         if (this._alreadyBuilt)
             return;
-        // for (let i = 0; i < this._corners.length; i++){
         for (let i = 0; i < 4; i++) {
             const label = new Gtk.Image({
                 halign: Gtk.Align.CENTER,
@@ -530,20 +529,8 @@ class CornerPage extends Gtk.ListBox {
             margin_top: 5,
             margin_bottom: 10,
             halign: Gtk.Align.FILL,
-        });
-        const expTitle = new Gtk.Label({
-            use_markup: true,
-            label: _makeTitle(_('Corner to edge expansions')),
             tooltip_text: _("You can activate 'Make active corners/edges visible' option in Options to see the results of this settings."),
-
         });
-        /*const frame = new Gtk.Frame({
-            margin_top: 10,
-            margin_bottom: 10,
-            margin_start: 10,
-            margin_end: 10,
-            valign: Gtk.Align.END,
-        });*/
 
         const hIcon = new Gtk.Image({
             halign: Gtk.Align.CENTER,
@@ -564,23 +551,16 @@ class CornerPage extends Gtk.ListBox {
         });
         vIcon.set_from_file(`${Me.dir.get_path()}/icons/${this._corner.top ? 'Top' : 'Bottom'}${this._corner.left ? 'Left' : 'Right'}VE.svg`);
 
-        const b = this._buildBarrierSizeAdjustment();
-        const c = this._buildClickExpansionAdjustment();
-        //                    x, y, w, h
-        grid.attach(expTitle, 0, 0,  1, 1);
-        grid.attach(hIcon,    1, 0,  1, 1);
-        grid.attach(vIcon,    2, 0,  1, 1);
-        grid.attach(b[0],     0, 2,  1, 1);
-        grid.attach(b[1],     1, 2,  1, 1);
-        grid.attach(b[2],     2, 2,  1, 1);
+        const barrier = this._buildBarrierSizeAdjustment();
+        const click = this._buildClickExpansionAdjustment();
+        //                      x, y, w, h
+        grid.attach(click[0],   0, 1, 1, 1);
+        grid.attach(click[1],   1, 1, 1, 1);
+        grid.attach(click[2],   2, 1, 1, 1);
+        grid.attach(barrier[0], 0, 2, 1, 1);
+        grid.attach(barrier[1], 1, 2, 1, 1);
+        grid.attach(barrier[2], 2, 2, 1, 1);
 
-        grid.attach(c[0],     0, 3,  1, 1);
-        grid.attach(c[1],     1, 3,  1, 1);
-        grid.attach(c[2],     2, 3,  1, 1);
-
-
-        //frame[frame.add ? 'add' : 'set_child'](grid);
-        //return frame;
         return grid;
     }
 
@@ -681,16 +661,27 @@ class CornerPage extends Gtk.ListBox {
             hexpand: false,
         });
 
-        const hExpandSwitch = new Gtk.Switch({
+        const hExpandSwitch = new Gtk.ToggleButton({
+            halign: Gtk.Align.CENTER,
+            valign: Gtk.Align.CENTER,
+            vexpand: false,
+            hexpand: false,
             tooltip_text: _('Expand horizonatally'),
+        });
+        const hImage = Gtk.Image.new_from_file(`${Me.dir.get_path()}/icons/${this._corner.top ? 'Top' : 'Bottom'}${this._corner.left ? 'Left' : 'Right'}HE.svg`);
+        hImage.pixel_size = 40;
+        hExpandSwitch[hExpandSwitch.set_child ? 'set_child' : 'add'](hImage);
+
+        const vExpandSwitch = new Gtk.ToggleButton({
             halign: Gtk.Align.CENTER,
             valign: Gtk.Align.CENTER,
-        });
-        const vExpandSwitch = new Gtk.Switch({
+            vexpand: false,
+            hexpand: false,
             tooltip_text: _('Expand vertically'),
-            halign: Gtk.Align.CENTER,
-            valign: Gtk.Align.CENTER,
         });
+        const vImage = Gtk.Image.new_from_file(`${Me.dir.get_path()}/icons/${this._corner.top ? 'Top' : 'Bottom'}${this._corner.left ? 'Left' : 'Right'}VE.svg`);
+        vImage.pixel_size = 40;
+        vExpandSwitch[hExpandSwitch.set_child ? 'set_child' : 'add'](vImage);
 
         hExpandSwitch.active = this._corner.hExpand;
         vExpandSwitch.active = this._corner.vExpand;
@@ -1120,8 +1111,7 @@ class OptionsPage extends Gtk.ScrolledWindow {
             upper: 50,
             step_increment: 1,
             page_increment: 10,
-        }
-        );
+        });
 
         optionsList.push(
             _optionsItem(
@@ -1131,7 +1121,6 @@ class OptionsPage extends Gtk.ScrolledWindow {
                 'winThumbnailScale'
             )
         );
-
 
         let frame;
         let frameBox;
@@ -1411,7 +1400,7 @@ class CustomMenuPage extends Gtk.ScrolledWindow {
         return this._alreadyBuilt = true;
     }
 
-    _populateTreeview(model) {
+    _populateTreeview() {
         let iter, iter1, iter2;
         for (let i = 0; i < actionList.length; i++) {
             let item = actionList[i];
