@@ -12,7 +12,7 @@
       <default>false</default>
     </key>
     <key name='fullscreen' type='b'>
-      <default>false</default>
+      <default>true</default>
     </key>
     <key name='barrier-size-h' type='i'>
       <default>1</default>
@@ -106,6 +106,12 @@
       <default>[]</default>
     </key>
     <key name='recent-workspace-ce' type='as'>
+      <default>[]</default>
+    </key>
+    <key name='prev-workspace-ce' type='as'>
+      <default>[]</default>
+    </key>
+    <key name='next-workspace-ce' type='as'>
       <default>[]</default>
     </key>
     <key name='prev-workspace-popup-ce' type='as'>
