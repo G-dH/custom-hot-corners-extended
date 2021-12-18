@@ -1197,6 +1197,10 @@ const ActionTrigger = class ActionTrigger {
         actions.toggleStickWindow();
     }
 
+    _openNewWindow() {
+        actions.openNewWindow();
+    }
+
     _restartShell() {
         actions.restartGnomeShell();
     }

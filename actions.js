@@ -484,6 +484,14 @@ var Actions = class {
             win.make_fullscreen();
     }
 
+    openNewWindow() {
+        let win = this._getFocusedWindow();
+        if (!win)
+            return;
+        let app = Shell.WindowTracker.get_default().get_window_app(win);
+        app.open_new_window(global.get_current_time());
+    }
+
     fullscreenWinOnEmptyWs(metaWindow = null) {
         let win;
         if (!metaWindow)

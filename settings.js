@@ -433,8 +433,10 @@ function extensionEnabled(uuid = null) {
 }
 
 const winSwitcherPopup = extensionEnabled('advanced-alt-tab@G-dH.github.com-dev');
+// in extension itself I'd test real workspace configuration
+// but settings.js is also used by prefs from which the GS code is unaccessible
 const horizontal = shellVersion >= 40;
-//      [root/submenu, action key,      action name,                                accelerator, icon name
+//      [root/submenu, action key,      action name,                       accelerator allowed, icon name
 var actionList = [
         [   0, 'disabled'              ,   _('-'),                                       false,  ''],
         [   0, 'toggle-arcmenu'        ,   _('Open ArcMenu'),                            false,  'view-grid-symbolic'],
@@ -495,6 +497,7 @@ var actionList = [
         [   1, 'stick-win'             ,   _('Always on Visible WS window (toggle)'),     true,  'view-pin-symbolic'],
         [   1, 'quit-app'              ,   _('Quit focused application'),                 true,  'window-close-symbolic'],
         [   1, 'kill-app'              ,   _('Kill focused application (kill -9)'),       true,  'process-stop-symbolic'],
+        [   1, 'open-new-window'       ,   _('Open New window (if supported)'),           false,  'media-playback-start-symbolic'],
         [   1, 'unminimize-all-ws'     ,   _('Unminimize all windows (workspace)'),       true,  'window-restore-symbolic'],
 
         [null, 'win-control-submenu'   ,   _('↓ Windows - Relocations'),                  true,  'focus-windows-symbolic'],
