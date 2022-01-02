@@ -28,7 +28,7 @@ var shellVersion = parseFloat(Config.PACKAGE_VERSION);
 const Gettext = imports.gettext.domain(Me.metadata['gettext-domain']);
 var _ = Gettext.gettext;
 
-var Triggers ={
+var Triggers = {
     PRESSURE:         0,
     BUTTON_PRIMARY:   1,
     BUTTON_SECONDARY: 2,
@@ -36,7 +36,6 @@ var Triggers ={
     SCROLL_UP:        4,
     SCROLL_DOWN:      5,
 };
-
 Object.freeze(Triggers);
 
 var TriggerLabels = [
@@ -58,7 +57,7 @@ function listTriggers() {
 var MscOptions = class MscOptions {
     constructor() {
         this._gsettings = this._loadSettings('misc');
-        this._gsettingsKB = this._loadSettings('shortcuts');
+        //this._gsettingsKB = this._loadSettings('shortcuts');
         this._connectionIds = [];
     }
 
@@ -223,13 +222,13 @@ var MscOptions = class MscOptions {
         this._gsettings.set_strv('supported-active-extensions', list);
     }
 
-    getKeyBind(key) {
+/*    getKeyBind(key) {
         return this._gsettingsKB.get_strv(key);
     }
 
     setKeyBind(key, value) {
         this._gsettingsKB.set_strv(key, value);
-    }
+    }*/
 };
 
 var Corner = class Corner {
@@ -402,10 +401,11 @@ function getSettings(schema, path) {
 
     const schemaObj = schemaSource.lookup(schema, true);
     if (!schemaObj) {
-        throw new Error(
+        //throw new Error(
             'Schema' + schema + ' could not be found for extension ' +
             Me.metadata.uuid + '. Please check your installation.'
         );
+        return null;
     }
 
     const args = {settings_schema: schemaObj};
@@ -583,9 +583,9 @@ var actionList = [
         [   1, 'volume-up'             ,   _('Volume Up'),                                true,  'audio-volume-high-symbolic'],
         [   1, 'volume-down'           ,   _('Volume Down'),                              true,  'audio-volume-low-symbolic'],
         [   1, 'mute-sound'            ,   _('Mute Audio (toggle)'),                      true,  'audio-volume-muted-symbolic'],
-        [   1, 'mpris-play-pause'      ,   _('Media key - Play/Pause'),                  false,  'media-playback-start-symbolic'],
-        [   1, 'mpris-next'            ,   _('Media key - Next Track'),                  false,  'media-skip-forward-symbolic'],
-        [   1, 'mpris-prev'            ,   _('Media key - Previous Track'),              false,  'media-skip-backward-symbolic'],
+        [   1, 'mpris-play-pause'      ,   _('Media key - Play/Pause'),                   true,  'media-playback-start-symbolic'],
+        [   1, 'mpris-next'            ,   _('Media key - Next Track'),                   true,  'media-skip-forward-symbolic'],
+        [   1, 'mpris-prev'            ,   _('Media key - Previous Track'),               true,  'media-skip-backward-symbolic'],
 
         [null, 'debug-submenu'         ,   _('↓ Debug'),                                  true,  'edit-find-symbolic'],
         [   1, 'looking-glass'         ,   _('Looking Glass (GS debugger)'),              true,  'edit-find-symbolic'],

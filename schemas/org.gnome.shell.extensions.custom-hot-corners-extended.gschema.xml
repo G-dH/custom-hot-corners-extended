@@ -85,6 +85,9 @@
     <key name='supported-active-extensions' type='as'>
       <default>[]</default>
     </key>
+    <key name='keyboard-shortcuts' type='as'>
+      <default>[]</default>
+    </key>
   </schema>
   <schema path='/org/gnome/shell/extensions/custom-hot-corners-extended/shortcuts/' id='org.gnome.shell.extensions.custom-hot-corners-extended.shortcuts'>
     <key name='toggle-overview-ce' type='as'>

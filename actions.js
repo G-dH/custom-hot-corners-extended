@@ -51,7 +51,7 @@ function get_current_monitor_geometry() {
 }
 
 var Actions = class {
-    constructor() {
+    constructor(mscOptions) {
         this._signalsCollector      = [];
 
         this._minimizedWindows      = [];
@@ -82,7 +82,7 @@ var Actions = class {
         this._connectRecentWorkspace();
 
         _shellVersion = Settings.shellVersion;
-        this._mscOptions = null;
+        this._mscOptions = mscOptions;
     }
 
     clean(full = true) {

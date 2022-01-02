@@ -164,7 +164,6 @@ class CornerPage extends Gtk.ListBox {
         margin_top: 10,
         margin_bottom: 0,
         vexpand: true,
-
     }) {
         super._init(widgetProperties);
 
@@ -194,7 +193,7 @@ class CornerPage extends Gtk.ListBox {
                 valign: Gtk.Align.CENTER,
                 vexpand: false,
                 hexpand: false,
-                tooltip_text: _('If checked, pressed Ctrl key is needed to trigger the action'),
+                tooltip_text: _('Trigger the action only if Ctrl key is pressed'),
                 //margin_end: 5,
             });
 
@@ -233,7 +232,7 @@ class CornerPage extends Gtk.ListBox {
                 valign: Gtk.Align.CENTER,
                 vexpand: false,
                 hexpand: false,
-                tooltip_text: _("If inactive, trigger doesn't work in fullscreen mode"),
+                tooltip_text: _("Enable this trigger in fullscreen mode\nNote that this option can be overidden by the 'Enable all triggers in fullscreen mode' option in Options page"),
             });
             if (fsBtn.set_icon_name)
                 fsBtn.set_icon_name('view-fullscreen-symbolic');
@@ -274,8 +273,8 @@ class CornerPage extends Gtk.ListBox {
             column_spacing: 4,
         });
         const cmdGrid = new Gtk.Grid({
-            margin_top: 4,
             column_spacing: 4,
+            margin_top: 4,
         });
 
         const commandEntryRevealer = new Gtk.Revealer({
@@ -299,7 +298,6 @@ class CornerPage extends Gtk.ListBox {
         const commandEntry = new Gtk.Entry({hexpand: true});
         const appButton = new Gtk.Button({
             valign: Gtk.Align.END,
-            //margin_start: 4,
         });
 
         const actionTreeStore = new Gtk.TreeStore();
@@ -333,7 +331,6 @@ class CornerPage extends Gtk.ListBox {
             settingsBtn = new Gtk.MenuButton({
                 popover: cornerPopover,
                 valign: Gtk.Align.CENTER,
-                //margin_start: 4,
             });
 
             // Gtk3 implements button icon as an added Gtk.Image child, Gtk4 does not
@@ -526,30 +523,11 @@ class CornerPage extends Gtk.ListBox {
             column_spacing: 8,
             margin_start: 10,
             margin_end: 10,
-            margin_top: 5,
-            margin_bottom: 10,
+            margin_top: 10,
+            margin_bottom: 20,
             halign: Gtk.Align.FILL,
-            tooltip_text: _("You can activate 'Make active corners/edges visible' option in Options to see the results of this settings."),
+            tooltip_text: _("You can activate 'Make active corners/edges visible' option on 'Options' page to see the results of these settings."),
         });
-
-        const hIcon = new Gtk.Image({
-            halign: Gtk.Align.CENTER,
-            tooltip_text: _('Horizontal size/expansion'),
-            hexpand: true,
-            pixel_size: 40,
-            margin_start: 10,
-            //yalign: 0.7,
-        });
-        hIcon.set_from_file(`${Me.dir.get_path()}/icons/${this._corner.top ? 'Top' : 'Bottom'}${this._corner.left ? 'Left' : 'Right'}HE.svg`);
-        const vIcon = new Gtk.Image({
-            halign: Gtk.Align.CENTER,
-            tooltip_text: _('Vertical size/expansion'),
-            hexpand: true,
-            pixel_size: 40,
-            margin_start: 10,
-            //yalign: 0.7,
-        });
-        vIcon.set_from_file(`${Me.dir.get_path()}/icons/${this._corner.top ? 'Top' : 'Bottom'}${this._corner.left ? 'Left' : 'Right'}VE.svg`);
 
         const barrier = this._buildBarrierSizeAdjustment();
         const click = this._buildClickExpansionAdjustment();
@@ -653,7 +631,7 @@ class CornerPage extends Gtk.ListBox {
 
     _buildClickExpansionAdjustment() {
         const label = new Gtk.Label({
-            label: _('Expand click area:'),
+            label: _('Expand clickable corner:'),
             tooltip_text:
                           `${_('Expand the area reactive to mouse clicks and scrolls along the edge of the monitor.')}\n${
                               _('If adjacent corners are set to expand along the same edge, each of them allocate a half of the edge')}`,
@@ -662,6 +640,7 @@ class CornerPage extends Gtk.ListBox {
         });
 
         const hExpandSwitch = new Gtk.ToggleButton({
+        //const hExpandSwitch = new Gtk.CheckButton({
             halign: Gtk.Align.CENTER,
             valign: Gtk.Align.CENTER,
             vexpand: false,
@@ -673,6 +652,7 @@ class CornerPage extends Gtk.ListBox {
         hExpandSwitch[hExpandSwitch.set_child ? 'set_child' : 'add'](hImage);
 
         const vExpandSwitch = new Gtk.ToggleButton({
+        //const vExpandSwitch = new Gtk.CheckButton({
             halign: Gtk.Align.CENTER,
             valign: Gtk.Align.CENTER,
             vexpand: false,
@@ -779,7 +759,7 @@ class KeyboardPage extends Gtk.ScrolledWindow {
         let model = new Gtk.TreeStore();
         model.set_column_types([GObject.TYPE_STRING, GObject.TYPE_STRING, GObject.TYPE_INT, GObject.TYPE_INT]);
         this.treeView.model = model;
-        this.keybindings = this._getKeybindingSettings();
+        this.keybindings = this._loadShortcuts();
 
         // Hotkey
         const actions     = new Gtk.TreeViewColumn({title: _('Action'), expand: true});
@@ -823,9 +803,9 @@ class KeyboardPage extends Gtk.ScrolledWindow {
             if (name && !(value in this.keybindings) && uniqueVal(this.keybindings, value)) {
                 model.set(iter, [2, 3], [mods, key]);
                 this.keybindings[name] = [value];
-                this._storeKeyBinding(name, [value]);
-                Object.entries(this.keybindings).forEach(([key, value]) => {
-                });
+                this._saveShortcuts(this.keybindings);
+                /*Object.entries(this.keybindings).forEach(([key, value]) => {
+                });*/
             } else {
                 log(`${Me.metadata.name} This keyboard shortcut is invalid or already in use!`);
             }
@@ -850,7 +830,7 @@ class KeyboardPage extends Gtk.ScrolledWindow {
 
             if (name in this.keybindings) {
                 delete this.keybindings[name];
-                this._storeKeyBinding(name, []);
+                this._saveShortcuts(this.keybindings);
             }
         });
 
@@ -865,25 +845,39 @@ class KeyboardPage extends Gtk.ScrolledWindow {
         return this._alreadyBuilt = true;
     }
 
-    _getKeybindingSettings() {
-        let kb = {};
-        let settings = mscOptions._gsettingsKB;
-        for (let key of settings.list_keys()) {
-            let action = this._translateKeyToAction(key);
-            kb[action] = mscOptions.getKeyBind(key);
-        }
-        return kb;
+    _loadShortcuts() {
+        let keybindings = {};
+        const shortcuts = mscOptions._gsettings.get_strv('keyboard-shortcuts');
+        shortcuts.forEach(sc => {
+            let [action, accelerator] = sc.split('→');
+            keybindings[action] = accelerator;
+        });
+
+        return keybindings;
+    }
+ 
+    _saveShortcuts(keybindings) {
+        const list = [];
+        Object.keys(keybindings).forEach(s => {
+            list.push(`${s}→${keybindings[s]}`);
+        });
+        mscOptions._gsettings.set_strv('keyboard-shortcuts', list);
     }
 
     _populateTreeview() {
         let iter, iter2;
         for (let i = 0; i < actionList.length; i++) {
-            let item = actionList[i];
-            if (_excludedItems.includes(item[1]) || !item[3])
+            const item = actionList[i];
+            const itemMeaning = item[0];
+            const action = item[1];
+            const title = item[2];
+            const shouldHaveShortcut = item[3];
+
+            if (_excludedItems.includes(action) || !shouldHaveShortcut)
                 continue;
             let a = [0, 0];
-            if (item[1] && (item[1] in this.keybindings && this.keybindings[item[1]][0])) {
-                let binding = this.keybindings[item[1]][0];
+            if (action && (action in this.keybindings && this.keybindings[action])) {
+                let binding = this.keybindings[action];
                 let ap = Gtk.accelerator_parse(binding);
                 // Gtk4 accelerator_parse returns 3 values - the first one is bool ok/failed
                 if (ap.length === 3)
@@ -893,42 +887,19 @@ class KeyboardPage extends Gtk.ScrolledWindow {
                 else
                     log(`[${Me.metadata.name}] Error: Gtk keybind conversion failed`);
             }
-            if (!item[0]) {
+            if (!itemMeaning) {
                 iter  = this.treeView.model.append(null);
-                if (item[0] === 0) {
-                    this.treeView.model.set(iter, [0, 1, 2, 3], [item[1], item[2], ...a]);
+                if (itemMeaning === 0) {
+                    this.treeView.model.set(iter, [0, 1, 2, 3], [action, title, ...a]);
                 } else {
-                    // this.treeView.model.set(iter, [1, 2, 3], [item[2], ...a]);
-                    this.treeView.model.set(iter, [1], [item[2]]);
+                    // this.treeView.model.set(iter, [1, 2, 3], [title, ...a]);
+                    this.treeView.model.set(iter, [1], [title]);
                 }
             } else {
                 iter2  = this.treeView.model.append(iter);
-                this.treeView.model.set(iter2, [0, 1, 2, 3], [item[1], item[2], ...a]);
+                this.treeView.model.set(iter2, [0, 1, 2, 3], [action, title, ...a]);
             }
         }
-    }
-
-    _storeKeyBinding(action, value) {
-        let key = this._translateActionToKey(action);
-        mscOptions.setKeyBind(key, value);
-    }
-
-    // the -ce extension's purpose is to make key names unique
-    _translateKeyToAction(key) {
-        /* let regex = /-(.)/g;
-        return key.replace(regex,function($0,$1) {
-            return $0.replace($0, $1.toUpperCase());
-        }).replace('Ce', '');*/
-        let regex = /-ce$/;
-        return key.replace(regex, '');
-    }
-
-    _translateActionToKey(action) {
-        /* let regex = /([A-Z])/g;
-        return action.replace(regex,function($0, $1) {
-            return $0.replace($0, `-${$1}`.toLowerCase());
-        }) + '-ce';*/
-        return `${action}-ce`;
     }
 });
 
