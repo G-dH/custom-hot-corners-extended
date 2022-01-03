@@ -716,193 +716,6 @@ class CornerPage extends Gtk.ListBox {
     }
 });
 
-const KeyboardPage = GObject.registerClass(
-class KeyboardPage extends Gtk.ScrolledWindow {
-    _init(widgetProperties = {
-        hscrollbar_policy: Gtk.PolicyType.NEVER,
-        vscrollbar_policy: Gtk.PolicyType.AUTOMATIC,
-    }) {
-        super._init(widgetProperties);
-        this._alreadyBuilt = false;
-    }
-
-    buildPage() {
-        if (this._alreadyBuilt)
-            return false;
-
-        let box = new Gtk.Box({
-            orientation: Gtk.Orientation.VERTICAL,
-            spacing: 5,
-            homogeneous: false,
-            margin_start: 12,
-            margin_end: 20,
-            margin_top: 12,
-            margin_bottom: 12,
-        });
-        this[this.add ? 'add' : 'set_child'](box);
-        this.grid = new Gtk.Grid({margin_top: 6, hexpand: true,});
-        let lbl = new Gtk.Label({
-            xalign: 0,
-            use_markup: true,
-            label: _makeTitle(_('Keyboard Shortcuts')),
-            tooltip_text: `${_('Click on the Shortcut Key cell to set new shortcut.')}\n${
-                _('Press Backspace key instead of the new shortcut to disable shortcut.')}\n${
-                _('Warning: Some system shortcuts can NOT be overriden here.')}\n${
-                _('Warning: Shortcuts, already used in this extension, will be ignored.')}`,
-        });
-        box[box.add ? 'add' : 'append'](lbl);
-        let frame = new Gtk.Frame();
-        box[box.add ? 'add' : 'append'](frame);
-        frame[frame.add ? 'add' : 'set_child'](this.grid);
-        this.treeView = new Gtk.TreeView({hexpand: true});
-        this.grid.attach(this.treeView, 0, 0, 1, 1);
-        let model = new Gtk.TreeStore();
-        model.set_column_types([GObject.TYPE_STRING, GObject.TYPE_STRING, GObject.TYPE_INT, GObject.TYPE_INT]);
-        this.treeView.model = model;
-        this.keybindings = this._loadShortcuts();
-
-        // Hotkey
-        const actions     = new Gtk.TreeViewColumn({title: _('Action'), expand: true});
-        const nameRender  = new Gtk.CellRendererText();
-
-        const accels      = new Gtk.TreeViewColumn({title: _('Shortcut'), min_width: 150});
-        const accelRender = new Gtk.CellRendererAccel({
-            editable: true,
-            accel_mode: Gtk.CellRendererAccelMode.GTK,
-        });
-
-        actions.pack_start(nameRender, true);
-        accels.pack_start(accelRender, true);
-
-        actions.add_attribute(nameRender, 'text', 1);
-        accels.add_attribute(accelRender, 'accel-mods', 2);
-        accels.add_attribute(accelRender, 'accel-key', 3);
-
-        /* actions.set_cell_data_func(nameRender, (column, cell, model, iter) => {
-            if (!model.get_value(iter, 0)) {
-                // not used
-            }
-        }); */
-
-        accels.set_cell_data_func(accelRender, (column, cell, model, iter) => {
-            if (!model.get_value(iter, 0))
-                [cell.accel_key, cell.accel_mods] = [45, 0];
-        });
-
-        accelRender.connect('accel-edited', (rend, path, key, mods) => {
-            // Don't allow single key accels
-            if (!mods)
-                return;
-            const value = Gtk.accelerator_name(key, mods);
-            const [succ, iter] = model.get_iter_from_string(path);
-            if (!succ)
-                throw new Error('Error updating keybinding');
-
-            const name = model.get_value(iter, 0);
-            // exclude group items and avoid duplicate accels
-            if (name && !(value in this.keybindings) && uniqueVal(this.keybindings, value)) {
-                model.set(iter, [2, 3], [mods, key]);
-                this.keybindings[name] = [value];
-                this._saveShortcuts(this.keybindings);
-                /*Object.entries(this.keybindings).forEach(([key, value]) => {
-                });*/
-            } else {
-                log(`${Me.metadata.name} This keyboard shortcut is invalid or already in use!`);
-            }
-        });
-        const uniqueVal = function (dict, value) {
-            let unique = true;
-            Object.entries(dict).forEach(([key, val]) => {
-                if (value === val)
-                    unique = false;
-            }
-            );
-            return unique;
-        };
-
-        accelRender.connect('accel-cleared', (rend, path, key, mods) => {
-            const [succ, iter] = model.get_iter_from_string(path);
-            if (!succ)
-                throw new Error('Error clearing keybinding');
-
-            model.set(iter, [2, 3], [0, 0]);
-            const name = model.get_value(iter, 0);
-
-            if (name in this.keybindings) {
-                delete this.keybindings[name];
-                this._saveShortcuts(this.keybindings);
-            }
-        });
-
-        this._populateTreeview();
-        // this.treeView.expand_all();
-
-        this.treeView.append_column(actions);
-        this.treeView.append_column(accels);
-
-        this.show_all && this.show_all();
-
-        return this._alreadyBuilt = true;
-    }
-
-    _loadShortcuts() {
-        let keybindings = {};
-        const shortcuts = mscOptions._gsettings.get_strv('keyboard-shortcuts');
-        shortcuts.forEach(sc => {
-            let [action, accelerator] = sc.split('→');
-            keybindings[action] = accelerator;
-        });
-
-        return keybindings;
-    }
- 
-    _saveShortcuts(keybindings) {
-        const list = [];
-        Object.keys(keybindings).forEach(s => {
-            list.push(`${s}→${keybindings[s]}`);
-        });
-        mscOptions._gsettings.set_strv('keyboard-shortcuts', list);
-    }
-
-    _populateTreeview() {
-        let iter, iter2;
-        for (let i = 0; i < actionList.length; i++) {
-            const item = actionList[i];
-            const itemMeaning = item[0];
-            const action = item[1];
-            const title = item[2];
-            const shouldHaveShortcut = item[3];
-
-            if (_excludedItems.includes(action) || !shouldHaveShortcut)
-                continue;
-            let a = [0, 0];
-            if (action && (action in this.keybindings && this.keybindings[action])) {
-                let binding = this.keybindings[action];
-                let ap = Gtk.accelerator_parse(binding);
-                // Gtk4 accelerator_parse returns 3 values - the first one is bool ok/failed
-                if (ap.length === 3)
-                    ap.splice(0, 1);
-                if (ap[0] && ap[1])
-                    a = [ap[1], ap[0]];
-                else
-                    log(`[${Me.metadata.name}] Error: Gtk keybind conversion failed`);
-            }
-            if (!itemMeaning) {
-                iter  = this.treeView.model.append(null);
-                if (itemMeaning === 0) {
-                    this.treeView.model.set(iter, [0, 1, 2, 3], [action, title, ...a]);
-                } else {
-                    // this.treeView.model.set(iter, [1, 2, 3], [title, ...a]);
-                    this.treeView.model.set(iter, [1], [title]);
-                }
-            } else {
-                iter2  = this.treeView.model.append(iter);
-                this.treeView.model.set(iter2, [0, 1, 2, 3], [action, title, ...a]);
-            }
-        }
-    }
-});
-
 const OptionsPage = GObject.registerClass(
 class OptionsPage extends Gtk.ScrolledWindow {
     _init(widgetProperties = {
@@ -1029,8 +842,8 @@ class OptionsPage extends Gtk.ScrolledWindow {
                 _newComboBox(),
                 'wsSwitchIndicatorMode',
                 [[_('None'),           0],
-                    [_('Default popup'),  1],
-                    [_('Overlay Index'),  2]]
+                    [_('Default Popup'),  1],
+                    [_('OSD Index'),  2]]
             )
         );
 
@@ -1275,13 +1088,287 @@ class CustomMenusPage extends Gtk.Notebook {
     }
 });
 
-const CustomMenuPage = GObject.registerClass(
-class CustomMenuPage extends Gtk.ScrolledWindow {
-    _init(menuIndex, widgetProperties = {
-        hscrollbar_policy: Gtk.PolicyType.NEVER,
-        vscrollbar_policy: Gtk.PolicyType.AUTOMATIC,
+const TreeviewPage = GObject.registerClass(
+class TreeviewPage extends Gtk.Box {
+    _init(widgetProperties = {
+        orientation: Gtk.Orientation.VERTICAL,
+        spacing: 5,
+        homogeneous: false,
+        margin_start: 12,
+        margin_end: 12,
+        margin_top: 12,
+        margin_bottom: 12,
     }) {
         super._init(widgetProperties);
+
+        this.label = null;
+        this.treeView = null;
+        this.resetButton = null;
+    }
+
+    buildWidgets() {
+        if (this._alreadyBuilt)
+            return;
+
+        const scrolledWindow = new Gtk.ScrolledWindow({
+            hscrollbar_policy: Gtk.PolicyType.NEVER,
+            vscrollbar_policy: Gtk.PolicyType.AUTOMATIC,
+        });
+        this.lbl = new Gtk.Label({
+            xalign: 0,
+            use_markup: true,
+        });
+
+        const frame = new Gtk.Frame();
+        this.treeView = new Gtk.TreeView({
+            hexpand: true,
+            vexpand: true
+        });
+
+        const btnBox = new Gtk.Box({
+            orientation: Gtk.Orientation.HORIZONTAL,
+            hexpand: true,
+            homogeneous: true,
+            spacing: 4
+        });
+        const expandButton = new Gtk.Button({
+            label: _('Expand all')
+        });
+        expandButton.connect('clicked', () => {
+            this.treeView.expand_all();
+        });
+
+        const collapseButton = new Gtk.Button({
+            label: _('Collapse all')
+        });
+        collapseButton.connect('clicked', () => {
+            this.treeView.collapse_all();
+        });
+
+        this.resetButton = new Gtk.Button();
+        this.showActiveBtn = new Gtk.ToggleButton({
+            label: _('Show acive items only')
+        });
+
+        btnBox[btnBox.add ? 'add' : 'append'](expandButton);
+        btnBox[btnBox.add ? 'add' : 'append'](collapseButton);
+        btnBox[btnBox.add ? 'add' : 'append'](this.resetButton);
+
+        scrolledWindow[this.add ? 'add' : 'set_child'](this.treeView);
+        frame[frame.add ? 'add' : 'set_child'](scrolledWindow);
+
+        this[this.add ? 'add' : 'append'](this.lbl);
+        this[this.add ? 'add' : 'append'](frame);
+        this[this.add ? 'add' : 'append'](this.showActiveBtn);
+        this[this.add ? 'add' : 'append'](btnBox);
+    }
+});
+
+const KeyboardPage = GObject.registerClass(
+class KeyboardPage extends TreeviewPage {
+    _init() {
+        super._init();
+        this._alreadyBuilt = false;
+    }
+
+    buildPage() {
+        if (this._alreadyBuilt)
+            return false;
+
+        this.buildWidgets();
+        this._loadShortcuts();
+
+        this._updateTitle();
+        this.lbl.set_tooltip_text(`${_('Click on the Shortcut Key cell to set new shortcut.')}\n${
+            _('Press Backspace key instead of the new shortcut to disable shortcut.')}\n${
+            _('Warning: Some system shortcuts can NOT be overriden here.')}\n${
+            _('Warning: Shortcuts, already used in this extension, will be ignored.')}`);
+        this.resetButton.set_label(_('Disable all'));
+        this.resetButton.set_tooltip_text(_('Remove all keyboard shortcuts'));
+        this.resetButton.connect('clicked', () => {
+            mscOptions._gsettings.set_strv('keyboard-shortcuts', []);
+            this._loadShortcuts();
+            this._setNewTreeviewModel();
+        });
+        this.showActiveBtn.connect('notify::active', () => {
+            this._setNewTreeviewModel();
+        })
+
+        this._setNewTreeviewModel();
+        
+        // Hotkey
+        const actions     = new Gtk.TreeViewColumn({title: _('Action'), expand: true});
+        const nameRender  = new Gtk.CellRendererText();
+        
+        const accels      = new Gtk.TreeViewColumn({title: _('Shortcut'), min_width: 150});
+        const accelRender = new Gtk.CellRendererAccel({
+            editable: true,
+            accel_mode: Gtk.CellRendererAccelMode.GTK,
+        });
+        
+        actions.pack_start(nameRender, true);
+        accels.pack_start(accelRender, true);
+
+        actions.add_attribute(nameRender, 'text', 1);
+        accels.add_attribute(accelRender, 'accel-mods', 2);
+        accels.add_attribute(accelRender, 'accel-key', 3);
+
+        /* actions.set_cell_data_func(nameRender, (column, cell, model, iter) => {
+            if (!model.get_value(iter, 0)) {
+                // not used
+            }
+        }); */
+
+        accels.set_cell_data_func(accelRender, (column, cell, model, iter) => {
+            // this function is overwriting submenu accelerator cell to '-'
+            // this is executed even on mouse pointer hover over item ...
+            if (!this.model.get_value(iter, 0)) {
+                [cell.accel_key, cell.accel_mods] = [45, 0];
+            }
+        });
+
+        accelRender.connect('accel-edited', (rend, path, key, mods) => {
+            // Don't allow single key accels
+            if (!mods)
+                return;
+            const value = Gtk.accelerator_name(key, mods);
+            const [succ, iter] = this.model.get_iter_from_string(path);
+            if (!succ)
+                throw new Error('Error updating keybinding');
+
+            const name = this.model.get_value(iter, 0);
+            // exclude group items and avoid duplicate accels
+            if (name && !(value in this.keybindings) && uniqueVal(this.keybindings, value)) {
+                this.model.set(iter, [2, 3], [mods, key]);
+                this.keybindings[name] = [value];
+                this._saveShortcuts(this.keybindings);
+                /*Object.entries(this.keybindings).forEach(([key, value]) => {
+                });*/
+            } else {
+                log(`${Me.metadata.name} This keyboard shortcut is invalid or already in use!`);
+            }
+            this._updateTitle();
+        });
+        const uniqueVal = function (dict, value) {
+            let unique = true;
+            Object.entries(dict).forEach(([key, val]) => {
+                if (value === val)
+                    unique = false;
+            }
+            );
+            return unique;
+        };
+
+        accelRender.connect('accel-cleared', (rend, path, key, mods) => {
+            const [succ, iter] = this.model.get_iter_from_string(path);
+            if (!succ)
+                throw new Error('Error clearing keybinding');
+
+            this.model.set(iter, [2, 3], [0, 0]);
+            const name = this.model.get_value(iter, 0);
+
+            if (name in this.keybindings) {
+                delete this.keybindings[name];
+                this._saveShortcuts(this.keybindings);
+            }
+            this._updateTitle();
+        });
+
+        this.treeView.append_column(actions);
+        this.treeView.append_column(accels);
+
+        this.show_all && this.show_all();
+
+        this._alreadyBuilt = true;
+        return true;
+    }
+
+    _updateTitle() {
+        this.lbl.set_markup(_makeTitle(_('Keyboard Shortcuts')) + `    (active: ${Object.keys(this.keybindings).length})`);
+    }
+
+    _loadShortcuts() {
+        this.keybindings = {};
+        const shortcuts = mscOptions._gsettings.get_strv('keyboard-shortcuts');
+        shortcuts.forEach(sc => {
+            let [action, accelerator] = sc.split('→');
+            this.keybindings[action] = accelerator;
+        });
+    }
+ 
+    _saveShortcuts(keybindings) {
+        const list = [];
+        Object.keys(keybindings).forEach(s => {
+            list.push(`${s}→${keybindings[s]}`);
+        });
+        mscOptions._gsettings.set_strv('keyboard-shortcuts', list);
+    }
+
+    _populateTreeview() {
+        let iter, iter2;
+        let submenuOnHold = null;
+        for (let i = 0; i < actionList.length; i++) {
+            const item = actionList[i];
+            const itemMeaning = item[0];
+            const action = item[1];
+            const title = item[2];
+            const shouldHaveShortcut = item[3];
+
+            if (_excludedItems.includes(action) || !shouldHaveShortcut)
+                continue;
+            if (this.showActiveBtn.active && !Object.keys(this.keybindings).includes(action) && itemMeaning !== null)
+                continue;
+            if (itemMeaning === null) {
+                submenuOnHold = item;
+                continue;
+            }
+            
+            let a = [0, 0];
+            if (action && (action in this.keybindings && this.keybindings[action])) {
+                let binding = this.keybindings[action];
+                let ap = Gtk.accelerator_parse(binding);
+                // Gtk4 accelerator_parse returns 3 values - the first one is bool ok/failed
+                if (ap.length === 3)
+                    ap.splice(0, 1);
+                if (ap[0] && ap[1])
+                    a = [ap[1], ap[0]];
+                else
+                    log(`[${Me.metadata.name}] Error: Gtk keybind conversion failed`);
+            }
+            if (!itemMeaning) {
+                iter  = this.model.append(null);
+                if (itemMeaning === 0) {
+                    this.model.set(iter, [0, 1, 2, 3], [action, title, ...a]);
+                } else {
+                    this.model.set(iter, [1], [title]);
+                }
+            } else {
+                if (submenuOnHold) {
+                    iter = this.model.append(null);
+                    this.model.set(iter, [1], [submenuOnHold[2]]);
+                    submenuOnHold = null;
+                }
+                iter2  = this.model.append(iter);
+                this.model.set(iter2, [0, 1, 2, 3], [action, title, ...a]);
+            }
+        }
+    }
+
+    _setNewTreeviewModel() {
+        if (this.model) {
+            this.model = null;
+        }
+        this.model = new Gtk.TreeStore();
+        this.model.set_column_types([GObject.TYPE_STRING, GObject.TYPE_STRING, GObject.TYPE_INT, GObject.TYPE_INT]);
+        this.treeView.model = this.model;
+        this._populateTreeview();
+    }
+});
+
+const CustomMenuPage = GObject.registerClass(
+class CustomMenuPage extends TreeviewPage {
+    _init(menuIndex) {
+        super._init();
         this._alreadyBuilt = false;
         this._menuIndex = menuIndex;
     }
@@ -1289,110 +1376,132 @@ class CustomMenuPage extends Gtk.ScrolledWindow {
     buildPage() {
         if (this._alreadyBuilt)
             return;
-        let box = new Gtk.Box({
-            orientation: Gtk.Orientation.VERTICAL,
-            spacing: 5,
-            homogeneous: false,
-            margin_start: 12,
-            margin_end: 20,
-            margin_top: 12,
-            margin_bottom: 12,
-        });
-        this[this.add ? 'add' : 'set_child'](box);
+        this.buildWidgets();
+
         this.menuItems = mscOptions[`customMenu${this._menuIndex}`];
-        this.grid = new Gtk.Grid({margin_top: 6, hexpand: true,});
-        let lbl = new Gtk.Label({
-            xalign: 0,
-            use_markup: true,
-            label: _makeTitle(_('Select items for Custom Menu' + ` ${this._menuIndex}`)),
-            tooltip_text: `${_('Check items you want to have in the Custom Menu action.')}\n${_('You can decide whether the action menu items will be in its section submenu or in the root of the menu by checking/unchecking the section item')}`,
+
+        this._updateTitle();
+        this.lbl.set_tooltip_text(`${_('Check items you want to have in the Custom Menu action.')}\n${_('You can decide whether the action menu items will be in its section submenu or in the root of the menu by checking/unchecking the section item')}`);
+        this.resetButton.set_label(_('Deselect all'));
+        this.resetButton.set_tooltip_text(_('Remove all items from this menu'));
+        this.resetButton.connect('clicked', () => {
+            this.menuItems = [];
+            mscOptions[`customMenu${this._menuIndex}`] = this.menuItems;
+            this._setNewTreeviewModel();
         });
-        box[box.add ? 'add' : 'append'](lbl);
-        let frame = new Gtk.Frame();
-        box[box.add ? 'add' : 'append'](frame);
-        frame[frame.add ? 'add' : 'set_child'](this.grid);
-        this.treeView = new Gtk.TreeView({hexpand: true});
-        this.grid.attach(this.treeView, 0, 0, 1, 1);
-        let model = new Gtk.TreeStore();
-        model.set_column_types([GObject.TYPE_STRING, GObject.TYPE_STRING, GObject.TYPE_BOOLEAN]);
-        this.treeView.model = model;
+        this.showActiveBtn.connect('notify::active', () => {
+            this._setNewTreeviewModel();
+            this.treeView.expand_all();
+        });
+        this._setNewTreeviewModel();
 
         // Menu items
         const actions     = new Gtk.TreeViewColumn({title: _('Menu Item'), expand: true});
         const nameRender  = new Gtk.CellRendererText();
-
-        const toggles      = new Gtk.TreeViewColumn({title: _('Show in Menu'), min_width: 150});
+        
+        const toggles      = new Gtk.TreeViewColumn({title: _('Add to Menu')});
         const toggleRender = new Gtk.CellRendererToggle({
             activatable: true,
             active: false,
         });
-
+        
         actions.pack_start(nameRender, true);
         toggles.pack_start(toggleRender, true);
-
+        
         actions.add_attribute(nameRender, 'text', 1);
         toggles.add_attribute(toggleRender, 'active', 2);
-
+        
         actions.set_cell_data_func(nameRender, (column, cell, model, iter) => {
             if (!model.get_value(iter, 0)) {
-
             }
         });
-
+        
         toggles.set_cell_data_func(toggleRender, (column, cell, model, iter) => {
             if (!model.get_value(iter, 0)) {
-
             }
         });
-
+        
         toggleRender.connect('toggled', (rend, path) => {
-            const [succ, iter] = model.get_iter_from_string(path);
-            model.set_value(iter, 2, !model.get_value(iter, 2));
-            let item  = model.get_value(iter, 0);
-            let value = model.get_value(iter, 2);
+            const [succ, iter] = this.model.get_iter_from_string(path);
+            this.model.set_value(iter, 2, !this.model.get_value(iter, 2));
+            let item  = this.model.get_value(iter, 0);
+            let value = this.model.get_value(iter, 2);
             let index = this.menuItems.indexOf(item);
             if (index > -1) {
-                if (value === false)
+                if (!value)
                     this.menuItems.splice(index, 1);
-            } else if (value === true) {
+            } else if (value) {
                 this.menuItems.push(item);
             }
             mscOptions[`customMenu${this._menuIndex}`] = this.menuItems;
+            this._updateTitle();
         });
-
-        this._populateTreeview();
-        this.treeView.expand_all();
 
         this.treeView.append_column(actions);
         this.treeView.append_column(toggles);
 
         this.show_all && this.show_all();
+        
+        this._alreadyBuilt = true;
+        return true;
+    }
 
-        return this._alreadyBuilt = true;
+    _updateTitle() {
+        this.lbl.set_markup(_makeTitle(_('Select items for Custom Menu')) + ` ${this._menuIndex}     ( ${this.menuItems.length} ${_('items')} )`);
     }
 
     _populateTreeview() {
         let iter, iter1, iter2;
+        let submenuOnHold = null;
         for (let i = 0; i < actionList.length; i++) {
             let item = actionList[i];
-            if (_excludedItems.includes(item[1]) || !item[3])
+            const itemType = item[0];
+            const action = item[1];
+            const title = item[2];
+            const shouldHaveShortcut = item[3];
+
+            if (_excludedItems.includes(action) || !shouldHaveShortcut)
                 continue;
 
-            if (!item[0]) {
-                iter1 = this.treeView.model.append(null);
-                if (item[0] === 0)
-                    this.treeView.model.set(iter1, [0, 1], [item[1], item[2]]);
+            if (this.showActiveBtn.active && !this.menuItems.includes(action) && (itemType !== null))
+                continue;
+
+            if (itemType === null) {
+                submenuOnHold = item;
+                continue;
+            }
+
+            if (!itemType) {
+                iter1 = this.model.append(null);
+                if (itemType === 0)
+                    this.model.set(iter1, [0, 1], [action, title]);
 
                 else
-                    this.treeView.model.set(iter1, [0, 1], [item[1], item[2]]);
+                    this.model.set(iter1, [0, 1], [action, title]);
 
                 iter = iter1;
             } else {
-                iter2  = this.treeView.model.append(iter1);
-                this.treeView.model.set(iter2, [0, 1], [item[1], item[2]]);
+                if (submenuOnHold) {
+                    iter1 = this.model.append(null);
+                    this.model.set(iter1, [0, 1], [submenuOnHold[1], submenuOnHold[2]]);
+                    this.model.set_value(iter1, 2, this.menuItems.includes(submenuOnHold[1]));
+                    submenuOnHold = null;
+                }
+                iter2  = this.model.append(iter1);
+                this.model.set(iter2, [0, 1], [action, title]);
                 iter = iter2;
             }
-            this.treeView.model.set_value(iter, 2, this.menuItems.includes(item[1]));
+            this.model.set_value(iter, 2, this.menuItems.includes(action));
         }
+    }
+
+    _setNewTreeviewModel() {
+        if (this.model) {
+            this.model = null;
+        }
+        this.model = new Gtk.TreeStore();
+        this.model.set_column_types([GObject.TYPE_STRING, GObject.TYPE_STRING, GObject.TYPE_INT, GObject.TYPE_INT]);
+        this.treeView.model = this.model;
+        this._populateTreeview();
     }
 });
