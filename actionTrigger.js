@@ -16,9 +16,13 @@ const ActionTrigger = class ActionTrigger {
         this.actions = new Actions.Actions(mscOptions);
         this._mscOptions = mscOptions;
         this._gsettingsKB = mscOptions._gsettings;
-        this._monitorIndex = 0;
-        this._workspaceIndex = 0;
-        this._command = '';
+        this.runActionData = {
+            action: null,
+            monitorIndex: 0,
+            workspaceIndex: 0,
+            command: null,
+            keyboard: false
+        }
         this.m = new Map();
         let actionList = Settings.actionList;
 
@@ -35,27 +39,17 @@ const ActionTrigger = class ActionTrigger {
         this._keybindingsManager;
     }
 
-    runAction(action, monitorIndex = 0, workspaceIndex = 0, command = '', keyboard = false) {
-        this._monitorIndex = monitorIndex;
-        this._command = command;
-        this._workspaceIndex = workspaceIndex;
-        this._triggeredByKeyboard = keyboard;
-        let actionFunction = this.m.get(action).bind(this);
-        if (actionFunction) {
-            actionFunction();
-            return true;
-        } else {
-            return false;
-        }
-    }
-
     clean(full = true) {
+        this._removeShortcuts();
+        this._disconnectSettingsKB();
+        if (this._keybindingsManager) {
+            this._keybindingsManager.destroy();
+            this._keybindingsManager = null;
+        }
         if (full) {
             this.actions.clean(true);
             this.actions = null;
         } else {
-            this._removeShortcuts();
-            this._disconnectSettingsKB();
             this.actions.clean(false);
         }
     }
@@ -67,27 +61,34 @@ const ActionTrigger = class ActionTrigger {
     }
 
     _bindShortcuts() {
+        print('binding shortcuts');
         let keybindings = {};
         let shortcuts = this._mscOptions._gsettings.get_strv('keyboard-shortcuts');
 
-        // transittion code from separately stored shortcuts to single gsetting key
-        const settingsKB = this._mscOptions._loadSettings('shortcuts');
-        if (!shortcuts.length && settingsKB && settingsKB.list_keys().length) {
-            for (let key of settingsKB.list_keys()) {
-                const action = key.replace(/-ce$/, '');
-                const accelerator = settingsKB.get_strv(key)[0];
-                if (accelerator)
-                    keybindings[action] = accelerator;
+        // transition code from separately stored shortcuts to single gsetting key
+        // should be removed in the next version
+        // copy all separately stored shortcuts to the new key if it's empty
+        const internalFlags = this._mscOptions._gsettings.get_strv('internal-flags');
+        if (!internalFlags.includes('shortcuts-moved')) {
+            const settingsKB = this._mscOptions._loadSettings('shortcuts');
+            if (!shortcuts.length && settingsKB && settingsKB.list_keys().length) {
+                for (let key of settingsKB.list_keys()) {
+                    const action = key.replace(/-ce$/, '');
+                    const accelerator = settingsKB.get_strv(key)[0];
+                    if (accelerator)
+                        keybindings[action] = accelerator;
+                }
+                const list = [];
+                Object.keys(keybindings).forEach(s => {
+                    list.push(`${s}→${keybindings[s]}`);
+                });
+                if (list.length)
+                    this._mscOptions._gsettings.set_strv('keyboard-shortcuts', list);
             }
-            const list = [];
-            Object.keys(keybindings).forEach(s => {
-                list.push(`${s}→${keybindings[s]}`);
-            });
-            if (list.length)
-                this._mscOptions._gsettings.set_strv('keyboard-shortcuts', list);
+            internalFlags.push('shortcuts-moved');
+            this._mscOptions._gsettings.set_strv('internal-flags', internalFlags);
         }
         // end of transition code
-
 
         const list = this._mscOptions._gsettings.get_strv('keyboard-shortcuts');
         if (!list.length)
@@ -101,15 +102,31 @@ const ActionTrigger = class ActionTrigger {
             };
             manager.add(accelerator, action, callback);
         });
-        this._gsettingsKBid = this._gsettingsKB.connect('changed::keyboard-shortcuts', this._updateKeyBinding.bind(this));
+
+        if (!this._gsettingsKBid)
+            this._gsettingsKBid = this._gsettingsKB.connect('changed::keyboard-shortcuts', this._updateKeyBinding.bind(this));
+    }
+
+    runAction() {
+        const action = this.runActionData.action;
+        let actionFunction = this.m.get(action).bind(this);
+        if (actionFunction) {
+            actionFunction();
+            return true;
+        } else {
+            return false;
+        }
     }
 
     _runKeyAction(action) {
         // notify the trigger that the action was invoked by the keyboard
-        this.runAction(action, 0, 0, '', true);
+        this.runActionData.action = action;
+        this.runActionData.keyboard = true;
+        this.runAction();
     }
 
     _updateKeyBinding() {
+        print('updating');
         const manager = this._getKeybindingsManager();
         manager.removeAll();
         this._bindShortcuts();
@@ -181,7 +198,7 @@ const ActionTrigger = class ActionTrigger {
 
     _runCommand() {
         LOG(`[${Me.metadata.name}]   _runCommand`);
-        this.actions.runCommand(this._command);
+        this.actions.runCommand(this.runActionData.command);
     }
 
     _runPrompt() {
@@ -191,7 +208,7 @@ const ActionTrigger = class ActionTrigger {
 
     _moveToWorkspace() {
         LOG(`[${Me.metadata.name}]   _moveToWorkspace`);
-        this.actions.moveToWorkspace(this._workspaceIndex - 1);
+        this.actions.moveToWorkspace(this.runActionData.workspaceIndex - 1);
     }
 
     _prevWorkspace() {
@@ -288,7 +305,7 @@ const ActionTrigger = class ActionTrigger {
             'filter-mode':        1,
             'group-mode':         0,
             'timeout':            0,
-            'triggered-keyboard': this._triggeredByKeyboard,
+            'triggered-keyboard': this.runActionData.keyboard,
             'shortcut':           this._getShortcut('win-switcher-popup-all-ce'),
             'filter-focused-app': false,
             'filter-pattern':     null,
@@ -302,7 +319,7 @@ const ActionTrigger = class ActionTrigger {
             'filter-mode':        2,
             'group-mode':         0,
             'timeout':            0,
-            'triggered-keyboard': this._triggeredByKeyboard,
+            'triggered-keyboard': this.runActionData.keyboard,
             'shortcut':           this._getShortcut('win-switcher-popup-ws-ce'),
             'filter-focused-app': false,
             'filter-pattern':     null,
@@ -316,7 +333,7 @@ const ActionTrigger = class ActionTrigger {
             'filter-mode':        3,
             'group-mode':         0,
             'timeout':            0,
-            'triggered-keyboard': this._triggeredByKeyboard,
+            'triggered-keyboard': this.runActionData.keyboard,
             'shortcut':           this._getShortcut('win-switcher-popup-mon-ce'),
             'filter-focused-app': false,
             'filter-pattern':     null,
@@ -330,7 +347,7 @@ const ActionTrigger = class ActionTrigger {
             'filter-mode':        1,
             'group-mode':         3,
             'timeout':            0,
-            'triggered-keyboard': this._triggeredByKeyboard,
+            'triggered-keyboard': this.runActionData.keyboard,
             'shortcut':           this._getShortcut('win-switcher-popup-apps-ce'),
             'filter-focused-app': false,
             'filter-pattern':     null,
@@ -344,7 +361,7 @@ const ActionTrigger = class ActionTrigger {
             'filter-mode':        1,
             'group-mode':         0,
             'timeout':            0,
-            'triggered-keyboard': this._triggeredByKeyboard,
+            'triggered-keyboard': this.runActionData.keyboard,
             'shortcut':           this._getShortcut('win-switcher-popup-class-ce'),
             'filter-focused-app': true,
             'filter-pattern':     null,
@@ -358,7 +375,7 @@ const ActionTrigger = class ActionTrigger {
             'filter-mode':        1,
             'group-mode':         2,
             'timeout':            0,
-            'triggered-keyboard': this._triggeredByKeyboard,
+            'triggered-keyboard': this.runActionData.keyboard,
             'shortcut':           this._getShortcut('win-switcher-popup-ws-first-ce'),
             'filter-focused-app': false,
             'filter-pattern':     null,
@@ -372,7 +389,7 @@ const ActionTrigger = class ActionTrigger {
             'filter-mode':        2,
             'group-mode':         0,
             'timeout':            0,
-            'triggered-keyboard': this._triggeredByKeyboard,
+            'triggered-keyboard': this.runActionData.keyboard,
             'shortcut':           null,
             'filter-focused-app': false,
             'filter-pattern':     null,
@@ -387,7 +404,7 @@ const ActionTrigger = class ActionTrigger {
             'filter-mode':        2,
             'group-mode':         0,
             'timeout':            0,
-            'triggered-keyboard': this._triggeredByKeyboard,
+            'triggered-keyboard': this.runActionData.keyboard,
             'shortcut':           null,
             'filter-focused-app': false,
             'filter-pattern':     null,
@@ -402,7 +419,7 @@ const ActionTrigger = class ActionTrigger {
             'filter-mode':        1,
             'group-mode':         0,
             'timeout':            0,
-            'triggered-keyboard': this._triggeredByKeyboard,
+            'triggered-keyboard': this.runActionData.keyboard,
             'shortcut':           this._getShortcut('win-switcher-popup-all-ce'),
             'filter-focused-app': false,
             'filter-pattern':     null,
@@ -416,7 +433,7 @@ const ActionTrigger = class ActionTrigger {
             'filter-mode':        1,
             'group-mode':         0,
             'timeout':            0,
-            'triggered-keyboard': this._triggeredByKeyboard,
+            'triggered-keyboard': this.runActionData.keyboard,
             'shortcut':           this._getShortcut('app-switcher-popup-all-ce'),
             'filter-focused-app': false,
             'filter-pattern':     null,
@@ -431,7 +448,7 @@ const ActionTrigger = class ActionTrigger {
             'filter-mode':        2,
             'group-mode':         0,
             'timeout':            0,
-            'triggered-keyboard': this._triggeredByKeyboard,
+            'triggered-keyboard': this.runActionData.keyboard,
             'shortcut':           this._getShortcut('app-switcher-popup-ws-ce'),
             'filter-focused-app': false,
             'filter-pattern':     null,
@@ -446,7 +463,7 @@ const ActionTrigger = class ActionTrigger {
             'filter-mode':        3,
             'group-mode':         0,
             'timeout':            0,
-            'triggered-keyboard': this._triggeredByKeyboard,
+            'triggered-keyboard': this.runActionData.keyboard,
             'shortcut':           this._getShortcut('app-switcher-popup-mon-ce'),
             'filter-focused-app': false,
             'filter-pattern':     null,
