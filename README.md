@@ -2,13 +2,15 @@
 
 A GNOME Shell Extension which allows you to control and navigate Gnome Shell environment through the corners and edges of your monitors. But not just that, it adds many unique actions with keyboard shortcuts too.
 
+This extension is based on the original `Custom Hot Corners` exetension, but not much of the original code remains.
+
 [<img alt="" height="100" src="https://raw.githubusercontent.com/andyholmes/gnome-shell-extensions-badge/master/get-it-on-ego.svg?sanitize=true">](https://extensions.gnome.org/extension/4167/custom-hot-corners-extended/)
 
 
 ## Features:
 - Gnome 3.36, 3.38, 40 and 41 compatibility
 - Hot corners with adjustable barrier sizes, both vertical and horizontal independently and usable as hot edges
-- Mouse buttons and a scroll wheel can be used as triggers in addition to hot corners
+- Mouse buttons and a scroll wheel can be used as triggers in addition to / intead of hot corners
 - Each trigger can be set to work only when *Ctrl* key is pressed
 - Each direcion of a scroll wheel rotation is configurable independently
 - Each trigger can activate one of many actions including command execution, workspace and window navigation, window control, power manager actions, sound volume control, color filters (for windows and global), accessibility features and more.
@@ -22,6 +24,31 @@ A GNOME Shell Extension which allows you to control and navigate Gnome Shell env
 - You can set up to 4 Custom Menus with own selection of actions and trigger them as an action.
 
 ## Changelog:
+
+**12** (not released yet):
+Added:
+- MPRIS player controls: `Play/Pause`, `Next Track`, `Previous Track`. Works the same way as the keyboard media keys - controls the most recently launched media player
+- action `Open New window`
+- actions 'Move Window/App windows to Prev/Next Adjacent workspace', 'Move Window/App windows to Prev/Next New workspace'
+Other changes:
+- default value for trigger works in fullscreen mode set to `true`, default value for option `Enable all trigers in fullscreen` to `false`
+- redisigned corner settings page, added down arrow to action combo submenu labels
+Fixes:
+- workspace index position not centered in GS40+
+- added gschema paths for not dynamically created settings - now global settings can be backed up using `Extensions Sync` extension
+- GS41 not detected
+
+**11**:
+- Added action `Open ArcMenu` action, compatible with ArcMenu v.20+
+- Added workspace indicator to the `Reorder workspace` actions
+- Added support of Ubuntu's 21.10 light Yaru theme in action `Light/Dark Gtk theme toggle`
+- Fixed broken Run Command Prompt action
+- Layout optimizations in the Preferences window for Gtk 4
+
+**10**:
+- Added actions supporting new AATWS application switcher
+- Added action `Quit application`
+- Fixed issue with shortcuts accessible from the lock screen
 
 **v9**:
 - *Ctrl* "safety lock" finally works with Wayland
