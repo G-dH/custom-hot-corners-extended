@@ -374,6 +374,12 @@ var Actions = class {
             index = maxIndex;
         let ws = global.workspaceManager.get_workspace_by_index(index);
         Main.wm.actionMoveWorkspace(ws);
+        if (this.WS_INDICATOR_MODE === ws_indicator_mode.DEFAULT) {
+            const currentWs = global.workspaceManager.get_active_workspace_index();
+            const direction = index > currentWs ? 1 : 0;
+            this._showWsSwitcherPopup(direction, ws.index());
+        } else if (this.WS_INDICATOR_MODE === ws_indicator_mode.INDEX)
+            this.showWorkspaceIndex();
         // another option
         // ws.activate(global.get_current_time());
     }
