@@ -258,7 +258,14 @@ class CornerPage extends Gtk.ListBox {
             this[this.add ? 'add' : 'append'](grid);
         }
         const ew = this._buildExpandsionWidget();
-        this[this.add ? 'add' : 'append'](ew);
+        const ewFrame = new Gtk.Frame({
+            margin_top: 10,
+            margin_bottom: 10,
+            margin_start: 10,
+            margin_end: 10
+        });
+        ewFrame[ewFrame.add ? 'add' : 'set_child'](ew);
+        this[this.add ? 'add' : 'append'](ewFrame);
         this.show_all && this.show_all();
 
         this._alreadyBuilt = true;
@@ -523,7 +530,7 @@ class CornerPage extends Gtk.ListBox {
             column_spacing: 8,
             margin_start: 10,
             margin_end: 10,
-            margin_top: 10,
+            margin_top: 20,
             margin_bottom: 20,
             halign: Gtk.Align.FILL,
             tooltip_text: _("You can activate 'Make active corners/edges visible' option on 'Options' page to see the results of these settings."),
@@ -1192,6 +1199,7 @@ class KeyboardPage extends TreeviewPage {
         });
         this.showActiveBtn.connect('notify::active', () => {
             this._setNewTreeviewModel();
+            this.treeView.expand_all();
         })
 
         this._setNewTreeviewModel();
