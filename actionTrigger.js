@@ -8,8 +8,6 @@ const Actions        = Me.imports.actions;
 const Settings       = Me.imports.settings;
 const Keybindings    = Me.imports.keybindings;
 
-// let LOG = print;
-function LOG() {}
 
 const ActionTrigger = class ActionTrigger {
     constructor(mscOptions) {
@@ -61,16 +59,15 @@ const ActionTrigger = class ActionTrigger {
     }
 
     _bindShortcuts() {
-        print('binding shortcuts');
-        let keybindings = {};
-        let shortcuts = this._mscOptions._gsettings.get_strv('keyboard-shortcuts');
+        const keybindings = {};
+        const shortcuts = this._mscOptions._gsettings.get_strv('keyboard-shortcuts');
+        const settingsKB = this._mscOptions._loadSettings('shortcuts');
 
         // transition code from separately stored shortcuts to single gsetting key
         // should be removed in the next version
         // copy all separately stored shortcuts to the new key if it's empty
         const internalFlags = this._mscOptions._gsettings.get_strv('internal-flags');
-        if (!internalFlags.includes('shortcuts-moved')) {
-            const settingsKB = this._mscOptions._loadSettings('shortcuts');
+        if (settingsKB && !internalFlags.includes('shortcuts-moved')) {
             if (!shortcuts.length && settingsKB && settingsKB.list_keys().length) {
                 for (let key of settingsKB.list_keys()) {
                     const action = key.replace(/-ce$/, '');
@@ -96,8 +93,8 @@ const ActionTrigger = class ActionTrigger {
 
         const manager = this._getKeybindingsManager();
         list.forEach(sc => {
-            let [action, accelerator] = sc.split('→');
-            let callback = () => {
+            const [action, accelerator] = sc.split('→');
+            const callback = () => {
                 this._runKeyAction(action);
             };
             manager.add(accelerator, action, callback);
@@ -107,9 +104,10 @@ const ActionTrigger = class ActionTrigger {
             this._gsettingsKBid = this._gsettingsKB.connect('changed::keyboard-shortcuts', this._updateKeyBinding.bind(this));
     }
 
-    runAction() {
-        const action = this.runActionData.action;
-        let actionFunction = this.m.get(action).bind(this);
+    runAction(actionData = null) {
+        const runActionData = actionData ? actionData : this.runActionData;
+        const action = runActionData.action;
+        const actionFunction = this.m.get(action).bind(this);
         if (actionFunction) {
             actionFunction();
             return true;
@@ -126,7 +124,6 @@ const ActionTrigger = class ActionTrigger {
     }
 
     _updateKeyBinding() {
-        print('updating');
         const manager = this._getKeybindingsManager();
         manager.removeAll();
         this._bindShortcuts();
@@ -150,33 +147,23 @@ const ActionTrigger = class ActionTrigger {
         });
     }
 
-    _translateKeyToAction(key) {
-        let regex = /-ce$/;
-        return key.replace(regex, '');
-    }
-
     _toggleOverview() {
-        LOG(`[${Me.metadata.name}]   _toggleOverview`);
         this.actions.toggleOverview();
     }
 
     _showApplications() {
-        LOG(`[${Me.metadata.name}]   _showAppGrid`);
         this.actions.showApplications();
     }
 
     _showDesktop() {
-        LOG(`[${Me.metadata.name}]   _showDesktop`);
         this.actions.togleShowDesktop();
     }
 
     _showDesktopMon() {
-        LOG(`[${Me.metadata.name}]   _showDesktopMonitor`);
         this.actions.togleShowDesktop(global.display.get_current_monitor());
     }
 
     _blackScreen() {
-        LOG(`[${Me.metadata.name}]   _toggleBlackScreen`);
         let opacity = 255;
         let note = Me.metadata.name;
         this.actions.toggleDimmMonitors(
@@ -186,7 +173,6 @@ const ActionTrigger = class ActionTrigger {
     }
 
     _blackScreenMon() {
-        LOG(`[${Me.metadata.name}]   _toggleBlackScreenMonitor`);
         let opacity = 255;
         let note = Me.metadata.name;
         this.actions.toggleDimmMonitors(
@@ -197,46 +183,38 @@ const ActionTrigger = class ActionTrigger {
     }
 
     _runCommand() {
-        LOG(`[${Me.metadata.name}]   _runCommand`);
         this.actions.runCommand(this.runActionData.command);
     }
 
     _runPrompt() {
-        LOG(`[${Me.metadata.name}]   _runPrompt`);
         this.actions.openRunDialog();
     }
 
     _moveToWorkspace() {
-        LOG(`[${Me.metadata.name}]   _moveToWorkspace`);
         this.actions.moveToWorkspace(this.runActionData.workspaceIndex - 1);
     }
 
     _prevWorkspace() {
-        LOG(`[${Me.metadata.name}]   _prevWorkspace`);
         this.actions.switchWorkspace(Clutter.ScrollDirection.UP);
     }
 
     _nextWorkspace() {
-        LOG(`[${Me.metadata.name}]   _nextWorkspace`);
         this.actions.switchWorkspace(Clutter.ScrollDirection.DOWN);
     }
 
     _prevWorkspaceOverview() {
-        LOG(`[${Me.metadata.name}]   _prevWorkspace`);
         this.actions.switchWorkspace(Clutter.ScrollDirection.UP);
         Main.overview.dash.showAppsButton.checked = false;
         Main.overview.show();
     }
 
     _nextWorkspaceOverview() {
-        LOG(`[${Me.metadata.name}]   _nextWorkspace`);
         this.actions.switchWorkspace(Clutter.ScrollDirection.DOWN);
         Main.overview.dash.showAppsButton.checked = false;
         Main.overview.show();
     }
 
     _recentWorkspace() {
-        LOG(`[${Me.metadata.name}]   _moveToRecentWorkspace`);
         this.actions.moveToRecentWorkspace();
     }
 
@@ -249,45 +227,39 @@ const ActionTrigger = class ActionTrigger {
     }
 
     _prevWinAll() {
-        LOG(`[${Me.metadata.name}]   _prevWindow`);
         this.actions.switchWindow(-1, false, -1);
     }
 
     _nextWinAll() {
-        LOG(`[${Me.metadata.name}]   _nextWindow`);
         this.actions.switchWindow(+1, false, -1);
     }
 
     _prevWinWs() {
-        LOG(`[${Me.metadata.name}]   _prevWindowWS`);
         this.actions.switchWindow(-1, true, -1);
     }
 
     _nextWinWs() {
-        LOG(`[${Me.metadata.name}]   _nextWindowWS`);
         this.actions.switchWindow(+1, true, -1);
     }
 
     _prevWinMon() {
-        LOG(`[${Me.metadata.name}]   _prevWinMonitor`);
         this.actions.switchWindow(-1, true, global.display.get_current_monitor());
     }
 
     _nextWinMon() {
-        LOG(`[${Me.metadata.name}]   _nextWinMonitor`);
         this.actions.switchWindow(+1, true, global.display.get_current_monitor());
     }
 
     _recentWin() {
-        LOG(`[${Me.metadata.name}]   _recentWindow`);
         this.actions.switchToRecentWindow();
     }
 
     _getShortcut(key) {
-        let settings = Settings.getSettings(
+        /*let settings = Settings.getSettings(
             'org.gnome.shell.extensions.custom-hot-corners-extended.shortcuts',
             '/org/gnome/shell/extensions/custom-hot-corners-extended/shortcuts/');
-        return settings.get_strv(key).toString();
+        return settings.get_strv(key).toString();*/
+        return this._keybindingsManager._keybindings[key];
     }
 
     _winSwitcherPopupAll() {
@@ -306,7 +278,7 @@ const ActionTrigger = class ActionTrigger {
             'group-mode':         0,
             'timeout':            0,
             'triggered-keyboard': this.runActionData.keyboard,
-            'shortcut':           this._getShortcut('win-switcher-popup-all-ce'),
+            'shortcut':           this._getShortcut('win-switcher-popup-all'),
             'filter-focused-app': false,
             'filter-pattern':     null,
         });
@@ -320,7 +292,7 @@ const ActionTrigger = class ActionTrigger {
             'group-mode':         0,
             'timeout':            0,
             'triggered-keyboard': this.runActionData.keyboard,
-            'shortcut':           this._getShortcut('win-switcher-popup-ws-ce'),
+            'shortcut':           this._getShortcut('win-switcher-popup-ws'),
             'filter-focused-app': false,
             'filter-pattern':     null,
         });
@@ -334,7 +306,7 @@ const ActionTrigger = class ActionTrigger {
             'group-mode':         0,
             'timeout':            0,
             'triggered-keyboard': this.runActionData.keyboard,
-            'shortcut':           this._getShortcut('win-switcher-popup-mon-ce'),
+            'shortcut':           this._getShortcut('win-switcher-popup-mon'),
             'filter-focused-app': false,
             'filter-pattern':     null,
         });
@@ -348,7 +320,7 @@ const ActionTrigger = class ActionTrigger {
             'group-mode':         3,
             'timeout':            0,
             'triggered-keyboard': this.runActionData.keyboard,
-            'shortcut':           this._getShortcut('win-switcher-popup-apps-ce'),
+            'shortcut':           this._getShortcut('win-switcher-popup-apps'),
             'filter-focused-app': false,
             'filter-pattern':     null,
         });
@@ -362,7 +334,7 @@ const ActionTrigger = class ActionTrigger {
             'group-mode':         0,
             'timeout':            0,
             'triggered-keyboard': this.runActionData.keyboard,
-            'shortcut':           this._getShortcut('win-switcher-popup-class-ce'),
+            'shortcut':           this._getShortcut('win-switcher-popup-class'),
             'filter-focused-app': true,
             'filter-pattern':     null,
         });
@@ -376,7 +348,7 @@ const ActionTrigger = class ActionTrigger {
             'group-mode':         2,
             'timeout':            0,
             'triggered-keyboard': this.runActionData.keyboard,
-            'shortcut':           this._getShortcut('win-switcher-popup-ws-first-ce'),
+            'shortcut':           this._getShortcut('win-switcher-popup-ws-first'),
             'filter-focused-app': false,
             'filter-pattern':     null,
         });
@@ -420,7 +392,7 @@ const ActionTrigger = class ActionTrigger {
             'group-mode':         0,
             'timeout':            0,
             'triggered-keyboard': this.runActionData.keyboard,
-            'shortcut':           this._getShortcut('win-switcher-popup-all-ce'),
+            'shortcut':           this._getShortcut('win-switcher-popup-all'),
             'filter-focused-app': false,
             'filter-pattern':     null,
         });
@@ -434,7 +406,7 @@ const ActionTrigger = class ActionTrigger {
             'group-mode':         0,
             'timeout':            0,
             'triggered-keyboard': this.runActionData.keyboard,
-            'shortcut':           this._getShortcut('app-switcher-popup-all-ce'),
+            'shortcut':           this._getShortcut('app-switcher-popup-all'),
             'filter-focused-app': false,
             'filter-pattern':     null,
             'apps':               true,
@@ -449,7 +421,7 @@ const ActionTrigger = class ActionTrigger {
             'group-mode':         0,
             'timeout':            0,
             'triggered-keyboard': this.runActionData.keyboard,
-            'shortcut':           this._getShortcut('app-switcher-popup-ws-ce'),
+            'shortcut':           this._getShortcut('app-switcher-popup-ws'),
             'filter-focused-app': false,
             'filter-pattern':     null,
             'apps':               true,
@@ -464,7 +436,7 @@ const ActionTrigger = class ActionTrigger {
             'group-mode':         0,
             'timeout':            0,
             'triggered-keyboard': this.runActionData.keyboard,
-            'shortcut':           this._getShortcut('app-switcher-popup-mon-ce'),
+            'shortcut':           this._getShortcut('app-switcher-popup-mon'),
             'filter-focused-app': false,
             'filter-pattern':     null,
             'apps':               true,
@@ -472,27 +444,22 @@ const ActionTrigger = class ActionTrigger {
     }
 
     _closeWin() {
-        LOG(`[${Me.metadata.name}]   _closeWindow`);
         this.actions.closeWindow();
     }
 
     _quitApp() {
-        LOG(`[${Me.metadata.name}]   _quitApp`);
         this.actions.quitApplication();
     }
 
     _killApp() {
-        LOG(`[${Me.metadata.name}]   _killApp`);
         this.actions.killApplication();
     }
 
     _maximizeWin() {
-        LOG(`[${Me.metadata.name}]   _maximizeWindow`);
         this.actions.toggleMaximizeWindow();
     }
 
     _minimizeWin() {
-        LOG(`[${Me.metadata.name}]   _minimizeWindow`);
         this.actions.minimizeWindow();
     }
 
@@ -505,17 +472,14 @@ const ActionTrigger = class ActionTrigger {
     }
 
     _fullscreenWin() {
-        LOG(`[${Me.metadata.name}]   _maximizeWindow`);
         this.actions.toggleFullscreenWindow();
     }
 
     _aboveWin() {
-        LOG(`[${Me.metadata.name}]   _aboveWindow`);
         this.actions.toggleAboveWindow();
     }
 
     _stickWin() {
-        LOG(`[${Me.metadata.name}]   _stickWindow`);
         this.actions.toggleStickWindow();
     }
 
@@ -524,52 +488,42 @@ const ActionTrigger = class ActionTrigger {
     }
 
     _restartShell() {
-        LOG(`[${Me.metadata.name}]   _restartGnomeShell`);
         this.actions.restartGnomeShell();
     }
 
     _volumeUp() {
-        LOG(`[${Me.metadata.name}]   _volumeUp`);
         this.actions.adjustVolume(1);
     }
 
     _volumeDown() {
-        LOG(`[${Me.metadata.name}]   _volumeDown`);
         this.actions.adjustVolume(-1);
     }
 
     _muteSound() {
-        LOG(`[${Me.metadata.name}]   _mute`);
         this.actions.adjustVolume(0);
     }
 
     _lockScreen() {
-        LOG(`[${Me.metadata.name}]   _lockScreen`);
         this.actions.lockScreen();
     }
 
     _suspend() {
-        LOG(`[${Me.metadata.name}]   _suspendToRam`);
         this.actions.suspendToRam();
     }
 
     _powerOff() {
-        LOG(`[${Me.metadata.name}]   _powerOff`);
         this.actions.powerOff();
     }
 
     _logOut() {
-        LOG(`[${Me.metadata.name}]   _logOut`);
         this.actions.logOut();
     }
 
     _switchUser() {
-        LOG(`[${Me.metadata.name}]   _switchUser`);
         this.actions.switchUser();
     }
 
     _lookingGlass() {
-        LOG(`[${Me.metadata.name}]   _toggleLookingGlass`);
         this.actions.toggleLookingGlass();
     }
 
@@ -578,95 +532,82 @@ const ActionTrigger = class ActionTrigger {
     }
 
     _toggleZoom() {
-        LOG(`[${Me.metadata.name}]   _toggleZoom`);
         this.actions.zoom(0);
     }
 
     _zoomIn() {
-        LOG(`[${Me.metadata.name}]   _zoomIn`);
         this.actions.zoom(0.25);
     }
 
     _zoomOut() {
-        LOG(`[${Me.metadata.name}]   _zoomOut`);
         this.actions.zoom(-0.25);
     }
 
     _keyboard() {
-        LOG(`[${Me.metadata.name}]   _toggleKeyboard`);
         this.actions.toggleKeyboard(global.display.get_current_monitor());
     }
 
     _screenReader() {
-        LOG(`[${Me.metadata.name}]   _toggleScreenReader`);
         this.actions.toggleScreenReader();
     }
 
     _largeText() {
-        LOG(`[${Me.metadata.name}]   _largeText`);
         this.actions.toggleLargeText();
     }
 
     _hidePanel() {
-        LOG(`[${Me.metadata.name}]   _togglePanel`);
         this.actions.toggleShowPanel();
     }
 
     _toggleTheme() {
-        LOG(`[${Me.metadata.name}]   _toggleTheme`);
         this.actions.toggleTheme();
     }
 
     _invertLightAll() {
-        LOG(`[${Me.metadata.name}]   _toggleLightnessInvertGlobal`);
         this.actions.toggleLightnessInvertEffect(false, false);
     }
 
     _invertLightWin() {
-        LOG(`[${Me.metadata.name}]   _toggleLightnessInvertWindow`);
         this.actions.toggleLightnessInvertEffect(true, false);
     }
 
     _invertLightShiftAll() {
-        LOG(`[${Me.metadata.name}]   _toggleLightnessInvertGlobal`);
         this.actions.toggleLightnessInvertEffect(false, true);
     }
 
     _invertLightShiftWin() {
-        LOG(`[${Me.metadata.name}]   _toggleLightnessInvertWindow`);
         this.actions.toggleLightnessInvertEffect(true, true);
     }
 
     _invertColorsWin() {
-        LOG(`[${Me.metadata.name}]   _toggleColorsInvertWindow`);
         this.actions.toggleColorsInvertEffect(true);
     }
 
-    _protanToggleAll() {
+    _protanToggle() {
         this.actions.toggleColorBlindShaderEffect(true, 1, false);
     }
 
-    _deuterToggleAll() {
+    _deuterToggle() {
         this.actions.toggleColorBlindShaderEffect(true, 2, false);
     }
 
-    _tritanToggleAll() {
+    _tritanToggle() {
         this.actions.toggleColorBlindShaderEffect(true, 3, false);
     }
 
-    _protanSimToggleAll() {
+    _protanSimToggle() {
         this.actions.toggleColorBlindShaderEffect(true, 1, true);
     }
 
-    _deuterSimToggleAll() {
+    _deuterSimToggle() {
         this.actions.toggleColorBlindShaderEffect(true, 2, true);
     }
 
-    _tritanSimToggleAll() {
+    _tritanSimToggle() {
         this.actions.toggleColorBlindShaderEffect(true, 3, true);
     }
 
-    _mixerGbrToggleAll() {
+    _mixerGbrToggle() {
         this.actions.toggleColorMixerEffect(true, 1);
     }
 
