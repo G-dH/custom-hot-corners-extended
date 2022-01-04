@@ -232,17 +232,17 @@ class CornerPage extends Gtk.ListBox {
                 valign: Gtk.Align.CENTER,
                 vexpand: false,
                 hexpand: false,
-                tooltip_text: _("Enable this trigger in fullscreen mode\nNote that this option can be overidden by the 'Enable all triggers in fullscreen mode' option in Options page"),
+                tooltip_text: _("Enable/Disable this trigger in the fullscreen mode"),
             });
             if (fsBtn.set_icon_name)
                 fsBtn.set_icon_name('view-fullscreen-symbolic');
             else
                 fsBtn.add(Gtk.Image.new_from_icon_name('view-fullscreen-symbolic', Gtk.IconSize.BUTTON));
 
+            fsBtn.set_active(this._corner.getFullscreen(trigger));
             fsBtn.connect('notify::active', () => {
                 this._corner.setFullscreen(trigger, fsBtn.active);
             });
-            fsBtn.set_active(this._corner.getFullscreen(trigger));
 
             trgIcon.set_from_file(iconPath);
             trgIcon.set_tooltip_text(triggerLabels[trigger]);
@@ -314,7 +314,6 @@ class CornerPage extends Gtk.ListBox {
         ]);
 
         const actionCombo = new Gtk.ComboBox({
-            model: actionTreeStore,
             id_column: 0,
             hexpand: true,
         });
@@ -407,7 +406,8 @@ class CornerPage extends Gtk.ListBox {
         // commandEntry.text = this._corner.getCommand(trigger);
 
         actionCombo.connect('changed', () => {
-            this._corner.setAction(trigger, actionCombo.get_active_id());
+            if (this._alreadyBuilt)
+                this._corner.setAction(trigger, actionCombo.get_active_id());
             commandEntryRevealer.reveal_child = this._corner.getAction(trigger) === 'run-command';
             wsIndexRevealer.reveal_child = this._corner.getAction(trigger) === 'move-to-workspace';
             if (this._corner.getAction(trigger) === 'run-command' && !cmdConnected) {
@@ -457,28 +457,29 @@ class CornerPage extends Gtk.ListBox {
     }
 
     _fillCombo(actionTreeStore, actionCombo, trigger) {
-        let iterDict = {};
-        let iter, iter2;
+        let iter, iter1, iter2, activeItem;
+        let action = this._corner.getAction(trigger);
         for (let i = 0; i < actionList.length; i++) {
             let item = actionList[i];
             if (_excludedItems.includes(item[1]))
                 continue;
             if (!item[0]) {
-                iter  = actionTreeStore.append(null);
-                actionTreeStore.set(iter, [0], [item[1]]);
-                actionTreeStore.set(iter, [1], [item[2]]);
-                // map items on iters to address them later
-                iterDict[item[1]] = iter;
+                iter1  = actionTreeStore.append(null);
+                actionTreeStore.set(iter1, [0], [item[1]]);
+                actionTreeStore.set(iter1, [1], [item[2]]);
+                iter = iter1;
             } else {
-                iter2  = actionTreeStore.append(iter);
+                iter2  = actionTreeStore.append(iter1);
                 actionTreeStore.set(iter2, [0], [item[1]]);
                 actionTreeStore.set(iter2, [1], [item[2]]);
-                iterDict[item[1]] = iter2;
+                iter = iter2;
             }
+            if (item[1] === action)
+                activeItem = iter;
         }
-        let action = this._corner.getAction(trigger);
-        if (iterDict[action])
-            actionCombo.set_active_iter(iterDict[action]);
+        actionCombo.set_model(actionTreeStore);
+        if (activeItem)
+            actionCombo.set_active_iter(activeItem);
     }
 
 
@@ -763,14 +764,6 @@ class OptionsPage extends Gtk.ScrolledWindow {
                 _('Watch hot corners for external overrides'),
                 _('Update corners when something (usualy other extensions) change them'),
                 _newGtkSwitch(), 'watchCorners'
-            )
-        );
-
-        optionsList.push(
-            _optionsItem(
-                _('Enable all triggers in fullscreen mode'),
-                _('If disabled, each trigger can be enabled independently'),
-                _newGtkSwitch(), 'fullscreenGlobal'
             )
         );
 
