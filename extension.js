@@ -56,7 +56,6 @@ function disable() {
 class CustomHotCornersExtended {
     constructor() {
         this._mscOptions           = null;
-        this.FULLSCREEN_GLOBAL     = false;
         this.CORNERS_VISIBLE       = false;
         this.ACTION_TIMEOUT        = 0;
         this.RIPPLE_ANIMATION      = true;
@@ -123,7 +122,7 @@ class CustomHotCornersExtended {
         this._mscOptions.destroy();
 
         // don't destroy Actions and lose effects and thumbnails because of the screen lock, for example
-        let fullDisable = !this.actionTrigger.actions.extensionEnabled();
+        let fullDisable = !Settings.extensionEnabled();
         this._updateSupportedExtensionsAvailability(true);
         if (fullDisable) {
             this.actionTrigger.clean(true);
@@ -194,7 +193,6 @@ class CustomHotCornersExtended {
         actions.WIN_WRAPAROUND      = this._mscOptions.winSwitchWrap;
         actions.WIN_SKIP_MINIMIZED  = this._mscOptions.winSkipMinimized;
         this.ACTION_TIMEOUT    = this._mscOptions.actionEventDelay;
-        this.FULLSCREEN_GLOBAL = this._mscOptions.fullscreenGlobal;
         this.RIPPLE_ANIMATION  = this._mscOptions.rippleAnimation;
 
         if (this.CORNERS_VISIBLE !== this._mscOptions.cornersVisible) {
@@ -736,7 +734,7 @@ class CustomHotCorner extends Layout.HotCorner {
             this._corner.action[trigger] === 'disabled')
             return false;
         if (!this._monitor.inFullscreen ||
-            (this._monitor.inFullscreen && (this._corner.fullscreen[trigger] || this._chceThis.FULLSCREEN_GLOBAL))) {
+            (this._monitor.inFullscreen && this._corner.fullscreen[trigger])) {
             if (this._chceThis.RIPPLE_ANIMATION)
                 this._rippleAnimation();
             this._chceThis.actionTrigger.runActionData.action = this._corner.action[trigger];
