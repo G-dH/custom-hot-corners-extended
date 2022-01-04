@@ -183,19 +183,6 @@ var Actions = class {
         }
     }
 
-    extensionEnabled(uuid = '') {
-        this._getShellSettings();
-        let enabled = this._shellSettings.get_strv('enabled-extensions');
-        enabled = enabled.includes(Me.metadata.uuid);
-        let disabled = this._shellSettings.get_strv('disabled-extensions');
-        disabled = disabled.includes(Me.metadata.uuid);
-        let disableUser = this._shellSettings.get_boolean('disable-user-extensions');
-
-        if (enabled && !disabled && !disableUser)
-            return true;
-        return false;
-    }
-
     _getShellSettings() {
         if (!this._shellSettings) {
             this._shellSettings = Settings.getSettings(
@@ -1297,7 +1284,7 @@ var Actions = class {
         let firstItem = this.customMenu[menuIndex]._getMenuItems()[1];
         if (firstItem) {
             this.customMenu[menuIndex].open(BoxPointer.PopupAnimation.FULL);
-            this.customMenu[menuIndex]._getMenuItems()[0].active = true;
+            this.customMenu[menuIndex]._getMenuItems()[this.customMenu[menuIndex].windowNeeded ? 1 : 0].active = true;
         }
     }
 
@@ -1351,6 +1338,7 @@ var CustomMenuPopup = class CustomMenuPopup extends PopupMenu.PopupMenu {
         this.menuItems = [];
         this.actionList = [];
         this.focusedWindow = null;
+        this.windowNeeded = false;
         this.actionTrigger = null;
         this.actor.add_style_class_name('background-menu');
 
@@ -1372,22 +1360,36 @@ var CustomMenuPopup = class CustomMenuPopup extends PopupMenu.PopupMenu {
     }
 
     buildMenu() {
-        /*if (this.focusedWindow === null)
-            this.focusedWindow = _('No window has focus!');
-        let win = new PopupMenu.PopupMenuItem(`Win: ${this.focusedWindow}`);
-        win.sensitive = false;
-        this.addMenuItem(win, 0);*/
+        const runActionData = {
+            action: null,
+            monitorIndex: 0,
+            workspaceIndex: 0,
+            command: null,
+            keyboard: false
+        }
+        let menuItems = [];
+        this.actionList.forEach(a => {
+            if (this.menuItems.includes(a[1])) {
+                menuItems.push(a);
+                if (a[5])
+                    this.windowNeeded = true;
+            }
+        });
+
+        if (this.windowNeeded) {
+            if (this.focusedWindow === null)
+                this.focusedWindow = _('No window has focus!');
+            let win = new PopupMenu.PopupMenuItem(this.focusedWindow);
+            win.sensitive = false;
+            this.addMenuItem(win, 0);
+        }
         let submenu = null;
-        for (let i = 0; i < this.actionList.length; i++) {
-            let item = this.actionList[i];
+        for (let i = 0; i < menuItems.length; i++) {
+            let item = menuItems[i];
 
             let action  = item[1];
             let section = item[0] === null;
 
-            if (!this.menuItems.includes(action)) {
-                if (section) submenu = null;
-                continue;
-            }
             // add space between icon and name
             let name = ` ${item[2]}`;
             let icon = item[4];
@@ -1398,9 +1400,15 @@ var CustomMenuPopup = class CustomMenuPopup extends PopupMenu.PopupMenu {
                 submenu.icon.icon_name = icon;
                 this.addMenuItem(submenu);
             } else if (submenu) {
-                submenu.menu.addAction(name, () => this.actionTrigger.runAction(action), icon);
+                submenu.menu.addAction(name, () => {
+                    runActionData.action = action;
+                    this.actionTrigger.runAction(runActionData);
+                }, icon);
             } else {
-                this.addAction(name, () => this.actionTrigger.runAction(action), icon);
+                this.addAction(name, () => {
+                    runActionData.action = action;
+                    this.actionTrigger.runAction(runActionData);
+                }, icon);
             }
         }
     }
