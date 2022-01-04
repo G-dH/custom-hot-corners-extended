@@ -25,27 +25,33 @@ This extension is based on the original `Custom Hot Corners` exetension, but not
 
 ## Changelog:
 
-**12** (not released yet):
-Added:
+**v12** (not released yet):
+Added actions:
+
 - MPRIS player controls: `Play/Pause`, `Next Track`, `Previous Track`. Works the same way as the keyboard media keys - controls the most recently launched media player
-- action `Open New window`
-- actions 'Move Window/App windows to Prev/Next Adjacent workspace', 'Move Window/App windows to Prev/Next New workspace'
+- `Open New window`
+- `Move App windows to Prev/Next workspace`, `Move Window to Prev/Next workspace` - allows to move window or all windows of selected application corresponding to the current filter settings to an adjacent workspace
+- `Move App windows to Prev/Next New workspace`, `Move Window to Prev/Next New workspace` - similar to the previous one, but first creates new empty workspace to which the window/s will be moved
 Other changes:
-- default value for trigger works in fullscreen mode set to `true`, default value for option `Enable all trigers in fullscreen` to `false`
-- redisigned corner settings page, added down arrow to action combo submenu labels
+
+- default value for the triggers fullscreen functinality set to `true`, default value for option `Enable all trigers in fullscreen` to `false` (and will be removed)
+- redisigned `Monitor` corner settings page, added toggle button for direct control over `Enable in Fullscreen` option.
+- redisigned `Keybord` and `Custom Menus` Options pages and added butons for control over tree view
+- Custom menus adds focused window title as the first item only if the menu contains actions that target the window.
 Fixes:
+
 - workspace index position not centered in GS40+
-- added gschema paths for not dynamically created settings - now global settings can be backed up using `Extensions Sync` extension
+- added gschema paths for not dynamically created settings - now global settings can be backed up using `Extensions Sync` extension. Unfotunately, dynamically created settings directories storing settings of all individual triggers don't have unique schema id, so can not be backed up using mentioned extension.
 - GS41 not detected
 
-**11**:
+**v11**:
 - Added action `Open ArcMenu` action, compatible with ArcMenu v.20+
 - Added workspace indicator to the `Reorder workspace` actions
 - Added support of Ubuntu's 21.10 light Yaru theme in action `Light/Dark Gtk theme toggle`
 - Fixed broken Run Command Prompt action
 - Layout optimizations in the Preferences window for Gtk 4
 
-**10**:
+**v10**:
 - Added actions supporting new AATWS application switcher
 - Added action `Quit application`
 - Fixed issue with shortcuts accessible from the lock screen
@@ -54,7 +60,7 @@ Fixes:
 - *Ctrl* "safety lock" finally works with Wayland
 - Pressure barrier sizes are now adjustable by scale controllers on the main corner page along with clickable area expansion for better orientation in settings.
 - Barrier size is now adjustable in percentage of the monitor's width/heigt instead of pixels.
-- Option *Make active corners/edges visible* now show the pressure barriers too.
+- Option *Make active corners/edges visible* now also shows the pressure barriers.
 - Added action **Window Thumbnail (PIP)** - make a thumbnail preview (like Picture in Picture) of the active window which you can drag and drop anywhere on the screen. Thumbnail size can be adjusted by a mouse scroll wheel and you can even change the source window of the thumbnail. You can make as many thumbnails as you want, not just one.
 - Added new shader filters - color blind vision simulation and correction filters in Accessibility menu. Inversion filters have been enhanced - Invert Lightness, Invert Lightness - Wite to Grey (for lower contrast at night time) and full color inversion, now all gamma corrected to make deep dark shades distinguishable.
 - Added actions to trigger default Window and App Switcher Pop-ups. When you install and enable the **Advanced Alt+TAb Window Switcher** extension you'll be able to use more actions with diffrent settigs of this extended window switcher pop-up.
