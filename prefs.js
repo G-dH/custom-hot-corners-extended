@@ -458,23 +458,28 @@ class CornerPage extends Gtk.ListBox {
 
     _fillCombo(actionTreeStore, actionCombo, trigger) {
         let iter, iter1, iter2, activeItem;
-        let action = this._corner.getAction(trigger);
+        const storedAction = this._corner.getAction(trigger);
         for (let i = 0; i < actionList.length; i++) {
-            let item = actionList[i];
+            const item = actionList[i];
+            const itemType = item[0];
+            const action = item[1];
+            let title = item[2];
             if (_excludedItems.includes(item[1]))
                 continue;
-            if (!item[0]) {
+            if (!itemType) {
+                if (itemType === null && Settings.shellVersion <= 40)
+                    title = `↓ ${title}`;
                 iter1  = actionTreeStore.append(null);
-                actionTreeStore.set(iter1, [0], [item[1]]);
-                actionTreeStore.set(iter1, [1], [item[2]]);
+                actionTreeStore.set(iter1, [0], [action]);
+                actionTreeStore.set(iter1, [1], [title]);
                 iter = iter1;
             } else {
                 iter2  = actionTreeStore.append(iter1);
-                actionTreeStore.set(iter2, [0], [item[1]]);
-                actionTreeStore.set(iter2, [1], [item[2]]);
+                actionTreeStore.set(iter2, [0], [action]);
+                actionTreeStore.set(iter2, [1], [title]);
                 iter = iter2;
             }
-            if (item[1] === action)
+            if (action === storedAction)
                 activeItem = iter;
         }
         actionCombo.set_model(actionTreeStore);
@@ -809,7 +814,7 @@ class OptionsPage extends Gtk.ScrolledWindow {
             )
         );
 
-        optionsList.push(
+/*        optionsList.push(
             _optionsItem(
                 _makeTitle(_('Workspace switcher')),
                 null,
@@ -838,15 +843,17 @@ class OptionsPage extends Gtk.ScrolledWindow {
         optionsList.push(
             _optionsItem(
                 _('Show workspace indicator while switching'),
-                null,
+                _('wS Names option reads workspace names from official gsettings key workspace-names in org.gnome.desktop.wm.preferences. You can use dconf editor to enter your names in format ["name1", "name2", ...]'),
                 _newComboBox(),
                 'wsSwitchIndicatorMode',
-                [[_('None'),           0],
-                    [_('Default Popup'),  1],
-                    [_('OSD Index'),  2]]
+                [[_('None'),                0],
+                    [_('Default Popup'),    1],
+                    [_('OSD Index'),        2],
+                    [_('WS Names'),         3],
+                    [_('Current App Name'), 4]]
             )
         );
-
+*/
         optionsList.push(
             _optionsItem(
                 _makeTitle(_('Window switcher')),
@@ -1124,7 +1131,15 @@ class TreeviewPage extends Gtk.Box {
             hexpand: true,
             vexpand: true
         });
+        //this.treeView.activate_on_single_click = true;
+        this.treeView.connect('row-activated', (treeView,path,column) => {
+            if (treeView.row_expanded(path)) {
+                treeView.collapse_row(path);
+            } else {
+                treeView.expand_row(path, false);
+            }
 
+        });
         const btnBox = new Gtk.Box({
             orientation: Gtk.Orientation.HORIZONTAL,
             hexpand: true,
@@ -1182,7 +1197,7 @@ class KeyboardPage extends TreeviewPage {
         this.lbl.set_tooltip_text(`${_('Click on the Shortcut Key cell to set new shortcut.')}\n${
             _('Press Backspace key instead of the new shortcut to disable shortcut.')}\n${
             _('Warning: Some system shortcuts can NOT be overriden here.')}\n${
-            _('Warning: Shortcuts, already used in this extension, will be ignored.')}`);
+            _('Warning: Shortcuts already used in this extension will be ignored.')}`);
         this.resetButton.set_label(_('Disable all'));
         this.resetButton.set_tooltip_text(_('Remove all keyboard shortcuts'));
         this.resetButton.connect('clicked', () => {
@@ -1196,17 +1211,17 @@ class KeyboardPage extends TreeviewPage {
         })
 
         this._setNewTreeviewModel();
-        
+
         // Hotkey
         const actions     = new Gtk.TreeViewColumn({title: _('Action'), expand: true});
         const nameRender  = new Gtk.CellRendererText();
-        
+
         const accels      = new Gtk.TreeViewColumn({title: _('Shortcut'), min_width: 150});
         const accelRender = new Gtk.CellRendererAccel({
             editable: true,
             accel_mode: Gtk.CellRendererAccelMode.GTK,
         });
-        
+
         actions.pack_start(nameRender, true);
         accels.pack_start(accelRender, true);
 
@@ -1214,17 +1229,21 @@ class KeyboardPage extends TreeviewPage {
         accels.add_attribute(accelRender, 'accel-mods', 2);
         accels.add_attribute(accelRender, 'accel-key', 3);
 
-        /* actions.set_cell_data_func(nameRender, (column, cell, model, iter) => {
+        /*actions.set_cell_data_func(nameRender, (column, cell, model, iter) => {
             if (!model.get_value(iter, 0)) {
                 // not used
             }
-        }); */
+        });*/
 
         accels.set_cell_data_func(accelRender, (column, cell, model, iter) => {
-            // this function is overwriting submenu accelerator cell to '-'
-            // this is executed even on mouse pointer hover over item ...
-            if (!this.model.get_value(iter, 0)) {
-                [cell.accel_key, cell.accel_mods] = [45, 0];
+            // this function is for dynamic control of column cells properties
+            // and is called whenever the content has to be redrawn,
+            // which is even on mouse pointer hover over items
+            if (!model.get_value(iter, 0)) {
+                cell.set_visible(false);
+                //[cell.accel_key, cell.accel_mods] = [45, 0];
+            } else {
+                cell.set_visible(true);
             }
         });
 
@@ -1296,7 +1315,7 @@ class KeyboardPage extends TreeviewPage {
             this.keybindings[action] = accelerator;
         });
     }
- 
+
     _saveShortcuts(keybindings) {
         const list = [];
         Object.keys(keybindings).forEach(s => {
@@ -1323,7 +1342,7 @@ class KeyboardPage extends TreeviewPage {
                 submenuOnHold = item;
                 continue;
             }
-            
+
             let a = [0, 0];
             if (action && (action in this.keybindings && this.keybindings[action])) {
                 let binding = this.keybindings[action];
@@ -1399,29 +1418,33 @@ class CustomMenuPage extends TreeviewPage {
         // Menu items
         const actions     = new Gtk.TreeViewColumn({title: _('Menu Item'), expand: true});
         const nameRender  = new Gtk.CellRendererText();
-        
+
         const toggles      = new Gtk.TreeViewColumn({title: _('Add to Menu')});
         const toggleRender = new Gtk.CellRendererToggle({
             activatable: true,
             active: false,
         });
-        
+
         actions.pack_start(nameRender, true);
         toggles.pack_start(toggleRender, true);
-        
+
         actions.add_attribute(nameRender, 'text', 1);
         toggles.add_attribute(toggleRender, 'active', 2);
-        
-        actions.set_cell_data_func(nameRender, (column, cell, model, iter) => {
-            if (!model.get_value(iter, 0)) {
+
+        /*actions.set_cell_data_func(nameRender, (column, cell, model, iter) => {
+            if (model.get_value(iter, 0).includes('submenu')) {
+                // not used
             }
-        });
-        
-        toggles.set_cell_data_func(toggleRender, (column, cell, model, iter) => {
-            if (!model.get_value(iter, 0)) {
+        });*/
+
+        /*toggles.set_cell_data_func(toggleRender, (column, cell, model, iter) => {
+            if (model.get_value(iter, 0).includes('submenu')) {
+                cell.set_visible(false);
+            } else {
+                cell.set_visible(true);
             }
-        });
-        
+        });*/
+
         toggleRender.connect('toggled', (rend, path) => {
             const [succ, iter] = this.model.get_iter_from_string(path);
             this.model.set_value(iter, 2, !this.model.get_value(iter, 2));
@@ -1442,7 +1465,7 @@ class CustomMenuPage extends TreeviewPage {
         this.treeView.append_column(toggles);
 
         this.show_all && this.show_all();
-        
+
         this._alreadyBuilt = true;
         return true;
     }
@@ -1461,9 +1484,10 @@ class CustomMenuPage extends TreeviewPage {
             const title = item[2];
             const shouldHaveShortcut = item[3];
 
-            if (_excludedItems.includes(action) || !shouldHaveShortcut)
+            if (_excludedItems.includes(action)/* || !shouldHaveShortcut*/)
                 continue;
 
+            // show only selected actions
             if (this.showActiveBtn.active && !this.menuItems.includes(action) && (itemType !== null))
                 continue;
 

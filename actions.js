@@ -44,6 +44,8 @@ const ws_indicator_mode = {
     'DISABLE': 0,
     'DEFAULT': 1,
     'INDEX':   2,
+    'NAMES':   3,
+    'APP'  :   4,
 };
 
 function get_current_monitor_geometry() {
@@ -143,6 +145,7 @@ var Actions = class {
         this._interfaceSettings     = null;
         this._shellSettings         = null;
         this._colorSettings         = null;
+        this._wsNamesSettings       = null;
     }
 
     removeAllEffects(full = false) {
@@ -228,6 +231,15 @@ var Actions = class {
                             '/org/gnome/settings-daemon/plugins/color/');
         }
         return this._colorSettings;
+    }
+
+    _getWsNamesSettings() {
+        if (!this._wsNamesSettings) {
+            this._wsNamesSettings = Settings.getSettings(
+                            'org.gnome.desktop.wm.preferences',
+                            '/org/gnome/desktop/wm/preferences/');
+        }
+        return this._wsNamesSettings;
     }
 
     _connectRecentWorkspace() {
@@ -326,6 +338,22 @@ var Actions = class {
             Shaders = Me.imports.shaders;
     }
 
+    _isWsOrientationHorizontal() {
+        if (global.workspace_manager.layout_rows == -1)
+			return false;
+        return true;
+    }
+
+    _translateDirectionToHorizontal(direction) {
+        if (this._isWsOrientationHorizontal()) {
+            if (direction == Meta.MotionDirection.UP) {
+                direction = Meta.MotionDirection.LEFT;
+            } else {
+                direction = Meta.MotionDirection.RIGHT;
+            }
+        }
+        return direction;
+    }
     /////////////////////////////////////////////////////////////////////////////
     toggleOverview() {
         Main.overview.toggle();
@@ -356,17 +384,18 @@ var Actions = class {
     moveToWorkspace(index) {
         if (index < 0)
             return;
-        let maxIndex = global.workspaceManager.n_workspaces - 1;
+        const maxIndex = global.workspaceManager.n_workspaces - 1;
         if (maxIndex < index)
-            index = maxIndex;
-        let ws = global.workspaceManager.get_workspace_by_index(index);
+        index = maxIndex;
+        const ws = global.workspaceManager.get_workspace_by_index(index);
+
+        const direction = global.workspaceManager.get_active_workspace_index() > index
+                    ? Meta.MotionDirection.UP
+                    : Meta.MotionDirection.Down;
+
         Main.wm.actionMoveWorkspace(ws);
-        if (this.WS_INDICATOR_MODE === ws_indicator_mode.DEFAULT) {
-            const currentWs = global.workspaceManager.get_active_workspace_index();
-            const direction = index > currentWs ? 1 : 0;
-            this._showWsSwitcherPopup(direction, ws.index());
-        } else if (this.WS_INDICATOR_MODE === ws_indicator_mode.INDEX)
-            this.showWorkspaceIndex();
+
+        this._showWsSwitcherPopup(direction, index);
         // another option
         // ws.activate(global.get_current_time());
     }
@@ -384,7 +413,9 @@ var Actions = class {
         if (targetIdx > 0 || targetIdx < (global.workspace_manager.get_n_workspaces() - 1)) {
             global.workspace_manager.reorder_workspace(activeWs, targetIdx);
         }
-        this.showWorkspaceIndex();
+        //this.showWorkspaceIndex();
+        direction = direction > 0 ? Meta.MotionDirection.DOWN : Meta.MotionDirection.UP;
+        this._showWsSwitcherPopup(direction, targetIdx);
     }
 
     lockScreen() {
@@ -701,8 +732,13 @@ var Actions = class {
         }
     }
 
-    // direction 0/1
-    switchWorkspace(direction, noIndicator = false) {
+    // direction: Meta.MOtionDirection
+    switchWorkspace(direction) {
+        direction = this._translateDirectionToHorizontal(direction);
+        const targetWs = global.workspaceManager.get_active_workspace().get_neighbor(direction);
+        Main.wm.actionMoveWorkspace(targetWs);
+        this._showWsSwitcherPopup(direction, targetWs.index());
+        /*
             let n_workspaces = global.workspaceManager.n_workspaces;
             let lastWsIndex =  n_workspaces - (this.WS_IGNORE_LAST ? 2 : 1);
 
@@ -716,18 +752,14 @@ var Actions = class {
             }
             let ws = global.workspaceManager.get_workspace_by_index(targetIdx);
 
-            const showIndicator = !noIndicator && this.WS_INDICATOR_MODE > 0;
-
-            // show default workspace indicator popup
-            if (showIndicator && this.WS_INDICATOR_MODE === ws_indicator_mode.DEFAULT) {
-                this._showWsSwitcherPopup(direction, ws.index());
-            }
-
             Main.wm.actionMoveWorkspace(ws);
 
-            // show workspace index overlay if wanted
-            if (this.WS_INDICATOR_MODE === ws_indicator_mode.INDEX && showIndicator)
+            // show default workspace indicator popup
+            if (this.WS_INDICATOR_MODE === ws_indicator_mode.DEFAULT) {
+                this._showWsSwitcherPopup(direction, ws.index());
+            } else if (this.WS_INDICATOR_MODE > ws_indicator_mode.DEFAULT)
                 this.showWorkspaceIndex();
+        */
     }
 
     _showWsSwitcherPopup(direction, wsIndex) {
@@ -740,50 +772,66 @@ var Actions = class {
                     Main.wm._workspaceSwitcherPopup = null;
                 });
             }
-            let motion = direction ? (vertical ? Meta.MotionDirection.DOWN : Meta.MotionDirection.RIGHT)
-                                   : (vertical ? Meta.MotionDirection.UP   : Meta.MotionDirection.LEFT);
+            let motion = direction === Meta.MotionDirection.DOWN ? (vertical ? Meta.MotionDirection.DOWN : Meta.MotionDirection.RIGHT)
+            : (vertical ? Meta.MotionDirection.UP   : Meta.MotionDirection.LEFT);
             Main.wm._workspaceSwitcherPopup.display(motion, wsIndex);
         }
     }
 
-    showWorkspaceIndex(position = [], timeout = 600, names = {}) {
+    showWorkspaceIndex(position = [], timeout = 1000, text = '', indicatorMode = null) {
+        if (!indicatorMode) {
+            indicatorMode = this.WS_INDICATOR_MODE;
+        }
+        let adjustSize = false;
+        let wsIndex = global.workspace_manager.get_active_workspace_index();
 
-        let wsIndex = global.workspace_manager.get_active_workspace().index();
-        let text = names[wsIndex];
-        if (!text) text = `${wsIndex + 1}`;
-
-        if (!this._wsOverlay) {
-
-            //let monitorIndex = global.display.get_current_monitor();
-            //let geometry = global.display.get_monitor_geometry(monitorIndex);
-            let geometry = get_current_monitor_geometry();
-
-
-            this._wsOverlay = new St.Label ({
-                        name: 'ws-index',
-                        text: text,
-                        y: position.length ? position[1] : geometry.y + (geometry.height / 2),
-                        style_class: 'workspace-overlay',
-                        reactive: true,
-            });
-            Main.layoutManager.addChrome(this._wsOverlay);
-            this._wsOverlay.x = geometry.x + (geometry.width - this._wsOverlay.width) / 2;
-        } else if (this._wsOverlay) {
-            this._wsOverlay.set_text(text);
-            if (this._wsOverlay._timeoutId) {
-                GLib.source_remove(this._wsOverlay._timeoutId);
-                this._wsOverlay._timeoutId = 0;
-            }
+        if (!text && indicatorMode === ws_indicator_mode.NAMES) {
+            const settings = this._getWsNamesSettings();
+            const names = settings.get_strv('workspace-names');
+            if (!text && names.length > wsIndex)
+                text = names[wsIndex];
+        } else if (!text && indicatorMode === ws_indicator_mode.APP) {
+            const ws = global.workspaceManager.get_workspace_by_index(wsIndex);
+            const win = global.display.get_tab_list(Meta.TabList.NORMAL_ALL, ws)[0];
+            text = this._getWindowApp(win).get_name();
         }
 
-        if (timeout) {
+        if (!text)
+            text = `${wsIndex + 1}`;
+        else
+            adjustSize = true;
 
+        if (this._wsOverlay) {
+            global.stage.remove_actor(this._wsOverlay);
+            if (this._wsOverlay._timeoutId) {
+                GLib.source_remove(this._wsOverlay._timeoutId);
+                //this._wsOverlay._timeoutId = 0;
+            }
+            this._wsOverlay.destroy();
+        }
+
+        let geometry = get_current_monitor_geometry();
+        this._wsOverlay = new St.Label ({
+            name: 'ws-index',
+            text: text,
+            y: position.length ? position[1] : geometry.y + (geometry.height / 2),
+            style_class: 'workspace-overlay',
+            reactive: false,
+        });
+
+        if (adjustSize)
+            this._wsOverlay.set_style('font-size: 10em');
+
+        global.stage.add_actor(this._wsOverlay);
+        this._wsOverlay.x = geometry.x + (geometry.width - this._wsOverlay.width) / 2;
+
+        if (timeout) {
             this._wsOverlay._timeoutId = GLib.timeout_add(
                 GLib.PRIORITY_DEFAULT,
                 timeout,
                 () => {
                     if (this._wsOverlay !== null) {
-                        Main.layoutManager.removeChrome(this._wsOverlay);
+                        global.stage.remove_actor(this._wsOverlay);
                         this._wsOverlay.destroy();
                         this._wsOverlay = null;
                     }

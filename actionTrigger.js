@@ -1,6 +1,6 @@
 'use strict';
 
-const { Clutter } = imports.gi;
+const { Clutter, Meta } = imports.gi;
 
 const ExtensionUtils = imports.misc.extensionUtils;
 const Me             = ExtensionUtils.getCurrentExtension();
@@ -9,7 +9,7 @@ const Settings       = Me.imports.settings;
 const Keybindings    = Me.imports.keybindings;
 
 
-const ActionTrigger = class ActionTrigger {
+var ActionTrigger = class ActionTrigger {
     constructor(mscOptions) {
         this.actions = new Actions.Actions(mscOptions);
         this._mscOptions = mscOptions;
@@ -195,21 +195,21 @@ const ActionTrigger = class ActionTrigger {
     }
 
     _prevWorkspace() {
-        this.actions.switchWorkspace(Clutter.ScrollDirection.UP);
+        this.actions.switchWorkspace(Meta.MotionDirection.UP);
     }
 
     _nextWorkspace() {
-        this.actions.switchWorkspace(Clutter.ScrollDirection.DOWN);
+        this.actions.switchWorkspace(Meta.MotionDirection.DOWN);
     }
 
     _prevWorkspaceOverview() {
-        this.actions.switchWorkspace(Clutter.ScrollDirection.UP);
+        this.actions.switchWorkspace(Meta.MotionDirection.UP);
         Main.overview.dash.showAppsButton.checked = false;
         Main.overview.show();
     }
 
     _nextWorkspaceOverview() {
-        this.actions.switchWorkspace(Clutter.ScrollDirection.DOWN);
+        this.actions.switchWorkspace(Meta.MotionDirection.DOWN);
         Main.overview.dash.showAppsButton.checked = false;
         Main.overview.show();
     }
@@ -259,7 +259,8 @@ const ActionTrigger = class ActionTrigger {
             'org.gnome.shell.extensions.custom-hot-corners-extended.shortcuts',
             '/org/gnome/shell/extensions/custom-hot-corners-extended/shortcuts/');
         return settings.get_strv(key).toString();*/
-        return this._keybindingsManager._keybindings[key];
+        const sc = this._keybindingsManager._keybindings[key];
+        return sc ? sc : null;
     }
 
     _winSwitcherPopupAll() {

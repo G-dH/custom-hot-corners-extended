@@ -92,7 +92,7 @@
       <default>[]</default>
     </key>
   </schema>
-  <schema path='/org/gnome/shell/extensions/custom-hot-corners-extended/shortcuts/' id='org.gnome.shell.extensions.custom-hot-corners-extended.shortcuts'>
+  <!--<schema path='/org/gnome/shell/extensions/custom-hot-corners-extended/shortcuts/' id='org.gnome.shell.extensions.custom-hot-corners-extended.shortcuts'>
     <key name='toggle-overview-ce' type='as'>
       <default>[]</default>
     </key>
@@ -433,5 +433,5 @@
     <key name='prefs-ce' type='as'>
       <default>[]</default>
     </key>
-  </schema>
+  </schema>-->
 </schemalist>

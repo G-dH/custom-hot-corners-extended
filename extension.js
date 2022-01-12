@@ -33,7 +33,7 @@ const _                      = Settings._;
 const listTriggers           = Settings.listTriggers();
 const Triggers               = Settings.Triggers;
 
-let chce = null;
+let chceThis = null;
 let _origUpdateHotCorners;
 
 
@@ -43,14 +43,14 @@ function init() {
 }
 
 function enable() {
-    if (!chce)
-        chce = new CustomHotCornersExtended();
-    chce._activate();
+    if (!chceThis)
+        chceThis = new CustomHotCornersExtended();
+    chceThis._activate();
 }
 
 function disable() {
-    if (chce.disable())
-        chce = null;
+    if (chceThis.disable())
+        chceThis = null;
 }
 
 class CustomHotCornersExtended {
@@ -211,14 +211,15 @@ class CustomHotCornersExtended {
     }
 
     _updateHotCorners() {
-        this._removeHotCorners();
+        // when the layout manager calls this function as a callback with its own 'this', we need to override it
+        chceThis._removeHotCorners();
         Main.layoutManager.hotCorners = [];
-        this._updateWatchedCorners();
+        chceThis._updateWatchedCorners();
 
         let primaryIndex = Main.layoutManager.primaryIndex;
         // avoid creating new corners if this extension is disabled...
         // ...since this method overrides the original one in GS and something can store pointer to this replacement
-        if (!this._extensionEnabled)
+        if (!chceThis._extensionEnabled)
             return;
 
         let monIndexes = [...Main.layoutManager.monitors.keys()];
@@ -228,19 +229,19 @@ class CustomHotCornersExtended {
         for (let i = 0; i < Main.layoutManager.monitors.length; ++i) {
             // Monitor 1 in preferences will allways refer to the primary monitor
             const corners = Settings.Corner.forMonitor(i, monIndexes[i], global.display.get_monitor_geometry(monIndexes[i]));
-            this._setExpansionLimits(corners);
+            chceThis._setExpansionLimits(corners);
 
             for (let corner of corners) {
-                this._cornersCollector.push(corner);
+                chceThis._cornersCollector.push(corner);
 
                 for (let trigger of listTriggers) {
                     // Update hot corner if something changes
                     // corner has it's own connect method defined in settings, this is not direct gsettings connect
-                    corner.connect('changed', (settings, key) => this._updateCorner(corner, key, trigger), trigger);
+                    corner.connect('changed', (settings, key) => chceThis._updateCorner(corner, key, trigger), trigger);
                 }
-                if (this._shouldExistHotCorner(corner)) {
-                    Main.layoutManager.hotCorners.push(new CustomHotCorner(corner, this));
-                    this._updateWatchedCorners();
+                if (chceThis._shouldExistHotCorner(corner)) {
+                    Main.layoutManager.hotCorners.push(new CustomHotCorner(corner, chceThis));
+                    chceThis._updateWatchedCorners();
                 }
             }
         }
