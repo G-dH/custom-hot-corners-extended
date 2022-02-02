@@ -155,14 +155,15 @@ class MonitorPage extends Gtk.Notebook {
 });
 
 const CornerPage = GObject.registerClass(
-class CornerPage extends Gtk.ListBox {
+class CornerPage extends Gtk.Box {
     _init(widgetProperties = {
-        selection_mode: null,
+        //selection_mode: null,
+        orientation: Gtk.Orientation.VERTICAL,
         can_focus: false,
-        margin_start: 0,
-        margin_end: 0,
-        margin_top: 10,
-        margin_bottom: 0,
+        margin_start: 16,
+        margin_end: 16,
+        margin_top: 16,
+        margin_bottom: 16,
         vexpand: true,
     }) {
         super._init(widgetProperties);
@@ -180,8 +181,8 @@ class CornerPage extends Gtk.ListBox {
         for (let trigger of triggers) {
             const grid = new Gtk.Grid({
                 column_spacing: 5,
-                margin_start: 5,
-                margin_end: 10,
+                //margin_start: 5,
+                //margin_end: 5,
                 margin_top: Settings.shellVersion >= 40 ? 5 : 10,
                 margin_bottom: Settings.shellVersion >= 40 ? 5 : 10,
 
@@ -232,7 +233,7 @@ class CornerPage extends Gtk.ListBox {
                 valign: Gtk.Align.CENTER,
                 vexpand: false,
                 hexpand: false,
-                tooltip_text: _("Enable/Disable this trigger in the fullscreen mode"),
+                tooltip_text: _("Enable this trigger in fullscreen mode"),
             });
             if (fsBtn.set_icon_name)
                 fsBtn.set_icon_name('view-fullscreen-symbolic');
@@ -260,9 +261,6 @@ class CornerPage extends Gtk.ListBox {
         const ew = this._buildExpandsionWidget();
         const ewFrame = new Gtk.Frame({
             margin_top: 10,
-            margin_bottom: 10,
-            margin_start: 10,
-            margin_end: 10
         });
         ewFrame[ewFrame.add ? 'add' : 'set_child'](ew);
         this[this.add ? 'add' : 'append'](ewFrame);
@@ -467,7 +465,7 @@ class CornerPage extends Gtk.ListBox {
             if (_excludedItems.includes(item[1]))
                 continue;
             if (!itemType) {
-                if (itemType === null && Settings.shellVersion <= 40)
+                if (itemType === null)
                     title = `↓ ${title}`;
                 iter1  = actionTreeStore.append(null);
                 actionTreeStore.set(iter1, [0], [action]);
@@ -647,7 +645,7 @@ class CornerPage extends Gtk.ListBox {
             label: _('Expand clickable corner:'),
             tooltip_text:
                           `${_('Expand the area reactive to mouse clicks and scrolls along the edge of the monitor.')}\n${
-                              _('If adjacent corners are set to expand along the same edge, each of them allocate a half of the edge')}`,
+                              _('If adjacent corners are set to expand along the same edge, each of them allocates a half of the edge')}`,
             halign: Gtk.Align.START,
             hexpand: false,
         });
@@ -747,11 +745,14 @@ class OptionsPage extends Gtk.ScrolledWindow {
             orientation: Gtk.Orientation.VERTICAL,
             spacing: 5,
             homogeneous: false,
-            margin_start: 12,
-            margin_end: 20,
-            margin_top: 12,
-            margin_bottom: 12,
+            margin_start: 16,
+            margin_end: 16,
+            margin_top: 16,
+            margin_bottom: 16,
         });
+
+        const context = this.get_style_context();
+        context.add_class('background');
 
         let optionsList = [];
         // options item format:
@@ -916,14 +917,17 @@ class OptionsPage extends Gtk.ScrolledWindow {
         let frame;
         let frameBox;
         for (let item of optionsList) {
-            if (!item[0][1]) {
+            const option = item[0];
+            const widget = item[1];
+            if (!widget) {
                 let lbl = new Gtk.Label({
                     xalign: 0,
+                    margin_top: 4,
+                    margin_bottom: 2
                 });
-                lbl.set_markup(item[0][0]);
+                lbl.set_markup(option); // option is plain text if item is section title
                 mainBox[mainBox.add ? 'add' : 'append'](lbl);
-                if (item[1])
-                    lbl.set_tooltip_text(item[1]);
+
                 frame = new Gtk.Frame({
                     margin_bottom: 10,
                 });
@@ -945,11 +949,10 @@ class OptionsPage extends Gtk.ScrolledWindow {
                 hexpand: true,
                 spacing: 20,
             });
-            for (let i of item[0])
-                box[box.add ? 'add' : 'append'](i);
 
-            if (item.length === 2)
-                box.set_tooltip_text(item[1]);
+            box[box.add ? 'add' : 'append'](option);
+            if (widget)
+                box[box.add ? 'add' : 'append'](widget);
 
             frameBox[frameBox.add ? 'add' : 'append'](box);
         }
@@ -1000,21 +1003,40 @@ function _newComboBox() {
 }
 
 function _optionsItem(text, tooltip, widget, variable, options = []) {
-    let item = [[]];
+    let item = [];
     let label;
     if (widget) {
-        label = new Gtk.Label({
+        label = new Gtk.Box({
+            orientation: Gtk.Orientation.VERTICAL,
+            spacing: 4,
+            halign: Gtk.Align.START,
+            visible: true,
+        })
+
+        const option = new Gtk.Label({
             halign: Gtk.Align.START,
         });
-        label.set_markup(text);
+        option.set_markup(text);
+        label[label.add ? 'add' : 'append'](option);
+
+        if (tooltip) {
+            const caption = new Gtk.Label({
+                halign: Gtk.Align.START,
+                visible: true,
+                wrap: true,
+                xalign: 0
+            })
+            const context = caption.get_style_context();
+            context.add_class('dim-label');
+            context.add_class('caption');
+            caption.set_text(tooltip);
+            label[label.add ? 'add' : 'append'](caption);
+        }
     } else {
         label = text;
     }
-    item[0].push(label);
-    if (widget)
-        item[0].push(widget);
-    if (tooltip)
-        item.push(tooltip);
+    item.push(label);
+    item.push(widget);
 
     if (widget && widget.is_switch) {
         widget.active = mscOptions[variable];
@@ -1098,15 +1120,15 @@ class CustomMenusPage extends Gtk.Notebook {
 const TreeviewPage = GObject.registerClass(
 class TreeviewPage extends Gtk.Box {
     _init(widgetProperties = {
-        orientation: Gtk.Orientation.VERTICAL,
+        /*orientation: Gtk.Orientation.VERTICAL,
         spacing: 5,
         homogeneous: false,
-        margin_start: 12,
-        margin_end: 12,
-        margin_top: 12,
-        margin_bottom: 12,
+        /**/
     }) {
         super._init(widgetProperties);
+
+        const context = this.get_style_context();
+        context.add_class('background');
 
         this.label = null;
         this.treeView = null;
@@ -1117,6 +1139,15 @@ class TreeviewPage extends Gtk.Box {
         if (this._alreadyBuilt)
             return;
 
+        const box = new Gtk.Box({
+            orientation: Gtk.Orientation.VERTICAL,
+            spacing: 5,
+            homogeneous: false,
+            margin_start: 16,
+            margin_end: 16,
+            margin_top: 16,
+            margin_bottom: 16,
+        });
         const scrolledWindow = new Gtk.ScrolledWindow({
             hscrollbar_policy: Gtk.PolicyType.NEVER,
             vscrollbar_policy: Gtk.PolicyType.AUTOMATIC,
@@ -1172,10 +1203,11 @@ class TreeviewPage extends Gtk.Box {
         scrolledWindow[this.add ? 'add' : 'set_child'](this.treeView);
         frame[frame.add ? 'add' : 'set_child'](scrolledWindow);
 
-        this[this.add ? 'add' : 'append'](this.lbl);
-        this[this.add ? 'add' : 'append'](frame);
-        this[this.add ? 'add' : 'append'](this.showActiveBtn);
-        this[this.add ? 'add' : 'append'](btnBox);
+        box[this.add ? 'add' : 'append'](this.lbl);
+        box[this.add ? 'add' : 'append'](frame);
+        box[this.add ? 'add' : 'append'](this.showActiveBtn);
+        box[this.add ? 'add' : 'append'](btnBox);
+        this[this.add ? 'add' : 'append'](box);
     }
 });
 
@@ -1471,7 +1503,7 @@ class CustomMenuPage extends TreeviewPage {
     }
 
     _updateTitle() {
-        this.lbl.set_markup(_makeTitle(_('Select items for Custom Menu')) + ` ${this._menuIndex}     ( ${this.menuItems.length} ${_('items')} )`);
+        this.lbl.set_markup(_makeTitle(_('Select items for Custom Menu')) + _makeTitle(` ${this._menuIndex}`) + `     ( ${this.menuItems.length} ${_('items')} )`);
     }
 
     _populateTreeview() {
@@ -1482,7 +1514,7 @@ class CustomMenuPage extends TreeviewPage {
             const itemType = item[0];
             const action = item[1];
             const title = item[2];
-            const shouldHaveShortcut = item[3];
+            //const shouldHaveShortcut = item[3];
 
             if (_excludedItems.includes(action)/* || !shouldHaveShortcut*/)
                 continue;

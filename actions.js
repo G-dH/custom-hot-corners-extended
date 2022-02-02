@@ -242,6 +242,26 @@ var Actions = class {
         return this._wsNamesSettings;
     }
 
+    _getDisplayBrightnessProxy() {
+        if (!this._dispalyBrightnessProxy) {
+            const { loadInterfaceXML } = imports.misc.fileUtils;
+            const BUS_NAME = 'org.gnome.SettingsDaemon.Power';
+            const OBJECT_PATH = '/org/gnome/SettingsDaemon/Power';
+
+            const BrightnessInterface = loadInterfaceXML('org.gnome.SettingsDaemon.Power.Screen');
+            const BrightnessProxy = Gio.DBusProxy.makeProxyWrapper(BrightnessInterface);
+            this._dispalyBrightnessProxy = new BrightnessProxy(Gio.DBus.session, BUS_NAME, OBJECT_PATH,
+                (proxy, error) => {
+                    if (error) {
+                        log(error.message);
+                        return;
+                    }
+                }
+            );
+        }
+        return this._dispalyBrightnessProxy;
+    }
+
     _connectRecentWorkspace() {
         let actor = global.workspace_manager;
         let connection = actor.connect('workspace-switched', this._onWorkspaceSwitched.bind(this));
@@ -416,6 +436,26 @@ var Actions = class {
         //this.showWorkspaceIndex();
         direction = direction > 0 ? Meta.MotionDirection.DOWN : Meta.MotionDirection.UP;
         this._showWsSwitcherPopup(direction, targetIdx);
+    }
+
+    setDisplayBrightness(direction) {
+        const proxy = this._getDisplayBrightnessProxy();
+        let value = proxy.Brightness;
+        if (value === null)
+            return;
+        const STEP = 5;
+        if (direction === Clutter.ScrollDirection.UP) {
+            value += STEP;
+        } else {
+            value -= STEP;
+        }
+
+        if (value > 100)
+            value = 100;
+        if (value < 0)
+            value = 0;
+
+        proxy.Brightness = value;
     }
 
     lockScreen() {

@@ -556,6 +556,8 @@ var actionList = [
         [   1, 'night-light-toggle'    ,   _('Night Light toggle'),                       true,  'night-light-symbolic', false],
 
         [null, 'system-submenu'        ,   _('System'),                                   true,  'system-run-symbolic', false],
+        [   1, 'display-brightness-up' ,   _('Display Brightness Up (HW)'),              false,  'display-brightness-symbolic', false],
+        [   1, 'display-brightness-down' , _('Display Brightness Down (HW)'),            false,  'display-brightness-symbolic', false],
         [   1, 'lock-screen'           ,   _('Lock Screen'),                             false,  'changes-prevent-symbolic', false],
         [   1, 'suspend'               ,   _('Suspend to RAM'),                           true,  'weather-clear-night-symbolic', false],
         [   1, 'power-off'             ,   _('Power Off Dialog'),                         true,  'system-shutdown-symbolic', false],

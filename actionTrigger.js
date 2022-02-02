@@ -821,4 +821,12 @@ var ActionTrigger = class ActionTrigger {
     _moveAppToNextNewWs() {
         this.actions.moveWinToNewWs(Clutter.ScrollDirection.DOWN, this.actions._getWindowsOfFocusedAppOnActiveWs());
     }
+
+    _displayBrightnessUp() {
+        this.actions.setDisplayBrightness(Clutter.ScrollDirection.UP);
+    }
+
+    _displayBrightnessDown() {
+        this.actions.setDisplayBrightness(Clutter.ScrollDirection.DOWN);
+    }
 };

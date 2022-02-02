@@ -731,7 +731,8 @@ class CustomHotCorner extends Layout.HotCorner {
     }
 
     _runAction(trigger) {
-        if ((this._actionTimeoutActive(trigger) && !['volumeUp', 'volumeDown'].includes(this._corner.action[trigger])) ||
+        const timeoutWhitelist = ['volume-up', 'volume-down', 'display-brightness-up', 'display-brightness-down'];
+        if ((this._actionTimeoutActive(trigger) && !timeoutWhitelist.includes(this._corner.action[trigger])) ||
             this._corner.action[trigger] === 'disabled')
             return false;
         if (!this._monitor.inFullscreen ||
