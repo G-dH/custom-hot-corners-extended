@@ -573,7 +573,8 @@ var actionList = [
         [   1, 'mpris-prev'            ,   _('Media key - Previous Track'),              false,  'media-skip-backward-symbolic', false],
 
         [null, 'debug-submenu'         ,   _('Debug'),                                    true,  'edit-find-symbolic', false],
-        [   1, 'looking-glass'         ,   _('Looking Glass (GS debugger)'),              true,  'edit-find-symbolic', false],
+        [   1, 'looking-glass'         ,   _('Looking Glass (GNOME Shell debugger)'),     true,  'edit-find-symbolic', false],
+        [   1, 'lg-inspector'          ,   _('GNOME Shell UI Inspector'),                 true,  'find-location-symbolic', false],
         [   1, 'restart-shell'         ,   _('Restart Gnome Shell (X11 only)'),           true,  'view-refresh-symbolic', false],
 
         [null, 'custom-menus-submenu'  ,   _('Custom Menus'),                             true,  'open-menu-symbolic', false],

@@ -486,6 +486,28 @@ var Actions = class {
             Main.lookingGlass.toggle();
     }
 
+    activateUiInspector() {
+        if (Main.lookingGlass === null)
+            Main.createLookingGlass();
+        const lg = Main.lookingGlass;
+        lg.open();
+        const Inspector = imports.ui.lookingGlass.Inspector;
+        lg.openInspector = () => {
+            let inspector = new Inspector(lg);
+            inspector.connect('target', (i, target, stageX, stageY) => {
+                lg._pushResult(`inspect(${Math.round(stageX)}, ${Math.round(stageY)})`, target);
+            });
+            inspector.connect('closed', () => {
+                lg.show();
+                global.stage.set_key_focus(lg._entry);
+            });
+            lg.hide();
+            return Clutter.EVENT_STOP;
+        }
+
+        lg.openInspector();
+    }
+
     switchToRecentWindow() {
         global.display.get_tab_list(0, null)[1].activate(global.get_current_time());
     }

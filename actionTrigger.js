@@ -528,6 +528,10 @@ var ActionTrigger = class ActionTrigger {
         this.actions.toggleLookingGlass();
     }
 
+    _lgInspector() {
+        this.actions.activateUiInspector();
+    }
+
     _prefs() {
         this.actions.openPreferences();
     }
