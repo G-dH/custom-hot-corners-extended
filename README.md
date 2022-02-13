@@ -26,18 +26,21 @@ This extension is based on the original `Custom Hot Corners` exetension, but not
 ## Changelog:
 
 **v12** (not released yet):
+
 Added actions:
 
 - MPRIS player controls: `Play/Pause`, `Next Track`, `Previous Track`. Works the same way as the keyboard media keys - controls the most recently launched media player
 - `Open New window`
 - `Move App windows to Prev/Next workspace`, `Move Window to Prev/Next workspace` - allows to move window or all windows of selected application corresponding to the current filter settings to an adjacent workspace
 - `Move App windows to Prev/Next New workspace`, `Move Window to Prev/Next New workspace` - similar to the previous one, but first creates new empty workspace to which the window/s will be moved
+- workspace switcher options moved to separate extension `Workspace Switcher Manager` which offers more options.
 Other changes:
 
 - default value for the triggers fullscreen functinality set to `true`, default value for option `Enable all trigers in fullscreen` to `false` (and will be removed)
-- redisigned `Monitor` corner settings page, added toggle button for direct control over `Enable in Fullscreen` option.
-- redisigned `Keybord` and `Custom Menus` Options pages and added butons for control over tree view
+- redesigned `Monitor` corner settings page, added toggle button for direct control over `Enable in Fullscreen` option.
+- redesigned `Keyboard` and `Custom Menus` Options pages and added butons for control over tree view
 - Custom menus adds focused window title as the first item only if the menu contains actions that target the window.
+
 Fixes:
 
 - workspace index position not centered in GS40+
