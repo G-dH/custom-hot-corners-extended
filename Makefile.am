@@ -3,9 +3,11 @@ ACLOCAL_AMFLAGS = -I m4
 SUBDIRS = schemas po icons
 EXTRA_DIST = settings.js \
              extension.js \
+             keybindings.js \
              metadata.json \
              prefs.js \
              actions.js \
+             actionTrigger.js \
              winTmb.js \
              shaders.js \
              stylesheet.css
@@ -14,9 +16,11 @@ topextensiondir = $(datadir)/gnome-shell/extensions
 extensiondir = $(topextensiondir)/$(uuid)
 extension_DATA = settings.js \
                  extension.js \
+                 keybindings.js \
                  metadata.json \
                  prefs.js \
                  actions.js \
+                 actionTrigger.js \
                  winTmb.js \
                  shaders.js \
                  stylesheet.css \
