@@ -554,7 +554,7 @@ class CustomHotCorner extends Layout.HotCorner {
 
         // base clickable actor, normal size or expanded
         this._actor = new Clutter.Actor({
-            name: 'hot-corner-h',
+            name: 'hot-corner-primary',
             x: this._corner.x + (this._corner.left ? 0 : -(hSize - 1)),
             y: this._corner.y + (this._corner.top  ? 0 : -(aSize - 1)),
             width: hSize,
@@ -580,7 +580,7 @@ class CustomHotCorner extends Layout.HotCorner {
         // to expand clickable area in both axis make second actor
         if (v && h) {
             this._actorV = new Clutter.Actor({
-                name: 'hot-corner-v',
+                name: 'hot-corner-secondary',
                 x: this._corner.x + (this._corner.left ? 0 : -(aSize - 1)),
                 // avoid overlap with main actor
                 y: this._corner.y + (this._corner.top  ? 1 : -(vSize)),

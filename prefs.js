@@ -800,7 +800,7 @@ class OptionsPage extends Gtk.ScrolledWindow {
         optionsList.push(
             _optionsItem(
                 _('Use fallback hot corner triggers'),
-                _('If pressure barriers don`t work'),
+                _('If pressure barriers don`t work, this option allows trigger the hot corner action by hovering the corner.'),
                 _newGtkSwitch(),
                 'barrierFallback'
             )
@@ -809,7 +809,7 @@ class OptionsPage extends Gtk.ScrolledWindow {
         optionsList.push(
             _optionsItem(
                 _('Make active corners / edges visible'),
-                _('Pressure barriers are green, clickable areas are orange'),
+                _('Shows which corners are active and their size/expansion settings. Pressure barriers are green, clickable areas are orange'),
                 _newGtkSwitch(),
                 'cornersVisible'
             )
