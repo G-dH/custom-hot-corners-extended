@@ -33,6 +33,8 @@ Added actions:
 - `Move App windows to Prev/Next workspace`, `Move Window to Prev/Next workspace` - allows to move window or all windows of selected application corresponding to the current filter settings to an adjacent workspace
 - `Move App windows to Prev/Next New workspace`, `Move Window to Prev/Next New workspace` - similar to the previous one, but first creates new empty workspace to which the window/s will be moved
 - workspace switcher options moved to separate extension `Workspace Switcher Manager` which offers more options.
+- `Display Brightness Up/Down` in new section `Hardware`
+
 Other changes:
 
 - default value for the triggers fullscreen functinality set to `true`, default value for option `Enable all trigers in fullscreen` to `false` (and will be removed)
