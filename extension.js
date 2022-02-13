@@ -63,7 +63,6 @@ class CustomHotCornersExtended {
         this._myCorners            = [null, null];
         this._delayId              = 0;
         this._delaySupportId       = 0;
-        this._keybindingsManager   = null;
         this._timeoutsCollector    = [];
         this._cornersCollector     = [];
         this._actorsCollector      = [];

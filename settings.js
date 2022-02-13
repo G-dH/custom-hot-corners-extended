@@ -493,7 +493,7 @@ var actionList = [
         [   1, 'move-app-to-next-ws',      _('Move app windows to Next workspace'),       true,  horizontal ? 'go-next-symbolic'    : 'go-down-symbolic', true],
         [   1, 'move-app-to-next-new-ws',  _('Move app windows to New workspace Next'),   true,  horizontal ? 'go-next-symbolic'    : 'go-down-symbolic', true],
 
-        [null, 'win-thumbnails-submenu',   _('DND Window Thumbnails (Clones / PIP)'),     true,  '', false],
+        [null, 'win-thumbnails-submenu',   _('DND Window Thumbnails (PIP)'),              true,  '', false],
         [   1, 'make-thumbnail-win'    ,   _('Create Window Thumbnail (at bottom-right)'),true,  '', true],
         [   1, 'minimize-to-thumbnail' ,   _('Minimize Window to Thumbnail')             ,true,  '', true],
         [   1, 'remove-win-thumbnails' ,   _('Remove all Window Thumbnails'),             true,  '', false],
@@ -520,7 +520,7 @@ var actionList = [
         [   1, 'desaturate-win'        ,   _('Desaturate (window)'),                      true,  'view-reveal-symbolic', true],
         [   1, 'remove-effects-win'    ,   _('Remove All Effects (window)'),              true,  'window-close-symbolic', true],
 
-        [null, 'global-effects-submenu',   _('Global Effects'),                           true,  'view-reveal-symbolic', false],
+        [null, 'global-effects-submenu',   _('Global Visual Effects'),                    true,  'view-reveal-symbolic', false],
         [   1, 'bright-up-all'         ,   _('Brightness Up (global)'),                   true,  'display-brightness-symbolic', false],
         [   1, 'bright-down-all'       ,   _('Brightness Down (global)'),                 true,  'display-brightness-symbolic', false],
         [   1, 'contrast-up-all'       ,   _('Contrast Up (global)'),                     true,  'view-reveal-symbolic', false],

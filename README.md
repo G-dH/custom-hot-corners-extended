@@ -10,18 +10,17 @@ This extension is based on the original `Custom Hot Corners` exetension, but not
 ## Features:
 - Gnome 3.36, 3.38, 40 and 41 compatibility
 - Hot corners with adjustable barrier sizes, both vertical and horizontal independently and usable as hot edges
-- Mouse buttons and a scroll wheel can be used as triggers in addition to / intead of hot corners
+- Mouse buttons and a scroll wheel can be used as action triggers
 - Each trigger can be set to work only when *Ctrl* key is pressed
 - Each direcion of a scroll wheel rotation is configurable independently
-- Each trigger can activate one of many actions including command execution, workspace and window navigation, window control, power manager actions, sound volume control, color filters (for windows and global), accessibility features and more.
+- Each trigger can activate one of many actions including command execution, workspace and window navigation, window control, power manager actions, sound volume control, MPRIS player control, color filters (for windows and global), accessibility features and more.
 - Preferences window provides an app chooser dialog for "Run preset Command" action configuration - easy use as an application launcher
 - Each corner's area reactive to mouse clicks and scrolls can be extended both horizontally and/or vertically to cover most lenght of the monitor's edges. If the adjacent corner is not set to expand in related direction, the corner can be expanded to 7/8 of the monitor's width/height. If two adjacents corners are set to expand to each other's direction, then it is 1/2 of the length for each. You can see the result of expansion settings by activation of the *Make active corners/edges visible* option.
-- Fallback hot corner triggers as option - useful on virtualized systems where pressure barriers are supported by the system but ignored by the pointer.
-- Various options for window and workspace switchers
+- Fallback hot corner triggers as option - can be used on virtualized systems with mouse pointer integration where pressure barriers are being ignored.
 - The `Monitor 1` settings are always used on the primary monitor
-- Corners can be watched for unwanted overrides from other extensions and automatically updated when needed within 3 seconds
-- You can set keyboard shortcuts for any actions on the menu.
-- You can set up to 4 Custom Menus with own selection of actions and trigger them as an action.
+- Corners can be watched for unwanted overrides from other extensions and automatically updated when needed
+- You can set global keyboard shortcuts for any actions on the menu except for those available natively in GNOME Settings.
+- You can set up to 4 Custom Menus with your own selection of actions and use them as an single action.
 
 ## Changelog:
 
