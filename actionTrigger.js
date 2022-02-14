@@ -564,6 +564,18 @@ var ActionTrigger = class ActionTrigger {
         this.actions.toggleShowPanel();
     }
 
+    _openPanelAggregateMenu() {
+        this.actions.openPanelAggregateMenu();
+    }
+
+    _openPanelDateMenu() {
+        this.actions.openPanelDateMenu();
+    }
+
+    _openPanelAppMenu() {
+        this.actions.openPanelAppMenu();
+    }
+
     _toggleTheme() {
         this.actions.toggleTheme();
     }

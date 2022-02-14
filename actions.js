@@ -732,6 +732,18 @@ var Actions = class {
             Main.panel.show();
     }
 
+    openPanelAggregateMenu() {
+        Main.panel.statusArea.aggregateMenu.menu.toggle();
+    }
+
+    openPanelDateMenu() {
+        Main.panel.statusArea.dateMenu.menu.toggle();
+    }
+
+    openPanelAppMenu() {
+        Main.panel.statusArea.appMenu.menu.toggle();
+    }
+
     toggleTheme() {
         let intSettings = this._getInterfaceSettings();
         let theme = intSettings.get_string('gtk-theme');
