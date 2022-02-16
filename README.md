@@ -43,6 +43,8 @@ Other changes:
 - redesigned `Monitor` corner settings page, added toggle button for direct control over `Enable in Fullscreen` option.
 - redesigned `Keyboard` and `Custom Menus` Options pages and added butons for control over tree view
 - Custom menus adds focused window title as the first item only if the menu contains actions that target the window.
+- action `Run Preset Command ...` now can activate application by app id (.desktop launcher file name) and was renamed to `Run Preset Command / Activate App ...`. App chooser dialog can now produce command or app id and the latter is default (preffered) option as it's native way to launch / activate application in GNOME Shell.
+
 
 Fixes:
 
@@ -50,6 +52,7 @@ Fixes:
 - added gschema paths for not dynamically created settings - now global settings can be backed up using `Extensions Sync` extension. Unfotunately, dynamically created settings directories storing settings of all individual triggers don't have unique schema id, so can not be backed up using mentioned extension.
 - GS41 not detected
 - Custom Menus - items without its own submenu were added to the previous submenu instead of to the root menu.
+- Sceen keyboard won't show when activated from Custom Menu
 
 **v11**:
 - Added action `Open ArcMenu` action, compatible with ArcMenu v.20+
