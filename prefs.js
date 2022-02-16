@@ -159,7 +159,6 @@ class CornerPage extends Gtk.Box {
     _init(widgetProperties = {
         //selection_mode: null,
         orientation: Gtk.Orientation.VERTICAL,
-        can_focus: false,
         margin_start: 16,
         margin_end: 16,
         margin_top: 16,
@@ -301,6 +300,10 @@ class CornerPage extends Gtk.Box {
         });
         workspaceIndexSpinButton.set_adjustment(wsIndexAdjustment);
         const commandEntry = new Gtk.Entry({hexpand: true});
+        commandEntry.set_placeholder_text(_('Enter command or choose app ID'));
+        commandEntry.set_icon_from_icon_name(Gtk.EntryIconPosition.SECONDARY, 'edit-clear-symbolic');
+        commandEntry.set_icon_activatable(Gtk.EntryIconPosition.SECONDARY, true);
+        commandEntry.connect('icon-press', (e) => e.set_text(''));
         const appButton = new Gtk.Button({
             valign: Gtk.Align.END,
         });
@@ -378,23 +381,31 @@ class CornerPage extends Gtk.Box {
             if (cmdBtnConnected)
                 return;
             appButton.connect('clicked', () => {
-                function fillCmdEntry() {
+                function fillCmdEntry(cmd) {
                     let appInfo = dialog._appChooser.get_app_info();
-                    if (!appInfo)
-                        return;
-                    commandEntry.text = appInfo.get_commandline().replace(/ %.$/, '');
+                    if (!appInfo) return;
+
+                    if (cmd)
+                        commandEntry.text = appInfo.get_commandline().replace(/ %.$/, '');
+                    else
+                        commandEntry.text = appInfo.get_id();
+
                     dialog.destroy();
                 }
+
                 const dialog = this._chooseAppDialog();
                 dialog._appChooser.connect('application-activated', () => {
-                    fillCmdEntry(dialog, commandEntry);
+                    fillCmdEntry(false); // double-click adds app id
                 });
+
                 dialog.connect('response', (dlg, id) => {
-                    if (id !== Gtk.ResponseType.OK) {
+                    if (!(id === Gtk.ResponseType.OK || id === Gtk.ResponseType.APPLY)) {
                         dialog.destroy();
                         return;
                     }
-                    fillCmdEntry();
+                    // OK means command, APPLY means app id
+                    const cmd = id === Gtk.ResponseType.OK;
+                    fillCmdEntry(cmd);
                     cmdBtnConnected = true;
                 });
             });
@@ -689,14 +700,17 @@ class CornerPage extends Gtk.Box {
         const dialog = new Gtk.Dialog({
             title: _('Choose Application'),
             transient_for: notebook.get_root
-                ?   notebook.get_root()
+                ? notebook.get_root()
                 : notebook.get_toplevel(),
             use_header_bar: true,
             modal: true,
         });
+
         dialog.add_button(_('_Cancel'), Gtk.ResponseType.CANCEL);
-        dialog._addButton = dialog.add_button(_('_Add'), Gtk.ResponseType.OK);
-        dialog.set_default_response(Gtk.ResponseType.OK);
+        dialog.add_button(_('_Add ID'), Gtk.ResponseType.APPLY);
+        dialog.add_button(_('_Add Cmd'), Gtk.ResponseType.OK);
+        dialog.set_default_response(Gtk.ResponseType.APPLY);
+
         const grid = new Gtk.Grid({
             margin_start: 10,
             margin_end: 10,
@@ -705,6 +719,7 @@ class CornerPage extends Gtk.Box {
             column_spacing: 10,
             row_spacing: 15,
         });
+
         dialog._appChooser = new Gtk.AppChooserWidget({
             show_all: true,
             hexpand: true,
@@ -718,7 +733,7 @@ class CornerPage extends Gtk.Box {
         grid.attach(cmdLabel, 0, 1, 2, 1);
         dialog.get_content_area()[dialog.get_content_area().add ? 'add' : 'append'](grid);
         dialog._appChooser.connect('application-selected', (w, appInfo) => {
-            cmdLabel.set_text(appInfo.get_commandline());
+            cmdLabel.set_text(`App ID:   \t${appInfo.get_id()}\nCommand: \t${appInfo.get_commandline()}`);
         }
         );
         dialog.show_all && dialog.show_all();
@@ -933,14 +948,14 @@ class OptionsPage extends Gtk.ScrolledWindow {
                 });
                 frameBox = new Gtk.ListBox({
                     selection_mode: null,
-                    can_focus: false,
+                    //can_focus: false,
                 });
                 mainBox[mainBox.add ? 'add' : 'append'](frame);
                 frame[frame.add ? 'add' : 'set_child'](frameBox);
                 continue;
             }
             let box = new Gtk.Box({
-                can_focus: false,
+                //can_focus: false,
                 orientation: Gtk.Orientation.HORIZONTAL,
                 margin_start: 4,
                 margin_end: 4,

@@ -432,7 +432,7 @@ var actionList = [
         [   1, 'black-screen-mon'           , _('Black Screen (current monitor)'),           true,  'video-display-symbolic',                                 false],
 
         [null, 'run-submenu'                , _('Run Command'),                             false,  'utilities-terminal-symbolic',                            false],
-        [   1, 'run-command'                , _('Run Preset Command ...'),                  false,  'utilities-terminal-symbolic',                            false],
+        [   1, 'run-command'                , _('Run Preset Command / Activate App ...'),   false,  'utilities-terminal-symbolic',                            false],
         [   1, 'run-prompt'                 , _('Show Run Command Prompt'),                 false,  'utilities-terminal-symbolic',                            false],
 
         [null, 'workspaces-submenu'         , _('Workspaces'),                               true,  'video-display-symbolic',                                 false],

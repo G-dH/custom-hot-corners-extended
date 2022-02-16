@@ -38,8 +38,6 @@ let Shaders                  = null;
 let WinTmb                   = null;
 let _origAltTabWSP           = null;
 
-let _shellVersion;
-
 const ws_indicator_mode = {
     'DISABLE': 0,
     'DEFAULT': 1,
@@ -64,6 +62,8 @@ var Actions = class {
         this._interfaceSettings     = null;
         this._shellSettings         = null;
 
+        this.keyboardTimeoutId      = 0;
+
         this.WS_IGNORE_LAST         = false;
         this.WS_WRAPAROUND          = false;
         this.WS_INDICATOR_MODE      = false;
@@ -83,7 +83,6 @@ var Actions = class {
 
         this._connectRecentWorkspace();
 
-        _shellVersion = Settings.shellVersion;
         this._mscOptions = mscOptions;
     }
 
@@ -105,6 +104,9 @@ var Actions = class {
         this._removeThumbnails(full);
         this._destroyDimmerActors();
         this._removeCustomMenus();
+
+        if (this.keyboardTimeoutId)
+            GLib.source_remove(this.keyboardTimeoutId);
     }
 
     resume() {
@@ -385,7 +387,7 @@ var Actions = class {
         } else {
             // Pressing the apps btn before overview activation avoids icons animation in GS 3.36/3.38
             // but in GS40 with Dash to Dock and its App button set to "no animation", this whole sequence is problematic
-            if (_shellVersion < 40)
+            if (Settings.shellVersion < 40)
                 Main.overview.dash.showAppsButton.checked = true;
             // in 3.36 pressing the button is usualy enough to activate overview, but not always
             Main.overview.show();
@@ -398,6 +400,19 @@ var Actions = class {
     }
 
     runCommand(command) {
+        if (command.match(/\.desktop$/)) {
+            const appId = command;
+            const appSystem = Shell.AppSystem.get_default();
+            const app = appSystem.lookup_app(appId);
+            if (app) {
+                app.activate();
+            } else {
+                Main.notify(Me.metadata.name, _(`Application ID not found: ${appId}`));
+                log(Me.metadata.name, _(`Application ID not found: ${appId}`));
+            }
+            return;
+        }
+
         Util.spawnCommandLine(command);
     }
 
@@ -753,7 +768,7 @@ var Actions = class {
                 intSettings.set_string('gtk-theme', 'Yaru-dark');
                 break;
             case 'Yaru-dark':
-                let theme = _shellVersion >= 40 ? 'Yaru' : 'Yaru-light'
+                let theme = Settings.shellVersion >= 40 ? 'Yaru' : 'Yaru-light'
                 intSettings.set_string('gtk-theme', theme);
                 break;
             case 'Adwaita':
@@ -918,9 +933,11 @@ var Actions = class {
 
     switchWindow(direction, wsOnly = false, monitorIndex = -1) {
         let workspaceManager = global.workspace_manager;
-        let workspace = wsOnly ? workspaceManager.get_active_workspace() : null;
+        //let workspace = wsOnly ? workspaceManager.get_active_workspace() : null;
         // get all windows, skip-taskbar included
-        let windows = global.display.get_tab_list(Meta.TabList.NORMAL_ALL, workspace);
+        //let windows = global.display.get_tab_list(Meta.TabList.NORMAL_ALL, workspace);
+        const workspace = null;
+        let windows = AltTab.getWindows(workspace);
         if (monitorIndex > -1)
             windows = windows.filter(w => w.get_monitor() === monitorIndex);
         // when window with attached modal window is activated, focus shifts to modal window ...
@@ -928,12 +945,22 @@ var Actions = class {
         //  ... when these windows are next to each other in window list
         // map windows with modals attached ...
         // ... and filter out not modal windows and duplicates
-        let modals = windows.map(w => 
+// this is already part of AltTab.getWindows() function
+/*        let modals = windows.map(w => 
             w.get_transient_for() ? w.get_transient_for() : null
             ).filter((w, i, a) => w !== null && a.indexOf(w) == i);
         // filter out skip_taskbar windows and windows with modals
         // top modal windows should stay
         windows = windows.filter( w => modals.indexOf(w) && !w.is_skip_taskbar());
+*/
+
+        // after the shell restarts (X11) AltTab.getWindows(ws) generates different (wrong) win order than ...getwindows(null) (tested on GS 3.36 - 41)
+        // so we will filter the list here if needed, to get consistent results in this situation for all FilterModes
+        if (wsOnly) {
+            const workspace = workspaceManager.get_active_workspace();
+            windows = windows.filter(w => w.get_workspace() === workspace);
+        }
+
         if (this.WIN_SKIP_MINIMIZED)
             windows = windows.filter(win => !win.minimized);
 
@@ -1259,17 +1286,28 @@ var Actions = class {
     }
 
     toggleKeyboard(monitorIndex = -1) {
-        if (monitorIndex < 0)
-            monitorIndex = global.display.get_current_monitor();
-        let visible = Main.keyboard.visible;
-        let appSettings = this._getA11yAppSettings();
-        if (visible)
-            appSettings.set_boolean('screen-keyboard-enabled', false);
-        else {
-            if (!appSettings.get_boolean('screen-keyboard-enabled'))
-                appSettings.set_boolean('screen-keyboard-enabled', true);
-            Main.keyboard.open(monitorIndex);
-        }
+        // timeout added because of activation from menu, keyboard doesn't show up if menu is up
+        this.keyboardTimeoutId = GLib.timeout_add(
+            GLib.PRIORITY_DEFAULT,
+            200,
+            () => {
+                if (monitorIndex < 0)
+                    monitorIndex = global.display.get_current_monitor();
+                let visible = Main.keyboard.visible;
+                let appSettings = this._getA11yAppSettings();
+                if (visible)
+                    appSettings.set_boolean('screen-keyboard-enabled', false);
+                else {
+                    if (!appSettings.get_boolean('screen-keyboard-enabled'))
+                        appSettings.set_boolean('screen-keyboard-enabled', true);
+                    // open the keyboard even if incompatible input is currently in focus
+                    Main.keyboard.open(monitorIndex);
+                }
+
+                this.keyboardTimeoutId = 0;
+                return GLib.SOURCE_REMOVE;
+            }
+        );
     }
 
     toggleScreenReader() {
