@@ -33,7 +33,9 @@ Added actions:
 - `Move App windows to Prev/Next workspace`, `Move Window to Prev/Next workspace` - allows to move window or all windows of selected application corresponding to the current filter settings to an adjacent workspace
 - `Move App windows to Prev/Next New workspace`, `Move Window to Prev/Next New workspace` - similar to the previous one, but first creates new empty workspace to which the window/s will be moved
 - workspace switcher options moved to separate extension `Workspace Switcher Manager` which offers more options.
-- `Display Brightness Up/Down` in new section `Hardware`
+- `Display Brightness Up/Down` in new section `Hardware`.
+- `GNOME Shell UI inspector` in `Debug` section - direct activation of the tool that is available in the Looking Glass and allows to inspect GNOME Shell UI elements using a mouse. Big advantage is that this action can be activated using a keayboard shortcut even when a popup menu is open and inspect menu items.
+- `Open Panel Aggregate Menu`, `Open Panel Date Menu`, `Open Panel App Menu` in `GNOME` section.
 
 Other changes:
 
@@ -47,6 +49,7 @@ Fixes:
 - workspace index position not centered in GS40+
 - added gschema paths for not dynamically created settings - now global settings can be backed up using `Extensions Sync` extension. Unfotunately, dynamically created settings directories storing settings of all individual triggers don't have unique schema id, so can not be backed up using mentioned extension.
 - GS41 not detected
+- Custom Menus - items without its own submenu were added to the previous submenu instead of to the root menu.
 
 **v11**:
 - Added action `Open ArcMenu` action, compatible with ArcMenu v.20+
