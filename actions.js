@@ -1403,11 +1403,10 @@ var Actions = class {
         Main.layoutManager.setDummyCursorGeometry(global.get_pointer()[0], global.get_pointer()[1], 0, 0);
 
         //Main.osdWindowManager.hideAll();
-        let firstItem = this.customMenu[menuIndex]._getMenuItems()[1];
-        if (firstItem) {
-            this.customMenu[menuIndex].open(BoxPointer.PopupAnimation.FULL);
-            this.customMenu[menuIndex]._getMenuItems()[this.customMenu[menuIndex].windowNeeded ? 1 : 0].active = true;
-        }
+        const focusedWinItem = this.customMenu[menuIndex].windowNeeded;
+        const firstItem = this.customMenu[menuIndex]._getMenuItems()[focusedWinItem ? 1 : 0];
+        this.customMenu[menuIndex].open(BoxPointer.PopupAnimation.FULL);
+        firstItem.active = true;
     }
 
     // actions 0 - PlayPause, 1 - Next, 2 - Prev
@@ -1489,32 +1488,27 @@ var CustomMenuPopup = class CustomMenuPopup extends PopupMenu.PopupMenu {
             command: null,
             keyboard: false
         }
-        let menuItems = [];
-        this.actionList.forEach(a => {
-            if (this.menuItems.includes(a[1])) {
-                menuItems.push(a);
-                if (a[5])
-                    this.windowNeeded = true;
-            }
-        });
-
-        if (this.windowNeeded) {
-            if (this.focusedWindow === null)
-                this.focusedWindow = _('No window has focus!');
-            let win = new PopupMenu.PopupMenuItem(this.focusedWindow);
-            win.sensitive = false;
-            this.addMenuItem(win, 0);
-        }
+        this.windowNeeded = false;
         let submenu = null;
-        for (let i = 0; i < menuItems.length; i++) {
-            let item = menuItems[i];
 
-            let action  = item[1];
-            let section = item[0] === null;
+        for (let i = 0; i < this.actionList.length; i++) {
+            const item = this.actionList[i];
+            const section = item[0] === null;
 
+            if (!this.menuItems.includes(item[1])) {
+                // reset submenu if it shouldn't be used
+                if (section)
+                    submenu = null;
+                continue;
+            }
+
+            const action  = item[1];
             // add space between icon and name
-            let name = ` ${item[2]}`;
-            let icon = item[4];
+            const name = ` ${item[2]}`;
+            const icon = item[4];
+            const needsWin = item[5];
+            if (needsWin)
+                this.windowNeeded = true;
 
             if (item[0] === 0) submenu = null;
             if (section) {
@@ -1532,6 +1526,14 @@ var CustomMenuPopup = class CustomMenuPopup extends PopupMenu.PopupMenu {
                     this.actionTrigger.runAction(runActionData);
                 }, icon);
             }
+        }
+
+        if (this.windowNeeded) {
+            if (this.focusedWindow === null)
+                this.focusedWindow = _('No window has focus!');
+            let win = new PopupMenu.PopupMenuItem(this.focusedWindow);
+            win.sensitive = false;
+            this.addMenuItem(win, 0);
         }
     }
 };
