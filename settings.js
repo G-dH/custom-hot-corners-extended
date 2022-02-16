@@ -423,7 +423,7 @@ var actionList = [
         [   0, 'disabled'                   , _('-'),                                       false,  '',                                                       false],
         [   0, 'toggle-arcmenu'             , _('Open ArcMenu'),                            false,  'view-grid-symbolic',                                     false],
         [   0, 'toggle-overview'            , _('Show Activities Overview'),                false,  'view-grid-symbolic',                                     false],
-        [   0, 'show-applications'          , _('Show Application Grid'),                    true,  'view-app-grid-symbolic',                                 false],
+        [   0, 'show-applications'          , _('Show Application Grid'),                   false,  'view-app-grid-symbolic',                                 false],
 
         [null, 'desktop-submenu'            , _('Desktop'),                                  true,  'video-display-symbolic',                                 false],
         [   1, 'show-desktop'               , _('Show Desktop (all monitors)'),              true,  'preferences-desktop-wallpaper-symbolic',                 false],
@@ -477,7 +477,7 @@ var actionList = [
         [   1, 'above-win'                  , _('Always on Top Window (toggle)'),           false,  'go-top-symbolic',                                         true],
         [   1, 'stick-win'                  , _('Always on Visible WS Window (toggle)'),    false,  'view-pin-symbolic',                                       true],
         [   1, 'quit-app'                   , _('Quit Focused Application'),                 true,  'window-close-symbolic',                                   true],
-        [   1, 'kill-app'                   , _('Kill Focused Application (kill -9)'),       true,  'process-stop-symbolic',                                   true],
+        [   1, 'kill-app'                   , _('Force Quit Focused Application'),           true,  'process-stop-symbolic',                                   true],
         [   1, 'open-new-window'            , _('Open New Window (if supported)'),           true,  'media-playback-start-symbolic',                           true],
         [   1, 'unminimize-all-ws'          , _('Unminimize All Windows (workspace)'),       true,  'window-restore-symbolic',                                 true],
 

@@ -40,17 +40,10 @@ let _origUpdateHotCorners;
 function init() {
     _origUpdateHotCorners = imports.ui.layout.LayoutManager.prototype._updateHotCorners;
     ExtensionUtils.initTranslations(Me.metadata['gettext-domain']);
-}
-
-function enable() {
-    if (!chceThis)
-        chceThis = new CustomHotCornersExtended();
-    chceThis._activate();
-}
-
-function disable() {
-    if (chceThis.disable())
-        chceThis = null;
+    const chce = new CustomHotCornersExtended();
+    // chceThis is being used to override 'this' in _updateHotCorners() function when called from Gnome Shell
+    chceThis = chce;
+    return chce;
 }
 
 class CustomHotCornersExtended {
@@ -70,11 +63,11 @@ class CustomHotCornersExtended {
         this._extensionEnabled     = false;
         this._watch                = {};
         this._hotCornerEnabledOrig = Main.layoutManager._interfaceSettings.get_boolean('enable-hot-corners');
-        // delayed start because of aggresive beasts that steal my corners even under my watch
-        // and don't slow down the screen unlock animation - the killer are keyboard shortcuts
     }
 
-    _activate() {
+    enable() {
+        // delayed start to avoid initial hot corners overrides from other extensions
+        // and also to not slowing down the screen unlock animation - the killer are keyboard shortcuts
         this._delayId = GLib.timeout_add(
             GLib.PRIORITY_DEFAULT,
             500,
@@ -210,7 +203,7 @@ class CustomHotCornersExtended {
     }
 
     _updateHotCorners() {
-        // when the layout manager calls this function as a callback with its own 'this', we need to override it
+        // when the layout manager calls this function as a callback with its own 'this', we need to override it by chceThis
         chceThis._removeHotCorners();
         Main.layoutManager.hotCorners = [];
         chceThis._updateWatchedCorners();
