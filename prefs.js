@@ -1251,6 +1251,7 @@ class KeyboardPage extends TreeviewPage {
             mscOptions._gsettings.set_strv('keyboard-shortcuts', []);
             this._loadShortcuts();
             this._setNewTreeviewModel();
+            this._updateTitle();
         });
         this.showActiveBtn.connect('notify::active', () => {
             this._setNewTreeviewModel();
@@ -1455,6 +1456,7 @@ class CustomMenuPage extends TreeviewPage {
             this.menuItems = [];
             mscOptions[`customMenu${this._menuIndex}`] = this.menuItems;
             this._setNewTreeviewModel();
+            this._updateTitle();
         });
         this.showActiveBtn.connect('notify::active', () => {
             this._setNewTreeviewModel();
