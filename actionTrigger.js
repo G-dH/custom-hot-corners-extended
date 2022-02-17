@@ -2,6 +2,7 @@
 
 const { Clutter, Meta } = imports.gi;
 
+const Main           = imports.ui.main;
 const ExtensionUtils = imports.misc.extensionUtils;
 const Me             = ExtensionUtils.getCurrentExtension();
 const Actions        = Me.imports.actions;
@@ -87,6 +88,9 @@ var ActionTrigger = class ActionTrigger {
         }
         // end of transition code
 
+        if (!this._gsettingsKBid)
+            this._gsettingsKBid = this._gsettingsKB.connect('changed::keyboard-shortcuts', this._updateKeyBinding.bind(this));
+
         const list = this._mscOptions._gsettings.get_strv('keyboard-shortcuts');
         if (!list.length)
             return;
@@ -99,9 +103,6 @@ var ActionTrigger = class ActionTrigger {
             };
             manager.add(accelerator, action, callback);
         });
-
-        if (!this._gsettingsKBid)
-            this._gsettingsKBid = this._gsettingsKB.connect('changed::keyboard-shortcuts', this._updateKeyBinding.bind(this));
     }
 
     runAction(actionData = null) {
@@ -259,7 +260,8 @@ var ActionTrigger = class ActionTrigger {
             'org.gnome.shell.extensions.custom-hot-corners-extended.shortcuts',
             '/org/gnome/shell/extensions/custom-hot-corners-extended/shortcuts/');
         return settings.get_strv(key).toString();*/
-        const sc = this._keybindingsManager._keybindings[key];
+        const keybindingsManager = this._getKeybindingsManager();
+        const sc = keybindingsManager._keybindings[key];
         return sc ? sc : null;
     }
 
