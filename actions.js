@@ -61,6 +61,7 @@ var Actions = class {
         this._a11yMagnifierSettings = null;
         this._interfaceSettings     = null;
         this._shellSettings         = null;
+        this._soundSettings         = null;
 
         this.keyboardTimeoutId      = 0;
 
@@ -148,6 +149,7 @@ var Actions = class {
         this._shellSettings         = null;
         this._colorSettings         = null;
         this._wsNamesSettings       = null;
+        this._soundSettings         = null;
     }
 
     removeAllEffects(full = false) {
@@ -242,6 +244,15 @@ var Actions = class {
                             '/org/gnome/desktop/wm/preferences/');
         }
         return this._wsNamesSettings;
+    }
+
+    _getSoundSettings() {
+        if (!this._soundSettings) {
+            this._soundSettings = Settings.getSettings(
+                'org.gnome.desktop.sound',
+                '/org/gnome/desktop/sound/');
+        }
+        return this._soundSettings;
     }
 
     _getDisplayBrightnessProxy() {
@@ -833,7 +844,7 @@ var Actions = class {
 
             let activeWs  = global.workspaceManager.get_active_workspace();
             let activeIdx = activeWs.index();
-            let targetIdx = this.WS_WRAPAROUND ? 
+            let targetIdx = this.WS_WRAPAROUND ?
                             (activeIdx + (direction ? 1 : lastWsIndex )) % (lastWsIndex + 1) :
                             activeIdx + (direction ? 1 : -1);
             if (targetIdx < 0 || targetIdx > lastWsIndex) {
@@ -946,7 +957,7 @@ var Actions = class {
         // map windows with modals attached ...
         // ... and filter out not modal windows and duplicates
 // this is already part of AltTab.getWindows() function
-/*        let modals = windows.map(w => 
+/*        let modals = windows.map(w =>
             w.get_transient_for() ? w.get_transient_for() : null
             ).filter((w, i, a) => w !== null && a.indexOf(w) == i);
         // filter out skip_taskbar windows and windows with modals
@@ -982,22 +993,57 @@ var Actions = class {
         windows[targetIdx].activate(global.get_current_time());
     }
 
+    //direction +1 / -1, 0 for toggle mute
     adjustVolume(direction) {
         let mixerControl = Volume.getMixerControl();
         let sink = mixerControl.get_default_sink();
+
+        if (!sink) return;
+
+        const soundSettings = this._getSoundSettings();
+        const alowOverAmplification = soundSettings.get_boolean('allow-volume-above-100-percent');
+
         if (direction === 0) {
             sink.change_is_muted(!sink.is_muted);
         } else {
             let volume = sink.volume;
-            let max = mixerControl.get_vol_max_norm();
+            const maxLevelNorm = mixerControl.get_vol_max_norm();
+            const maxLevel = alowOverAmplification ? mixerControl.get_vol_max_amplified() : maxLevelNorm;
+            const ampScale = maxLevel / maxLevelNorm;
+
             let step = direction * 2048;
+
             volume = volume + step;
-            if (volume > max)
-                volume = max;
-            if (volume <   0)
+
+            if (volume > maxLevel)
+                volume = maxLevel;
+            if (volume < 0)
                 volume = 0;
             sink.volume = volume;
+
             sink.push_volume();
+
+            // OSD
+            let icons = ["audio-volume-muted-symbolic",
+                         "audio-volume-low-symbolic",
+                         "audio-volume-medium-symbolic",
+                         "audio-volume-high-symbolic",
+                         "audio-volume-overamplified-symbolic"];
+
+            let n;
+            if (sink.is_muted || volume <= 0) {
+                n = 0;
+            } else {
+                n = Math.ceil(3 * volume / maxLevelNorm);
+                if (n < 1)
+                    n = 1;
+                else if (n > 3)
+                    n = 4;
+            }
+
+            const gicon = new Gio.ThemedIcon({ name: icons[n] });
+            const level = volume / maxLevel * ampScale;
+            Main.osdWindowManager.show(-1, gicon, null, level, ampScale);
         }
     }
 
@@ -1424,7 +1470,7 @@ var Actions = class {
         if (!this.customMenu[menuIndex]) {
             this.customMenu[menuIndex] = new CustomMenuPopup(Main.layoutManager);
             this.customMenu[menuIndex].act.connect('destroy', () => {
-                Main.layoutManager.uiGroup.remove_actor(this.customMenu[menuIndex].actor);    
+                Main.layoutManager.uiGroup.remove_actor(this.customMenu[menuIndex].actor);
             });
             Main.layoutManager.uiGroup.add_actor(this.customMenu[menuIndex].actor);
         }
