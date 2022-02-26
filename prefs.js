@@ -806,7 +806,7 @@ class OptionsPage extends Gtk.ScrolledWindow {
         optionsList.push(
             _optionsItem(
                 _('Show ripple animations'),
-                _('When you trigger an action, ripples are animated in the corner'),
+                _('When you trigger an action, ripples are animated from the corresponding corner'),
                 _newGtkSwitch(),
                 'rippleAnimation'
             )
@@ -815,7 +815,7 @@ class OptionsPage extends Gtk.ScrolledWindow {
         optionsList.push(
             _optionsItem(
                 _('Use fallback hot corner triggers'),
-                _('If pressure barriers don`t work, this option allows trigger the hot corner action by hovering the corner.'),
+                _('If pressure barriers don`t work, this option allows trigger the hot corner action by hovering the corner'),
                 _newGtkSwitch(),
                 'barrierFallback'
             )
@@ -830,46 +830,6 @@ class OptionsPage extends Gtk.ScrolledWindow {
             )
         );
 
-/*        optionsList.push(
-            _optionsItem(
-                _makeTitle(_('Workspace switcher')),
-                null,
-                null
-            )
-        );
-
-        optionsList.push(
-            _optionsItem(
-                _('Wraparound'),
-                null,
-                _newGtkSwitch(),
-                'wsSwitchWrap'
-            )
-        );
-
-        optionsList.push(
-            _optionsItem(
-                _('Ignore last (empty) workspace'),
-                null,
-                _newGtkSwitch(),
-                'wsSwitchIgnoreLast'
-            )
-        );
-
-        optionsList.push(
-            _optionsItem(
-                _('Show workspace indicator while switching'),
-                _('wS Names option reads workspace names from official gsettings key workspace-names in org.gnome.desktop.wm.preferences. You can use dconf editor to enter your names in format ["name1", "name2", ...]'),
-                _newComboBox(),
-                'wsSwitchIndicatorMode',
-                [[_('None'),                0],
-                    [_('Default Popup'),    1],
-                    [_('OSD Index'),        2],
-                    [_('WS Names'),         3],
-                    [_('Current App Name'), 4]]
-            )
-        );
-*/
         optionsList.push(
             _optionsItem(
                 _makeTitle(_('Window switcher')),
@@ -881,7 +841,7 @@ class OptionsPage extends Gtk.ScrolledWindow {
         optionsList.push(
             _optionsItem(
                 _('Wraparound'),
-                _('Whether the switcher should continue from the last window to the first and vice versa.'),
+                _('Whether the switcher should continue from the last window to the first and vice versa'),
                 _newGtkSwitch(),
                 'winSwitchWrap'
             )
@@ -899,7 +859,7 @@ class OptionsPage extends Gtk.ScrolledWindow {
         optionsList.push(
             _optionsItem(
                 _makeTitle(_('DND Window Thumbnails')),
-                `${_('Window thumbnails are overlay clones of windows, can be draged by mouse anywhere on the screen.')}\n${
+                `${_('Window thumbnails are overlay clones of windows, can be draged by mouse anywhere on the screen')}\n${
                     _('Thumbnail control:')}\n    ${
                     _('Double click:    \t\tactivate source window')}\n    ${
                     _('Primary click:   \t\ttoggle scroll wheel function (resize / source)')}\n    ${
@@ -977,7 +937,7 @@ class OptionsPage extends Gtk.ScrolledWindow {
     }
 });
 
-
+///////////////////////////////////////////////////////////////////////////
 
 function _newGtkSwitch() {
     let sw = new Gtk.Switch({
@@ -1002,7 +962,6 @@ function _newSpinButton(adjustment) {
 
 function _newComboBox() {
     const model = new Gtk.ListStore();
-    const Columns = {LABEL: 0, VALUE: 1};
     model.set_column_types([GObject.TYPE_STRING, GObject.TYPE_INT]);
     const comboBox = new Gtk.ComboBox({
         model,
