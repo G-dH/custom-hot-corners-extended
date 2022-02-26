@@ -815,7 +815,7 @@ class OptionsPage extends Gtk.ScrolledWindow {
         optionsList.push(
             _optionsItem(
                 _('Use fallback hot corner triggers'),
-                _('If pressure barriers don`t work, this option allows trigger the hot corner action by hovering the corner'),
+                _(`If pressure barriers don't work, this option allows trigger the hot corner action by hovering the corner`),
                 _newGtkSwitch(),
                 'barrierFallback'
             )
