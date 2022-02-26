@@ -1,4 +1,4 @@
-/* Copyright 2021 GdH <georgdh@gmail.com>
+/* Copyright 2021-2022 GdH <georgdh@gmail.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -67,14 +67,13 @@ class CustomHotCornersExtended {
 
     enable() {
         // delayed start to avoid initial hot corners overrides from other extensions
-        // and also to not slowing down the screen unlock animation - the killer are keyboard shortcuts
+        // and also to not slowing down the screen unlock animation - the killer is registration of keyboard shortcuts
         this._delayId = GLib.timeout_add(
             GLib.PRIORITY_DEFAULT,
             500,
             () => {
                 this._delayId = 0;
                 Main.layoutManager._interfaceSettings.set_boolean('enable-hot-corners', false);
-                _origUpdateHotCorners = Main.layoutManager._updateHotCorners;
                 this._extensionEnabled = true;
                 this._initMscOptions();
                 if (!this.actionTrigger) {

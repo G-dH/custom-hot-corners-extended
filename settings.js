@@ -115,38 +115,6 @@ var MscOptions = class MscOptions {
         this._gsettings.set_int('win-thumbnail-scale', scale);
     }
 
-    get wsSwitchIgnoreLast() {
-        return this._gsettings.get_boolean('ws-switch-ignore-last');
-    }
-
-    set wsSwitchIgnoreLast(bool_val) {
-        this._gsettings.set_boolean('ws-switch-ignore-last', bool_val);
-    }
-
-    get wsSwitchWrap() {
-        return this._gsettings.get_boolean('ws-switch-wrap');
-    }
-
-    set wsSwitchWrap(bool_val) {
-        this._gsettings.set_boolean('ws-switch-wrap', bool_val);
-    }
-
-    get wsSwitchIndicator() {
-        return this._gsettings.get_boolean('ws-switch-indicator');
-    }
-
-    set wsSwitchIndicator(bool_val) {
-        this._gsettings.set_boolean('ws-switch-indicator', bool_val);
-    }
-
-    get wsSwitchIndicatorMode() {
-        return this._gsettings.get_int('ws-switch-indicator-mode');
-    }
-
-    set wsSwitchIndicatorMode(mode) {
-        this._gsettings.set_int('ws-switch-indicator-mode', mode);
-    }
-
     get actionEventDelay() {
         return this._gsettings.get_int('action-event-delay');
     }
@@ -421,27 +389,28 @@ const horizontal = shellVersion >= 40;
 //      [0.root/submenu, 1.action key,      2.action name,                       3.accelerator allowed,    4.icon name                                5.action needs window
 var actionList = [
         [   0, 'disabled'                   , _('-'),                                       false,  '',                                                       false],
-        [   0, 'toggle-arcmenu'             , _('Open ArcMenu'),                            false,  'view-grid-symbolic',                                     false],
-        [   0, 'toggle-overview'            , _('Show Activities Overview'),                false,  'view-grid-symbolic',                                     false],
-        [   0, 'show-applications'          , _('Show Application Grid'),                   false,  'view-app-grid-symbolic',                                 false],
 
-        [null, 'desktop-submenu'            , _('Desktop'),                                  true,  'video-display-symbolic',                                 false],
+        [null, 'core-submenu'               , _('Core Actions'),                             true,  'video-display-symbolic',                                 false],
+        [   1, 'toggle-arcmenu'             , _('Open ArcMenu'),                            false,  'view-grid-symbolic',                                     false],
+        [   1, 'toggle-overview'            , _('Show Activities Overview'),                false,  'view-grid-symbolic',                                     false],
+        [   1, 'show-applications'          , _('Show Application Grid'),                   false,  'view-app-grid-symbolic',                                 false],
+        [   1, 'run-command'                , _('Run Preset Command / Activate App ...'),   false,  'utilities-terminal-symbolic',                            false],
         [   1, 'show-desktop'               , _('Show Desktop (all monitors)'),              true,  'preferences-desktop-wallpaper-symbolic',                 false],
         [   1, 'show-desktop-mon'           , _('Show Desktop (current monitor)'),           true,  'preferences-desktop-wallpaper-symbolic',                 false],
-        [   1, 'black-screen'               , _('Black Screen (all monitors)'),              true,  'video-display-symbolic',                                 false],
-        [   1, 'black-screen-mon'           , _('Black Screen (current monitor)'),           true,  'video-display-symbolic',                                 false],
+        [   1, 'prefs'                      , _('Open CHC-E Preferences'),                   true,  'preferences-system-symbolic',                            false],
+        //[null, 'desktop-submenu'            , _('Desktop'),                                  true,  'video-display-symbolic',                                 false],
 
-        [null, 'run-submenu'                , _('Run Command'),                             false,  'utilities-terminal-symbolic',                            false],
-        [   1, 'run-command'                , _('Run Preset Command / Activate App ...'),   false,  'utilities-terminal-symbolic',                            false],
-        [   1, 'run-prompt'                 , _('Show Run Command Prompt'),                 false,  'utilities-terminal-symbolic',                            false],
+
+        // [null, 'run-submenu'                , _('Run Command'),                             false,  'utilities-terminal-symbolic',                            false],
+        
 
         [null, 'workspaces-submenu'         , _('Workspaces'),                               true,  'video-display-symbolic',                                 false],
         [   1, 'prev-workspace'             , _('Previous Workspace'),                      false,   horizontal ? 'go-previous-symbolic': 'go-up-symbolic'  , false],
-        [   1, 'prev-workspace-overview'    , _('Previous Workspace Overview'),              true,   horizontal ? 'go-previous-symbolic': 'go-up-symbolic'  , false],
-        [   1, 'prev-workspace-popup'       , _('Previous Workspace with Win Switcher'),     true,   horizontal ? 'go-previous-symbolic': 'go-up-symbolic'  , false],
+        //[   1, 'prev-workspace-overview'    , _('Previous Workspace Overview'),              true,   horizontal ? 'go-previous-symbolic': 'go-up-symbolic'  , false],
+        [   1, 'prev-workspace-popup'       , _('Prev Workspace with Window Switcher'),      true,   horizontal ? 'go-previous-symbolic': 'go-up-symbolic'  , false],
         [   1, 'next-workspace'             , _('Next Workspace'),                          false,   horizontal ? 'go-next-symbolic'    : 'go-down-symbolic', false],
-        [   1, 'next-workspace-overview'    , _('Next Workspace Overview'),                  true,   horizontal ? 'go-next-symbolic'    : 'go-down-symbolic', false],
-        [   1, 'next-workspace-popup'       , _('Next Workspace with Win Switcher'),         true,   horizontal ? 'go-next-symbolic'    : 'go-down-symbolic', false],
+        //[   1, 'next-workspace-overview'    , _('Next Workspace Overview'),                  true,   horizontal ? 'go-next-symbolic'    : 'go-down-symbolic', false],
+        [   1, 'next-workspace-popup'       , _('Next Workspace with Window Switcher'),      true,   horizontal ? 'go-next-symbolic'    : 'go-down-symbolic', false],
         [   1, 'recent-workspace'           , _('Switch to Recent Workspace'),               true,  'document-open-recent-symbolic',                          false],
         [   1, 'move-to-workspace'          , _('Switch to Preset Workspace ...'),          false,  'go-jump-symbolic',                                       false],
         [   1, 'reorder-ws-prev'            , _(`Reorder Workspace - ${horizontal? _('Left') : _('Up')}`),  true,  horizontal ? 'go-previous-symbolic':'go-up-symbolic', false],
@@ -483,9 +452,9 @@ var actionList = [
 
         [null, 'win-reloc-submenu'          , _('Windows - Relocations'),                    true,  'focus-windows-symbolic',                                 false],
         [   1, 'fullscreen-on-empty-ws'     , _('Fullscreen Window on New WS (toggle)'),     true,  'view-fullscreen-symbolic',                                true],
-        [   1, 'move-win-to-prev-ws'        , _('Move Window to Previous workspace'),       false,  horizontal ? 'go-previous-symbolic': 'go-up-symbolic',     true],
+        [   1, 'move-win-to-prev-ws'        , _('Move Window to Previous workspace'),        true,  horizontal ? 'go-previous-symbolic': 'go-up-symbolic',     true],
         [   1, 'move-win-to-prev-new-ws'    , _('Move Window to New workspace Prev'),        true,  horizontal ? 'go-previous-symbolic': 'go-up-symbolic',     true],
-        [   1, 'move-win-to-next-ws'        , _('Move Window to Next workspace'),           false,  horizontal ? 'go-next-symbolic'    : 'go-down-symbolic',   true],
+        [   1, 'move-win-to-next-ws'        , _('Move Window to Next workspace'),            true,  horizontal ? 'go-next-symbolic'    : 'go-down-symbolic',   true],
         [   1, 'move-win-to-next-new-ws'    , _('Move Window to New workspace Next'),        true,  horizontal ? 'go-next-symbolic'    : 'go-down-symbolic',   true],
         [   1, 'move-app-to-prev-ws'        , _('Move App windows to Prev Workspace'),       true,  horizontal ? 'go-previous-symbolic': 'go-up-symbolic',     true],
         [   1, 'move-app-to-prev-new-ws'    , _('Move App windows to New Workspace Prev'),   true,  horizontal ? 'go-previous-symbolic': 'go-up-symbolic',     true],
@@ -532,6 +501,8 @@ var actionList = [
         [   1, 'tint-green-toggle-all'      , _('Green Tint Mono (global)'),                 true,  'view-reveal-symbolic',                                   false],
         [   1, 'desaturate-all'             , _('Desaturate (global)'),                      true,  'view-reveal-symbolic',                                   false],
         [   1, 'remove-effects-all'         , _('Remove All Effects (global)'),              true,  'window-close-symbolic',                                  false],
+        [   1, 'black-screen'               , _('Black Screen (all monitors)'),              true,  'video-display-symbolic',                                 false],
+        [   1, 'black-screen-mon'           , _('Black Screen (current monitor)'),           true,  'video-display-symbolic',                                 false],
 
         [null, 'access-submenu'             , _('Universal Access'),                         true,  'preferences-desktop-accessibility-symbolic',             false],
         [   1, 'toggle-zoom'                , _('Magnifier - Zoom 2x (toggle)'),             true,  'zoom-in-symbolic',                                       false],
@@ -557,10 +528,6 @@ var actionList = [
         [   1, 'toggle-theme'               , _('Toggle Light/Dark Gtk Theme'),              true,  'view-reveal-symbolic',                                   false],
         [   1, 'night-light-toggle'         , _('Toggle Night Light'),                       true,  'night-light-symbolic',                                   false],
 
-        [null, 'hardware-submenu'           , _('Hardware'),                                 true,  'system-run-symbolic',                                    false],
-        [   1, 'display-brightness-up'      , _('Display Brightness Up (HW)'),              false,  'display-brightness-symbolic',                            false],
-        [   1, 'display-brightness-down'    , _('Display Brightness Down (HW)'),            false,  'display-brightness-symbolic',                            false],
-
         [null, 'system-submenu'             , _('System'),                                   true,  'system-run-symbolic',                                    false],
         [   1, 'lock-screen'                , _('Lock Screen'),                             false,  'changes-prevent-symbolic',                               false],
         [   1, 'suspend'                    , _('Suspend to RAM'),                           true,  'weather-clear-night-symbolic',                           false],
@@ -568,7 +535,7 @@ var actionList = [
         [   1, 'log-out'                    , _('Log Out Dialog'),                           true,  'system-log-out-symbolic',                                false],
         [   1, 'switch-user'                , _('Switch User (if exists)'),                  true,  'system-switch-user-symbolic',                            false],
 
-        [null, 'media-submenu'              , _('Media'),                                    true,  'audio-volume-medium-symbolic',                           false],
+        [null, 'media-submenu'              , _('Sound / Media'),                           true,  'audio-volume-medium-symbolic',                           false],
         [   1, 'volume-up'                  , _('Volume Up'),                               false,  'audio-volume-high-symbolic',                             false],
         [   1, 'volume-down'                , _('Volume Down'),                             false,  'audio-volume-low-symbolic',                              false],
         [   1, 'mute-sound'                 , _('Mute Audio (toggle)'),                     false,  'audio-volume-muted-symbolic',                            false],
@@ -580,11 +547,16 @@ var actionList = [
         [   1, 'looking-glass'              , _('Looking Glass (GNOME Shell debugger)'),     true,  'edit-find-symbolic',                                     false],
         [   1, 'lg-inspector'               , _('GNOME Shell UI Inspector'),                 true,  'find-location-symbolic',                                 false],
         [   1, 'restart-shell'              , _('Restart GNOME Shell (X11 only)'),           true,  'view-refresh-symbolic',                                  false],
+        [   1, 'run-prompt'                 , _('Show Run Command Prompt'),                 false,  'utilities-terminal-symbolic',                            false],
 
         [null, 'custom-menus-submenu'       , _('Custom Menus'),                             true,  'open-menu-symbolic',                                     false],
         [   1, 'show-custom-menu-1'         , _('Show Custom Menu 1'),                       true,  'open-menu-symbolic',                                     false],
         [   1, 'show-custom-menu-2'         , _('Show Custom Menu 2'),                       true,  'open-menu-symbolic',                                     false],
         [   1, 'show-custom-menu-3'         , _('Show Custom Menu 3'),                       true,  'open-menu-symbolic',                                     false],
         [   1, 'show-custom-menu-4'         , _('Show Custom Menu 4'),                       true,  'open-menu-symbolic',                                     false],
-        [   0, 'prefs'                      , _('Open Preferences'),                         true,  'preferences-system-symbolic',                            false]
+
+        [null, 'hardware-submenu'           , _('Hardware Control'),                         true,  'system-run-symbolic',                                    false],
+        [   1, 'display-brightness-up'      , _('Display Brightness Up (HW)'),              false,  'display-brightness-symbolic',                            false],
+        [   1, 'display-brightness-down'    , _('Display Brightness Down (HW)'),            false,  'display-brightness-symbolic',                            false],
+
     ]; // end

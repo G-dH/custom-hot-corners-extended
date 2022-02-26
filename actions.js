@@ -38,14 +38,6 @@ let Shaders                  = null;
 let WinTmb                   = null;
 let _origAltTabWSP           = null;
 
-const ws_indicator_mode = {
-    'DISABLE': 0,
-    'DEFAULT': 1,
-    'INDEX':   2,
-    'NAMES':   3,
-    'APP'  :   4,
-};
-
 function get_current_monitor_geometry() {
     return global.display.get_monitor_geometry(global.display.get_current_monitor());
 }
@@ -67,7 +59,6 @@ var Actions = class {
 
         this.WS_IGNORE_LAST         = false;
         this.WS_WRAPAROUND          = false;
-        this.WS_INDICATOR_MODE      = false;
 
         this.WIN_WRAPAROUND         = false;
         this.WIN_SKIP_MINIMIZED     = false;
@@ -192,9 +183,8 @@ var Actions = class {
 
     _getShellSettings() {
         if (!this._shellSettings) {
-            this._shellSettings = Settings.getSettings(
-                'org.gnome.shell',
-                '/org/gnome/shell/'
+            this._shellSettings = ExtensionUtils.getSettings(
+                            'org.gnome.shell'
             );
         }
         return this._shellSettings;
@@ -202,9 +192,8 @@ var Actions = class {
 
     _getA11yAppSettings() {
         if (!this._a11yAppsSettings) {
-            this._a11yAppsSettings = Settings.getSettings(
-                'org.gnome.desktop.a11y.applications',
-                '/org/gnome/desktop/a11y/applications/'
+            this._a11yAppsSettings = ExtensionUtils.getSettings(
+                            'org.gnome.desktop.a11y.applications'
             );
         }
         return this._a11yAppsSettings;
@@ -212,45 +201,45 @@ var Actions = class {
 
     _getA11yMagnifierSettings() {
         if (!this._a11yMagnifierSettings) {
-            this._a11yMagnifierSettings = Settings.getSettings(
-                            'org.gnome.desktop.a11y.magnifier',
-                            '/org/gnome/desktop/a11y/magnifier/');
+            this._a11yMagnifierSettings = ExtensionUtils.getSettings(
+                            'org.gnome.desktop.a11y.magnifier'
+            );
         }
         return this._a11yMagnifierSettings;
     }
 
     _getInterfaceSettings() {
         if (!this._interfaceSettings) {
-            this._interfaceSettings = Settings.getSettings(
-                            'org.gnome.desktop.interface',
-                            '/org/gnome/desktop/interface/');
+            this._interfaceSettings = ExtensionUtils.getSettings(
+                            'org.gnome.desktop.interface'
+            );
         }
         return this._interfaceSettings;
     }
 
     _getColorSettings() {
         if (!this._colorSettings) {
-            this._colorSettings = Settings.getSettings(
-                            'org.gnome.settings-daemon.plugins.color',
-                            '/org/gnome/settings-daemon/plugins/color/');
+            this._colorSettings = ExtensionUtils.getSettings(
+                            'org.gnome.settings-daemon.plugins.color'
+            );
         }
         return this._colorSettings;
     }
 
     _getWsNamesSettings() {
         if (!this._wsNamesSettings) {
-            this._wsNamesSettings = Settings.getSettings(
-                            'org.gnome.desktop.wm.preferences',
-                            '/org/gnome/desktop/wm/preferences/');
+            this._wsNamesSettings = ExtensionUtils.getSettings(
+                            'org.gnome.desktop.wm.preferences'
+            );
         }
         return this._wsNamesSettings;
     }
 
     _getSoundSettings() {
         if (!this._soundSettings) {
-            this._soundSettings = Settings.getSettings(
-                'org.gnome.desktop.sound',
-                '/org/gnome/desktop/sound/');
+            this._soundSettings = ExtensionUtils.getSettings(
+                            'org.gnome.desktop.sound'
+            );
         }
         return this._soundSettings;
     }
@@ -347,14 +336,6 @@ var Actions = class {
         /* if (!actor)
             log (`[${Me.metadata.name}] Warning: no focused window found`); */
         return actor;
-    }
-
-    _getActorByMetaWin(metaWindow) {
-        for (let act of global.get_window_actors()) {
-            if (act.get_meta_window() === metaWindow)
-                return act;
-        }
-        return null;
     }
 
     _getMonitorByIndex(monitorIndex) {
@@ -690,7 +671,9 @@ var Actions = class {
             Main.wm.actionMoveWindow(selected[0], ws);
         }
         Main.wm.actionMoveWorkspace(ws);
-        this.showWorkspaceIndex();
+
+        direction = direction === Clutter.ScrollDirection.UP ? Meta.MotionDirection.UP : Meta.MotionDirection.DOWN;
+        this._showWsSwitcherPopup(direction, wsIndex);
     }
 
     _moveWindowsToWS(windows, workspace) {
@@ -698,7 +681,6 @@ var Actions = class {
         winList.forEach(win => {
             this._moveWindowToWs(win, workspace);
         });
-        //this.showWorkspaceIndex();
     }
 
     _moveWindowToWs(metaWindow, workspace = null, monitorIndex = -1) {
@@ -709,7 +691,7 @@ var Actions = class {
         let currentMonitorIndex = win.get_monitor();
         if (currentMonitorIndex !== targetMonitorIndex) {
             // move window to target monitor
-            let actor = this._getActorByMetaWin(win);
+            let actor = win.get_compositor_private();
             let targetMonitor  = this._getMonitorByIndex(targetMonitorIndex);
 
             let x = targetMonitor.x + Math.max(Math.floor(targetMonitor.width - actor.width) / 2, 0);
@@ -858,7 +840,6 @@ var Actions = class {
             if (this.WS_INDICATOR_MODE === ws_indicator_mode.DEFAULT) {
                 this._showWsSwitcherPopup(direction, ws.index());
             } else if (this.WS_INDICATOR_MODE > ws_indicator_mode.DEFAULT)
-                this.showWorkspaceIndex();
         */
     }
 
@@ -876,70 +857,6 @@ var Actions = class {
             : (vertical ? Meta.MotionDirection.UP   : Meta.MotionDirection.LEFT);
             Main.wm._workspaceSwitcherPopup.display(motion, wsIndex);
         }
-    }
-
-    showWorkspaceIndex(position = [], timeout = 1000, text = '', indicatorMode = null) {
-        if (!indicatorMode) {
-            indicatorMode = this.WS_INDICATOR_MODE;
-        }
-        let adjustSize = false;
-        let wsIndex = global.workspace_manager.get_active_workspace_index();
-
-        if (!text && indicatorMode === ws_indicator_mode.NAMES) {
-            const settings = this._getWsNamesSettings();
-            const names = settings.get_strv('workspace-names');
-            if (!text && names.length > wsIndex)
-                text = names[wsIndex];
-        } else if (!text && indicatorMode === ws_indicator_mode.APP) {
-            const ws = global.workspaceManager.get_workspace_by_index(wsIndex);
-            const win = global.display.get_tab_list(Meta.TabList.NORMAL_ALL, ws)[0];
-            text = this._getWindowApp(win).get_name();
-        }
-
-        if (!text)
-            text = `${wsIndex + 1}`;
-        else
-            adjustSize = true;
-
-        if (this._wsOverlay) {
-            global.stage.remove_actor(this._wsOverlay);
-            if (this._wsOverlay._timeoutId) {
-                GLib.source_remove(this._wsOverlay._timeoutId);
-                //this._wsOverlay._timeoutId = 0;
-            }
-            this._wsOverlay.destroy();
-        }
-
-        let geometry = get_current_monitor_geometry();
-        this._wsOverlay = new St.Label ({
-            name: 'ws-index',
-            text: text,
-            y: position.length ? position[1] : geometry.y + (geometry.height / 2),
-            style_class: 'workspace-overlay',
-            reactive: false,
-        });
-
-        if (adjustSize)
-            this._wsOverlay.set_style('font-size: 10em');
-
-        global.stage.add_actor(this._wsOverlay);
-        this._wsOverlay.x = geometry.x + (geometry.width - this._wsOverlay.width) / 2;
-
-        if (timeout) {
-            this._wsOverlay._timeoutId = GLib.timeout_add(
-                GLib.PRIORITY_DEFAULT,
-                timeout,
-                () => {
-                    if (this._wsOverlay !== null) {
-                        global.stage.remove_actor(this._wsOverlay);
-                        this._wsOverlay.destroy();
-                        this._wsOverlay = null;
-                    }
-                    return GLib.SOURCE_REMOVE;
-            });
-        }
-
-        return this._wsOverlay;
     }
 
     switchWindow(direction, wsOnly = false, monitorIndex = -1) {
@@ -1005,46 +922,46 @@ var Actions = class {
 
         if (direction === 0) {
             sink.change_is_muted(!sink.is_muted);
-        } else {
-            let volume = sink.volume;
-            const maxLevelNorm = mixerControl.get_vol_max_norm();
-            const maxLevel = alowOverAmplification ? mixerControl.get_vol_max_amplified() : maxLevelNorm;
-            const ampScale = maxLevel / maxLevelNorm;
-
-            let step = direction * 2048;
-
-            volume = volume + step;
-
-            if (volume > maxLevel)
-                volume = maxLevel;
-            if (volume < 0)
-                volume = 0;
-            sink.volume = volume;
-
-            sink.push_volume();
-
-            // OSD
-            let icons = ["audio-volume-muted-symbolic",
-                         "audio-volume-low-symbolic",
-                         "audio-volume-medium-symbolic",
-                         "audio-volume-high-symbolic",
-                         "audio-volume-overamplified-symbolic"];
-
-            let n;
-            if (sink.is_muted || volume <= 0) {
-                n = 0;
-            } else {
-                n = Math.ceil(3 * volume / maxLevelNorm);
-                if (n < 1)
-                    n = 1;
-                else if (n > 3)
-                    n = 4;
-            }
-
-            const gicon = new Gio.ThemedIcon({ name: icons[n] });
-            const level = volume / maxLevel * ampScale;
-            Main.osdWindowManager.show(-1, gicon, null, level, ampScale);
+            return;
         }
+
+        let volume = sink.volume;
+        const maxLevelNorm = mixerControl.get_vol_max_norm();
+        const maxLevel = alowOverAmplification ? mixerControl.get_vol_max_amplified() : maxLevelNorm;
+        const ampScale = maxLevel / maxLevelNorm;
+
+        const step = direction * 2048;
+
+        volume = volume + step;
+        if (volume > maxLevel)
+            volume = maxLevel;
+        if (volume < 0)
+            volume = 0;
+
+        sink.volume = volume;
+        sink.push_volume();
+
+        // OSD
+        let icons = ["audio-volume-muted-symbolic",
+                     "audio-volume-low-symbolic",
+                     "audio-volume-medium-symbolic",
+                     "audio-volume-high-symbolic",
+                     "audio-volume-overamplified-symbolic"];
+
+                     let n;
+        if (sink.is_muted || volume <= 0) {
+            n = 0;
+        } else {
+            n = Math.ceil(3 * volume / maxLevelNorm);
+            if (n < 1)
+                n = 1;
+            else if (n > 3)
+                n = 4;
+        }
+
+        const gicon = new Gio.ThemedIcon({ name: icons[n] });
+        const level = volume / maxLevel * ampScale;
+        Main.osdWindowManager.show(-1, gicon, null, level, ampScale);
     }
 
     toggleNightLight() {
@@ -1088,15 +1005,15 @@ var Actions = class {
         let brightnessContrast, value;
 
         const getBCValue = function () {
-            return brightness ?
-                            brightnessContrast.get_brightness()[0] : // Clutter returns value in [r,g,b] format
-                            brightnessContrast.get_contrast()[0];
+            return brightness
+                            ? brightnessContrast.get_brightness()[0] // Clutter returns value in [r,g,b] format
+                            : brightnessContrast.get_contrast()[0];
         };
 
         const setBCValue = function (val) {
-            return brightness ?
-                            brightnessContrast.set_brightness(val) :
-                            brightnessContrast.set_contrast(val);
+            return brightness
+                            ? brightnessContrast.set_brightness(val)
+                            : brightnessContrast.set_contrast(val);
         };
 
         if (window) {
@@ -1131,9 +1048,9 @@ var Actions = class {
 
         // notify when normal contrast is reached
         if (!valueO && value === 0) {
-            brightness ?
-                brightnessContrast.set_brightness(-0.3) :
-                brightnessContrast.set_contrast(-0.1);
+            brightness
+                ? brightnessContrast.set_brightness(-0.3)
+                : brightnessContrast.set_contrast(-0.1);
             GLib.timeout_add(
                 GLib.PRIORITY_DEFAULT,
                 100,
@@ -1153,7 +1070,6 @@ var Actions = class {
             this._toggleWindowEffect(name, effect);
         else
             this._toggleGlobalEffect(name, effect);
-
     }
 
     toggleColorTintEffect(color, window = true) {
@@ -1430,7 +1346,9 @@ var Actions = class {
         if (advancedSwitcherEnabled) {
             // behaviour variables
             altTabPopup.KEYBOARD_TRIGGERED = args['triggered-keyboard'];
-            altTabPopup._singleApp         = args['filter-focused-app'] ? Shell.WindowTracker.get_default().get_window_app(this._getFocusedWindow()).get_id() : null;
+            altTabPopup._singleApp         = args['filter-focused-app']
+                                                    ? Shell.WindowTracker.get_default().get_window_app(this._getFocusedWindow()).get_id()
+                                                    : null;
             if ( args['timeout'])
                 altTabPopup.NO_MODS_TIMEOUT  = args['timeout'];
             if ( args['position-pointer'] !== null)
