@@ -24,7 +24,7 @@ This extension is based on the original `Custom Hot Corners` exetension, but not
 
 ## Changelog:
 
-### v12 (not released yet):
+### v13 (12 was skipped due to packaging error):
 
 **Added actions:**
 - MPRIS player controls: `Play/Pause`, `Next Track`, `Previous Track`. Works the same way as the keyboard media keys - controls the most recently launched media player
@@ -36,20 +36,21 @@ This extension is based on the original `Custom Hot Corners` exetension, but not
 - `GNOME Shell UI inspector` in `Debug` section - direct activation of the tool that is available in the Looking Glass and allows to inspect GNOME Shell UI elements using a mouse. Big advantage is that this action can be activated using a keyboard shortcut even when a popup menu is open and inspect menu items.
 - `Open Panel Aggregate Menu`, `Open Panel Date Menu`, `Open Panel App Menu` in `GNOME` section.
 
-
 **Fixes:**
-- workspace index position not centered in GS40+
 - added gschema paths for not dynamically created settings - now global settings can be backed up using `Extensions Sync` extension. Unfotunately, dynamically created settings directories storing settings of all individual triggers don't have unique schema id, so can not be backed up using mentioned extension.
 - GS41 not detected
 - Custom Menus - items without its own submenu were added to the previous submenu instead of to the root menu.
 - Sceen keyboard won't show when activated from Custom Menu
 
 **Other changes:**
-- default value for the triggers fullscreen functinality set to `true`, default value for option `Enable all trigers in fullscreen` to `false` (and will be removed)
+- added compatibility with GNOME Shell 42.
+- default value for `Enable this trigger in fullscreen mode` option has been set to `true` and its control has been moved from the settings popup menu to the main page right beside each Action dropdown menu.
+- global option `Enable all trigers in fullscreen` has been removed.
 - redesigned `Monitor` corner settings page, added toggle button for direct control over `Enable in Fullscreen` option.
-- redesigned `Keyboard` and `Custom Menus` Options pages and added butons for control over tree view
-- Custom menus adds focused window title as the first item only if the menu contains actions that target the window.
-- action `Run Preset Command ...` now can activate application by app id (.desktop launcher file name) and was renamed to `Run Preset Command / Activate App ...`. App chooser dialog can now produce command or app id and the latter is default (preffered) option as it's native way to launch / activate application in GNOME Shell.
+- redesigned `Keyboard` and `Custom Menus` Options pages and added butons for control over tree view.
+- workspace switcher options have been removed, you can use my `Workspace Switcher Manager` extension to customize workspace switcher behavior globaly.
+- Custom menu adds title of the focused window as the first item if the menu contains actions that target the window.
+- action `Run Preset Command ...` now can activate application by app id (`.desktop` launcher file name) and was renamed to `Run Preset Command / Activate App ...`. App chooser dialog can now produce command or app id and the latter is default (preffered) option as it's native way to launch / activate application in GNOME Shell.
 - some actions have been moved to submenus to reduce menu height, some useless actions heve been removed
 
 ### v11:
