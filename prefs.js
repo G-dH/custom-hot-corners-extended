@@ -1265,9 +1265,10 @@ class KeyboardPage extends TreeviewPage {
 
             const name = this.model.get_value(iter, 0);
             // exclude group items and avoid duplicate accels
+            // accels for group items now cannot be set, it was fixed
             if (name && !(value in this.keybindings) && uniqueVal(this.keybindings, value)) {
                 this.model.set(iter, [2, 3], [mods, key]);
-                this.keybindings[name] = [value];
+                this.keybindings[name] = value;
                 this._saveShortcuts(this.keybindings);
                 /*Object.entries(this.keybindings).forEach(([key, value]) => {
                 });*/
@@ -1339,11 +1340,11 @@ class KeyboardPage extends TreeviewPage {
             const itemMeaning = item[0];
             const action = item[1];
             const title = item[2];
-            const shouldHaveShortcut = item[3];
+            const shortcutAllowed = item[3];
 
-            if (_excludedItems.includes(action) || !shouldHaveShortcut)
+            if (_excludedItems.includes(action) || !shortcutAllowed)
                 continue;
-            if (this.showActiveBtn.active && !Object.keys(this.keybindings).includes(action) && itemMeaning !== null)
+            if (this.showActiveBtn.active && !(action in this.keybindings) && itemMeaning !== null)
                 continue;
             if (itemMeaning === null) {
                 submenuOnHold = item;
