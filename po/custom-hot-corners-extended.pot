@@ -1,0 +1,1004 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2022-02-28 14:55+0100\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=CHARSET\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: windowSwitcherPopup.js:45
+msgid "ALL"
+msgstr ""
+
+#: windowSwitcherPopup.js:46
+msgid "WS "
+msgstr ""
+
+#: windowSwitcherPopup.js:47
+msgid "MON"
+msgstr ""
+
+#: windowSwitcherPopup.js:65
+msgid "Default"
+msgstr ""
+
+#: windowSwitcherPopup.js:66
+msgid "Current mon first"
+msgstr ""
+
+#: windowSwitcherPopup.js:67
+msgid "Applications"
+msgstr ""
+
+#: windowSwitcherPopup.js:68 settings.js:407
+msgid "Workspaces"
+msgstr ""
+
+#: windowSwitcherPopup.js:69
+msgid "Round Robin"
+msgstr ""
+
+#: windowSwitcherPopup.js:305
+msgid "Search:"
+msgstr ""
+
+#: windowSwitcherPopup.js:306
+msgid "Filter: "
+msgstr ""
+
+#: windowSwitcherPopup.js:307
+msgid "APP"
+msgstr ""
+
+#: windowSwitcherPopup.js:308
+msgid "Order: "
+msgstr ""
+
+#: actions.js:731
+msgid "Restarting Gnome Shell..."
+msgstr ""
+
+#: actions.js:733
+msgid "Gnome Shell - Restart is unavailable in Wayland session"
+msgstr ""
+
+#: actions.js:774
+msgid ""
+"Theme switcher works with Adwaita/Adwaita-dark and Yaru(-light)/Yaru-dark "
+"themes only"
+msgstr ""
+
+#: actions.js:1535
+msgid "No window has focus!"
+msgstr ""
+
+#: prefs.js:93
+msgid "Monitor"
+msgstr ""
+
+#: prefs.js:93
+msgid "(primary)"
+msgstr ""
+
+#: prefs.js:101
+msgid "Keyboard"
+msgstr ""
+
+#: prefs.js:102
+msgid "Custom"
+msgstr ""
+
+#: prefs.js:102
+msgid "Menus"
+msgstr ""
+
+#: prefs.js:103
+msgid "Options"
+msgstr ""
+
+#: prefs.js:191
+msgid "Ctrl"
+msgstr ""
+
+#: prefs.js:196
+msgid "Trigger the action only if Ctrl key is pressed"
+msgstr ""
+
+#: prefs.js:235
+msgid "Enable this trigger in fullscreen mode"
+msgstr ""
+
+#: prefs.js:303
+msgid "Enter command or choose app ID"
+msgstr ""
+
+#: prefs.js:500
+msgid "Pressure Threshold"
+msgstr ""
+
+#: prefs.js:549
+msgid ""
+"You can activate 'Make active corners/edges visible' option on 'Options' "
+"page to see the results of these settings."
+msgstr ""
+
+#: prefs.js:567
+msgid "Hot corner barrier size:"
+msgstr ""
+
+#: prefs.js:568
+msgid ""
+"Set horizontal and vertical size of the barrier that reacts to the mouse "
+"pointer pressure (part of hot corner)."
+msgstr ""
+
+#: prefs.js:569
+msgid "Size can be set in percentage of the screen width and height."
+msgstr ""
+
+#: prefs.js:593
+#, javascript-format
+msgid "Horizontal pressure barrier size in % of monitor width"
+msgstr ""
+
+#: prefs.js:606
+#, javascript-format
+msgid "Vertical pressure barrier size in % of monitor height"
+msgstr ""
+
+#: prefs.js:654
+msgid "Expand clickable corner:"
+msgstr ""
+
+#: prefs.js:656
+msgid ""
+"Expand the area reactive to mouse clicks and scrolls along the edge of the "
+"monitor."
+msgstr ""
+
+#: prefs.js:657
+msgid ""
+"If adjacent corners are set to expand along the same edge, each of them "
+"allocates a half of the edge"
+msgstr ""
+
+#: prefs.js:668
+msgid "Expand horizonatally"
+msgstr ""
+
+#: prefs.js:680
+msgid "Expand vertically"
+msgstr ""
+
+#: prefs.js:699
+msgid "Choose Application"
+msgstr ""
+
+#: prefs.js:707
+msgid "_Cancel"
+msgstr ""
+
+#: prefs.js:708
+msgid "_Add ID"
+msgstr ""
+
+#: prefs.js:709
+msgid "_Add Cmd"
+msgstr ""
+
+#: prefs.js:776
+msgid "Global options"
+msgstr ""
+
+#: prefs.js:783
+msgid "Watch hot corners for external overrides"
+msgstr ""
+
+#: prefs.js:784
+msgid "Update corners when something (usualy other extensions) change them"
+msgstr ""
+
+#: prefs.js:797
+msgid "Minimum delay between actions (ms)"
+msgstr ""
+
+#: prefs.js:798
+msgid "Prevents accidental double-action. Ignored by volume control"
+msgstr ""
+
+#: prefs.js:806
+msgid "Show ripple animations"
+msgstr ""
+
+#: prefs.js:807
+msgid ""
+"When you trigger an action, ripples are animated from the corresponding "
+"corner"
+msgstr ""
+
+#: prefs.js:815
+msgid "Use fallback hot corner triggers"
+msgstr ""
+
+#: prefs.js:816
+msgid ""
+"t work, this option allows trigger the hot corner action by hovering the "
+"corner`),"
+msgstr ""
+
+#: prefs.js:824
+msgid "Make active corners / edges visible"
+msgstr ""
+
+#: prefs.js:825
+msgid ""
+"Shows which corners are active and their size/expansion settings. Pressure "
+"barriers are green, clickable areas are orange"
+msgstr ""
+
+#: prefs.js:833
+msgid "Window switcher"
+msgstr ""
+
+#: prefs.js:841
+msgid "Wraparound"
+msgstr ""
+
+#: prefs.js:842
+msgid ""
+"Whether the switcher should continue from the last window to the first and "
+"vice versa"
+msgstr ""
+
+#: prefs.js:850
+msgid "Skip minimized"
+msgstr ""
+
+#: prefs.js:859
+msgid "DND Window Thumbnails"
+msgstr ""
+
+#: prefs.js:860
+msgid ""
+"Window thumbnails are overlay clones of windows, can be draged by mouse "
+"anywhere on the screen"
+msgstr ""
+
+#: prefs.js:861
+msgid "Thumbnail control:"
+msgstr ""
+
+#: prefs.js:862
+msgid "Double click:    \t\tactivate source window"
+msgstr ""
+
+#: prefs.js:863
+msgid "Primary click:   \t\ttoggle scroll wheel function (resize / source)"
+msgstr ""
+
+#: prefs.js:864
+msgid "Secondary click: \t\tremove thumbnail"
+msgstr ""
+
+#: prefs.js:865
+msgid "Middle click:    \t\tclose source window"
+msgstr ""
+
+#: prefs.js:866
+msgid "Scroll wheel:    \t\tresize or change source window"
+msgstr ""
+
+#: prefs.js:867
+msgid "Ctrl + Scroll wheel: \tchange source window or resize"
+msgstr ""
+
+#: prefs.js:868
+msgid "Shift + Scroll wheel: \tadjust opacity"
+msgstr ""
+
+#: prefs.js:883
+msgid "Thumbnail height scale (%)"
+msgstr ""
+
+#: prefs.js:884
+msgid "Height of the thumbnail relative to screen height"
+msgstr ""
+
+#: prefs.js:1079
+msgid "Custom Menu "
+msgstr ""
+
+#: prefs.js:1152
+msgid "Expand all"
+msgstr ""
+
+#: prefs.js:1159
+msgid "Collapse all"
+msgstr ""
+
+#: prefs.js:1167
+msgid "Show acive items only"
+msgstr ""
+
+#: prefs.js:1200
+msgid "Click on the Shortcut Key cell to set new shortcut."
+msgstr ""
+
+#: prefs.js:1201
+msgid "Press Backspace key instead of the new shortcut to disable shortcut."
+msgstr ""
+
+#: prefs.js:1202
+msgid "Warning: Some system shortcuts can NOT be overriden here."
+msgstr ""
+
+#: prefs.js:1203
+msgid "Warning: Shortcuts already used in this extension will be ignored."
+msgstr ""
+
+#: prefs.js:1204
+msgid "Disable all"
+msgstr ""
+
+#: prefs.js:1205
+msgid "Remove all keyboard shortcuts"
+msgstr ""
+
+#: prefs.js:1220
+msgid "Action"
+msgstr ""
+
+#: prefs.js:1223
+msgid "Shortcut"
+msgstr ""
+
+#: prefs.js:1312
+msgid "Keyboard Shortcuts"
+msgstr ""
+
+#: prefs.js:1410
+msgid "Check items you want to have in the Custom Menu action."
+msgstr ""
+
+#: prefs.js:1410
+msgid ""
+"You can decide whether the action menu items will be in its section submenu "
+"or in the root of the menu by checking/unchecking the section item"
+msgstr ""
+
+#: prefs.js:1411
+msgid "Deselect all"
+msgstr ""
+
+#: prefs.js:1412
+msgid "Remove all items from this menu"
+msgstr ""
+
+#: prefs.js:1426
+msgid "Menu Item"
+msgstr ""
+
+#: prefs.js:1429
+msgid "Add to Menu"
+msgstr ""
+
+#: prefs.js:1481
+msgid "Select items for Custom Menu"
+msgstr ""
+
+#: prefs.js:1481
+msgid "items"
+msgstr ""
+
+#: settings.js:41
+msgid "Hot Corner"
+msgstr ""
+
+#: settings.js:42
+msgid "Primary Button"
+msgstr ""
+
+#: settings.js:43
+msgid "Secondary Button"
+msgstr ""
+
+#: settings.js:44
+msgid "Middle Button"
+msgstr ""
+
+#: settings.js:45
+msgid "Scroll Up"
+msgstr ""
+
+#: settings.js:46
+msgid "Scroll Down"
+msgstr ""
+
+#: settings.js:391
+msgid "-"
+msgstr ""
+
+#: settings.js:393
+msgid "Core Actions"
+msgstr ""
+
+#: settings.js:394
+msgid "Open ArcMenu"
+msgstr ""
+
+#: settings.js:395
+msgid "Show Activities Overview"
+msgstr ""
+
+#: settings.js:396
+msgid "Show Application Grid"
+msgstr ""
+
+#: settings.js:397
+msgid "Run Preset Command / Activate App ..."
+msgstr ""
+
+#: settings.js:398
+msgid "Show Desktop (all monitors)"
+msgstr ""
+
+#: settings.js:399
+msgid "Show Desktop (current monitor)"
+msgstr ""
+
+#: settings.js:400
+msgid "Open CHC-E Preferences"
+msgstr ""
+
+#: settings.js:408
+msgid "Previous Workspace"
+msgstr ""
+
+#: settings.js:410
+msgid "Prev Workspace with Window Switcher"
+msgstr ""
+
+#: settings.js:411
+msgid "Next Workspace"
+msgstr ""
+
+#: settings.js:413
+msgid "Next Workspace with Window Switcher"
+msgstr ""
+
+#: settings.js:414
+msgid "Switch to Recent Workspace"
+msgstr ""
+
+#: settings.js:415
+msgid "Switch to Preset Workspace ..."
+msgstr ""
+
+#: settings.js:416
+msgid "Left"
+msgstr ""
+
+#: settings.js:416
+msgid "Up"
+msgstr ""
+
+#: settings.js:417
+msgid "Right"
+msgstr ""
+
+#: settings.js:417
+msgid "Down"
+msgstr ""
+
+#: settings.js:419
+msgid "Windows - Navigation"
+msgstr ""
+
+#: settings.js:420
+msgid "Switch to Most Recent Window"
+msgstr ""
+
+#: settings.js:421
+msgid "Previous Window (current monitor)"
+msgstr ""
+
+#: settings.js:422
+msgid "Previous Window (current WS)"
+msgstr ""
+
+#: settings.js:423
+msgid "Previous Window (all)"
+msgstr ""
+
+#: settings.js:424
+msgid "Next Window (current monitor)"
+msgstr ""
+
+#: settings.js:425
+msgid "Next Window (current WS)"
+msgstr ""
+
+#: settings.js:426
+msgid "Next Window (all)"
+msgstr ""
+
+#: settings.js:428
+msgid "Windows/App - Switcher Popups"
+msgstr ""
+
+#: settings.js:429
+msgid "Window Switcher Popup (all/default)"
+msgstr ""
+
+#: settings.js:430
+msgid "Window Switcher Popup (current ws)"
+msgstr ""
+
+#: settings.js:431
+msgid "Window Switcher Popup (current monitor)"
+msgstr ""
+
+#: settings.js:432
+msgid "Window Switcher Popup (current ws first)"
+msgstr ""
+
+#: settings.js:433
+msgid "Window Switcher Popup (sorted by apps)"
+msgstr ""
+
+#: settings.js:434
+msgid "Window Switcher Popup (focused app only)"
+msgstr ""
+
+#: settings.js:436
+msgid "App Switcher Popup (all/default)"
+msgstr ""
+
+#: settings.js:437
+msgid "App Switcher Popup (current ws)"
+msgstr ""
+
+#: settings.js:438
+msgid "App Switcher Popup (current monitor)"
+msgstr ""
+
+#: settings.js:441
+msgid "Windows - Control"
+msgstr ""
+
+#: settings.js:442
+msgid "Close Window"
+msgstr ""
+
+#: settings.js:443
+msgid "Maximize Window (toggle)"
+msgstr ""
+
+#: settings.js:444
+msgid "Minimize Window"
+msgstr ""
+
+#: settings.js:445
+msgid "Fullscreen Window (toggle)"
+msgstr ""
+
+#: settings.js:446
+msgid "Always on Top Window (toggle)"
+msgstr ""
+
+#: settings.js:447
+msgid "Always on Visible WS Window (toggle)"
+msgstr ""
+
+#: settings.js:448
+msgid "Quit Focused Application"
+msgstr ""
+
+#: settings.js:449
+msgid "Force Quit Focused Application"
+msgstr ""
+
+#: settings.js:450
+msgid "Open New Window (if supported)"
+msgstr ""
+
+#: settings.js:451
+msgid "Unminimize All Windows (workspace)"
+msgstr ""
+
+#: settings.js:453
+msgid "Windows - Relocations"
+msgstr ""
+
+#: settings.js:454
+msgid "Fullscreen Window on New WS (toggle)"
+msgstr ""
+
+#: settings.js:455
+msgid "Move Window to Previous workspace"
+msgstr ""
+
+#: settings.js:456
+msgid "Move Window to New workspace Prev"
+msgstr ""
+
+#: settings.js:457
+msgid "Move Window to Next workspace"
+msgstr ""
+
+#: settings.js:458
+msgid "Move Window to New workspace Next"
+msgstr ""
+
+#: settings.js:459
+msgid "Move App windows to Prev Workspace"
+msgstr ""
+
+#: settings.js:460
+msgid "Move App windows to New Workspace Prev"
+msgstr ""
+
+#: settings.js:461
+msgid "Move App windows to Next Workspace"
+msgstr ""
+
+#: settings.js:462
+msgid "Move App windows to New Workspace Next"
+msgstr ""
+
+#: settings.js:464
+msgid "DND Window Thumbnails (PIP)"
+msgstr ""
+
+#: settings.js:465
+msgid "Create Window Thumbnail (at bottom-right)"
+msgstr ""
+
+#: settings.js:466
+msgid "Minimize Window to Thumbnail"
+msgstr ""
+
+#: settings.js:467
+msgid "Remove All Window Thumbnails"
+msgstr ""
+
+#: settings.js:469
+msgid "Windows - Visual Adjustments"
+msgstr ""
+
+#: settings.js:470
+msgid "Brightness Up (window)"
+msgstr ""
+
+#: settings.js:471
+msgid "Brightness Down (window)"
+msgstr ""
+
+#: settings.js:472
+msgid "Contrast Up (window)"
+msgstr ""
+
+#: settings.js:473
+msgid "Contrast Down (window)"
+msgstr ""
+
+#: settings.js:474
+msgid "High Contrast (window)"
+msgstr ""
+
+#: settings.js:475
+msgid "Low Contrast (window)"
+msgstr ""
+
+#: settings.js:476
+msgid "Opacity Up (window)"
+msgstr ""
+
+#: settings.js:477
+msgid "Opacity Down (window)"
+msgstr ""
+
+#: settings.js:478
+msgid "Opacity 78% (window)"
+msgstr ""
+
+#: settings.js:479
+#, javascript-format
+msgid "Opacity 78% for dark themes (window)"
+msgstr ""
+
+#: settings.js:480
+#, javascript-format
+msgid "Opacity 94% + bit of contrast (window)"
+msgstr ""
+
+#: settings.js:482
+msgid "Windows - Color Effects"
+msgstr ""
+
+#: settings.js:483
+msgid "Invert Lightness (window)"
+msgstr ""
+
+#: settings.js:484
+msgid "Invert Lightness - White to Grey (window)"
+msgstr ""
+
+#: settings.js:485
+msgid "Invert Colors (window)"
+msgstr ""
+
+#: settings.js:486
+msgid "Red Tint Mono (window)"
+msgstr ""
+
+#: settings.js:487
+msgid "Green Tint Mono (window)"
+msgstr ""
+
+#: settings.js:488
+msgid "Desaturate (window)"
+msgstr ""
+
+#: settings.js:489
+msgid "Remove All Effects (window)"
+msgstr ""
+
+#: settings.js:491
+msgid "Global Visual Effects"
+msgstr ""
+
+#: settings.js:492
+msgid "Brightness Up (global)"
+msgstr ""
+
+#: settings.js:493
+msgid "Brightness Down (global)"
+msgstr ""
+
+#: settings.js:494
+msgid "Contrast Up (global)"
+msgstr ""
+
+#: settings.js:495
+msgid "Contrast Down (global)"
+msgstr ""
+
+#: settings.js:496
+msgid "High Contrast (global)"
+msgstr ""
+
+#: settings.js:497
+msgid "Low Contrast (global)"
+msgstr ""
+
+#: settings.js:498 settings.js:514
+msgid "Invert Lightness (global)"
+msgstr ""
+
+#: settings.js:499
+msgid "Invert Lightness - White to Grey (global)"
+msgstr ""
+
+#: settings.js:500
+msgid "Red Tint Mono (global)"
+msgstr ""
+
+#: settings.js:501
+msgid "Green Tint Mono (global)"
+msgstr ""
+
+#: settings.js:502
+msgid "Desaturate (global)"
+msgstr ""
+
+#: settings.js:503
+msgid "Remove All Effects (global)"
+msgstr ""
+
+#: settings.js:504
+msgid "Black Screen (all monitors)"
+msgstr ""
+
+#: settings.js:505
+msgid "Black Screen (current monitor)"
+msgstr ""
+
+#: settings.js:507
+msgid "Universal Access"
+msgstr ""
+
+#: settings.js:508
+msgid "Magnifier - Zoom 2x (toggle)"
+msgstr ""
+
+#: settings.js:509
+msgid "Magnifier - Zoom In"
+msgstr ""
+
+#: settings.js:510
+msgid "Magnifier - Zoom Out"
+msgstr ""
+
+#: settings.js:511
+msgid "Screen Reader (toggle)"
+msgstr ""
+
+#: settings.js:512
+msgid "Large Text (toggle)"
+msgstr ""
+
+#: settings.js:513
+msgid "Screen Keyboard (toggle)"
+msgstr ""
+
+#: settings.js:515
+msgid "Color Correction - Protanopia (window)"
+msgstr ""
+
+#: settings.js:516
+msgid "Color Correction - Deuteranopia (window)"
+msgstr ""
+
+#: settings.js:517
+msgid "Color Correction - Tritanopia (window)"
+msgstr ""
+
+#: settings.js:518
+msgid "Color Simulation - Protanopia (window)"
+msgstr ""
+
+#: settings.js:519
+msgid "Color Simulation - Deuteranopia (window)"
+msgstr ""
+
+#: settings.js:520
+msgid "Color Simulation - Tritanopia (window)"
+msgstr ""
+
+#: settings.js:521
+msgid "Color Mixer GBR"
+msgstr ""
+
+#: settings.js:523
+msgid "GNOME"
+msgstr ""
+
+#: settings.js:524
+msgid "Hide/Show Main Panel"
+msgstr ""
+
+#: settings.js:525
+msgid "Open Panel Aggregate Menu"
+msgstr ""
+
+#: settings.js:526
+msgid "Open Panel Date Menu"
+msgstr ""
+
+#: settings.js:527
+msgid "Open Panel App Menu"
+msgstr ""
+
+#: settings.js:528
+msgid "Toggle Light/Dark Gtk Theme"
+msgstr ""
+
+#: settings.js:529
+msgid "Toggle Night Light"
+msgstr ""
+
+#: settings.js:531
+msgid "System"
+msgstr ""
+
+#: settings.js:532
+msgid "Lock Screen"
+msgstr ""
+
+#: settings.js:533
+msgid "Suspend to RAM"
+msgstr ""
+
+#: settings.js:534
+msgid "Power Off Dialog"
+msgstr ""
+
+#: settings.js:535
+msgid "Log Out Dialog"
+msgstr ""
+
+#: settings.js:536
+msgid "Switch User (if exists)"
+msgstr ""
+
+#: settings.js:538
+msgid "Sound / Media"
+msgstr ""
+
+#: settings.js:539
+msgid "Volume Up"
+msgstr ""
+
+#: settings.js:540
+msgid "Volume Down"
+msgstr ""
+
+#: settings.js:541
+msgid "Mute Audio (toggle)"
+msgstr ""
+
+#: settings.js:542
+msgid "Media Key - Play/Pause"
+msgstr ""
+
+#: settings.js:543
+msgid "Media Key - Next Track"
+msgstr ""
+
+#: settings.js:544
+msgid "Media Key - Previous Track"
+msgstr ""
+
+#: settings.js:546
+msgid "Debug"
+msgstr ""
+
+#: settings.js:547
+msgid "Looking Glass (GNOME Shell debugger)"
+msgstr ""
+
+#: settings.js:548
+msgid "GNOME Shell UI Inspector"
+msgstr ""
+
+#: settings.js:549
+msgid "Restart GNOME Shell (X11 only)"
+msgstr ""
+
+#: settings.js:550
+msgid "Show Run Command Prompt"
+msgstr ""
+
+#: settings.js:552
+msgid "Custom Menus"
+msgstr ""
+
+#: settings.js:553
+msgid "Show Custom Menu 1"
+msgstr ""
+
+#: settings.js:554
+msgid "Show Custom Menu 2"
+msgstr ""
+
+#: settings.js:555
+msgid "Show Custom Menu 3"
+msgstr ""
+
+#: settings.js:556
+msgid "Show Custom Menu 4"
+msgstr ""
+
+#: settings.js:558
+msgid "Hardware Control"
+msgstr ""
+
+#: settings.js:559
+msgid "Display Brightness Up (HW)"
+msgstr ""
+
+#: settings.js:560
+msgid "Display Brightness Down (HW)"
+msgstr ""
