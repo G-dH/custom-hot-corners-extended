@@ -476,8 +476,6 @@ class CornerPage extends Gtk.Box {
             if (_excludedItems.includes(item[1]))
                 continue;
             if (!itemType) {
-                if (itemType === null)
-                    title = `↓ ${title}`;
                 iter1  = actionTreeStore.append(null);
                 actionTreeStore.set(iter1, [0], [action]);
                 actionTreeStore.set(iter1, [1], [title]);
@@ -1143,7 +1141,6 @@ class TreeviewPage extends Gtk.Box {
             } else {
                 treeView.expand_row(path, false);
             }
-
         });
         const btnBox = new Gtk.Box({
             orientation: Gtk.Orientation.HORIZONTAL,
@@ -1319,7 +1316,8 @@ class KeyboardPage extends TreeviewPage {
         this.keybindings = {};
         const shortcuts = mscOptions._gsettings.get_strv('keyboard-shortcuts');
         shortcuts.forEach(sc => {
-            let [action, accelerator] = sc.split('→');
+            // split by non ascii character (causes automake gettext error) which was used before, or space which is used now
+            let [action, accelerator] = sc.split(/[^\x00-\x7F]| /);
             this.keybindings[action] = accelerator;
         });
     }
@@ -1327,7 +1325,7 @@ class KeyboardPage extends TreeviewPage {
     _saveShortcuts(keybindings) {
         const list = [];
         Object.keys(keybindings).forEach(s => {
-            list.push(`${s}→${keybindings[s]}`);
+            list.push(`${s} ${keybindings[s]}`);
         });
         mscOptions._gsettings.set_strv('keyboard-shortcuts', list);
     }

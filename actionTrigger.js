@@ -78,7 +78,7 @@ var ActionTrigger = class ActionTrigger {
                 }
                 const list = [];
                 Object.keys(keybindings).forEach(s => {
-                    list.push(`${s}→${keybindings[s]}`);
+                    list.push(`${s} ${keybindings[s]}`);
                 });
                 if (list.length)
                     this._mscOptions._gsettings.set_strv('keyboard-shortcuts', list);
@@ -97,7 +97,8 @@ var ActionTrigger = class ActionTrigger {
 
         const manager = this._getKeybindingsManager();
         list.forEach(sc => {
-            const [action, accelerator] = sc.split('→');
+            // split by non ascii character (causes automake gettext error) which was used before, or space which is used now
+            const [action, accelerator] = sc.split(/[^\x00-\x7F]| /);
             const callback = () => {
                 this._runKeyAction(action);
             };
