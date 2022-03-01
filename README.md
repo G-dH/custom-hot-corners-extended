@@ -47,8 +47,36 @@ The code is based on window preview of *BaBar Task Bar* extension.
 
 ## Installation
 
-Install the extension from the from the [GNOME extension website](https://extensions.gnome.org/extension/4167/custom-hot-corners-extended/) or from git repository with the following steps (which require the GNU Build System):
+You have 3 ways how to install this extension.
+
+#### Installing from extensions.gnome.org
+
+The easiest way to install Custom Hot Corners - Extended: go to [extensions.gnome.org](https://extensions.gnome.org/extension/4167/custom-hot-corners-extended/) and toggle the switch. This installation also gives you automatic updates in the future.
+
+#### Installing from the latest Github release
+
+Download the latest release archive using following command:
+
+    wget https://github.com/G-dH/custom-hot-corners-extended/releases/latest/download/custom-hot-corners-extended@G-dH.github.com.zip
+
+Install the extension (`--force` switch needs to be used only if some version of the extension is already installed):
+
+    gnome-extensions install --force custom-hot-corners-extended@G-dH.github.com.zip
+
+Then restart GNOME Shell (`ALt` + `F2`, `r`, `Enter`, or Log Out/Log In if you use Wayland). Now you should see the new extension in *Extensions* (or *GNOME Tweak Tool* on older systems) application (reopen the app too if needed to load new data), where you can enable it and access its Preferences. 
+
+You can also enable the extension from the command line:
+
+   gnome-extensions enable custom-hot-corners-extended@G-dH.github.com
+
+#### Install from the source using GNU Build System
+
+If you want to test the latest development (usually working well) version from the Github repository, you can dounload and unpack source code from the `gdh` branch and install the extension with the following commands in the directory with the source code, which require the GNU Build System:
 
     autoreconf -i
     ./configure
     make local-install
+
+#### If you want development version without installing GNU Build System
+
+You can also install the stable version of extensiom using one of the first two methods and then download the latest source code from GitHub and ovewrite all `*.js` and `schema/*` files in the extension directory `~/.local/share/gnome-shell/extensions/custom-hot-corners-extended@G-dH.github.com`. Then restart the Shell.
