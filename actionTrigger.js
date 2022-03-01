@@ -139,6 +139,7 @@ var ActionTrigger = class ActionTrigger {
 
     _disconnectSettingsKB() {
         this._gsettingsKB.disconnect(this._gsettingsKBid);
+        this._gsettingsKBid = 0;
     }
 
     // translates key to action function
