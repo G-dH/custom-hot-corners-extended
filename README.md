@@ -40,8 +40,8 @@ The code is based on window preview of *BaBar Task Bar* extension.
     Shift + Scroll wheel  - change thumbnail opacity
 
 ![Extension configuration window](screenshot.png)
-![Extension configuration window](screenshot1.png)
 ![Extension configuration window](screenshot4.png)
+![Extension configuration window](screenshot1.png)
 ![Extension configuration window](screenshot2.png)
 ![Extension configuration window](screenshot3.png)
 
