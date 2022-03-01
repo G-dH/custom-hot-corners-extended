@@ -9,7 +9,7 @@ EXTRA_DIST = settings.js \
              actions.js \
              actionTrigger.js \
              winTmb.js \
-             shaders.js \
+             shaders.js
 
 topextensiondir = $(datadir)/gnome-shell/extensions
 extensiondir = $(topextensiondir)/$(uuid)
