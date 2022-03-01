@@ -89,7 +89,7 @@ var ActionTrigger = class ActionTrigger {
         // end of transition code
 
         if (!this._gsettingsKBid)
-            this._gsettingsKBid = this._gsettingsKB.connect('changed::keyboard-shortcuts', this._updateKeyBinding.bind(this));
+            this._gsettingsKBid = this._mscOptions.connect('changed::keyboard-shortcuts', this._updateKeyBinding.bind(this));
 
         const list = this._mscOptions._gsettings.get_strv('keyboard-shortcuts');
         if (!list.length)
