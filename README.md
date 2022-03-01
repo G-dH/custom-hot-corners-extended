@@ -20,7 +20,7 @@ This extension is based on the original `Custom Hot Corners` exetension, but not
 - The `Monitor 1` settings are always used on the primary monitor
 - Corners can be watched for unwanted overrides from other extensions and automatically updated when needed
 - You can set global keyboard shortcuts for any actions on the menu except for those available natively in GNOME Settings.
-- You can set up to 4 Custom Menus with your own selection of actions and use them as an single action.
+- You can create up to 4 Custom Menus with your own selection of actions and use them as an single action.
 
 ## Changelog
 
@@ -47,13 +47,13 @@ The code is based on window preview of *BaBar Task Bar* extension.
 
 ## Installation
 
-You have 3 ways how to install this extension.
+You can install this extension in several ways.
 
-#### Installing from extensions.gnome.org
+### Installing from extensions.gnome.org
 
 The easiest way to install Custom Hot Corners - Extended: go to [extensions.gnome.org](https://extensions.gnome.org/extension/4167/custom-hot-corners-extended/) and toggle the switch. This installation also gives you automatic updates in the future.
 
-#### Installing from the latest Github release
+### Installing from the latest Github release
 
 Download the latest release archive using following command:
 
@@ -67,9 +67,9 @@ Then restart GNOME Shell (`ALt` + `F2`, `r`, `Enter`, or Log Out/Log In if you u
 
 You can also enable the extension from the command line:
 
-   gnome-extensions enable custom-hot-corners-extended@G-dH.github.com
+    gnome-extensions enable custom-hot-corners-extended@G-dH.github.com
 
-#### Install from the source using GNU Build System
+### Install from the source using GNU Build System
 
 If you want to test the latest development (usually working well) version from the Github repository, you can dounload and unpack source code from the `gdh` branch and install the extension with the following commands in the directory with the source code, which require the GNU Build System:
 
@@ -77,6 +77,6 @@ If you want to test the latest development (usually working well) version from t
     ./configure
     make local-install
 
-#### If you want development version without installing GNU Build System
+### If you want development version without installing GNU Build System
 
 You can also install the stable version of the extension using one of the first two methods and then download the latest source code from GitHub and ovewrite all `*.js` and `schema/*` files in the extension directory `~/.local/share/gnome-shell/extensions/custom-hot-corners-extended@G-dH.github.com`. Then restart the Shell and new code should be loaded.
