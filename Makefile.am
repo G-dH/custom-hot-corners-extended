@@ -10,7 +10,6 @@ EXTRA_DIST = settings.js \
              actionTrigger.js \
              winTmb.js \
              shaders.js \
-             stylesheet.css
 
 topextensiondir = $(datadir)/gnome-shell/extensions
 extensiondir = $(topextensiondir)/$(uuid)
@@ -23,7 +22,6 @@ extension_DATA = settings.js \
                  actionTrigger.js \
                  winTmb.js \
                  shaders.js \
-                 stylesheet.css \
                  README.md \
                  LICENSE
 
