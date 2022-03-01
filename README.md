@@ -79,4 +79,4 @@ If you want to test the latest development (usually working well) version from t
 
 #### If you want development version without installing GNU Build System
 
-You can also install the stable version of extensiom using one of the first two methods and then download the latest source code from GitHub and ovewrite all `*.js` and `schema/*` files in the extension directory `~/.local/share/gnome-shell/extensions/custom-hot-corners-extended@G-dH.github.com`. Then restart the Shell.
+You can also install the stable version of the extension using one of the first two methods and then download the latest source code from GitHub and ovewrite all `*.js` and `schema/*` files in the extension directory `~/.local/share/gnome-shell/extensions/custom-hot-corners-extended@G-dH.github.com`. Then restart the Shell and new code should be loaded.
