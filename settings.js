@@ -415,6 +415,7 @@ var actionList = [
         [   1, 'move-to-workspace'          , _('Switch to Preset Workspace ...'),          false,  'go-jump-symbolic',                                       false],
         [   1, 'reorder-ws-prev'            , _(`Reorder Workspace - ${horizontal? _('Left') : _('Up')}`),  true,  horizontal ? 'go-previous-symbolic':'go-up-symbolic', false],
         [   1, 'reorder-ws-next'            , _(`Reorder Workspace - ${horizontal? _('Right'): _('Down')}`),true,  horizontal ? 'go-next-symbolic':'go-down-symbolic',   false],
+        [   1, 'close-workspace'            , _('Close Current Workspace (and its windows)'),true,  'window-close-symbolic',                                  false],
 
         [null, 'win-navigation-submenu'     , _('Windows - Navigation'),                     true,  'focus-windows-symbolic',                                 false],
         [   1, 'recent-win'                 , _('Switch to Most Recent Window'),             true,  'document-open-recent-symbolic',                          false],

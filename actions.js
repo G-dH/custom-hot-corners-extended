@@ -445,6 +445,19 @@ var Actions = class {
         this._showWsSwitcherPopup(direction, targetIdx);
     }
 
+    closeWorkspace() {
+        const activeWs = global.workspace_manager.get_active_workspace();
+        const windows = AltTab.getWindows(activeWs);
+        for (let i = 0; i < windows.length; i++) {
+            if (!windows[i].is_on_all_workspaces()) {
+                windows[i].delete(global.get_current_time()+i);
+            }
+        }
+        const vertical = global.workspaceManager.layout_rows === -1;
+        const direction = vertical ? Meta.MotionDirection.DOWN : Meta.MotionDirection.RIGHT;
+        this.switchWorkspace(direction, true);
+    }
+
     setDisplayBrightness(direction) {
         const proxy = this._getDisplayBrightnessProxy();
         let value = proxy.Brightness;
@@ -814,12 +827,13 @@ var Actions = class {
         }
     }
 
-    // direction: Meta.MOtionDirection
-    switchWorkspace(direction) {
+    // direction: Meta.MotionDirection
+    switchWorkspace(direction, showPopup = true) {
         direction = this._translateDirectionToHorizontal(direction);
         const targetWs = global.workspaceManager.get_active_workspace().get_neighbor(direction);
         Main.wm.actionMoveWorkspace(targetWs);
-        this._showWsSwitcherPopup(direction, targetWs.index());
+        if (showPopup)
+            this._showWsSwitcherPopup(direction, targetWs.index());
         /*
             let n_workspaces = global.workspaceManager.n_workspaces;
             let lastWsIndex =  n_workspaces - (this.WS_IGNORE_LAST ? 2 : 1);
@@ -848,14 +862,19 @@ var Actions = class {
             const vertical = global.workspaceManager.layout_rows === -1;
             if (Main.wm._workspaceSwitcherPopup == null) {
                 Main.wm._workspaceSwitcherPopup = new WorkspaceSwitcherPopup.WorkspaceSwitcherPopup();
-                Main.wm._workspaceSwitcherPopup.reactive = false;
                 Main.wm._workspaceSwitcherPopup.connect('destroy', () => {
                     Main.wm._workspaceSwitcherPopup = null;
                 });
             }
+
             let motion = direction === Meta.MotionDirection.DOWN ? (vertical ? Meta.MotionDirection.DOWN : Meta.MotionDirection.RIGHT)
-            : (vertical ? Meta.MotionDirection.UP   : Meta.MotionDirection.LEFT);
-            Main.wm._workspaceSwitcherPopup.display(motion, wsIndex);
+            : (vertical ? Meta.MotionDirection.UP : Meta.MotionDirection.LEFT);
+
+            if (Settings.shellVersion >= 42) {
+                Main.wm._workspaceSwitcherPopup.display(wsIndex);
+            } else {
+                Main.wm._workspaceSwitcherPopup.display(motion, wsIndex);
+            }
         }
     }
 

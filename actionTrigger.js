@@ -229,6 +229,10 @@ var ActionTrigger = class ActionTrigger {
         this.actions.reorderWorkspace(+1);
     }
 
+    _closeWorkspace() {
+        this.actions.closeWorkspace();
+    }
+
     _prevWinAll() {
         this.actions.switchWindow(-1, false, -1);
     }
