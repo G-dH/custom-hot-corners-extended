@@ -72,10 +72,9 @@ class CustomHotCornersExtended {
             GLib.PRIORITY_DEFAULT,
             500,
             () => {
-                this._delayId = 0;
                 Main.layoutManager._interfaceSettings.set_boolean('enable-hot-corners', false);
                 this._extensionEnabled = true;
-                this._initMscOptions();
+                this._mscOptions = new Settings.MscOptions();
                 if (!this.actionTrigger) {
                     this.actionTrigger = new ActionTriger.ActionTrigger(this._mscOptions);
                 }
@@ -92,20 +91,26 @@ class CustomHotCornersExtended {
                     () => {
                         // delay to be sure that all extensions are loaded and active
                         this._updateSupportedExtensionsAvailability();
+                        this._delaySupportId = 0;
                         return GLib.SOURCE_REMOVE;
                     }
                 );
-                this._delaySupportId = 0;
+                this._mscOptions.connect('changed', (settings, key) => this._updateMscOptions(key));
+                this._delayId = 0;
                 return GLib.SOURCE_REMOVE;
             }
         );
     }
 
     disable() {
-        if (this._delayId)
+        if (this._delayId) {
             GLib.source_remove(this._delayId);
-        if (this._delaySupportId)
+            this._delayId = 0;
+        }
+        if (this._delaySupportId) {
             GLib.source_remove(this._delaySupportId);
+            this._delaySupportId = 0;
+        }
         this._timeoutsCollector.forEach(c => GLib.Source.remove(c));
         this._timeoutsCollector = [];
         this._removeActionTimeout();
@@ -134,11 +139,6 @@ class CustomHotCornersExtended {
     _replace_updateHotCornersFunc() {
         Main.layoutManager._updateHotCorners = this._updateHotCorners.bind(this);
         Main.layoutManager._updateHotCorners();
-    }
-
-    _initMscOptions() {
-        this._mscOptions = new Settings.MscOptions();
-        this._mscOptions.connect('changed', (settings, key) => this._updateMscOptions(key));
     }
 
     _updateSupportedExtensionsAvailability(reset = false) {

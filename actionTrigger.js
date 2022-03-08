@@ -14,7 +14,6 @@ var ActionTrigger = class ActionTrigger {
     constructor(mscOptions) {
         this.actions = new Actions.Actions(mscOptions);
         this._mscOptions = mscOptions;
-        this._gsettingsKB = mscOptions._gsettings;
         this.runActionData = {
             action: null,
             monitorIndex: 0,
@@ -40,7 +39,9 @@ var ActionTrigger = class ActionTrigger {
 
     clean(full = true) {
         this._removeShortcuts();
-        this._disconnectSettingsKB();
+        // gsettingsKB signal is removed by mscOptions.destroy()
+        this._gsettingsKBid = 0;
+
         if (this._keybindingsManager) {
             this._keybindingsManager.destroy();
             this._keybindingsManager = null;
@@ -135,11 +136,6 @@ var ActionTrigger = class ActionTrigger {
         if (this._keybindingsManager) {
             this._keybindingsManager.removeAll();
         }
-    }
-
-    _disconnectSettingsKB() {
-        this._gsettingsKB.disconnect(this._gsettingsKBid);
-        this._gsettingsKBid = 0;
     }
 
     // translates key to action function

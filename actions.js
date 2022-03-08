@@ -88,20 +88,30 @@ var Actions = class {
             this.removeAllEffects();
             this._resetSettings();
 
-            for (let sig of this._signalsCollector)
+            for (let sig of this._signalsCollector) {
                 sig[0].disconnect(sig[1]);
+            }
 
             this.Shaders   = null;
         }
-        // global.workspace_manager.disconnect(this._signalsCollector.pop());
+
+        global.workspace_manager.disconnect(this._recentWsSignalhandler);
         this._removeThumbnails(full);
         this._destroyDimmerActors();
         this._removeCustomMenus();
 
-        if (this.keyboardTimeoutId)
+        if (this.keyboardTimeoutId) {
             GLib.source_remove(this.keyboardTimeoutId);
-        if (this._winSwitcherTimeoutId)
+            this.keyboardTimeoutId = 0;
+        }
+        if (this._winSwitcherTimeoutId) {
             GLib.source_remove(this._winSwitcherTimeoutId);
+            this._winSwitcherTimeoutId = 0;
+        }
+        if (this._setBCTimeoutId) {
+            GLib.source_remove(this._setBCTimeoutId);
+            this._setBCTimeoutId = 0;
+        }
     }
 
     resume() {
@@ -269,8 +279,7 @@ var Actions = class {
 
     _connectRecentWorkspace() {
         let actor = global.workspace_manager;
-        let connection = actor.connect('workspace-switched', this._onWorkspaceSwitched.bind(this));
-        this._signalsCollector.push([actor, connection]);
+        this._recentWsSignalhandler = actor.connect('workspace-switched', this._onWorkspaceSwitched.bind(this));
     }
 
     _onWorkspaceSwitched(display, prev, current, direction) {
@@ -890,9 +899,9 @@ var Actions = class {
         let windows = AltTab.getWindows(workspace);
         if (monitorIndex > -1)
             windows = windows.filter(w => w.get_monitor() === monitorIndex);
-        // when window with attached modal window is activated, focus shifts to modal window ...
+        // when window with attached modal window is activated, focus shifts to the modal window ...
         //  ... and switcher can stuck trying to activate same window again ...
-        //  ... when these windows are next to each other in window list
+        //  ... when these windows are next to each other in the window list
         // map windows with modals attached ...
         // ... and filter out not modal windows and duplicates
 // this is already part of AltTab.getWindows() function
@@ -919,11 +928,14 @@ var Actions = class {
 
         // if window selection is in the process, the previewd window must be the current one
         let currentWin  = this._winPreview ? this._winPreview._window : windows[0];
-        // tab list is sorted by MRU order, active window is allways idx 0
-        // each window has index in global stable order list (as launched)
-        windows.sort((a, b) => {
-                return a.get_stable_sequence() - b.get_stable_sequence();
-            });
+
+        if (this.WIN_STABLE_SEQUENCE) { // this option is not implemented yet
+            // tab list is sorted by MRU order, active window is allways idx 0
+            // each window has index in global stable order list (as launched)
+            windows.sort((a, b) => {
+                    return a.get_stable_sequence() - b.get_stable_sequence();
+                });
+        }
         const currentIdx = windows.indexOf(currentWin);
         let targetIdx = currentIdx + direction;
 
@@ -936,6 +948,7 @@ var Actions = class {
         this._showWindowPreview(windows[targetIdx]);
         if (this._winSwitcherTimeoutId) {
             GLib.source_remove(this._winSwitcherTimeoutId);
+            this._winSwitcherTimeoutId = 0;
         }
         this._winSwitcherTimeoutId = GLib.timeout_add(
             GLib.PRIORITY_DEFAULT,
@@ -1130,12 +1143,13 @@ var Actions = class {
             brightness
                 ? brightnessContrast.set_brightness(-0.3)
                 : brightnessContrast.set_contrast(-0.1);
-            GLib.timeout_add(
+            this._setBCTimeoutId = GLib.timeout_add(
                 GLib.PRIORITY_DEFAULT,
                 100,
                 () => {
                     setBCValue(value);
-                    return false;
+                    this._setBCTimeoutId = 0;
+                    return GLib.SOURCE_REMOVE;
                 }
             );
         }
