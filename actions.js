@@ -67,11 +67,12 @@ var Actions = class {
         this._currentWorkspace      = -1;
 
         this.windowThumbnails       = [];
-        this.tmbConnected           = false;
+        this._tmbConnected          = false;
 
         this._mainPanelVisible      = Main.panel.is_visible();
 
         this.customMenu             = [];
+        this._winPreview            = null
 
         this._connectRecentWorkspace();
 
@@ -99,6 +100,8 @@ var Actions = class {
 
         if (this.keyboardTimeoutId)
             GLib.source_remove(this.keyboardTimeoutId);
+        if (this._winSwitcherTimeoutId)
+            GLib.source_remove(this._winSwitcherTimeoutId);
     }
 
     resume() {
@@ -914,7 +917,8 @@ var Actions = class {
         if (!windows.length)
             return;
 
-        let currentWin  = windows[0];
+        // if window selection is in the process, the previewd window must be the current one
+        let currentWin  = this._winPreview ? this._winPreview._window : windows[0];
         // tab list is sorted by MRU order, active window is allways idx 0
         // each window has index in global stable order list (as launched)
         windows.sort((a, b) => {
@@ -922,11 +926,67 @@ var Actions = class {
             });
         const currentIdx = windows.indexOf(currentWin);
         let targetIdx = currentIdx + direction;
-        if (targetIdx > windows.length - 1)
+
+        if (targetIdx > windows.length - 1) {
             targetIdx = this.WIN_WRAPAROUND ? 0 : currentIdx;
-        else if (targetIdx < 0)
+        } else if (targetIdx < 0) {
             targetIdx = this.WIN_WRAPAROUND ? windows.length - 1 : currentIdx;
-        windows[targetIdx].activate(global.get_current_time());
+        }
+
+        this._showWindowPreview(windows[targetIdx]);
+        if (this._winSwitcherTimeoutId) {
+            GLib.source_remove(this._winSwitcherTimeoutId);
+        }
+        this._winSwitcherTimeoutId = GLib.timeout_add(
+            GLib.PRIORITY_DEFAULT,
+            300,
+            () => {
+                // if the mouse pointer is still over the edge of the current monitor, we assume that the user has not yet finished the selection
+                if (this._winPreview && !this._isPointerOnEdge()) {
+                    this._winPreview._window.activate(global.get_current_time());
+                    this._destroyWindowPreview();
+                    this._winSwitcherTimeoutId = 0;
+                    return GLib.SOURCE_REMOVE;
+                }
+                return GLib.SOURCE_CONTINUE;
+            }
+        );
+    }
+
+    // returns true if the mouse pointer is at the edge of the current monitor
+    _isPointerOnEdge() {
+        let [x, y] = global.get_pointer();
+        const geometry = global.display.get_monitor_geometry(global.display.get_current_monitor());
+        if ([geometry.x, geometry.x + geometry.width -1].includes(x))
+            return true;
+        if ([geometry.y, geometry.y + geometry.height - 1].includes(y))
+            return true;
+
+        return false;
+    }
+
+    _showWindowPreview(metaWin) {
+        if (!metaWin) return;
+
+        if (this._winPreview) {
+            this._destroyWindowPreview();
+        }
+
+        if (!this._winPreview) {
+            this._winPreview = new AltTab.CyclerHighlight();
+            global.window_group.add_actor(this._winPreview);
+        }
+
+        this._winPreview.window = metaWin;
+        this._winPreview._window = metaWin;
+        global.window_group.set_child_above_sibling(this._winPreview, null);
+    }
+
+    _destroyWindowPreview() {
+        if (this._winPreview) {
+            this._winPreview.destroy();
+            this._winPreview = null;
+        }
     }
 
     //direction +1 / -1, 0 for toggle mute
@@ -1321,12 +1381,12 @@ var Actions = class {
         if (!metaWin)
             return;
 
-        if (!this.tmbConnected) {
+        if (!this._tmbConnected) {
             let conS = Main.overview.connect('showing', () => { this.windowThumbnails.forEach((t) => {t.hide();}); });
             let conH = Main.overview.connect('hiding',  () => { this.windowThumbnails.forEach((t) => {t.show();}); });
             this._signalsCollector.push([Main.overview, conS]);
             this._signalsCollector.push([Main.overview, conH]);
-            this.tmbConnected = true;
+            this._tmbConnected = true;
         }
 
         let monitorHeight = get_current_monitor_geometry().height;
