@@ -107,6 +107,14 @@ var MscOptions = class MscOptions {
         this._gsettings.set_boolean('win-switch-skip-minimized', bool_val);
     }
 
+    get winStableSequence() {
+        return this._gsettings.get_boolean('win-switch-stable-sequence');
+    }
+
+    set winStableSequence(bool_val) {
+        this._gsettings.set_boolean('win-switch-stable-sequence', bool_val);
+    }
+
     get winThumbnailScale() {
         return this._gsettings.get_int('win-thumbnail-scale');
     }

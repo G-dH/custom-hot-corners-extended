@@ -62,6 +62,7 @@ var Actions = class {
 
         this.WIN_WRAPAROUND         = false;
         this.WIN_SKIP_MINIMIZED     = false;
+        this.WIN_STABLE_SEQUENCE    = false;
 
         this._recentWorkspace       = -1;
         this._currentWorkspace      = -1;
@@ -99,6 +100,7 @@ var Actions = class {
         this._removeThumbnails(full);
         this._destroyDimmerActors();
         this._removeCustomMenus();
+        this._destroyWindowPreview();
 
         if (this.keyboardTimeoutId) {
             GLib.source_remove(this.keyboardTimeoutId);
@@ -923,21 +925,19 @@ var Actions = class {
         if (this.WIN_SKIP_MINIMIZED)
             windows = windows.filter(win => !win.minimized);
 
-        if (!windows.length)
-            return;
+        if (!windows.length) return;
 
         // if window selection is in the process, the previewd window must be the current one
         let currentWin  = this._winPreview ? this._winPreview._window : windows[0];
-
-        if (this.WIN_STABLE_SEQUENCE) { // this option is not implemented yet
+        if (this.WIN_STABLE_SEQUENCE) {
             // tab list is sorted by MRU order, active window is allways idx 0
             // each window has index in global stable order list (as launched)
             windows.sort((a, b) => {
                     return a.get_stable_sequence() - b.get_stable_sequence();
-                });
+                }).reverse(); // reverse the list to get the same sequence direction as MRU list has
         }
         const currentIdx = windows.indexOf(currentWin);
-        let targetIdx = currentIdx + direction;
+        let targetIdx = currentIdx + ( - direction); // reverse the direction to follow MRU ordered list
 
         if (targetIdx > windows.length - 1) {
             targetIdx = this.WIN_WRAPAROUND ? 0 : currentIdx;

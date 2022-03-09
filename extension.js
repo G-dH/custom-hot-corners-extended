@@ -183,6 +183,7 @@ class CustomHotCornersExtended {
         actions.WS_INDICATOR_MODE   = this._mscOptions.wsSwitchIndicatorMode;
         actions.WIN_WRAPAROUND      = this._mscOptions.winSwitchWrap;
         actions.WIN_SKIP_MINIMIZED  = this._mscOptions.winSkipMinimized;
+        actions.WIN_STABLE_SEQUENCE = this._mscOptions.winStableSequence;
         this.ACTION_TIMEOUT    = this._mscOptions.actionEventDelay;
         this.RIPPLE_ANIMATION  = this._mscOptions.rippleAnimation;
 

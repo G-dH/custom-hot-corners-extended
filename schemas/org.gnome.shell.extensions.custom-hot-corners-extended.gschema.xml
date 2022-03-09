@@ -49,6 +49,9 @@
     <key name='win-switch-skip-minimized' type='b'>
       <default>false</default>
     </key>
+    <key name='win-switch-stable-sequence' type='b'>
+      <default>false</default>
+    </key>
     <key name='win-thumbnail-scale' type='i'>
       <default>15</default>
     </key>

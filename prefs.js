@@ -847,6 +847,15 @@ class OptionsPage extends Gtk.ScrolledWindow {
 
         optionsList.push(
             _optionsItem(
+                _('Sort by Stable Sequence'),
+                _("By default windows are sorted by the MRU (Most Recently Used) AltTab list, which is given by time stamps that are updated each time the window is activated by the user. The stable sequence is given by the unique Id that each window gets when it's created."),
+                _newGtkSwitch(),
+                'winStableSequence'
+            )
+        );
+
+        optionsList.push(
+            _optionsItem(
                 _('Skip minimized'),
                 null,
                 _newGtkSwitch(),
