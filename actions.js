@@ -966,13 +966,13 @@ var Actions = class {
         );
     }
 
-    // returns true if the mouse pointer is at the edge of the current monitor
+    // returns true if the mouse pointer is at the edge of the current monitor and not further than 100px on the other axis
     _isPointerOnEdge() {
         let [x, y] = global.get_pointer();
         const geometry = global.display.get_monitor_geometry(global.display.get_current_monitor());
-        if ([geometry.x, geometry.x + geometry.width -1].includes(x))
+        if ([geometry.x, geometry.x + geometry.width -1].includes(x) && Math.abs(this._winPreview._yPointer - y) < 100)
             return true;
-        if ([geometry.y, geometry.y + geometry.height - 1].includes(y))
+        if ([geometry.y, geometry.y + geometry.height - 1].includes(y) && Math.abs(this._winPreview._xPointer - x) < 100)
             return true;
 
         return false;
@@ -981,13 +981,14 @@ var Actions = class {
     _showWindowPreview(metaWin) {
         if (!metaWin) return;
 
-        if (this._winPreview) {
+        /*if (this._winPreview) {
             this._destroyWindowPreview();
-        }
+        }*/
 
         if (!this._winPreview) {
             this._winPreview = new AltTab.CyclerHighlight();
             global.window_group.add_actor(this._winPreview);
+            [this._winPreview._xPointer, this._winPreview._yPointer] = global.get_pointer();
         }
 
         this._winPreview.window = metaWin;
