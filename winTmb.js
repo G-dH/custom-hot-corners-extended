@@ -15,7 +15,7 @@
 */
 'use strict';
 
-const {GObject, GLib, Clutter, St, Meta} = imports.gi;
+const { GObject, GLib, Clutter, St, Meta, Shell } = imports.gi;
 
 const Main                   = imports.ui.main;
 const DND                    = imports.ui.dnd;
@@ -29,6 +29,8 @@ class WindowThumbnail extends St.Bin {
         this._scrollTimeout = args.actionTimeout;
         this._positionOffset = args.thumbnailsOnScreen;
         this._reverseTmbWheelFunc = false;
+        this._click_count = 1;
+        this._prevBtnPressTime = 0;
         this._parent = parent;
         this.w = metaWin;
         super._init({visible: true, reactive: true, can_focus: true, track_hover: true});
@@ -64,6 +66,7 @@ class WindowThumbnail extends St.Bin {
             if (this)
                 this._remove();
         });
+        this._setIcon();
     }
 
     _getInitialPosition() {
@@ -83,12 +86,10 @@ class WindowThumbnail extends St.Bin {
         // when this.clone source window resize, this.clone and this. actor resize accordingly
         this.scale_x = this.scale;
         this.scale_y = this.scale;
-        // when scale of this. actor change, this.clone resize accordingly,
+        // when the scale of this. actor change, this.clone resize accordingly,
         // but the reactive area of the actor doesn't change until the actor is redrawn
-        // don't know how to do it better..
-        this.set_position(this.x, this.y + (this.tmbRedrawDirection ? 1 : -1));
-        // switch direction of the move for each resize
-        this.tmbRedrawDirection = !this.tmbRedrawDirection;
+        // this updates the actor's input region area:
+        Main.layoutManager._queueUpdateRegions();
     }
 
     _onMouseMove(actor, event) {
@@ -99,31 +100,43 @@ class WindowThumbnail extends St.Bin {
     }
 
     _onBtnPressed(actor, event) {
-        let doubleclick = event.get_click_count() === 2;
-        if (doubleclick)
+        // Clutter.Event.click_count property in no longer available, since GS42
+        //let doubleclick = event.get_click_count() === 2;
+        if ((event.get_time() - this._prevBtnPressTime) < Clutter.Settings.get_default().double_click_time) {
+            this._click_count +=1;
+        } else {
+            this._click_count = 1;
+        }
+        this._prevBtnPressTime = event.get_time();
+
+        if (this._click_count === 2) {
             this.w.activate(global.get_current_time());
+        }
     }
 
     _onBtnReleased(actor, event) {
         let button = event.get_button();
         switch (button) {
         case Clutter.BUTTON_PRIMARY:
-            // if (this._ctrlPressed(state))
-            this._reverseTmbWheelFunc = !this._reverseTmbWheelFunc;
+            if (this._ctrlPressed(event.get_state()))
+                this._switchView();
+            else
+                this._reverseTmbWheelFunc = !this._reverseTmbWheelFunc;
+            return Clutter.EVENT_STOP;
             break;
         case Clutter.BUTTON_SECONDARY:
-            // if (this._ctrlPressed(state))
+            // if (_ctrlPressed(state))
             this._remove();
+            return Clutter.EVENT_STOP;
             break;
         case Clutter.BUTTON_MIDDLE:
-            // if (this._ctrlPressed(state))
+            // if (_ctrlPressed(state))
             this.w.delete(global.get_current_time());
+            return Clutter.EVENT_STOP;
             break;
         default:
             return Clutter.EVENT_PROPAGATE;
         }
-
-        return Clutter.EVENT_STOP;
     }
 
     _onScrollEvent(actor, event) {
@@ -153,7 +166,6 @@ class WindowThumbnail extends St.Bin {
         default:
             return Clutter.EVENT_PROPAGATE;
         }
-
         this._setSize();
         // this.scale = Math.min(1.0, this.max_width / this.width, this.max_height / this.height);
         return Clutter.EVENT_STOP;
@@ -185,6 +197,8 @@ class WindowThumbnail extends St.Bin {
     }
 
     _switchSourceWin(direction) {
+        this._switchView(this.clone);
+
         let windows = global.display.get_tab_list(Meta.TabList.NORMAL_ALL, null);
         windows = windows.filter(w => !(w.skip_taskbar || w.minimized));
         let idx = -1;
@@ -208,7 +222,8 @@ class WindowThumbnail extends St.Bin {
                 this._remove();
         });
         this.w = w;
-        // let scale = this._setSize();
+
+        this._setIcon();
     }
 
     _actionTimeoutActive() {
@@ -228,5 +243,29 @@ class WindowThumbnail extends St.Bin {
             GLib.Source.remove(this._actionTimeoutId);
         this._actionTimeoutId = null;
         return false;
+    }
+
+    _setIcon() {
+        let tracker = Shell.WindowTracker.get_default();
+        let app = tracker.get_window_app(this.w);
+        let icon = app
+            ? app.create_icon_texture(this.height)
+            : new St.Icon({icon_name: 'icon-missing', icon_size: this.height});
+        icon.x_expand = icon.y_expand = false;
+        if (this.icon)
+            this.icon.destroy();
+        this.icon = icon;
+    }
+
+    _switchView(clone = false) {
+        if (clone) {
+            this.set_child(this.clone);
+        } else {
+            this.set_child(
+                this.get_child() === this.clone
+                ? this.icon
+                : this.clone
+            );
+        }
     }
 });
