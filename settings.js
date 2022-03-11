@@ -407,10 +407,7 @@ var actionList = [
         [   1, 'show-desktop-mon'           , _('Show Desktop (current monitor)'),           true,  'preferences-desktop-wallpaper-symbolic',                 false],
         [   1, 'prefs'                      , _('Open CHC-E Preferences'),                   true,  'preferences-system-symbolic',                            false],
         //[null, 'desktop-submenu'            , _('Desktop'),                                  true,  'video-display-symbolic',                                 false],
-
-
-        // [null, 'run-submenu'                , _('Run Command'),                             false,  'utilities-terminal-symbolic',                            false],
-        
+        //[null, 'run-submenu'                , _('Run Command'),                             false,  'utilities-terminal-symbolic',                            false],
 
         [null, 'workspaces-submenu'         , _('Workspaces'),                               true,  'video-display-symbolic',                                 false],
         [   1, 'prev-workspace'             , _('Previous Workspace'),                      false,   horizontal ? 'go-previous-symbolic': 'go-up-symbolic'  , false],
@@ -530,12 +527,12 @@ var actionList = [
         [   1, 'mixer-gbr-toggle'           , _('Color Mixer GBR'),                          true,  'view-reveal-symbolic',                                    true],
 
         [null, 'gnome-submenu'              , _('GNOME'),                                    true,  'start-here-symbolic',                                    false],
+        [   1, 'night-light-toggle'         , _('Toggle Night Light'),                       true,  'night-light-symbolic',                                   false],
+        [   1, 'toggle-theme'               , _('Toggle Light/Dark Gtk Theme'),              true,  'view-reveal-symbolic',                                   false],
         [   1, 'hide-panel'                 , _('Hide/Show Main Panel'),                     true,  'focus-top-bar-symbolic',                                 false],
         [   1, 'open-panel-aggregate-menu'  , _('Open Panel Aggregate Menu'),                true,  'open-menu-symbolic',                                     false],
         [   1, 'open-panel-date-menu'       , _('Open Panel Date Menu'),                     true,  'open-menu-symbolic',                                     false],
         [   1, 'open-panel-app-menu'        , _('Open Panel App Menu'),                      true,  'open-menu-symbolic',                                     false],
-        [   1, 'toggle-theme'               , _('Toggle Light/Dark Gtk Theme'),              true,  'view-reveal-symbolic',                                   false],
-        [   1, 'night-light-toggle'         , _('Toggle Night Light'),                       true,  'night-light-symbolic',                                   false],
 
         [null, 'system-submenu'             , _('System'),                                   true,  'system-run-symbolic',                                    false],
         [   1, 'lock-screen'                , _('Lock Screen'),                             false,  'changes-prevent-symbolic',                               false],
