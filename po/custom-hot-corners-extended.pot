@@ -328,7 +328,7 @@ msgid "Collapse all"
 msgstr ""
 
 #: prefs.js:1167
-msgid "Show acive items only"
+msgid "Show active items only"
 msgstr ""
 
 #: prefs.js:1200
