@@ -64,9 +64,6 @@ var Actions = class {
         this.WIN_SKIP_MINIMIZED     = false;
         this.WIN_STABLE_SEQUENCE    = false;
 
-        this._recentWorkspace       = -1;
-        this._currentWorkspace      = -1;
-
         this.windowThumbnails       = [];
         this._tmbConnected          = false;
 
@@ -74,8 +71,6 @@ var Actions = class {
 
         this.customMenu             = [];
         this._winPreview            = null
-
-        this._connectRecentWorkspace();
 
         this._mscOptions = mscOptions;
     }
@@ -96,7 +91,6 @@ var Actions = class {
             this.Shaders   = null;
         }
 
-        global.workspace_manager.disconnect(this._recentWsSignalhandler);
         this._removeThumbnails(full);
         this._destroyDimmerActors();
         this._removeCustomMenus();
@@ -279,18 +273,6 @@ var Actions = class {
         return this._dispalyBrightnessProxy;
     }
 
-    _connectRecentWorkspace() {
-        let actor = global.workspace_manager;
-        this._recentWsSignalhandler = actor.connect('workspace-switched', this._onWorkspaceSwitched.bind(this));
-    }
-
-    _onWorkspaceSwitched(display, prev, current, direction) {
-        if (current !== this._currentWorkspace) {
-            this._recentWorkspace  = this._currentWorkspace;
-            this._currentWorkspace = current;
-        }
-    }
-
     _destroyDimmerActors() {
         for (let actor of this._dimmerActors)
             actor.destroy();
@@ -442,7 +424,16 @@ var Actions = class {
     }
 
     moveToRecentWorkspace() {
-        this.moveToWorkspace(this._recentWorkspace);
+        // find the first window in the AltTab list (sorted by the most recently used) with different workspace and switch to it
+        const tabList = AltTab.getWindows(null);
+        const currentWs = global.workspaceManager.get_active_workspace();
+        for (let win of tabList) {
+            const ws = win.get_workspace();
+            if (ws !== currentWs) {
+                this.moveToWorkspace(ws.index());
+                return;
+            }
+        }
     }
 
     reorderWorkspace(direction = 0) {
@@ -543,7 +534,8 @@ var Actions = class {
     }
 
     switchToRecentWindow() {
-        global.display.get_tab_list(0, null)[1].activate(global.get_current_time());
+        AltTab.getWindows(null)[1].activate(global.get_current_time());
+        //global.display.get_tab_list(0, null)[1].activate(global.get_current_time());
     }
 
     closeWindow() {
