@@ -1173,7 +1173,7 @@ class TreeviewPage extends Gtk.Box {
 
         this.resetButton = new Gtk.Button();
         this.showActiveBtn = new Gtk.ToggleButton({
-            label: _('Show acive items only')
+            label: _('Show active items only')
         });
 
         btnBox[btnBox.add ? 'add' : 'append'](expandButton);
