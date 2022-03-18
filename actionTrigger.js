@@ -193,6 +193,10 @@ var ActionTrigger = class ActionTrigger {
         this.actions.moveToWorkspace(this.runActionData.workspaceIndex - 1);
     }
 
+    _moveToLastNonemptyWs() {
+        this.actions.moveToWorkspace(global.workspaceManager.get_n_workspaces() - 2);
+    }
+
     _prevWorkspace() {
         this.actions.switchWorkspace(Meta.MotionDirection.UP);
     }
