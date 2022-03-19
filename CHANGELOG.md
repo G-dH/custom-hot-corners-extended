@@ -1,8 +1,22 @@
 ## Changelog:
 
-### v15+ (not released yet)
+### v16 (not released yet)
+**Added:**
+- Action `Close Current Workspace (all its windows)` - allows you to close all windows that belong to the currently active workspace and remove it drom the list (if you use dynamic workspaces).
+- Action `Switch to Second Last Workspace` - allows you to switch to the last non-empty workspace, if the workspaces are managed dynamically.
+- DND Window Thumbnail can be switched to the app icon and back to the window thumbnail using Ctrl + primary click.
+- Option `Sort by Stable Sequence` for the Window Switcher (actions `Previous Window`, `Next Window`) allows to iterate windows in stable sequence (as they were created) instead of the default MRU (Most Recently Used)
+
 **Fixed:**
-- keyboard shortcuts doesn't update on-change
+- keyboard shortcuts do not update on-change
+- double-click on window thumbnail don't work in GS 42
+
+**Other changes**
+- GSettings i/o operations were refactored
+- Action `Switch to Most Recent Workspace` is now based on the AltTab window list instead of workspace change tracking, so you'll get the workspace with the recent user interaction.
+- Action menu was reordered in order to make the root list shorter
+- Window Switcher (actions `Previous Window`, `Next Window`) now uses full-size windows previews instead of activating them directly. This change allows you to switch windows in MRU order, not just in stable sequence.
+
 
 ### v15
 **Fixed:**
