@@ -374,7 +374,7 @@ var ActionTrigger = class ActionTrigger {
             'shortcut':           null,
             'filter-focused-app': false,
             'filter-pattern':     null,
-            'switch-ws':          Clutter.ScrollDirection.UP,
+            'switch-ws':          Meta.MotionDirection.UP,
         });
     }
 
@@ -389,7 +389,7 @@ var ActionTrigger = class ActionTrigger {
             'shortcut':           null,
             'filter-focused-app': false,
             'filter-pattern':     null,
-            'switch-ws':          Clutter.ScrollDirection.DOWN,
+            'switch-ws':          Meta.MotionDirection.DOWN,
         });
     }
 

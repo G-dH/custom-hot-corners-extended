@@ -29,6 +29,7 @@ const SystemActions          = imports.misc.systemActions;
 const ExtensionUtils         = imports.misc.extensionUtils;
 const Me                     = ExtensionUtils.getCurrentExtension();
 const Settings               = Me.imports.settings;
+const shellVersion           = Settings.shellVersion;
 
 // gettext
 const _                      = Settings._;
@@ -375,7 +376,7 @@ var Actions = class {
         } else {
             // Pressing the apps btn before overview activation avoids icons animation in GS 3.36/3.38
             // but in GS40 with Dash to Dock and its App button set to "no animation", this whole sequence is problematic
-            if (Settings.shellVersion < 40)
+            if (shellVersion < 40)
                 Main.overview.dash.showAppsButton.checked = true;
             // in 3.36 pressing the button is usualy enough to activate overview, but not always
             Main.overview.show();
@@ -780,14 +781,18 @@ var Actions = class {
                 intSettings.set_string('gtk-theme', 'Yaru-dark');
                 break;
             case 'Yaru-dark':
-                let theme = Settings.shellVersion >= 40 ? 'Yaru' : 'Yaru-light'
+                let theme = shellVersion >= 40 ? 'Yaru' : 'Yaru-light'
                 intSettings.set_string('gtk-theme', theme);
                 break;
             case 'Adwaita':
                 intSettings.set_string('gtk-theme', 'Adwaita-dark');
+                if (shellVersion >= 42)
+                    intSettings.set_string('color-scheme', 'prefer-dark');
                 break;
             case 'Adwaita-dark':
                 intSettings.set_string('gtk-theme', 'Adwaita');
+                if (shellVersion >= 42)
+                    intSettings.set_string('color-scheme', 'default');
                 break;
             default:
                 Main.notify(Me.metadata.name, _('Theme switcher works with Adwaita/Adwaita-dark and Yaru(-light)/Yaru-dark themes only'));
@@ -876,7 +881,7 @@ var Actions = class {
             let motion = direction === Meta.MotionDirection.DOWN ? (vertical ? Meta.MotionDirection.DOWN : Meta.MotionDirection.RIGHT)
             : (vertical ? Meta.MotionDirection.UP : Meta.MotionDirection.LEFT);
 
-            if (Settings.shellVersion >= 42) {
+            if (shellVersion >= 42) {
                 Main.wm._workspaceSwitcherPopup.display(wsIndex);
             } else {
                 Main.wm._workspaceSwitcherPopup.display(motion, wsIndex);
