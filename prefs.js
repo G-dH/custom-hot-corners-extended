@@ -26,6 +26,13 @@ let   mscOptions;
 let   _excludedItems = [];
 let   notebook;
 
+let Adw = null;
+try {
+  Adw = imports.gi.Adw;
+} catch (e) {
+}
+
+
 // gettext
 const _  = Settings._;
 
@@ -58,13 +65,133 @@ function init() {
     }
 }
 
+function fillPreferencesWindow(window) {
+    const monitorPages = getMonitorPages();
+    for (let mPage of monitorPages) {
+        const [page, title] = mPage;
+        const monAdwPage = new Adw.PreferencesPage({
+            title: title,
+            icon_name: 'video-display-symbolic'
+        });
+        const monGroup = new Adw.PreferencesGroup();
+        page.buildPage();
+        monGroup.add(page);
+        monAdwPage.add(monGroup);
+        window.add(monAdwPage);
+    }
+
+    let keyboardAdwPage = new Adw.PreferencesPage({
+        title: _('Keyboard'),
+        icon_name: 'input-keyboard-symbolic'
+    });
+    let keyboardGroup = new Adw.PreferencesGroup();
+    let keyboardPage = new KeyboardPage(true);
+
+    keyboardGroup.add(keyboardPage);
+    keyboardAdwPage.add(keyboardGroup);
+    window.add(keyboardAdwPage);
+
+    let customMenuAdwPage = new Adw.PreferencesPage({
+        title: _('Custom Menus'),
+        icon_name: 'open-menu-symbolic'
+    });
+    let customMenuGroup = new Adw.PreferencesGroup();
+    let customMenusPage = new CustomMenusPage();
+    
+
+    customMenuGroup.add(customMenusPage);
+    customMenuAdwPage.add(customMenuGroup);
+    window.add(customMenuAdwPage);
+
+    window.add(getAdwPage(getOptionList(), {
+        title: _('Options'),
+        icon_name: 'preferences-other-symbolic',
+    }));
+
+    window.set_search_enabled(true);
+
+    // temporary solution for get_root for transient dialog
+    notebook = keyboardAdwPage;
+    return window;
+}
+
+function getAdwPage(optionList, pageProperties = {}) {
+    pageProperties.width_request = 840;
+    const page = new Adw.PreferencesPage(pageProperties);
+    let group;
+    for (let item of optionList) {
+        // label can be plain text for Section Title
+        // or GtkBox for Option
+        const option = item[0];
+        const widget = item[1];
+        if (!widget) {
+            if (group) {
+                page.add(group);
+            }
+            group = new Adw.PreferencesGroup({
+                title: option,
+                hexpand: true,
+                //width_request: 700
+            });
+            continue;
+        }
+
+        const row = new Adw.PreferencesRow({
+            title: option._title,
+        });
+        const grid = new Gtk.Grid({
+            column_homogeneous: false,
+            column_spacing: 20,
+            margin_start: 8,
+            margin_end: 8,
+            margin_top: 8,
+            margin_bottom: 8,
+            hexpand: true,
+        })
+        /*for (let i of item) {
+            box[box.add ? 'add' : 'append'](i);*/
+        grid.attach(option, 0, 0, 1, 1);
+        if (widget) {
+            grid.attach(widget, 1, 0, 1, 1);
+        }
+        row.set_child(grid);
+        group.add(row);
+    }
+    page.add(group);
+    return page;
+}
+
 function buildPrefsWidget() {
-    const prefsWidget = new Gtk.Grid();
     notebook = new Gtk.Notebook({
         tab_pos: Gtk.PositionType.LEFT,
     });
 
-    prefsWidget.attach(notebook, 0, 0, 1, 1);
+    const monitorPages = getMonitorPages();
+    for (let mPage of monitorPages) {
+        const [page, title] = mPage;
+        const label = new Gtk.Label({label: title, halign: Gtk.Align.START});
+        notebook.append_page(page, label);
+    }
+
+    const optionsPage = new OptionsPage();
+    notebook.append_page(new KeyboardPage(), new Gtk.Label({label: _('Keyboard'), halign: Gtk.Align.START}));
+    notebook.append_page(new CustomMenusPage(), new Gtk.Label({label: `${_('Custom')}\n${_('Menus')}`, halign: Gtk.Align.START}));
+    notebook.append_page(optionsPage, new Gtk.Label({label: _('Options'), halign: Gtk.Align.START}));
+
+
+    notebook.get_nth_page(0).buildPage();
+    notebook.set_current_page(0);
+    notebook.connect('switch-page', (ntb, page, index) => {
+        page.buildPage();
+    });
+
+    notebook.show_all && notebook.show_all();
+
+    return notebook;
+}
+
+function getMonitorPages() {
+    let pages = [];
 
     const display = Gdk.Display.get_default();
     let num_monitors = display.get_monitors
@@ -90,27 +217,16 @@ function buildPrefsWidget() {
         monitorPage._geometry = geometry;
         monitorPage._leftHandMouse = leftHandMouse;
 
-        let labelText = `${_('Monitor')} ${monitorIndex + 1}${monitorIndex === 0 ? `\n${_('(primary)')}` : ''}`;
-        const label = new Gtk.Label({label: labelText, halign: Gtk.Align.START});
-        notebook.append_page(monitorPage, label);
         monitorPage.connect('switch-page', (ntb, page, index) => {
             page.buildPage();
         });
+        
+        let labelText = `${_('Monitor')} ${monitorIndex + 1}${monitorIndex === 0 ? `\n${_('(primary)')}` : ''}`;
+
+        pages.push([monitorPage, labelText]);
     }
-    const optionsPage = new OptionsPage();
-    notebook.append_page(new KeyboardPage(), new Gtk.Label({label: _('Keyboard'), halign: Gtk.Align.START}));
-    notebook.append_page(new CustomMenusPage(), new Gtk.Label({label: `${_('Custom')}\n${_('Menus')}`, halign: Gtk.Align.START}));
-    notebook.append_page(optionsPage, new Gtk.Label({label: _('Options'), halign: Gtk.Align.START}));
 
-
-    notebook.get_nth_page(0).buildPage();
-    notebook.set_current_page(0);
-    notebook.connect('switch-page', (ntb, page, index) => {
-        page.buildPage();
-    });
-
-    prefsWidget.show_all && prefsWidget.show_all();
-    return prefsWidget;
+    return pages;
 }
 
 const MonitorPage = GObject.registerClass(
@@ -304,9 +420,7 @@ class CornerPage extends Gtk.Box {
         commandEntry.set_icon_from_icon_name(Gtk.EntryIconPosition.SECONDARY, 'edit-clear-symbolic');
         commandEntry.set_icon_activatable(Gtk.EntryIconPosition.SECONDARY, true);
         commandEntry.connect('icon-press', (e) => e.set_text(''));
-        const appButton = new Gtk.Button({
-            valign: Gtk.Align.END,
-        });
+        const appButton = new Gtk.Button();
 
         const actionTreeStore = new Gtk.TreeStore();
         actionTreeStore.set_column_types([
@@ -767,7 +881,60 @@ class OptionsPage extends Gtk.ScrolledWindow {
         const context = this.get_style_context();
         context.add_class('background');
 
-        let optionsList = [];
+        let optionsList = getOptionList();
+
+        let frame;
+        let frameBox;
+        for (let item of optionsList) {
+            const option = item[0];
+            const widget = item[1];
+            if (!widget) {
+                let lbl = new Gtk.Label({
+                    xalign: 0,
+                    margin_top: 4,
+                    margin_bottom: 2
+                });
+                lbl.set_markup(option); // option is plain text if item is section title
+                mainBox[mainBox.add ? 'add' : 'append'](lbl);
+
+                frame = new Gtk.Frame({
+                    margin_bottom: 10,
+                });
+                frameBox = new Gtk.ListBox({
+                    selection_mode: null,
+                    //can_focus: false,
+                });
+                mainBox[mainBox.add ? 'add' : 'append'](frame);
+                frame[frame.add ? 'add' : 'set_child'](frameBox);
+                continue;
+            }
+            let box = new Gtk.Box({
+                //can_focus: false,
+                orientation: Gtk.Orientation.HORIZONTAL,
+                margin_start: 4,
+                margin_end: 4,
+                margin_top: 4,
+                margin_bottom: 4,
+                hexpand: true,
+                spacing: 20,
+            });
+
+            box[box.add ? 'add' : 'append'](option);
+            if (widget)
+                box[box.add ? 'add' : 'append'](widget);
+
+            frameBox[frameBox.add ? 'add' : 'append'](box);
+        }
+        this[this.add ? 'add' : 'set_child'](mainBox);
+        this.show_all && this.show_all();
+        this._alreadyBuilt = true;
+    }
+});
+
+///////////////////////////////////////////////////////////////////////////
+
+function getOptionList() {
+    let optionsList = [];
         // options item format:
         // [text, tooltip, widget, settings-variable, options for combo]
 
@@ -896,53 +1063,8 @@ class OptionsPage extends Gtk.ScrolledWindow {
             )
         );
 
-        let frame;
-        let frameBox;
-        for (let item of optionsList) {
-            const option = item[0];
-            const widget = item[1];
-            if (!widget) {
-                let lbl = new Gtk.Label({
-                    xalign: 0,
-                    margin_top: 4,
-                    margin_bottom: 2
-                });
-                lbl.set_markup(option); // option is plain text if item is section title
-                mainBox[mainBox.add ? 'add' : 'append'](lbl);
-
-                frame = new Gtk.Frame({
-                    margin_bottom: 10,
-                });
-                frameBox = new Gtk.ListBox({
-                    selection_mode: null,
-                    //can_focus: false,
-                });
-                mainBox[mainBox.add ? 'add' : 'append'](frame);
-                frame[frame.add ? 'add' : 'set_child'](frameBox);
-                continue;
-            }
-            let box = new Gtk.Box({
-                //can_focus: false,
-                orientation: Gtk.Orientation.HORIZONTAL,
-                margin_start: 4,
-                margin_end: 4,
-                margin_top: 4,
-                margin_bottom: 4,
-                hexpand: true,
-                spacing: 20,
-            });
-
-            box[box.add ? 'add' : 'append'](option);
-            if (widget)
-                box[box.add ? 'add' : 'append'](widget);
-
-            frameBox[frameBox.add ? 'add' : 'append'](box);
-        }
-        this[this.add ? 'add' : 'set_child'](mainBox);
-        this.show_all && this.show_all();
-        this._alreadyBuilt = true;
-    }
-});
+        return optionsList;
+}
 
 ///////////////////////////////////////////////////////////////////////////
 
@@ -1013,6 +1135,7 @@ function _optionsItem(text, tooltip, widget, variable, options = []) {
             caption.set_text(tooltip);
             label[label.add ? 'add' : 'append'](caption);
         }
+        label._title = text;
     } else {
         label = text;
     }
@@ -1193,9 +1316,11 @@ class TreeviewPage extends Gtk.Box {
 
 const KeyboardPage = GObject.registerClass(
 class KeyboardPage extends TreeviewPage {
-    _init() {
+    _init(buildImmediately = false) {
         super._init();
         this._alreadyBuilt = false;
+        if (buildImmediately)
+            this.buildPage();
     }
 
     buildPage() {
