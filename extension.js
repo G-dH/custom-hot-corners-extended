@@ -151,7 +151,7 @@ class CustomHotCornersExtended {
             if (imports.ui.altTab.WindowSwitcherPopup.prototype.showOrig)
                 supportedExetensions.push('AATWS');
         }
-        this._mscOptions.supportedExetensions = supportedExetensions;
+        this._mscOptions.set('supportedExetensions', supportedExetensions);
     }
 
     _removeHotCorners() {
@@ -178,24 +178,21 @@ class CustomHotCornersExtended {
             actions._mscOptions = _mscOptions;*/
         const actions = this.actionTrigger.actions;
 
-        actions.WS_IGNORE_LAST      = this._mscOptions.wsSwitchIgnoreLast;
-        actions.WS_WRAPAROUND       = this._mscOptions.wsSwitchWrap;
-        actions.WS_INDICATOR_MODE   = this._mscOptions.wsSwitchIndicatorMode;
-        actions.WIN_WRAPAROUND      = this._mscOptions.winSwitchWrap;
-        actions.WIN_SKIP_MINIMIZED  = this._mscOptions.winSkipMinimized;
-        actions.WIN_STABLE_SEQUENCE = this._mscOptions.winStableSequence;
-        this.ACTION_TIMEOUT    = this._mscOptions.actionEventDelay;
-        this.RIPPLE_ANIMATION  = this._mscOptions.rippleAnimation;
+        actions.WIN_WRAPAROUND      = this._mscOptions.get('winSwitchWrap');
+        actions.WIN_SKIP_MINIMIZED  = this._mscOptions.get('winSkipMinimized');
+        actions.WIN_STABLE_SEQUENCE = this._mscOptions.get('winStableSequence');
+        this.ACTION_TIMEOUT    = this._mscOptions.get('actionEventDelay');
+        this.RIPPLE_ANIMATION  = this._mscOptions.get('rippleAnimation');
 
-        if (this.CORNERS_VISIBLE !== this._mscOptions.cornersVisible) {
-            this.CORNERS_VISIBLE = this._mscOptions.cornersVisible;
+        if (this.CORNERS_VISIBLE !== this._mscOptions.get('cornersVisible')) {
+            this.CORNERS_VISIBLE = this._mscOptions.get('cornersVisible');
 
             if (!doNotUpdateHC)
                 this._updateHotCorners();
         }
 
-        if (this.BARRIER_FALLBACK !==  this._mscOptions.barrierFallback) {
-            this.BARRIER_FALLBACK = this._mscOptions.barrierFallback;
+        if (this.BARRIER_FALLBACK !==  this._mscOptions.get('barrierFallback')) {
+            this.BARRIER_FALLBACK = this._mscOptions.get('barrierFallback');
             if (!doNotUpdateHC)
             this._updateHotCorners();
         }
@@ -303,7 +300,7 @@ class CustomHotCornersExtended {
     }
 
     _updateWatch() {
-        this._watch.active = this._mscOptions.watchCorners;
+        this._watch.active = this._mscOptions.get('watchCorners');
         if (this._watch.active && !this._watch.timeout) {
             this._watch.timeout = GLib.timeout_add(
                 GLib.PRIORITY_DEFAULT,

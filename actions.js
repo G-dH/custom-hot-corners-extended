@@ -1397,9 +1397,9 @@ var Actions = class {
         }
 
         let monitorHeight = get_current_monitor_geometry().height;
-        let scale = this._mscOptions.winThumbnailScale;
+        let scale = this._mscOptions.get('winThumbnailScale');
         this.windowThumbnails.push(new WinTmb.WindowThumbnail(metaWin, this, {
-            'actionTimeout': this._mscOptions.actionEventDelay,
+            'actionTimeout': this._mscOptions.get('actionEventDelay'),
             'height' : Math.floor(scale / 100 * monitorHeight),
             'thumbnailsOnScreen' : this.windowThumbnails.length,
             })
@@ -1469,7 +1469,7 @@ var Actions = class {
     }
 
     showCustomMenu(actionTrigger, menuIndex) {
-        if (!this._mscOptions[`customMenu${menuIndex}`].length)
+        if (!this._mscOptions.get(`customMenu${menuIndex}`).length)
             return;
         if (!this.customMenu[menuIndex]) {
             this.customMenu[menuIndex] = new CustomMenuPopup(Main.layoutManager);
@@ -1478,7 +1478,7 @@ var Actions = class {
             });
             Main.layoutManager.uiGroup.add_actor(this.customMenu[menuIndex].actor);
         }
-        this.customMenu[menuIndex].menuItems      = this._mscOptions[`customMenu${menuIndex}`];
+        this.customMenu[menuIndex].menuItems      = this._mscOptions.get(`customMenu${menuIndex}`);
         this.customMenu[menuIndex].actionList     = Settings.actionList;
         let focusedWin = this._getFocusedWindow() ? this._getFocusedWindow().get_title() : null
         if (focusedWin && focusedWin.length > 40)

@@ -57,6 +57,25 @@ var MscOptions = class MscOptions {
     constructor() {
         this._gsettings = this._loadSettings('misc');
         this._connectionIds = [];
+
+        this.options = {
+            watchCorners: ['boolean', 'watch-corners'],
+            cornersVisible: ['boolean', 'corners-visible'],
+            winSwitchWrap: ['boolean', 'win-switch-wrap'],
+            winSkipMinimized: ['boolean', 'win-switch-skip-minimized'],
+            winStableSequence: ['boolean', 'win-switch-stable-sequence'],
+            winThumbnailScale: ['int', 'win-thumbnail-scale'],
+            actionEventDelay: ['int', 'action-event-delay'],
+            rippleAnimation: ['boolean', 'ripple-animation'],
+            barrierFallback: ['boolean', 'barrier-fallback'],
+            customMenu1: ['strv', 'custom-menu-1'],
+            customMenu2: ['strv', 'custom-menu-2'],
+            customMenu3: ['strv', 'custom-menu-3'],
+            customMenu4: ['strv', 'custom-menu-4'],
+            supportedExetensions: ['strv', 'supported-active-extensions'],
+            keyboardShortcuts: ['strv', 'keyboard-shortcuts'],
+            internalFlags: ['strv', 'internal-flags']
+        }
     }
 
     connect(name, callback) {
@@ -75,117 +94,32 @@ var MscOptions = class MscOptions {
         return getSettings(schema, path);
     }
 
-    get watchCorners() {
-        return this._gsettings.get_boolean('watch-corners');
+    get(option) {
+        const [format, key] = this.options[option];
+        return this._gsettings.get_value(key).deep_unpack();
     }
 
-    set watchCorners(bool_val) {
-        this._gsettings.set_boolean('watch-corners', bool_val);
+    set(option, value) {
+        const [format, key] = this.options[option];
+        switch (format) {
+            case 'string':
+                this._gsettings.set_string(key, value);
+                break;
+            case 'int':
+                this._gsettings.set_int(key, value);
+                break;
+            case 'boolean':
+                this._gsettings.set_boolean(key, value);
+                break;
+            case 'strv':
+                this._gsettings.set_strv(key, value);
+                break;
+        }
     }
 
-    get cornersVisible() {
-        return this._gsettings.get_boolean('corners-visible');
-    }
-
-    set cornersVisible(bool_val) {
-        this._gsettings.set_boolean('corners-visible', bool_val);
-    }
-
-    get winSwitchWrap() {
-        return this._gsettings.get_boolean('win-switch-wrap');
-    }
-
-    set winSwitchWrap(bool_val) {
-        this._gsettings.set_boolean('win-switch-wrap', bool_val);
-    }
-
-    get winSkipMinimized() {
-        return this._gsettings.get_boolean('win-switch-skip-minimized');
-    }
-
-    set winSkipMinimized(bool_val) {
-        this._gsettings.set_boolean('win-switch-skip-minimized', bool_val);
-    }
-
-    get winStableSequence() {
-        return this._gsettings.get_boolean('win-switch-stable-sequence');
-    }
-
-    set winStableSequence(bool_val) {
-        this._gsettings.set_boolean('win-switch-stable-sequence', bool_val);
-    }
-
-    get winThumbnailScale() {
-        return this._gsettings.get_int('win-thumbnail-scale');
-    }
-
-    set winThumbnailScale(scale) {
-        this._gsettings.set_int('win-thumbnail-scale', scale);
-    }
-
-    get actionEventDelay() {
-        return this._gsettings.get_int('action-event-delay');
-    }
-
-    set actionEventDelay(delay) {
-        this._gsettings.set_int('action-event-delay', delay);
-    }
-
-    get rippleAnimation() {
-        return this._gsettings.get_boolean('ripple-animation');
-    }
-
-    set rippleAnimation(bool_val) {
-        this._gsettings.set_boolean('ripple-animation', bool_val);
-    }
-
-    get barrierFallback() {
-        return this._gsettings.get_boolean('barrier-fallback');
-    }
-
-    set barrierFallback(bool_val) {
-        this._gsettings.set_boolean('barrier-fallback', bool_val);
-    }
-
-    get customMenu1() {
-        return this._gsettings.get_strv('custom-menu-1');
-    }
-
-    set customMenu1(list) {
-        this._gsettings.set_strv('custom-menu-1', list);
-    }
-
-    get customMenu2() {
-        return this._gsettings.get_strv('custom-menu-2');
-    }
-
-    set customMenu2(list) {
-        this._gsettings.set_strv('custom-menu-2', list);
-    }
-
-    get customMenu3() {
-        return this._gsettings.get_strv('custom-menu-3');
-    }
-
-    set customMenu3(list) {
-        this._gsettings.set_strv('custom-menu-3', list);
-    }
-
-    get customMenu4() {
-        return this._gsettings.get_strv('custom-menu-4');
-    }
-
-    set customMenu4(list) {
-        this._gsettings.set_strv('custom-menu-4', list);
-    }
-
-    // extensions that we support and need to know whether they are available
-    get supportedExetensions() {
-        return this._gsettings.get_strv('supported-active-extensions');
-    }
-
-    set supportedExetensions(list) {
-        this._gsettings.set_strv('supported-active-extensions', list);
+    getDefault(option) {
+        const [format, key] = this.options[option];
+        return this._gsettings.get_default_value(key).deep_unpack();
     }
 };
 
@@ -216,6 +150,19 @@ var Corner = class Corner {
             this.fullscreen[trigger] = this.getFullscreen(trigger);
             this.workspaceIndex[trigger] = this.getWorkspaceIndex(trigger);
         }
+        //prepered for possible future use
+        /*this.options = {
+            action: ['string', 'action'],
+            command: ['string', 'command'],
+            fullscreen: ['boolean', 'fullscreen'],
+            ctrl: ['boolean', 'ctrl'],
+            workspaceIndex: ['int', 'workspace-index'],
+            hExpand: ['boolean', 'h-expand'],
+            vExpand: ['boolean', 'v-expand'],
+            barrierSizeH: ['int', 'barrier-size-h'],
+            barrierSizeV: ['int', 'barrier-size-v'],
+            pressureThreshold: ['int', 'pressure-threshold'],
+        }*/
     }
 
     static forMonitor(loadIndex, index, geometry) {
@@ -247,7 +194,6 @@ var Corner = class Corner {
             gsettings[trigger] = this._loadSettings(trigger);
         return gsettings;
     }
-
 
     getAction(trigger) {
         return this._gsettings[trigger].get_string('action');

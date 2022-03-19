@@ -37,7 +37,7 @@ function init() {
     // WAYLAND = GLib.getenv('XDG_SESSION_TYPE') === 'wayland';
     mscOptions = new Settings.MscOptions();
     const AATWS_enabled = Settings.extensionEnabled('advanced-alt-tab@G-dH.github.com') || Settings.extensionEnabled('advanced-alt-tab@G-dH.github.com-dev');
-    const AATWS_detected = mscOptions.supportedExetensions.includes('AATWS');
+    const AATWS_detected = mscOptions.get('supportedExetensions').includes('AATWS');
     // in gsettings enabled-extension key can remain unistalled extensions
     if (!AATWS_enabled || (AATWS_enabled && !AATWS_detected)) {
         _excludedItems.push('win-switcher-popup-ws');
@@ -52,7 +52,7 @@ function init() {
         _excludedItems.push('next-workspace-popup');
     }
     const ArcMenu_enabled = Settings.extensionEnabled('arcmenu@arcmenu.com');
-    const ArcMenu_detected = mscOptions.supportedExetensions.includes('ArcMenu');
+    const ArcMenu_detected = mscOptions.get('supportedExetensions').includes('ArcMenu');
     if (!ArcMenu_enabled || (ArcMenu_enabled && !ArcMenu_detected)) {
            _excludedItems.push('toggle-arcmenu');
     }
@@ -1020,12 +1020,12 @@ function _optionsItem(text, tooltip, widget, variable, options = []) {
     item.push(widget);
 
     if (widget && widget.is_switch) {
-        widget.active = mscOptions[variable];
+        widget.active = mscOptions.get(variable);
         widget.connect('notify::active', () => {
-            mscOptions[variable] = widget.active;
+            mscOptions.set(variable, widget.active);
         });
     } else if (widget && widget.is_spinbutton) {
-        widget.value = mscOptions[variable];
+        widget.value = mscOptions.get(variable);
         widget.timeout_id = null;
         widget.connect('value-changed', () => {
             widget.update();
@@ -1036,7 +1036,7 @@ function _optionsItem(text, tooltip, widget, variable, options = []) {
                 GLib.PRIORITY_DEFAULT,
                 500,
                 () => {
-                    mscOptions[variable] = widget.value;
+                    mscOptions.set(variable, widget.value);
                     widget.timeout_id = null;
                     return 0;
                 }
@@ -1047,7 +1047,7 @@ function _optionsItem(text, tooltip, widget, variable, options = []) {
         for (const [label, value] of options) {
             let iter;
             model.set(iter = model.append(), [0, 1], [label, value]);
-            if (value === mscOptions[variable])
+            if (value === mscOptions.get(variable))
                 widget.set_active_iter(iter);
         }
         widget.connect('changed', item => {
@@ -1055,7 +1055,7 @@ function _optionsItem(text, tooltip, widget, variable, options = []) {
             if (!success)
                 return;
 
-            mscOptions[variable] = model.get_value(iter, 1);
+            mscOptions.set(variable, model.get_value(iter, 1));
         });
     }
 
@@ -1213,7 +1213,7 @@ class KeyboardPage extends TreeviewPage {
         this.resetButton.set_label(_('Disable all'));
         this.resetButton.set_tooltip_text(_('Remove all keyboard shortcuts'));
         this.resetButton.connect('clicked', () => {
-            mscOptions._gsettings.set_strv('keyboard-shortcuts', []);
+            mscOptions.set('keyboardShortcuts', []);
             this._loadShortcuts();
             this._setNewTreeviewModel();
             this._updateTitle();
@@ -1323,7 +1323,7 @@ class KeyboardPage extends TreeviewPage {
 
     _loadShortcuts() {
         this.keybindings = {};
-        const shortcuts = mscOptions._gsettings.get_strv('keyboard-shortcuts');
+        const shortcuts = mscOptions.get('keyboardShortcuts');
         shortcuts.forEach(sc => {
             // split by non ascii character (causes automake gettext error) which was used before, or space which is used now
             let [action, accelerator] = sc.split(/[^\x00-\x7F]| /);
@@ -1336,7 +1336,7 @@ class KeyboardPage extends TreeviewPage {
         Object.keys(keybindings).forEach(s => {
             list.push(`${s} ${keybindings[s]}`);
         });
-        mscOptions._gsettings.set_strv('keyboard-shortcuts', list);
+        mscOptions.set('keyboardShortcuts', list);
     }
 
     _populateTreeview() {
@@ -1413,7 +1413,7 @@ class CustomMenuPage extends TreeviewPage {
             return;
         this.buildWidgets();
 
-        this.menuItems = mscOptions[`customMenu${this._menuIndex}`];
+        this.menuItems = mscOptions.get(`customMenu${this._menuIndex}`);
 
         this._updateTitle();
         this.lbl.set_tooltip_text(`${_('Check items you want to have in the Custom Menu action.')}\n${_('You can decide whether the action menu items will be in its section submenu or in the root of the menu by checking/unchecking the section item')}`);
@@ -1421,7 +1421,7 @@ class CustomMenuPage extends TreeviewPage {
         this.resetButton.set_tooltip_text(_('Remove all items from this menu'));
         this.resetButton.connect('clicked', () => {
             this.menuItems = [];
-            mscOptions[`customMenu${this._menuIndex}`] = this.menuItems;
+            mscOptions.set(`customMenu${this._menuIndex}`, this.menuItems);
             this._setNewTreeviewModel();
             this._updateTitle();
         });
@@ -1473,7 +1473,7 @@ class CustomMenuPage extends TreeviewPage {
             } else if (value) {
                 this.menuItems.push(item);
             }
-            mscOptions[`customMenu${this._menuIndex}`] = this.menuItems;
+            mscOptions.set(`customMenu${this._menuIndex}`, this.menuItems);
             this._updateTitle();
         });
 
