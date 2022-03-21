@@ -24,7 +24,7 @@ const triggerLabels  = Settings.TriggerLabels;
 const actionList     = Settings.actionList;
 let   mscOptions;
 let   _excludedItems = [];
-let   notebook;
+let   topBox;
 
 let Adw = null;
 try {
@@ -85,7 +85,8 @@ function fillPreferencesWindow(window) {
         icon_name: 'input-keyboard-symbolic'
     });
     let keyboardGroup = new Adw.PreferencesGroup();
-    let keyboardPage = new KeyboardPage(true);
+    let keyboardPage = new KeyboardPage();
+    keyboardPage.buildPage();
 
     keyboardGroup.add(keyboardPage);
     keyboardAdwPage.add(keyboardGroup);
@@ -97,7 +98,6 @@ function fillPreferencesWindow(window) {
     });
     let customMenuGroup = new Adw.PreferencesGroup();
     let customMenusPage = new CustomMenusPage();
-    
 
     customMenuGroup.add(customMenusPage);
     customMenuAdwPage.add(customMenuGroup);
@@ -110,13 +110,12 @@ function fillPreferencesWindow(window) {
 
     window.set_search_enabled(true);
 
-    // temporary solution for get_root for transient dialog
-    notebook = keyboardAdwPage;
+    // for transient dialog
+    topBox = keyboardAdwPage;
     return window;
 }
 
 function getAdwPage(optionList, pageProperties = {}) {
-    pageProperties.width_request = 840;
     const page = new Adw.PreferencesPage(pageProperties);
     let group;
     for (let item of optionList) {
@@ -139,6 +138,7 @@ function getAdwPage(optionList, pageProperties = {}) {
         const row = new Adw.PreferencesRow({
             title: option._title,
         });
+
         const grid = new Gtk.Grid({
             column_homogeneous: false,
             column_spacing: 20,
@@ -148,8 +148,7 @@ function getAdwPage(optionList, pageProperties = {}) {
             margin_bottom: 8,
             hexpand: true,
         })
-        /*for (let i of item) {
-            box[box.add ? 'add' : 'append'](i);*/
+
         grid.attach(option, 0, 0, 1, 1);
         if (widget) {
             grid.attach(widget, 1, 0, 1, 1);
@@ -162,32 +161,41 @@ function getAdwPage(optionList, pageProperties = {}) {
 }
 
 function buildPrefsWidget() {
-    notebook = new Gtk.Notebook({
-        tab_pos: Gtk.PositionType.LEFT,
+    const mainBox = new Gtk.Box({
+        orientation: Gtk.Orientation.HORIZONTAL
     });
+    const stack = new Gtk.Stack({
+        hexpand: true
+    });
+    const sidebar = new Gtk.StackSidebar();
+    stack.connect('notify::visible-child', () => {
+        stack.get_visible_child().buildPage();
+    });
+    sidebar.set_stack(stack);
+    stack.set_transition_duration(300);
+    stack.set_transition_type(Gtk.StackTransitionType.SLIDE_UP_DOWN);
 
     const monitorPages = getMonitorPages();
     for (let mPage of monitorPages) {
         const [page, title] = mPage;
-        const label = new Gtk.Label({label: title, halign: Gtk.Align.START});
-        notebook.append_page(page, label);
+        page.buildPage();
+        stack.add_titled(page, title, title);
     }
 
+    const kbPage = new KeyboardPage();
+    const cmPage = new CustomMenusPage();
     const optionsPage = new OptionsPage();
-    notebook.append_page(new KeyboardPage(), new Gtk.Label({label: _('Keyboard'), halign: Gtk.Align.START}));
-    notebook.append_page(new CustomMenusPage(), new Gtk.Label({label: `${_('Custom')}\n${_('Menus')}`, halign: Gtk.Align.START}));
-    notebook.append_page(optionsPage, new Gtk.Label({label: _('Options'), halign: Gtk.Align.START}));
+    stack.add_titled(kbPage, 'keyboard', _('Keyboard'))
+    stack.add_titled(cmPage, 'custom-menus', `${_('Custom')}\n${_('Menus')}`);
+    stack.add_titled(optionsPage, 'options', _('Options'));
 
+    mainBox[mainBox.add ? 'add' : 'append'](sidebar);
+    mainBox[mainBox.add ? 'add' : 'append'](stack);
+    mainBox.show_all && mainBox.show_all();
 
-    notebook.get_nth_page(0).buildPage();
-    notebook.set_current_page(0);
-    notebook.connect('switch-page', (ntb, page, index) => {
-        page.buildPage();
-    });
+    topBox = mainBox;
 
-    notebook.show_all && notebook.show_all();
-
-    return notebook;
+    return mainBox;
 }
 
 function getMonitorPages() {
@@ -217,12 +225,9 @@ function getMonitorPages() {
         monitorPage._geometry = geometry;
         monitorPage._leftHandMouse = leftHandMouse;
 
-        monitorPage.connect('switch-page', (ntb, page, index) => {
-            page.buildPage();
-        });
-        
-        let labelText = `${_('Monitor')} ${monitorIndex + 1}${monitorIndex === 0 ? `\n${_('(primary)')}` : ''}`;
-
+        let labelText = `${_('Monitor')} ${monitorIndex + 1}`;
+        if (num_monitors > 1)
+            labelText += `${monitorIndex === 0 ? `\n${_('(primary)')}` : ''}`;
         pages.push([monitorPage, labelText]);
     }
 
@@ -230,10 +235,10 @@ function getMonitorPages() {
 }
 
 const MonitorPage = GObject.registerClass(
-class MonitorPage extends Gtk.Notebook {
+class MonitorPage extends Gtk.Box {
     _init(widgetProperties = {
-        tab_pos: Gtk.PositionType.TOP,
-        vexpand: true,
+        orientation: Gtk.Orientation.VERTICAL,
+        spacing: 6
     }) {
         super._init(widgetProperties);
 
@@ -247,24 +252,85 @@ class MonitorPage extends Gtk.Notebook {
     buildPage() {
         if (this._alreadyBuilt)
             return;
+
+        const context = this.get_style_context();
+        context.add_class('background');
+        const margin = 16;
+        const stackSwitcher = new Gtk.StackSwitcher({
+            halign: Gtk.Align.CENTER,
+            hexpand: true,
+            margin_top: Settings.shellVersion < 42 ? margin : 0,
+            margin_bottom: Settings.shellVersion < 42 ? 0 : margin
+        });
+
+        //const stackSwitcher = new Gtk.StackSidebar();
+        const stack = new Gtk.Stack({
+            hexpand: true
+        });
+
+        stack.connect('notify::visible-child', () => {
+            if (stack.get_visible_child().buildPage)
+                stack.get_visible_child().buildPage();
+        });
+
+        stackSwitcher.set_stack(stack);
+        stack.set_transition_duration(300);
+        stack.set_transition_type(Gtk.StackTransitionType.SLIDE_LEFT_RIGHT);
+
+        const iconTheme = Gtk.IconTheme.get_for_display
+                            ? Gtk.IconTheme.get_for_display(Gdk.Display.get_default())
+                            : Gtk.IconTheme.get_for_screen(Gdk.Screen.get_default());
+        iconTheme.add_search_path
+                            ? iconTheme.add_search_path(GLib.build_filenamev([Me.path, 'icons']))
+                            : iconTheme.append_search_path(GLib.build_filenamev([Me.path, 'icons']));
+
+        let icons = [];
         for (let i = 0; i < 4; i++) {
-            const label = new Gtk.Image({
+            const image = new Gtk.Image({
                 halign: Gtk.Align.CENTER,
-                valign: Gtk.Align.START,
-                margin_start: 10,
-                vexpand: true,
-                hexpand: true,
-                pixel_size: 40,
+                valign: Gtk.Align.CENTER,
+                margin_start: 30,
+                margin_end: 30,
+                //vexpand: true,
+                //hexpand: true,
+                visible: true
             });
-            label.set_from_file(`${Me.dir.get_path()}/icons/${this._corners[i].top ? 'Top' : 'Bottom'}${this._corners[i].left ? 'Left' : 'Right'}.svg`);
-            let cPage = new CornerPage();
+            if (Settings.shellVersion >= 40)
+                image.pixel_size = 32;
+            //image.set_from_file(`${Me.dir.get_path()}/icons/${this._corners[i].top ? 'Top' : 'Bottom'}${this._corners[i].left ? 'Left' : 'Right'}.svg`);
+            image.set_from_icon_name(`${this._corners[i].top ? 'Top' : 'Bottom'}${this._corners[i].left ? 'Left' : 'Right'}`, Gtk.IconSize.DND);
+            icons.push(image);
+
+            const cPage = new CornerPage();
             cPage._corner = this._corners[i];
             cPage._geometry = this._geometry;
             cPage._leftHandMouse = this._leftHandMouse;
-            this.append_page(cPage, label);
-            // Gtk3 notebook emits 'switch-page' signal when showing it's content for the 1. time
-            // Gtk4 doesn't. Just a note, irrelevant to the actual program.
+            if (i === 0)
+                cPage.buildPage();
+            const pName = `corner ${i}`;
+            const title = `${this._corners[i].top ? _('Top') : _('Bottom')}-${this._corners[i].left ? _('Left') : _('Right')}`;
+            image.set_tooltip_text(title);
+            stack.add_named(cPage, pName);
+            //stack.add_titled(cPage, pName, title);
+            //stack.child_set_property(cPage, 'icon-name', `${this._corners[i].top ? 'Top' : 'Bottom'}${this._corners[i].left ? 'Left' : 'Right'}`);
         }
+
+        
+        let stBtn = stackSwitcher.get_first_child ? stackSwitcher.get_first_child() : null;
+        for (let i = 0; i < 4; i++) {
+            if (stackSwitcher.get_children) {
+                stBtn = stackSwitcher.get_children()[i];
+                stBtn.add(icons[i]);
+                stackSwitcher.show_all && stackSwitcher.show_all();
+            } else {
+                stBtn.set_child(icons[i]);
+                stBtn.visible = true;
+                stBtn = stBtn.get_next_sibling();
+            }
+        }
+
+        this[this.add ? 'add' : 'append'](stackSwitcher);
+        this[this.add ? 'add' : 'append'](stack);
         this.show_all && this.show_all();
         this._alreadyBuilt = true;
     }
@@ -275,11 +341,12 @@ class CornerPage extends Gtk.Box {
     _init(widgetProperties = {
         //selection_mode: null,
         orientation: Gtk.Orientation.VERTICAL,
-        margin_start: 16,
-        margin_end: 16,
-        margin_top: 16,
-        margin_bottom: 16,
+        margin_start: Settings.shellVersion < 42 ? 16 : 0,
+        margin_end: Settings.shellVersion < 42 ? 16 : 0,
+        margin_top: Settings.shellVersion < 42 ? 16 : 0,
+        margin_bottom: Settings.shellVersion < 42 ? 16 : 0,
         vexpand: true,
+        visible: true
     }) {
         super._init(widgetProperties);
 
@@ -811,9 +878,9 @@ class CornerPage extends Gtk.Box {
     _chooseAppDialog() {
         const dialog = new Gtk.Dialog({
             title: _('Choose Application'),
-            transient_for: notebook.get_root
-                ? notebook.get_root()
-                : notebook.get_toplevel(),
+            transient_for: topBox.get_root
+                ? topBox.get_root()
+                : topBox.get_toplevel(),
             use_header_bar: true,
             modal: true,
         });
@@ -868,14 +935,15 @@ class OptionsPage extends Gtk.ScrolledWindow {
     buildPage() {
         if (this._alreadyBuilt)
             return false;
+        const margin = Settings.shellVersion < 42 ? 16 : 0;
         const mainBox = new Gtk.Box({
             orientation: Gtk.Orientation.VERTICAL,
             spacing: 5,
             homogeneous: false,
-            margin_start: 16,
-            margin_end: 16,
-            margin_top: 16,
-            margin_bottom: 16,
+            margin_start: margin,
+            margin_end: margin,
+            margin_top: margin,
+            margin_bottom: margin,
         });
 
         const context = this.get_style_context();
@@ -1193,9 +1261,9 @@ function _makeTitle(label) {
 }
 
 const CustomMenusPage = GObject.registerClass(
-class CustomMenusPage extends Gtk.Notebook {
+class CustomMenusPage extends Gtk.Box {
     _init(widgetProperties ={
-        tab_pos: Gtk.PositionType.TOP,
+        orientation: Gtk.Orientation.VERTICAL,
     }) {
         super._init(widgetProperties);
         this._menusCount = 4;
@@ -1206,16 +1274,35 @@ class CustomMenusPage extends Gtk.Notebook {
     buildPage() {
         if (this._alreadyBuilt)
             return;
+
+        const context = this.get_style_context();
+        context.add_class('background');
+        const margin = 16;
+        const switcher = new Gtk.StackSwitcher({
+            hexpand: true,
+            halign: Gtk.Align.CENTER,
+            margin_top: Settings.shellVersion < 42 ? margin : 0,
+            margin_bottom: Settings.shellVersion < 42 ? 0 : margin
+        });
+        const stack = new Gtk.Stack({
+            hexpand: true
+        });
+        stack.set_transition_duration(200);
+        stack.set_transition_type(Gtk.StackTransitionType.SLIDE_LEFT_RIGHT);
+        switcher.set_stack(stack);
+
         for (let i = 1; i <= this._menusCount; i++) {
             let menu = new CustomMenuPage(i);
-            let label = new Gtk.Label({label: `${_('Custom Menu ')}${i}`, halign: Gtk.Align.CENTER, hexpand: true});
-            this.append_page(menu, label);
-            if (i === 1)
-                menu.buildPage();
+            const title = `${_('Menu ')}${i}`;
+            const name = `menu-${i}`;
+            stack.add_titled(menu, name, title);
+            menu.hexpand = true;
+            menu.buildPage();
+
         }
-        this.connect('switch-page', (ntb, page, index) => {
-            page.buildPage();
-        });
+
+        this[this.add ? 'add' : 'append'](switcher);
+        this[this.add ? 'add' : 'append'](stack);
         this.show_all && this.show_all();
         this._alreadyBuilt = true;
     }
@@ -1223,12 +1310,7 @@ class CustomMenusPage extends Gtk.Notebook {
 
 const TreeviewPage = GObject.registerClass(
 class TreeviewPage extends Gtk.Box {
-    _init(widgetProperties = {
-        /*orientation: Gtk.Orientation.VERTICAL,
-        spacing: 5,
-        homogeneous: false,
-        /**/
-    }) {
+    _init(widgetProperties = {}) {
         super._init(widgetProperties);
 
         const context = this.get_style_context();
@@ -1243,14 +1325,15 @@ class TreeviewPage extends Gtk.Box {
         if (this._alreadyBuilt)
             return;
 
+        const margin = Settings.shellVersion < 42 ? 16 : 0
         const box = new Gtk.Box({
             orientation: Gtk.Orientation.VERTICAL,
             spacing: 5,
             homogeneous: false,
-            margin_start: 16,
-            margin_end: 16,
-            margin_top: 16,
-            margin_bottom: 16,
+            margin_start: margin,
+            margin_end: margin,
+            margin_top: margin,
+            margin_bottom: margin,
         });
         const scrolledWindow = new Gtk.ScrolledWindow({
             hscrollbar_policy: Gtk.PolicyType.NEVER,
@@ -1306,21 +1389,19 @@ class TreeviewPage extends Gtk.Box {
         scrolledWindow[this.add ? 'add' : 'set_child'](this.treeView);
         frame[frame.add ? 'add' : 'set_child'](scrolledWindow);
 
-        box[this.add ? 'add' : 'append'](this.lbl);
-        box[this.add ? 'add' : 'append'](frame);
-        box[this.add ? 'add' : 'append'](this.showActiveBtn);
-        box[this.add ? 'add' : 'append'](btnBox);
+        box[box.add ? 'add' : 'append'](this.lbl);
+        box[box.add ? 'add' : 'append'](frame);
+        box[box.add ? 'add' : 'append'](this.showActiveBtn);
+        box[box.add ? 'add' : 'append'](btnBox);
         this[this.add ? 'add' : 'append'](box);
     }
 });
 
 const KeyboardPage = GObject.registerClass(
 class KeyboardPage extends TreeviewPage {
-    _init(buildImmediately = false) {
+    _init() {
         super._init();
         this._alreadyBuilt = false;
-        if (buildImmediately)
-            this.buildPage();
     }
 
     buildPage() {
