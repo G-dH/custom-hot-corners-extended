@@ -22,9 +22,10 @@ const Settings       = Me.imports.settings;
 const triggers       = Settings.listTriggers();
 const triggerLabels  = Settings.TriggerLabels;
 const actionList     = Settings.actionList;
-let   mscOptions;
-let   _excludedItems = [];
-let   topBox;
+let mscOptions;
+let _excludedItems = [];
+let topBox;
+let adwWindow;
 
 let Adw = null;
 try {
@@ -66,6 +67,7 @@ function init() {
 }
 
 function fillPreferencesWindow(window) {
+    adwWindow = window;
     const monitorPages = getMonitorPages();
     for (let mPage of monitorPages) {
         const [page, title] = mPage;
@@ -111,7 +113,15 @@ function fillPreferencesWindow(window) {
     window.set_search_enabled(true);
 
     // for transient dialog
-    topBox = keyboardAdwPage;
+    topBox = window;
+    window.set_size_request(-1, 700);
+    GLib.timeout_add(
+        GLib.PRIORITY_DEFAULT,
+        100,
+        () => {
+            window.set_size_request(-1, -1);
+        });
+
     return window;
 }
 
@@ -225,9 +235,9 @@ function getMonitorPages() {
         monitorPage._geometry = geometry;
         monitorPage._leftHandMouse = leftHandMouse;
 
-        let labelText = `${_('Monitor')} ${monitorIndex + 1}`;
+        let labelText = `${_('Monitor')}`;
         if (num_monitors > 1)
-            labelText += `${monitorIndex === 0 ? `\n${_('(primary)')}` : ''}`;
+            labelText += ` ${monitorIndex + 1}${monitorIndex === 0 ? `\n${_('(primary)')}` : ''}`;
         pages.push([monitorPage, labelText]);
     }
 
@@ -291,14 +301,18 @@ class MonitorPage extends Gtk.Box {
                 valign: Gtk.Align.CENTER,
                 margin_start: 30,
                 margin_end: 30,
+                pixel_size: 32,
                 //vexpand: true,
                 //hexpand: true,
                 visible: true
             });
-            if (Settings.shellVersion >= 40)
-                image.pixel_size = 32;
-            //image.set_from_file(`${Me.dir.get_path()}/icons/${this._corners[i].top ? 'Top' : 'Bottom'}${this._corners[i].left ? 'Left' : 'Right'}.svg`);
-            image.set_from_icon_name(`${this._corners[i].top ? 'Top' : 'Bottom'}${this._corners[i].left ? 'Left' : 'Right'}`, Gtk.IconSize.DND);
+            if (Settings.shellVersion >= 40) {
+                //    image.pixel_size = 32;
+                image.set_from_icon_name(`${this._corners[i].top ? 'Top' : 'Bottom'}${this._corners[i].left ? 'Left' : 'Right'}`);
+                //image.set_from_file(`${Me.dir.get_path()}/icons/${this._corners[i].top ? 'Top' : 'Bottom'}${this._corners[i].left ? 'Left' : 'Right'}.svg`);
+            } else {
+                image.set_from_icon_name(`${this._corners[i].top ? 'Top' : 'Bottom'}${this._corners[i].left ? 'Left' : 'Right'}`, Gtk.IconSize.DND);
+            }
             icons.push(image);
 
             const cPage = new CornerPage();
@@ -314,7 +328,6 @@ class MonitorPage extends Gtk.Box {
             //stack.add_titled(cPage, pName, title);
             //stack.child_set_property(cPage, 'icon-name', `${this._corners[i].top ? 'Top' : 'Bottom'}${this._corners[i].left ? 'Left' : 'Right'}`);
         }
-
         
         let stBtn = stackSwitcher.get_first_child ? stackSwitcher.get_first_child() : null;
         for (let i = 0; i < 4; i++) {
