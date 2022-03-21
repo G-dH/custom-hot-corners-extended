@@ -151,6 +151,7 @@ var Actions = class {
         this._colorSettings         = null;
         this._wsNamesSettings       = null;
         this._soundSettings         = null;
+        this._mutterSettings        = null;
     }
 
     removeAllEffects(full = false) {
@@ -198,6 +199,15 @@ var Actions = class {
             );
         }
         return this._shellSettings;
+    }
+
+    _getMutterSettings() {
+        if (!this._mutterSettings) {
+            this._mutterSettings = ExtensionUtils.getSettings(
+                            'org.gnome.mutter'
+            )
+        }
+        return this._mutterSettings;
     }
 
     _getA11yAppSettings() {
@@ -449,6 +459,62 @@ var Actions = class {
         //this.showWorkspaceIndex();
         direction = direction > 0 ? Meta.MotionDirection.DOWN : Meta.MotionDirection.UP;
         this._showWsSwitcherPopup(direction, targetIdx);
+    }
+
+    rotateWorkspaces(direction = 0, monitorIndex = -1, step = 1) {
+        step = direction === Meta.MotionDirection.UP ? +step : -step;
+        const monitor = monitorIndex > -1 ? monitorIndex : global.display.get_current_monitor();
+        const dynamicWs = this._getMutterSettings().get_boolean('dynamic-workspaces');
+        const lastIndex = global.workspaceManager.get_n_workspaces() - (dynamicWs ? 1 : 0);
+        //let windows = global.display.get_tab_list(Meta.TabList.NORMAL_ALL, null);
+        let windows = AltTab.getWindows(null);
+        for (let win of windows.reverse()) {
+            // avoid moving modal windows as they move their parents (and vice versa) immediately, before we move the parent window.
+            if (win.get_monitor() === monitor && !win.is_always_on_all_workspaces() && !win.is_attached_dialog() && !win.get_transient_for()) {
+                let wWs = win.get_workspace().index();
+                wWs += step;
+                if (wWs < 0) wWs = (lastIndex - 1);
+                if (wWs > lastIndex - 1) wWs = 0;
+                const ws = global.workspaceManager.get_workspace_by_index(wWs);
+                win.change_workspace(ws);
+            }
+        }
+    }
+
+    switchWorkspaceCurrentMonitor(direction) {
+        //const focusedWindow = global.display.get_focus_window();
+        //const currentMonitor = focusedWindow ? focusedWindow.get_monitor() : global.display.get_current_monitor();
+        // using focused window to determine current monitor can lead to inconsistent behavior and switching monitors between switches
+        // depending on which window takes focus on each workspace
+        // mouse pointer is more stable source in this case
+        const currentMonitor = global.display.get_current_monitor();
+        const primaryMonitor = currentMonitor === Main.layoutManager.primaryIndex;
+        const nMonitors = Main.layoutManager.monitors.length;
+        const lastIndex = global.workspaceManager.get_n_workspaces() - 1;
+        const activeWs = global.workspaceManager.get_active_workspace();
+        const neighbor = activeWs.get_neighbor(direction);
+
+        if (!primaryMonitor) {
+            this.rotateWorkspaces(direction, currentMonitor);
+            return;
+        }
+
+        // for case that workspace switcher is in wraparound mode
+        let diff = neighbor.index() - activeWs.index();
+        let step = 1;
+        if (!(Math.abs(diff) !== 1 && diff !== 0)) {
+            step = Math.abs(diff);
+        }
+
+        if (neighbor !== activeWs && (neighbor.index() !== lastIndex || activeWs !== lastIndex)) {
+            for (let i = 0; i < nMonitors; i++) {
+                if (i !== currentMonitor) {
+                        const opositeDirection = direction === Meta.MotionDirection.UP ? Meta.MotionDirection.DOWN : Meta.MotionDirection.UP;
+                        this.rotateWorkspaces(opositeDirection, i, step);
+                }
+            }
+        }
+        this.switchWorkspace(direction);
     }
 
     closeWorkspace() {

@@ -205,6 +205,14 @@ var ActionTrigger = class ActionTrigger {
         this.actions.switchWorkspace(Meta.MotionDirection.DOWN);
     }
 
+    _prevWorkspaceCurrentMon() {
+        this.actions.switchWorkspaceCurrentMonitor(Meta.MotionDirection.UP);
+    }
+
+    _nextWorkspaceCurrentMon() {
+        this.actions.switchWorkspaceCurrentMonitor(Meta.MotionDirection.DOWN);
+    }
+
     _prevWorkspaceOverview() {
         this.actions.switchWorkspace(Meta.MotionDirection.UP);
         Main.overview.dash.showAppsButton.checked = false;
@@ -227,6 +235,14 @@ var ActionTrigger = class ActionTrigger {
 
     _reorderWsNext() {
         this.actions.reorderWorkspace(+1);
+    }
+
+    _rotateWsPrevMon() {
+        this.actions.rotateWorkspaces(Meta.MotionDirection.UP);
+    }
+
+    _rotateWsNextMon() {
+        this.actions.rotateWorkspaces(Meta.MotionDirection.DOWN);
     }
 
     _closeWorkspace() {
