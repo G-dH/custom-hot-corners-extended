@@ -470,7 +470,7 @@ var Actions = class {
         if (value === null)
             return;
         const STEP = 5;
-        if (direction === Clutter.ScrollDirection.UP) {
+        if (direction === Meta.MotionDirection.UP) {
             value += STEP;
         } else {
             value -= STEP;
@@ -661,7 +661,7 @@ var Actions = class {
             return;
 
         let wsIndex = global.workspace_manager.get_active_workspace_index();
-            wsIndex = wsIndex + (direction === Clutter.ScrollDirection.UP ? 0 : 1);
+            wsIndex = wsIndex + (direction === Meta.MotionDirection.UP ? 0 : 1);
             Main.wm.insertWorkspace(wsIndex);
             this.moveWinToAdjacentWs(direction, selected);
     }
@@ -676,7 +676,7 @@ var Actions = class {
             return;
 
         let wsIndex = global.workspace_manager.get_active_workspace_index();
-        wsIndex = wsIndex + (direction === Clutter.ScrollDirection.UP ? -1 : 1);
+        wsIndex = wsIndex + (direction === Meta.MotionDirection.UP ? -1 : 1);
         wsIndex = Math.min(wsIndex, global.workspace_manager.get_n_workspaces() - 1);
         if (wsIndex < 0) {
             this.moveWinToNewWs(direction, selected);
@@ -692,7 +692,6 @@ var Actions = class {
         }
         Main.wm.actionMoveWorkspace(ws);
 
-        direction = direction === Clutter.ScrollDirection.UP ? Meta.MotionDirection.UP : Meta.MotionDirection.DOWN;
         this._showWsSwitcherPopup(direction, wsIndex);
     }
 
@@ -878,8 +877,7 @@ var Actions = class {
                 });
             }
 
-            let motion = direction === Meta.MotionDirection.DOWN ? (vertical ? Meta.MotionDirection.DOWN : Meta.MotionDirection.RIGHT)
-            : (vertical ? Meta.MotionDirection.UP : Meta.MotionDirection.LEFT);
+            let motion = this._translateDirectionToHorizontal(direction);
 
             if (shellVersion >= 42) {
                 Main.wm._workspaceSwitcherPopup.display(wsIndex);

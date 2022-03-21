@@ -815,42 +815,42 @@ var ActionTrigger = class ActionTrigger {
     }
 
     _moveWinToPrevWs() {
-        this.actions.moveWinToAdjacentWs(Clutter.ScrollDirection.UP);
+        this.actions.moveWinToAdjacentWs(Meta.MotionDirection.UP);
     }
 
     _moveWinToNextWs() {
-        this.actions.moveWinToAdjacentWs(Clutter.ScrollDirection.DOWN);
+        this.actions.moveWinToAdjacentWs(Meta.MotionDirection.DOWN);
     }
 
     _moveWinToPrevNewWs() {
-        this.actions.moveWinToNewWs(Clutter.ScrollDirection.UP);
+        this.actions.moveWinToNewWs(Meta.MotionDirection.UP);
     }
 
     _moveWinToNextNewWs() {
-        this.actions.moveWinToNewWs(Clutter.ScrollDirection.DOWN);
+        this.actions.moveWinToNewWs(Meta.MotionDirection.DOWN);
     }
 
     _moveAppToPrevWs() {
-        this.actions.moveWinToAdjacentWs(Clutter.ScrollDirection.UP, this.actions._getWindowsOfFocusedAppOnActiveWs());
+        this.actions.moveWinToAdjacentWs(Meta.MotionDirection.UP, this.actions._getWindowsOfFocusedAppOnActiveWs());
     }
 
     _moveAppToNextWs() {
-        this.actions.moveWinToAdjacentWs(Clutter.ScrollDirection.DOWN, this.actions._getWindowsOfFocusedAppOnActiveWs());
+        this.actions.moveWinToAdjacentWs(Meta.MotionDirection.DOWN, this.actions._getWindowsOfFocusedAppOnActiveWs());
     }
 
     _moveAppToPrevNewWs() {
-        this.actions.moveWinToNewWs(Clutter.ScrollDirection.UP, this.actions._getWindowsOfFocusedAppOnActiveWs());
+        this.actions.moveWinToNewWs(Meta.MotionDirection.UP, this.actions._getWindowsOfFocusedAppOnActiveWs());
     }
 
     _moveAppToNextNewWs() {
-        this.actions.moveWinToNewWs(Clutter.ScrollDirection.DOWN, this.actions._getWindowsOfFocusedAppOnActiveWs());
+        this.actions.moveWinToNewWs(Meta.MotionDirection.DOWN, this.actions._getWindowsOfFocusedAppOnActiveWs());
     }
 
     _displayBrightnessUp() {
-        this.actions.setDisplayBrightness(Clutter.ScrollDirection.UP);
+        this.actions.setDisplayBrightness(Meta.MotionDirection.UP);
     }
 
     _displayBrightnessDown() {
-        this.actions.setDisplayBrightness(Clutter.ScrollDirection.DOWN);
+        this.actions.setDisplayBrightness(Meta.MotionDirection.DOWN);
     }
 };
