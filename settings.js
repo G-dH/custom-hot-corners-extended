@@ -74,7 +74,8 @@ var MscOptions = class MscOptions {
             customMenu4: ['strv', 'custom-menu-4'],
             supportedExetensions: ['strv', 'supported-active-extensions'],
             keyboardShortcuts: ['strv', 'keyboard-shortcuts'],
-            internalFlags: ['strv', 'internal-flags']
+            internalFlags: ['strv', 'internal-flags'],
+            showOsdMonitorIndexes: ['boolean', 'show-osd-monitor-indexes']
         }
     }
 

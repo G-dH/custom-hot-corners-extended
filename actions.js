@@ -23,6 +23,7 @@ const Volume                 = imports.ui.status.volume;
 const PopupMenu              = imports.ui.popupMenu;
 const BoxPointer             = imports.ui.boxpointer;
 const AltTab                 = imports.ui.altTab;
+const OsdMonitorLabeler      = imports.ui.osdMonitorLabeler;
 
 const Util                   = imports.misc.util;
 const SystemActions          = imports.misc.systemActions;
@@ -86,16 +87,21 @@ var Actions = class {
             this._resetSettings();
 
             for (let sig of this._signalsCollector) {
-                sig[0].disconnect(sig[1]);
+                if (sig[1])
+                    sig[0].disconnect(sig[1]);
             }
 
             this.Shaders   = null;
         }
 
+        if (this._osdMonitorsConnection) {
+            global.display.disconnect(this._osdMonitorsConnection);
+        }
         this._removeThumbnails(full);
         this._destroyDimmerActors();
         this._removeCustomMenus();
         this._destroyWindowPreview();
+        this._removeOsdMonitorIndexes();
 
         if (this.keyboardTimeoutId) {
             GLib.source_remove(this.keyboardTimeoutId);
@@ -108,6 +114,11 @@ var Actions = class {
         if (this._setBCTimeoutId) {
             GLib.source_remove(this._setBCTimeoutId);
             this._setBCTimeoutId = 0;
+        }
+
+        if (this._osdMonitorsTimeoutId) {
+            GLib.source_remove(this._osdMonitorsTimeoutId);
+            this._osdMonitorsTimeoutId
         }
     }
 
@@ -140,6 +151,15 @@ var Actions = class {
                         t.hide();
                 }
             );
+        }
+    }
+
+    _removeOsdMonitorIndexes() {
+        if (this._osdMonitorLabels) {
+            this._osdMonitorLabels.forEach((w) => {
+                w.destroy();
+                this._osdMonitorLabels = null;
+            });
         }
     }
 
@@ -375,7 +395,62 @@ var Actions = class {
         }
         return direction;
     }
+
+    _showMonitorIndexesOsd() {
+        if (this._osdMonitorLabels)
+            this._removeOsdMonitorIndexes();
+        this._osdMonitorLabels = [];
+        const nMonitors = Main.layoutManager.monitors.length;
+
+        if (nMonitors === 1) {
+            this._mscOptions.set('showOsdMonitorIndexes', false);
+            //return;
+        }
+
+        const primaryIndex = Main.layoutManager.primaryIndex;
+        let monIndexes = [...Main.layoutManager.monitors.keys()];
+        // index of the primary monitor to the first possition
+        // Monitor 1 in preferences will allways refer to the primary monitor
+        monIndexes.splice(0, 0, monIndexes.splice(primaryIndex, 1)[0]);
+
+        for (let i = 0; i < nMonitors; ++i) {
+            const label = new OsdMonitorLabeler.OsdMonitorLabel(i, `${i + 1}`);
+            this._osdMonitorLabels.push(label);
+        }
+
+        this._osdMonitorsConnection = global.display.connect('notify::focus-window', () =>{
+            // destroy osd when the preferences window lost focus
+            if (global.display.focus_window && !global.display.focus_window.get_title().includes('Custom Hot Corners')) {
+                global.display.disconnect(this._osdMonitorsConnection);
+                this._osdMonitorsConnection = 0;
+                this._removeOsdMonitorIndexes();
+                this._mscOptions.set('showOsdMonitorIndexes', false);
+            }
+        });
+    }
+
+    _crateOvelayTooltip(text, styleClass, vertical = true) {
+        const box = new St.BoxLayout({
+            vertical: vertical,
+            //style_class: 'tooltip-box',
+            style_class: 'dash-label',
+        });
+
+        const label = new St.Label({
+            text: ` ${text} `,
+            reactive: false,
+            style_class: styleClass,
+            y_align: Clutter.ActorAlign.CENTER
+        });
+
+        box.add_child(label);
+        box._label = label;
+
+        return box;
+    }
+
     /////////////////////////////////////////////////////////////////////////////
+
     toggleOverview() {
         Main.overview.toggle();
     }
@@ -1359,7 +1434,6 @@ var Actions = class {
                         reactive: true,
                     });
                     actor.connect('button-press-event', () => this.toggleDimmMonitors(null, null, monitorIndex));
-                    //global.stage.add_actor(actor);  // actor added like this is transparent for the mouse pointer events
                     Main.layoutManager.addChrome(actor);
                     this._dimmerActors.push(actor);
                 }

@@ -64,6 +64,7 @@ function init() {
     if (!ArcMenu_enabled || (ArcMenu_enabled && !ArcMenu_detected)) {
            _excludedItems.push('toggle-arcmenu');
     }
+    mscOptions.set('showOsdMonitorIndexes', true);
 }
 
 function fillPreferencesWindow(window) {
@@ -205,6 +206,11 @@ function buildPrefsWidget() {
 
     topBox = mainBox;
 
+    mainBox.connect('destroy', () => {
+        mscOptions.set('showOsdMonitorIndexes', false);
+        mscOptions = null;
+    });
+
     return mainBox;
 }
 
@@ -328,7 +334,7 @@ class MonitorPage extends Gtk.Box {
             //stack.add_titled(cPage, pName, title);
             //stack.child_set_property(cPage, 'icon-name', `${this._corners[i].top ? 'Top' : 'Bottom'}${this._corners[i].left ? 'Left' : 'Right'}`);
         }
-        
+
         let stBtn = stackSwitcher.get_first_child ? stackSwitcher.get_first_child() : null;
         for (let i = 0; i < 4; i++) {
             if (stackSwitcher.get_children) {
@@ -1095,7 +1101,7 @@ function getOptionList() {
 
         optionsList.push(
             _optionsItem(
-                _('Sort by Stable Sequence'),
+                _('Stable sequence'),
                 _("By default windows are sorted by the MRU (Most Recently Used) AltTab list, which is given by time stamps that are updated each time the window is activated by the user. The stable sequence is given by the unique Id that each window gets when it's created."),
                 _newGtkSwitch(),
                 'winStableSequence'

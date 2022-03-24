@@ -82,6 +82,7 @@ class CustomHotCornersExtended {
                     this.actionTrigger._bindShortcuts();
                     this.actionTrigger.actions.resume();
                 }
+
                 this._updateMscOptions(null, true);
                 this._replace_updateHotCornersFunc();
                 this._updateWatch();
@@ -177,7 +178,9 @@ class CustomHotCornersExtended {
         /*if (!actionTrigger.actions._mscOptions)
             actions._mscOptions = _mscOptions;*/
         const actions = this.actionTrigger.actions;
-
+        if (key === 'show-osd-monitor-indexes') {
+            this._updateOsdMonitorIndexes();
+        }
         actions.WIN_WRAPAROUND      = this._mscOptions.get('winSwitchWrap');
         actions.WIN_SKIP_MINIMIZED  = this._mscOptions.get('winSkipMinimized');
         actions.WIN_STABLE_SEQUENCE = this._mscOptions.get('winStableSequence');
@@ -197,6 +200,14 @@ class CustomHotCornersExtended {
             this._updateHotCorners();
         }
         this._updateWatch();
+    }
+
+    _updateOsdMonitorIndexes() {
+        if (this._mscOptions.get('showOsdMonitorIndexes')) {
+            this.actionTrigger.actions._showMonitorIndexesOsd();
+        } else {
+            this.actionTrigger.actions._removeOsdMonitorIndexes();
+        }
     }
 
     _updateHotCorners() {
