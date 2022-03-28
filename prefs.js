@@ -22,10 +22,12 @@ const Settings       = Me.imports.settings;
 const triggers       = Settings.listTriggers();
 const triggerLabels  = Settings.TriggerLabels;
 const actionList     = Settings.actionList;
+
 let mscOptions;
-let _excludedItems = [];
-let topBox;
-let adwWindow;
+let _excludedItems;
+let _topBox;
+
+const shellVersion = Settings.shellVersion;
 
 let Adw = null;
 try {
@@ -47,6 +49,7 @@ function init() {
     const AATWS_enabled = Settings.extensionEnabled('advanced-alt-tab@G-dH.github.com') || Settings.extensionEnabled('advanced-alt-tab@G-dH.github.com-dev');
     const AATWS_detected = mscOptions.get('supportedExetensions').includes('AATWS');
     // in gsettings enabled-extension key can remain unistalled extensions
+    _excludedItems = [];
     if (!AATWS_enabled || (AATWS_enabled && !AATWS_detected)) {
         _excludedItems.push('win-switcher-popup-ws');
         _excludedItems.push('win-switcher-popup-mon');
@@ -64,11 +67,9 @@ function init() {
     if (!ArcMenu_enabled || (ArcMenu_enabled && !ArcMenu_detected)) {
            _excludedItems.push('toggle-arcmenu');
     }
-    mscOptions.set('showOsdMonitorIndexes', true);
 }
 
 function fillPreferencesWindow(window) {
-    adwWindow = window;
     const monitorPages = getMonitorPages();
     for (let mPage of monitorPages) {
         const [page, title] = mPage;
@@ -114,14 +115,15 @@ function fillPreferencesWindow(window) {
     window.set_search_enabled(true);
 
     // for transient dialog
-    topBox = window;
+    _topBox = window;
     window.set_size_request(-1, 700);
     GLib.timeout_add(
         GLib.PRIORITY_DEFAULT,
         100,
         () => {
             window.set_size_request(-1, -1);
-        });
+        }
+    );
 
     return window;
 }
@@ -172,53 +174,89 @@ function getAdwPage(optionList, pageProperties = {}) {
 }
 
 function buildPrefsWidget() {
-    const mainBox = new Gtk.Box({
-        orientation: Gtk.Orientation.HORIZONTAL
-    });
     const stack = new Gtk.Stack({
         hexpand: true
     });
-    const sidebar = new Gtk.StackSidebar();
+    const stackSwitcher = new Gtk.StackSwitcher();
+    const context = stackSwitcher.get_style_context();
+    context.add_class('caption');
     stack.connect('notify::visible-child', () => {
         stack.get_visible_child().buildPage();
     });
-    sidebar.set_stack(stack);
+    stackSwitcher.set_stack(stack);
     stack.set_transition_duration(300);
-    stack.set_transition_type(Gtk.StackTransitionType.SLIDE_UP_DOWN);
+    stack.set_transition_type(Gtk.StackTransitionType.SLIDE_LEFT_RIGHT);
 
+    const pagesBtns = [];
     const monitorPages = getMonitorPages();
+
+    const newImage = Gtk.Image.new_from_icon_name;
+
     for (let mPage of monitorPages) {
         const [page, title] = mPage;
         page.buildPage();
-        stack.add_titled(page, title, title);
+        stack.add_named(page, title);
+        pagesBtns.push([new Gtk.Label({ label: title }), shellVersion >= 40 ? newImage('video-display-symbolic') : newImage('video-display-symbolic', Gtk.IconSize.BUTTON)]);
     }
 
     const kbPage = new KeyboardPage();
     const cmPage = new CustomMenusPage();
     const optionsPage = new OptionsPage();
-    stack.add_titled(kbPage, 'keyboard', _('Keyboard'))
-    stack.add_titled(cmPage, 'custom-menus', `${_('Custom')}\n${_('Menus')}`);
-    stack.add_titled(optionsPage, 'options', _('Options'));
 
-    mainBox[mainBox.add ? 'add' : 'append'](sidebar);
-    mainBox[mainBox.add ? 'add' : 'append'](stack);
-    mainBox.show_all && mainBox.show_all();
+    stack.add_named(kbPage, 'keyboard');
+    stack.add_named(cmPage, 'custom-menus');
+    stack.add_named(optionsPage, 'options');
 
-    topBox = mainBox;
+    pagesBtns.push([new Gtk.Label({ label: _('Keyboard') }),shellVersion >= 40 ? newImage('input-keyboard-symbolic') : newImage('input-keyboard-symbolic', Gtk.IconSize.BUTTON)]);
+    pagesBtns.push([new Gtk.Label({ label: _('Custom Menus') }), shellVersion >= 40 ? newImage('open-menu-symbolic') : newImage('open-menu-symbolic', Gtk.IconSize.BUTTON)]);
+    pagesBtns.push([new Gtk.Label({ label: _('Options') }), shellVersion >= 40 ? newImage('preferences-other-symbolic') : newImage('preferences-other-symbolic', Gtk.IconSize.BUTTON)]);
 
-    mainBox.connect('destroy', () => {
+    stack.show_all && stack.show_all();
+
+    _topBox = stack;
+
+    stack.connect('destroy', () => {
         mscOptions.set('showOsdMonitorIndexes', false);
         mscOptions = null;
     });
 
-    return mainBox;
+    let stBtn = stackSwitcher.get_first_child ? stackSwitcher.get_first_child() : null;
+    for (let i = 0; i < pagesBtns.length; i++) {
+        const box = new Gtk.Box({orientation: Gtk.Orientation.VERTICAL, spacing: 6, visible: true});
+        const icon = pagesBtns[i][1];
+        icon.margin_start = 30;
+        icon.margin_end = 30;
+        box[box.add ? 'add' : 'append'](icon);
+        box[box.add ? 'add' : 'append'](pagesBtns[i][0]);
+        if (stackSwitcher.get_children) {
+            stBtn = stackSwitcher.get_children()[i];
+            stBtn.add(box);
+        } else {
+            stBtn.set_child(box);
+            stBtn.visible = true;
+            stBtn = stBtn.get_next_sibling();
+        }
+    }
+
+    stack.show_all && stack.show_all();
+    stackSwitcher.show_all && stackSwitcher.show_all();
+    stack.connect('realize', (widget) => {
+        const window = widget.get_root ? widget.get_root() : widget.get_toplevel();
+        const headerbar = window.get_titlebar();
+        if (shellVersion >= 40) {
+            headerbar.title_widget = stackSwitcher;
+        } else {
+            headerbar.custom_title = stackSwitcher;
+        }
+    });
+    return stack;
 }
 
 function getMonitorPages() {
     let pages = [];
 
     const display = Gdk.Display.get_default();
-    let num_monitors = display.get_monitors
+    let nMonitors = display.get_monitors
         ? display.get_monitors().get_n_items()
         : display.get_n_monitors();
 
@@ -227,7 +265,7 @@ function getMonitorPages() {
         '/org/gnome/desktop/peripherals/mouse/');
     let leftHandMouse = mouseSettings.get_boolean('left-handed');
 
-    for (let monitorIndex = 0; monitorIndex < num_monitors; ++monitorIndex) {
+    for (let monitorIndex = 0; monitorIndex < nMonitors; ++monitorIndex) {
         const monitor = display.get_monitors
             ? display.get_monitors().get_item(monitorIndex)
             : display.get_monitor(monitorIndex);
@@ -242,11 +280,14 @@ function getMonitorPages() {
         monitorPage._leftHandMouse = leftHandMouse;
 
         let labelText = `${_('Monitor')}`;
-        if (num_monitors > 1)
-            labelText += ` ${monitorIndex + 1}${monitorIndex === 0 ? `\n${_('(primary)')}` : ''}`;
+        if (nMonitors > 1) {
+            labelText += ` ${monitorIndex + 1} ${monitorIndex === 0 ? _('(primary)') : ''}`;
+            mscOptions.set('showOsdMonitorIndexes', true);
+        }
         pages.push([monitorPage, labelText]);
     }
 
+    if (nMonitors)
     return pages;
 }
 
@@ -308,12 +349,8 @@ class MonitorPage extends Gtk.Box {
                 margin_start: 30,
                 margin_end: 30,
                 pixel_size: 32,
-                //vexpand: true,
-                //hexpand: true,
-                visible: true
             });
             if (Settings.shellVersion >= 40) {
-                //    image.pixel_size = 32;
                 image.set_from_icon_name(`${this._corners[i].top ? 'Top' : 'Bottom'}${this._corners[i].left ? 'Left' : 'Right'}`);
                 //image.set_from_file(`${Me.dir.get_path()}/icons/${this._corners[i].top ? 'Top' : 'Bottom'}${this._corners[i].left ? 'Left' : 'Right'}.svg`);
             } else {
@@ -331,8 +368,6 @@ class MonitorPage extends Gtk.Box {
             const title = `${this._corners[i].top ? _('Top') : _('Bottom')}-${this._corners[i].left ? _('Left') : _('Right')}`;
             image.set_tooltip_text(title);
             stack.add_named(cPage, pName);
-            //stack.add_titled(cPage, pName, title);
-            //stack.child_set_property(cPage, 'icon-name', `${this._corners[i].top ? 'Top' : 'Bottom'}${this._corners[i].left ? 'Left' : 'Right'}`);
         }
 
         let stBtn = stackSwitcher.get_first_child ? stackSwitcher.get_first_child() : null;
@@ -340,7 +375,6 @@ class MonitorPage extends Gtk.Box {
             if (stackSwitcher.get_children) {
                 stBtn = stackSwitcher.get_children()[i];
                 stBtn.add(icons[i]);
-                stackSwitcher.show_all && stackSwitcher.show_all();
             } else {
                 stBtn.set_child(icons[i]);
                 stBtn.visible = true;
@@ -382,8 +416,6 @@ class CornerPage extends Gtk.Box {
         for (let trigger of triggers) {
             const grid = new Gtk.Grid({
                 column_spacing: 5,
-                //margin_start: 5,
-                //margin_end: 5,
                 margin_top: Settings.shellVersion >= 40 ? 5 : 10,
                 margin_bottom: Settings.shellVersion >= 40 ? 5 : 10,
 
@@ -610,9 +642,6 @@ class CornerPage extends Gtk.Box {
                 });
             });
         }.bind(this);
-        // commandEntryRevealer.reveal_child = this._corner.getAction(trigger) === 'runCommand';
-        // if (commandEntryRevealer.reveal_child) _connectCmdBtn();
-        // commandEntry.text = this._corner.getCommand(trigger);
 
         actionCombo.connect('changed', () => {
             if (this._alreadyBuilt)
@@ -860,7 +889,6 @@ class CornerPage extends Gtk.Box {
         });
 
         const hExpandSwitch = new Gtk.ToggleButton({
-        //const hExpandSwitch = new Gtk.CheckButton({
             halign: Gtk.Align.CENTER,
             valign: Gtk.Align.CENTER,
             vexpand: false,
@@ -872,7 +900,6 @@ class CornerPage extends Gtk.Box {
         hExpandSwitch[hExpandSwitch.set_child ? 'set_child' : 'add'](hImage);
 
         const vExpandSwitch = new Gtk.ToggleButton({
-        //const vExpandSwitch = new Gtk.CheckButton({
             halign: Gtk.Align.CENTER,
             valign: Gtk.Align.CENTER,
             vexpand: false,
@@ -897,9 +924,9 @@ class CornerPage extends Gtk.Box {
     _chooseAppDialog() {
         const dialog = new Gtk.Dialog({
             title: _('Choose Application'),
-            transient_for: topBox.get_root
-                ? topBox.get_root()
-                : topBox.get_toplevel(),
+            transient_for: _topBox.get_root
+                ? _topBox.get_root()
+                : _topBox.get_toplevel(),
             use_header_bar: true,
             modal: true,
         });
@@ -996,7 +1023,6 @@ class OptionsPage extends Gtk.ScrolledWindow {
                 continue;
             }
             let box = new Gtk.Box({
-                //can_focus: false,
                 orientation: Gtk.Orientation.HORIZONTAL,
                 margin_start: 4,
                 margin_end: 4,
@@ -1501,8 +1527,6 @@ class KeyboardPage extends TreeviewPage {
                 this.model.set(iter, [2, 3], [mods, key]);
                 this.keybindings[name] = value;
                 this._saveShortcuts(this.keybindings);
-                /*Object.entries(this.keybindings).forEach(([key, value]) => {
-                });*/
             } else {
                 log(`${Me.metadata.name} This keyboard shortcut is invalid or already in use!`);
             }
