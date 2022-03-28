@@ -326,6 +326,7 @@ var Actions = class {
     }
 
     _getWindowApp(metaWindow) {
+        if (!metaWindow) return null;
         let tracker = Shell.WindowTracker.get_default();
         return tracker.get_window_app(metaWindow);
     }
@@ -427,26 +428,6 @@ var Actions = class {
                 this._mscOptions.set('showOsdMonitorIndexes', false);
             }
         });
-    }
-
-    _crateOvelayTooltip(text, styleClass, vertical = true) {
-        const box = new St.BoxLayout({
-            vertical: vertical,
-            //style_class: 'tooltip-box',
-            style_class: 'dash-label',
-        });
-
-        const label = new St.Label({
-            text: ` ${text} `,
-            reactive: false,
-            style_class: styleClass,
-            y_align: Clutter.ActorAlign.CENTER
-        });
-
-        box.add_child(label);
-        box._label = label;
-
-        return box;
     }
 
     /////////////////////////////////////////////////////////////////////////////
@@ -808,7 +789,7 @@ var Actions = class {
     }
 
     moveWinToAdjacentWs(direction, windows = null) {
-        let selected
+        let selected;
         if (!windows)
             selected = [this._getFocusedWindow(true)];
         else
@@ -1010,7 +991,6 @@ var Actions = class {
 
     _showWsSwitcherPopup(direction, wsIndex) {
         if (!Main.overview.visible) {
-            const vertical = global.workspaceManager.layout_rows === -1;
             if (Main.wm._workspaceSwitcherPopup == null) {
                 Main.wm._workspaceSwitcherPopup = new WorkspaceSwitcherPopup.WorkspaceSwitcherPopup();
                 Main.wm._workspaceSwitcherPopup.connect('destroy', () => {
