@@ -12,5 +12,5 @@
     "settings-schema": "org.gnome.shell.extensions.@PACKAGE_NAME@",
     "gettext-domain": "@PACKAGE_NAME@",
     "url": "https://github.com/G-dH/custom-hot-corners",
-    "version": "15"
+    "version": "16"
 }
