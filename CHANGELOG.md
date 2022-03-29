@@ -1,22 +1,24 @@
 ## Changelog:
 
-### v16 (not released yet)
+### v16 (not released yet, WIP)
 **Added:**
 - Action `Close Current Workspace (all its windows)` - allows you to close all windows that belong to the currently active workspace and remove it drom the list (if you use dynamic workspaces).
 - Action `Switch to Second Last Workspace` - allows you to switch to the last non-empty workspace, if the workspaces are managed dynamically.
 - DND Window Thumbnail can be switched to the app icon and back to the window thumbnail using Ctrl + primary click.
-- Option `Sort by Stable Sequence` for the Window Switcher (actions `Previous Window`, `Next Window`) allows to iterate windows in stable sequence (as they were created) instead of the default MRU (Most Recently Used)
+- Window Switcher (actions `Previous Window`, `Next Window`) now uses full-size windows previews instead of activating them directly. This change allows you to switch windows in MRU order, not just in stable sequence.
+- Option `Sort by Stable Sequence` for the Window Switcher (actions `Previous Window`, `Next Window`) allows you to scroll through windows in a stable order (as they were created) instead of the default Most Recently Used order.
+- Action `Rotate Windows Across Workspaces Left/Right/Up/Down` allows you to move all windows that belong to the current monitor (the one with the mouse pointer) one workspace left/right (or up/down) in wraparound cycle. This action allows to fake switch workspace on secondary moniotrs, if option `Workspaces on primary monitor only` is disabled (you can use GNOME Tweaks app).
+- Action `Switch Workspace on Current Monitor Only` allows the same as the previous one, but for the primary monitor it switches workspace as usual and moves windows on other monitors across workspaces in the oposite direction to compensate for the change, so you will see the same windows on secondary monitors, like the workspace didn't change.
+- On multimonitor system when you open preferences window, osd label with monitor index appears on each display
 
 **Fixed:**
-- keyboard shortcuts do not update on-change
-- double-click on window thumbnail don't work in GS 42
+- Keyboard shortcuts do not update on-change
+- Double-click on window thumbnail don't work in GS 42
 
 **Other changes**
-- GSettings i/o operations were refactored
 - Action `Switch to Most Recent Workspace` is now based on the AltTab window list instead of workspace change tracking, so you'll get the workspace with the recent user interaction.
-- Action menu was reordered in order to make the root list shorter
-- Window Switcher (actions `Previous Window`, `Next Window`) now uses full-size windows previews instead of activating them directly. This change allows you to switch windows in MRU order, not just in stable sequence.
-
+- GSettings i/o operations were refactored
+- Preferences window now supports new GNOME 42 Adwaita toolkit and also Gtk3 and Gtk4 versions of prefs windows were refactored to get visually closer to the Adwaita version.
 
 ### v15
 **Fixed:**
@@ -54,6 +56,7 @@
 - Custom menu adds title of the focused window as the first item if the menu contains actions that target the window.
 - action `Run Preset Command ...` now can activate application by app id (`.desktop` launcher file name) and was renamed to `Run Preset Command / Activate App ...`. App chooser dialog can now produce command or app id and the latter is default (preffered) option as it's native way to launch / activate application in GNOME Shell.
 - some actions have been moved to submenus to reduce menu height, some useless actions heve been removed
+- Action menu was reordered to make the root list shorter, removed actions `Previous/Next Workspace Overview`.
 
 ### v11:
 - Added action `Open ArcMenu` action, compatible with ArcMenu v.20+
