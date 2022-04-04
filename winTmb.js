@@ -19,9 +19,12 @@ const { GObject, GLib, Clutter, St, Meta, Shell } = imports.gi;
 
 const Main                   = imports.ui.main;
 const DND                    = imports.ui.dnd;
+const AltTab                 = imports.ui.altTab;
+
+const SCROLL_ICON_OPACITY = 240;
 
 var   WindowThumbnail = GObject.registerClass(
-class WindowThumbnail extends St.Bin {
+class WindowThumbnail extends St.BoxLayout {
     _init(metaWin, parent, args) {
         this._initTmbHeight = args.height;
         this._minimumHeight = Math.floor(5 / 100 * global.display.get_monitor_geometry(global.display.get_current_monitor()).height);
@@ -41,9 +44,7 @@ class WindowThumbnail extends St.Bin {
 
         this._delegate = this;
         this._draggable = DND.makeDraggable(this, {dragActorOpacity: 200});
-
         this.saved_snap_back_animation_time = DND.SNAP_BACK_ANIMATION_TIME;
-
         this._draggable.connect('drag-end', this._end_drag.bind(this));
         this._draggable.connect('drag-cancelled', this._end_drag.bind(this));
 
@@ -53,9 +54,30 @@ class WindowThumbnail extends St.Bin {
         this.window = this.w.get_compositor_private();
 
         this.clone.set_source(this.window);
-        this._setSize(true);
-        this.set_child(this.clone);
 
+        this._tmb = new St.Widget({layout_manager: new Clutter.BinLayout()});
+        //this._tmb.set_style('border-color: #353535; border: 2px; border-radius: 4px');
+        this.add_child(this._tmb);
+        //this.set_child(this.clone);
+        this._bin = new St.Bin();
+        this._bin.set_child(this.clone);
+        this._tmb.add_child(this._bin);
+        this._addCloseButton();
+        this._addScrollModeIcon();
+
+        this.connect('enter-event', () => {
+            this._closeButton.opacity = 255;
+            this._scrollModeBin.opacity = SCROLL_ICON_OPACITY;
+        });
+        this.connect('leave-event', () => {
+            this._closeButton.opacity = 0;
+            this._scrollModeBin.opacity = 0;
+            if (this._winPreview) {
+                this._destroyWindowPreview();
+            }
+        });
+
+        this._setSize(true);
         this.set_position(...this._getInitialPosition());
         this.show();
         this.window_id = this.w.get_id();
@@ -84,8 +106,16 @@ class WindowThumbnail extends St.Bin {
             // this.scale = Math.min(1.0, this.max_width / this.window.width, this.max_height / this.window.height);
             this.scale = Math.min(1.0, this._initTmbHeight / this.window.height);
         // when this.clone source window resize, this.clone and this. actor resize accordingly
-        this.scale_x = this.scale;
-        this.scale_y = this.scale;
+        //this.scale_x = this.scale;
+        //this.scale_y = this.scale;
+        this.clone.width = this.window.width * this.scale;
+        this.clone.height = this.window.height * this.scale;
+        if (this.icon) {
+            this.icon.scale_x = this.scale;
+            this.icon.scale_y = this.scale;
+        }
+        //this._closeButton.scale_x = 1 / this.scale;
+        //this._closeButton.scale_y = 1 / this.scale;
         // when the scale of this. actor change, this.clone resize accordingly,
         // but the reactive area of the actor doesn't change until the actor is redrawn
         // this updates the actor's input region area:
@@ -109,9 +139,10 @@ class WindowThumbnail extends St.Bin {
         }
         this._prevBtnPressTime = event.get_time();
 
-        if (this._click_count === 2) {
+        if (this._click_count === 2 && event.get_button() === Clutter.BUTTON_PRIMARY) {
             this.w.activate(global.get_current_time());
         }
+        return Clutter.EVENT_PROPAGATE;
     }
 
     _onBtnReleased(actor, event) {
@@ -122,11 +153,13 @@ class WindowThumbnail extends St.Bin {
                 this._switchView();
             else
                 this._reverseTmbWheelFunc = !this._reverseTmbWheelFunc;
+                this._scrollModeBin.set_child(this._reverseTmbWheelFunc ? this._scrollModeSourceIcon : this._scrollModeResizeIcon);
             return Clutter.EVENT_STOP;
             break;
         case Clutter.BUTTON_SECONDARY:
             // if (_ctrlPressed(state))
-            this._remove();
+            //this._remove();
+            this._showWindowPreview();
             return Clutter.EVENT_STOP;
             break;
         case Clutter.BUTTON_MIDDLE:
@@ -153,7 +186,7 @@ class WindowThumbnail extends St.Bin {
             else if (this._reverseTmbWheelFunc !== this._ctrlPressed(state))
                 this._switchSourceWin(-1);
             else if (this._reverseTmbWheelFunc === this._ctrlPressed(state))
-                this.scale = Math.max(0.1, this.scale - 0.025);
+                this.scale = Math.max(0.05, this.scale - 0.025);
             break;
         case Clutter.ScrollDirection.DOWN:
             if (this._shiftPressed(state))
@@ -175,6 +208,9 @@ class WindowThumbnail extends St.Bin {
         if (this.clone) {
             this.window.disconnect(this.windowConnect);
             this.clone.set_source(null);
+        }
+        if (this._winPreview) {
+            this._destroyWindowPreview();
         }
         this._parent.windowThumbnails.splice(this._parent.windowThumbnails.indexOf(this), 1);
         this.destroy();
@@ -224,6 +260,9 @@ class WindowThumbnail extends St.Bin {
         this.w = w;
 
         this._setIcon();
+        if (this._winPreview) {
+            this._showWindowPreview(true);
+        }
     }
 
     _actionTimeoutActive() {
@@ -251,7 +290,7 @@ class WindowThumbnail extends St.Bin {
         let icon = app
             ? app.create_icon_texture(this.height)
             : new St.Icon({icon_name: 'icon-missing', icon_size: this.height});
-        icon.x_expand = icon.y_expand = false;
+        icon.x_expand = icon.y_expand = true;
         if (this.icon)
             this.icon.destroy();
         this.icon = icon;
@@ -259,13 +298,114 @@ class WindowThumbnail extends St.Bin {
 
     _switchView(clone = false) {
         if (clone) {
-            this.set_child(this.clone);
+            this._bin.set_child(this.clone);
         } else {
-            this.set_child(
-                this.get_child() === this.clone
+            this._bin.set_child(
+                this._bin.get_child() === this.clone
                 ? this.icon
                 : this.clone
             );
+        }
+    }
+
+    _addCloseButton() {
+        const closeButton = new St.Icon({
+            style_class: 'window-close',
+            icon_name: 'window-close-symbolic',
+            x_align: Clutter.ActorAlign.END,
+            y_align: Clutter.ActorAlign.START,
+            x_expand: true,
+            y_expand: true,
+            reactive: true,
+        });
+        closeButton.set_style('/*background-color: dimgrey;*/ width: 1.3em; height: 1.3em; padding: 2px;');
+        closeButton.connect('button-press-event', () => { return Clutter.EVENT_STOP; });
+        closeButton.connect('button-release-event', () => {
+            this._remove();
+            return Clutter.EVENT_STOP;
+        });
+
+        this._closeButton = closeButton;
+        this._closeButton.opacity = 0;
+        this._tmb.add_child(this._closeButton);
+    }
+
+    _addScrollModeIcon() {
+        this._scrollModeBin = new St.Bin({
+            x_expand: true,
+            y_expand: true
+        });
+        this._scrollModeResizeIcon = new St.Icon({
+            icon_name: 'view-fullscreen-symbolic',
+            x_align: Clutter.ActorAlign.CENTER,
+            y_align: Clutter.ActorAlign.CENTER,
+            x_expand: true,
+            y_expand: true,
+            opacity: SCROLL_ICON_OPACITY
+        });
+        this._scrollModeSourceIcon = new St.Icon({
+            icon_name: 'window-new-symbolic',
+            x_align: Clutter.ActorAlign.CENTER,
+            y_align: Clutter.ActorAlign.CENTER,
+            x_expand: true,
+            y_expand: true,
+            opacity: SCROLL_ICON_OPACITY
+        });
+        this._scrollModeBin.set_child(this._scrollModeResizeIcon);
+        this._tmb.add_child(this._scrollModeBin);
+        this._scrollModeBin.opacity = 0;
+    }
+
+    _showWindowPreview(update = false) {
+        if (this._winPreview) {
+            this._destroyWindowPreview();
+            if (!update)
+                return;
+        }
+
+        if (!this._winPreview) {
+            this._winPreview = new AltTab.CyclerHighlight();
+            global.window_group.add_actor(this._winPreview);
+            [this._winPreview._xPointer, this._winPreview._yPointer] = global.get_pointer();
+        }
+
+        if (!update) {
+            this._winPreview.opacity = 0;
+            this._winPreview.ease({
+                opacity: 255,
+                duration: 70,
+                mode: Clutter.AnimationMode.LINEAR,
+                onComplete: () => {
+                },
+            });
+
+            this.ease({
+                opacity: 50,
+                duration: 70,
+                mode: Clutter.AnimationMode.LINEAR,
+                onComplete: () => {
+                }
+            });
+        } else {
+            this._winPreview.opacity = 255;
+        }
+        this._winPreview.window = this.w;
+        this._winPreview._window = this.w;
+        global.window_group.set_child_above_sibling(this._winPreview, null);
+    }
+
+    _destroyWindowPreview() {
+        if (this._winPreview) {
+            this._winPreview.ease({
+            opacity: 0,
+            duration: 100,
+            mode: Clutter.AnimationMode.LINEAR,
+            onComplete: () => {
+                this._winPreview.destroy();
+                this._winPreview = null;
+                this.opacity = 255;
+            }
+        });
         }
     }
 });
