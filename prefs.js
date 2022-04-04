@@ -22,10 +22,12 @@ const Settings       = Me.imports.settings;
 const triggers       = Settings.listTriggers();
 const triggerLabels  = Settings.TriggerLabels;
 const actionList     = Settings.actionList;
+const actionDict     = {};
 
 let mscOptions;
 let _excludedItems;
 let _topBox;
+const TRANSITION_DURATION = 200;
 
 const shellVersion = Settings.shellVersion;
 
@@ -35,11 +37,10 @@ try {
 } catch (e) {
 }
 
-
 // gettext
 const _  = Settings._;
 
-let WAYLAND;
+//let WAYLAND;
 
 function init() {
     // log(`initializing ${Me.metadata.name} Preferences`);
@@ -62,11 +63,21 @@ function init() {
         _excludedItems.push('prev-workspace-popup');
         _excludedItems.push('next-workspace-popup');
     }
+
+    actionList.forEach(act => actionDict[act[1]] = act[2]);
+
     const ArcMenu_enabled = Settings.extensionEnabled('arcmenu@arcmenu.com');
     const ArcMenu_detected = mscOptions.get('supportedExetensions').includes('ArcMenu');
     if (!ArcMenu_enabled || (ArcMenu_enabled && !ArcMenu_detected)) {
            _excludedItems.push('toggle-arcmenu');
     }
+
+    const iconTheme = Gtk.IconTheme.get_for_display
+                        ? Gtk.IconTheme.get_for_display(Gdk.Display.get_default())
+                        : Gtk.IconTheme.get_for_screen(Gdk.Screen.get_default());
+    iconTheme.add_search_path
+                        ? iconTheme.add_search_path(GLib.build_filenamev([Me.path, 'icons']))
+                        : iconTheme.append_search_path(GLib.build_filenamev([Me.path, 'icons']));
 }
 
 function fillPreferencesWindow(window) {
@@ -75,7 +86,7 @@ function fillPreferencesWindow(window) {
         const [page, title] = mPage;
         const monAdwPage = new Adw.PreferencesPage({
             title: title,
-            icon_name: 'video-display-symbolic'
+            icon_name: 'preferences-desktop-display-symbolic'
         });
         const monGroup = new Adw.PreferencesGroup();
         page.buildPage();
@@ -184,7 +195,7 @@ function buildPrefsWidget() {
         stack.get_visible_child().buildPage();
     });
     stackSwitcher.set_stack(stack);
-    stack.set_transition_duration(300);
+    stack.set_transition_duration(TRANSITION_DURATION);
     stack.set_transition_type(Gtk.StackTransitionType.SLIDE_LEFT_RIGHT);
 
     const pagesBtns = [];
@@ -196,7 +207,7 @@ function buildPrefsWidget() {
         const [page, title] = mPage;
         page.buildPage();
         stack.add_named(page, title);
-        pagesBtns.push([new Gtk.Label({ label: title }), shellVersion >= 40 ? newImage('video-display-symbolic') : newImage('video-display-symbolic', Gtk.IconSize.BUTTON)]);
+        pagesBtns.push([new Gtk.Label({ label: title }), shellVersion >= 40 ? newImage('preferences-desktop-display-symbolic') : newImage('preferences-desktop-display-symbolic', Gtk.IconSize.BUTTON)]);
     }
 
     const kbPage = new KeyboardPage();
@@ -242,6 +253,7 @@ function buildPrefsWidget() {
     stackSwitcher.show_all && stackSwitcher.show_all();
     stack.connect('realize', (widget) => {
         const window = widget.get_root ? widget.get_root() : widget.get_toplevel();
+        _topBox = window;
         const headerbar = window.get_titlebar();
         if (shellVersion >= 40) {
             headerbar.title_widget = stackSwitcher;
@@ -249,6 +261,7 @@ function buildPrefsWidget() {
             headerbar.custom_title = stackSwitcher;
         }
     });
+
     return stack;
 }
 
@@ -316,8 +329,8 @@ class MonitorPage extends Gtk.Box {
         const stackSwitcher = new Gtk.StackSwitcher({
             halign: Gtk.Align.CENTER,
             hexpand: true,
-            margin_top: Settings.shellVersion < 42 ? margin : 0,
-            margin_bottom: Settings.shellVersion < 42 ? 0 : margin
+            margin_top: shellVersion < 42 ? margin : 0,
+            margin_bottom: shellVersion < 42 ? 0 : margin
         });
 
         //const stackSwitcher = new Gtk.StackSidebar();
@@ -331,15 +344,8 @@ class MonitorPage extends Gtk.Box {
         });
 
         stackSwitcher.set_stack(stack);
-        stack.set_transition_duration(300);
+        stack.set_transition_duration(TRANSITION_DURATION);
         stack.set_transition_type(Gtk.StackTransitionType.SLIDE_LEFT_RIGHT);
-
-        const iconTheme = Gtk.IconTheme.get_for_display
-                            ? Gtk.IconTheme.get_for_display(Gdk.Display.get_default())
-                            : Gtk.IconTheme.get_for_screen(Gdk.Screen.get_default());
-        iconTheme.add_search_path
-                            ? iconTheme.add_search_path(GLib.build_filenamev([Me.path, 'icons']))
-                            : iconTheme.append_search_path(GLib.build_filenamev([Me.path, 'icons']));
 
         let icons = [];
         for (let i = 0; i < 4; i++) {
@@ -350,7 +356,7 @@ class MonitorPage extends Gtk.Box {
                 margin_end: 30,
                 pixel_size: 32,
             });
-            if (Settings.shellVersion >= 40) {
+            if (shellVersion >= 40) {
                 image.set_from_icon_name(`${this._corners[i].top ? 'Top' : 'Bottom'}${this._corners[i].left ? 'Left' : 'Right'}`);
                 //image.set_from_file(`${Me.dir.get_path()}/icons/${this._corners[i].top ? 'Top' : 'Bottom'}${this._corners[i].left ? 'Left' : 'Right'}.svg`);
             } else {
@@ -394,10 +400,10 @@ class CornerPage extends Gtk.Box {
     _init(widgetProperties = {
         //selection_mode: null,
         orientation: Gtk.Orientation.VERTICAL,
-        margin_start: Settings.shellVersion < 42 ? 16 : 0,
-        margin_end: Settings.shellVersion < 42 ? 16 : 0,
-        margin_top: Settings.shellVersion < 42 ? 16 : 0,
-        margin_bottom: Settings.shellVersion < 42 ? 16 : 0,
+        margin_start: shellVersion < 42 ? 16 : 0,
+        margin_end: shellVersion < 42 ? 16 : 0,
+        margin_top: shellVersion < 42 ? 16 : 0,
+        margin_bottom: shellVersion < 42 ? 16 : 0,
         vexpand: true,
         visible: true
     }) {
@@ -416,8 +422,8 @@ class CornerPage extends Gtk.Box {
         for (let trigger of triggers) {
             const grid = new Gtk.Grid({
                 column_spacing: 5,
-                margin_top: Settings.shellVersion >= 40 ? 5 : 10,
-                margin_bottom: Settings.shellVersion >= 40 ? 5 : 10,
+                margin_top: shellVersion >= 40 ? 5 : 10,
+                margin_bottom: shellVersion >= 40 ? 5 : 10,
 
             });
             const ctrlBtn = new Gtk.CheckButton({
@@ -428,7 +434,6 @@ class CornerPage extends Gtk.Box {
                 vexpand: false,
                 hexpand: false,
                 tooltip_text: _('Trigger the action only if Ctrl key is pressed'),
-                //margin_end: 5,
             });
 
             ctrlBtn.connect('notify::active', () => {
@@ -436,8 +441,22 @@ class CornerPage extends Gtk.Box {
             });
             ctrlBtn.set_active(this._corner.getCtrl(trigger));
 
-            const cw = this._buildTriggerWidget(trigger);
+            let iconName;
+            if (trigger === 0) {
+                iconName = `${this._corner.top ? 'Top' : 'Bottom'}${this._corner.left ? 'Left' : 'Right'}`;
+            } else {
+                let iconIdx = trigger;
+                if (this._leftHandMouse) {
+                    if (trigger === 1)
+                        iconIdx = 2;
+                    if (trigger === 2)
+                        iconIdx = 1;
+                }
+                iconName = `Mouse-${iconIdx}`;
+            }
+
             const trgIcon = new Gtk.Image({
+                icon_name: iconName,
                 halign: Gtk.Align.START,
                 margin_start: 10,
                 margin_end: 15,
@@ -447,19 +466,8 @@ class CornerPage extends Gtk.Box {
                 // pixel_size has no effect in Gtk3, the size is the same as declared in svg image
                 // in Gtk4 image has always some extra margin and therefore it's tricky to adjust row height
             });
-            let iconPath;
-            if (trigger === 0) {
-                iconPath = `${Me.dir.get_path()}/icons/${this._corner.top ? 'Top' : 'Bottom'}${this._corner.left ? 'Left' : 'Right'}.svg`;
-            } else {
-                let iconIdx = trigger;
-                if (this._leftHandMouse) {
-                    if (trigger === 1)
-                        iconIdx = 2;
-                    if (trigger === 2)
-                        iconIdx = 1;
-                }
-                iconPath = `${Me.dir.get_path()}/icons/Mouse-${iconIdx}.svg`;
-            }
+
+            trgIcon.set_tooltip_text(triggerLabels[trigger]);
 
             const fsBtn = new Gtk.ToggleButton({
                 halign: Gtk.Align.START,
@@ -478,8 +486,8 @@ class CornerPage extends Gtk.Box {
                 this._corner.setFullscreen(trigger, fsBtn.active);
             });
 
-            trgIcon.set_from_file(iconPath);
-            trgIcon.set_tooltip_text(triggerLabels[trigger]);
+            const cw = this._buildTriggerWidget(trigger, iconName);
+
             grid.attach(trgIcon, 1, trigger, 1, 1);
             grid.attach(ctrlBtn, 0, trigger, 1, 1);
             if (trigger === Settings.Triggers.PRESSURE) {
@@ -502,7 +510,7 @@ class CornerPage extends Gtk.Box {
         this._alreadyBuilt = true;
     }
 
-    _buildTriggerWidget(trigger) {
+    _buildTriggerWidget(trigger, iconName) {
         const cw = new Gtk.Grid({
             valign: Gtk.Align.CENTER,
         });
@@ -540,15 +548,25 @@ class CornerPage extends Gtk.Box {
         commandEntry.connect('icon-press', (e) => e.set_text(''));
         const appButton = new Gtk.Button();
 
-        const actionTreeStore = new Gtk.TreeStore();
-        actionTreeStore.set_column_types([
-            GObject.TYPE_STRING,
-            GObject.TYPE_STRING,
-        ]);
+        const actionButton = new Gtk.Button({
+            label: ' ',
+            hexpand: true
+        })
 
-        const actionCombo = new Gtk.ComboBox({
-            id_column: 0,
-            hexpand: true,
+        let actionButtonLabel;
+        if (shellVersion >= 40) {
+            actionButtonLabel = actionButton.get_first_child();
+        } else {
+            actionButtonLabel = actionButton.get_children()[0];
+        }
+
+        actionButtonLabel.xalign = 0;
+        const context = actionButton.get_style_context();
+        context.add_class('heading');
+
+        actionButton.connect('clicked', widget => {
+            const actionChooserTree = new ActionChooserDialog(widget, this._corner, trigger, iconName);
+            actionChooserTree.dialog.show();
         });
 
         let settingsBtn = null;
@@ -587,7 +605,7 @@ class CornerPage extends Gtk.Box {
         cmdGrid.attach(commandEntry, 0, 0, 1, 1);
         cmdGrid.attach(appButton, 1, 0, 1, 1);
 
-        comboGrid.attach(actionCombo, 0, 0, 1, 1);
+        comboGrid.attach(actionButton, 0, 0, 1, 1,);
         if (settingsBtn) {
             comboGrid.attach(settingsBtn, 1, 0, 1, 1);
         }
@@ -595,17 +613,6 @@ class CornerPage extends Gtk.Box {
         cw.attach(comboGrid, 0, 0, 1, 1);
         cw.attach(commandEntryRevealer, 0, 1, 1, 1);
         cw.attach(wsIndexRevealer, 0, 2, 1, 1);
-
-        let comboRenderer = new Gtk.CellRendererText();
-
-        actionCombo.pack_start(comboRenderer, true);
-        actionCombo.add_attribute(comboRenderer, 'text', 1);
-        actionCombo.set_cell_data_func(comboRenderer,
-            (clayout, cell, model, iter) => {
-                let sensitive = !model.iter_has_child(iter);
-                cell.set_sensitive(sensitive);
-            }
-        );
 
         let cmdConnected = false;
         let cmdBtnConnected = false;
@@ -643,9 +650,7 @@ class CornerPage extends Gtk.Box {
             });
         }.bind(this);
 
-        actionCombo.connect('changed', () => {
-            if (this._alreadyBuilt)
-                this._corner.setAction(trigger, actionCombo.get_active_id());
+        actionButton.connect('notify::label', () => {
             commandEntryRevealer.reveal_child = this._corner.getAction(trigger) === 'run-command';
             wsIndexRevealer.reveal_child = this._corner.getAction(trigger) === 'move-to-workspace';
             if (this._corner.getAction(trigger) === 'run-command' && !cmdConnected) {
@@ -671,7 +676,8 @@ class CornerPage extends Gtk.Box {
                 cmdConnected = true;
             }
         });
-        this._fillCombo(actionTreeStore, actionCombo, trigger);
+        actionButton.set_label(actionDict[this._corner.getAction(trigger)]);
+
         workspaceIndexSpinButton.value = this._corner.getWorkspaceIndex(trigger);
         workspaceIndexSpinButton.timeout_id = null;
         workspaceIndexSpinButton.connect('value-changed', () => {
@@ -693,36 +699,6 @@ class CornerPage extends Gtk.Box {
         cw.show_all && cw.show_all();
         return cw;
     }
-
-    _fillCombo(actionTreeStore, actionCombo, trigger) {
-        let iter, iter1, iter2, activeItem;
-        const storedAction = this._corner.getAction(trigger);
-        for (let i = 0; i < actionList.length; i++) {
-            const item = actionList[i];
-            const itemType = item[0];
-            const action = item[1];
-            let title = item[2];
-            if (_excludedItems.includes(item[1]))
-                continue;
-            if (!itemType) {
-                iter1  = actionTreeStore.append(null);
-                actionTreeStore.set(iter1, [0], [action]);
-                actionTreeStore.set(iter1, [1], [title]);
-                iter = iter1;
-            } else {
-                iter2  = actionTreeStore.append(iter1);
-                actionTreeStore.set(iter2, [0], [action]);
-                actionTreeStore.set(iter2, [1], [title]);
-                iter = iter2;
-            }
-            if (action === storedAction)
-                activeItem = iter;
-        }
-        actionCombo.set_model(actionTreeStore);
-        if (activeItem)
-            actionCombo.set_active_iter(activeItem);
-    }
-
 
     _buildPressureSettings(popupGrid) {
         const pressureLabel = new Gtk.Label({
@@ -768,7 +744,7 @@ class CornerPage extends Gtk.Box {
 
     _buildExpandsionWidget() {
         const grid = new Gtk.Grid({
-            row_spacing: Settings.shellVersion >= 40 ? 0 : 10,
+            row_spacing: shellVersion >= 40 ? 0 : 10,
             column_spacing: 8,
             margin_start: 10,
             margin_end: 10,
@@ -933,7 +909,7 @@ class CornerPage extends Gtk.Box {
 
         dialog.add_button(_('_Cancel'), Gtk.ResponseType.CANCEL);
         dialog.add_button(_('_Add ID'), Gtk.ResponseType.APPLY);
-        dialog.add_button(_('_Add Cmd'), Gtk.ResponseType.OK);
+        dialog.add_button(_('_Add Command'), Gtk.ResponseType.OK);
         dialog.set_default_response(Gtk.ResponseType.APPLY);
 
         const grid = new Gtk.Grid({
@@ -949,7 +925,7 @@ class CornerPage extends Gtk.Box {
             show_all: true,
             hexpand: true,
         });
-        // let appInfo = dialog._appChooser.get_app_info();
+
         grid.attach(dialog._appChooser, 0, 0, 2, 1);
         const cmdLabel = new Gtk.Label({
             label: '',
@@ -981,7 +957,7 @@ class OptionsPage extends Gtk.ScrolledWindow {
     buildPage() {
         if (this._alreadyBuilt)
             return false;
-        const margin = Settings.shellVersion < 42 ? 16 : 0;
+        const margin = shellVersion < 42 ? 16 : 0;
         const mainBox = new Gtk.Box({
             orientation: Gtk.Orientation.VERTICAL,
             spacing: 5,
@@ -1004,11 +980,14 @@ class OptionsPage extends Gtk.ScrolledWindow {
             const widget = item[1];
             if (!widget) {
                 let lbl = new Gtk.Label({
+                    label: option, // option is a plain text if item is section title
                     xalign: 0,
                     margin_top: 4,
                     margin_bottom: 2
                 });
-                lbl.set_markup(option); // option is plain text if item is section title
+                const context = lbl.get_style_context();
+                context.add_class('heading');
+
                 mainBox[mainBox.add ? 'add' : 'append'](lbl);
 
                 frame = new Gtk.Frame({
@@ -1016,7 +995,6 @@ class OptionsPage extends Gtk.ScrolledWindow {
                 });
                 frameBox = new Gtk.ListBox({
                     selection_mode: null,
-                    //can_focus: false,
                 });
                 mainBox[mainBox.add ? 'add' : 'append'](frame);
                 frame[frame.add ? 'add' : 'set_child'](frameBox);
@@ -1049,11 +1027,11 @@ class OptionsPage extends Gtk.ScrolledWindow {
 function getOptionList() {
     let optionsList = [];
         // options item format:
-        // [text, tooltip, widget, settings-variable, options for combo]
+        // [text, caption, widget, settings-variable, options for combo]
 
         optionsList.push(
             _optionsItem(
-                _makeTitle(_('Global options')),
+                _('Global options'),
                 null, null, null
             )
         );
@@ -1110,7 +1088,7 @@ function getOptionList() {
 
         optionsList.push(
             _optionsItem(
-                _makeTitle(_('Window switcher')),
+                _('Window switcher'),
                 null,
                 null
             )
@@ -1145,7 +1123,7 @@ function getOptionList() {
 
         optionsList.push(
             _optionsItem(
-                _makeTitle(_('DND Window Thumbnails')),
+                _('DND Window Thumbnails'),
                 `${_('Window thumbnails are overlay clones of windows, can be draged by mouse anywhere on the screen')}\n${
                     _('Thumbnail control:')}\n    ${
                     _('Double click:    \t\tactivate source window')}\n    ${
@@ -1218,7 +1196,7 @@ function _newComboBox() {
     return comboBox;
 }
 
-function _optionsItem(text, tooltip, widget, variable, options = []) {
+function _optionsItem(text, caption, widget, variable, options = []) {
     let item = [];
     let label;
     if (widget) {
@@ -1235,23 +1213,25 @@ function _optionsItem(text, tooltip, widget, variable, options = []) {
         option.set_markup(text);
         label[label.add ? 'add' : 'append'](option);
 
-        if (tooltip) {
-            const caption = new Gtk.Label({
+        if (caption) {
+            const captionLbl = new Gtk.Label({
+                label: caption,
                 halign: Gtk.Align.START,
                 visible: true,
                 wrap: true,
                 xalign: 0
             })
-            const context = caption.get_style_context();
+            const context = captionLbl.get_style_context();
             context.add_class('dim-label');
             context.add_class('caption');
-            caption.set_text(tooltip);
-            label[label.add ? 'add' : 'append'](caption);
+
+            label[label.add ? 'add' : 'append'](captionLbl);
         }
         label._title = text;
     } else {
         label = text;
     }
+
     item.push(label);
     item.push(widget);
 
@@ -1298,9 +1278,6 @@ function _optionsItem(text, tooltip, widget, variable, options = []) {
     return item;
 }
 
-function _makeSmall(label) {
-    return `<small>${label}</small>`;
-}
 function _makeTitle(label) {
     return `<b>${label}</b>`;
 }
@@ -1309,11 +1286,11 @@ const CustomMenusPage = GObject.registerClass(
 class CustomMenusPage extends Gtk.Box {
     _init(widgetProperties ={
         orientation: Gtk.Orientation.VERTICAL,
+        visible: true
     }) {
         super._init(widgetProperties);
         this._menusCount = 4;
         this._alreadyBuilt = false;
-        this.buildPage();
     }
 
     buildPage() {
@@ -1326,13 +1303,18 @@ class CustomMenusPage extends Gtk.Box {
         const switcher = new Gtk.StackSwitcher({
             hexpand: true,
             halign: Gtk.Align.CENTER,
-            margin_top: Settings.shellVersion < 42 ? margin : 0,
-            margin_bottom: Settings.shellVersion < 42 ? 0 : margin
+            margin_top: shellVersion < 42 ? margin : 0,
+            margin_bottom: shellVersion < 42 ? 0 : margin
         });
         const stack = new Gtk.Stack({
             hexpand: true
         });
-        stack.set_transition_duration(200);
+
+        stack.connect('notify::visible-child', () => {
+            stack.get_visible_child().buildPage();
+        });
+
+        stack.set_transition_duration(TRANSITION_DURATION);
         stack.set_transition_type(Gtk.StackTransitionType.SLIDE_LEFT_RIGHT);
         switcher.set_stack(stack);
 
@@ -1342,7 +1324,7 @@ class CustomMenusPage extends Gtk.Box {
             const name = `menu-${i}`;
             stack.add_titled(menu, name, title);
             menu.hexpand = true;
-            menu.buildPage();
+            //menu.buildPage();
 
         }
 
@@ -1370,7 +1352,7 @@ class TreeviewPage extends Gtk.Box {
         if (this._alreadyBuilt)
             return;
 
-        const margin = Settings.shellVersion < 42 ? 16 : 0
+        const margin = shellVersion < 42 ? 16 : 0
         const box = new Gtk.Box({
             orientation: Gtk.Orientation.VERTICAL,
             spacing: 5,
@@ -1394,7 +1376,7 @@ class TreeviewPage extends Gtk.Box {
             hexpand: true,
             vexpand: true
         });
-        //this.treeView.activate_on_single_click = true;
+        this.treeView.activate_on_single_click = true;
         this.treeView.connect('row-activated', (treeView,path,column) => {
             if (treeView.row_expanded(path)) {
                 treeView.collapse_row(path);
@@ -1440,6 +1422,16 @@ class TreeviewPage extends Gtk.Box {
         box[box.add ? 'add' : 'append'](btnBox);
         this[this.add ? 'add' : 'append'](box);
     }
+
+    _setNewTreeviewModel(columns) {
+        if (this.model) {
+            this.model = null;
+        }
+        this.model = new Gtk.TreeStore();
+        this.model.set_column_types(columns);
+        this.treeView.model = this.model;
+        this._populateTreeview();
+    }
 });
 
 const KeyboardPage = GObject.registerClass(
@@ -1455,6 +1447,7 @@ class KeyboardPage extends TreeviewPage {
 
         this.buildWidgets();
         this._loadShortcuts();
+        this._treeviewModelColumns = [GObject.TYPE_STRING, GObject.TYPE_STRING, GObject.TYPE_INT, GObject.TYPE_INT];
 
         this._updateTitle();
         this.lbl.set_tooltip_text(`${_('Click on the Shortcut Key cell to set new shortcut.')}\n${
@@ -1466,15 +1459,15 @@ class KeyboardPage extends TreeviewPage {
         this.resetButton.connect('clicked', () => {
             mscOptions.set('keyboardShortcuts', []);
             this._loadShortcuts();
-            this._setNewTreeviewModel();
+            this._setNewTreeviewModel(this._treeviewModelColumns);
             this._updateTitle();
         });
         this.showActiveBtn.connect('notify::active', () => {
-            this._setNewTreeviewModel();
+            this._setNewTreeviewModel(this._treeviewModelColumns);
             this.treeView.expand_all();
         })
 
-        this._setNewTreeviewModel();
+        this._setNewTreeviewModel(this._treeviewModelColumns);
 
         // Hotkey
         const actions     = new Gtk.TreeViewColumn({title: _('Action'), expand: true});
@@ -1589,7 +1582,7 @@ class KeyboardPage extends TreeviewPage {
     }
 
     _populateTreeview() {
-        let iter, iter2;
+        let iter1, iter2;
         let submenuOnHold = null;
         for (let i = 0; i < actionList.length; i++) {
             const item = actionList[i];
@@ -1620,32 +1613,22 @@ class KeyboardPage extends TreeviewPage {
                     log(`[${Me.metadata.name}] Error: Gtk keybind conversion failed`);
             }
             if (!itemMeaning) {
-                iter  = this.model.append(null);
+                iter1  = this.model.append(null);
                 if (itemMeaning === 0) {
-                    this.model.set(iter, [0, 1, 2, 3], [action, title, ...a]);
+                    this.model.set(iter1, [0, 1, 2, 3], [action, title, ...a]);
                 } else {
-                    this.model.set(iter, [1], [title]);
+                    this.model.set(iter1, [1], [title]);
                 }
             } else {
                 if (submenuOnHold) {
-                    iter = this.model.append(null);
-                    this.model.set(iter, [1], [submenuOnHold[2]]);
+                    iter1 = this.model.append(null);
+                    this.model.set(iter1, [1], [submenuOnHold[2]]);
                     submenuOnHold = null;
                 }
-                iter2  = this.model.append(iter);
+                iter2  = this.model.append(iter1);
                 this.model.set(iter2, [0, 1, 2, 3], [action, title, ...a]);
             }
         }
-    }
-
-    _setNewTreeviewModel() {
-        if (this.model) {
-            this.model = null;
-        }
-        this.model = new Gtk.TreeStore();
-        this.model.set_column_types([GObject.TYPE_STRING, GObject.TYPE_STRING, GObject.TYPE_INT, GObject.TYPE_INT]);
-        this.treeView.model = this.model;
-        this._populateTreeview();
     }
 });
 
@@ -1655,6 +1638,7 @@ class CustomMenuPage extends TreeviewPage {
         super._init();
         this._alreadyBuilt = false;
         this._menuIndex = menuIndex;
+        this._treeviewModelColumns = [GObject.TYPE_STRING, GObject.TYPE_STRING, GObject.TYPE_INT, GObject.TYPE_INT];
     }
 
     buildPage() {
@@ -1671,14 +1655,14 @@ class CustomMenuPage extends TreeviewPage {
         this.resetButton.connect('clicked', () => {
             this.menuItems = [];
             mscOptions.set(`customMenu${this._menuIndex}`, this.menuItems);
-            this._setNewTreeviewModel();
+            this._setNewTreeviewModel(this._treeviewModelColumns);
             this._updateTitle();
         });
         this.showActiveBtn.connect('notify::active', () => {
-            this._setNewTreeviewModel();
+            this._setNewTreeviewModel(this._treeviewModelColumns);
             this.treeView.expand_all();
         });
-        this._setNewTreeviewModel();
+        this._setNewTreeviewModel(this._treeviewModelColumns);
 
         // Menu items
         const actions     = new Gtk.TreeViewColumn({title: _('Menu Item'), expand: true});
@@ -1743,16 +1727,15 @@ class CustomMenuPage extends TreeviewPage {
         let iter, iter1, iter2;
         let submenuOnHold = null;
         for (let i = 0; i < actionList.length; i++) {
-            let item = actionList[i];
+            const item = actionList[i];
             const itemType = item[0];
             const action = item[1];
             const title = item[2];
-            //const shouldHaveShortcut = item[3];
 
-            if (_excludedItems.includes(action)/* || !shouldHaveShortcut*/)
+            if (_excludedItems.includes(action))
                 continue;
 
-            // show only selected actions
+            // show selected actions only
             if (this.showActiveBtn.active && !this.menuItems.includes(action) && (itemType !== null))
                 continue;
 
@@ -1784,14 +1767,195 @@ class CustomMenuPage extends TreeviewPage {
             this.model.set_value(iter, 2, this.menuItems.includes(action));
         }
     }
+});
 
-    _setNewTreeviewModel() {
-        if (this.model) {
-            this.model = null;
-        }
+const ActionChooserDialog = GObject.registerClass(
+class ActionChooserDialog extends Gtk.Box {
+    _init(button, corner, trigger, iconName) {
+        const margin = 16;
+        super._init({
+            margin_top: shellVersion >= 42 ? margin : 0,
+            margin_bottom: shellVersion >= 42 ? margin : 0,
+            margin_start: shellVersion >= 42 ? margin : 0,
+            margin_end: shellVersion >= 42 ? margin : 0,
+        });
+
+        this._button = button;
+        this._corner = corner;
+        this._trigger = trigger;
+        this._iconName = iconName;
+
+        this.dialog = new Gtk.Dialog({
+            title: _('Choose Action'),
+            transient_for: _topBox.get_root
+                ? _topBox.get_root()
+                : _topBox.get_toplevel(),
+            use_header_bar: true,
+            modal: true,
+            height_request: 600
+        });
+
+        const trgIcon = new Gtk.Image({
+            icon_name: this._iconName,
+            margin_start: 10,
+            pixel_size: 32, // pixel_size has no effect in Gtk3, the size is the same as declared in svg image when loaded from file
+            visible: true
+        });
+
+        trgIcon.icon_size = Gtk.IconSize.BUTTON;
+
+        const headerbar = this.dialog.get_titlebar();
+        headerbar.pack_start(trgIcon);
+
+        this.dialog.get_content_area()[this.dialog.get_content_area().add ? 'add' : 'append'](this);
+
+        this.buildPage();
+    }
+
+    buildPage() {
+        this.buildWidgets();
+        this.resetButton.set_label(_('Cancel'));
+        this.resetButton.connect('clicked', () => {
+            this.dialog.destroy();
+        });
+
+        // Actions
+        const actions = new Gtk.TreeViewColumn({
+            title: _('Action'),
+            expand: true
+        });
+        const nameRender = new Gtk.CellRendererText();
+
+        actions.pack_start(nameRender, true);
+        actions.add_attribute(nameRender, 'text', 1);
+
+        this.treeView.connect('row-activated', (treeView,path,column) => {
+            const [succ, iter] = this.model.get_iter(path);
+            if (!succ) return false;
+            const action  = this.model.get_value(iter, 0);
+            const title = this.model.get_value(iter, 1);
+            if (action) {
+                this._corner.setAction(this._trigger, action);
+                this._button.set_label(title);
+                this.dialog.destroy();
+            }
+        });
+
+        this.treeView.append_column(actions);
+
+        this.show_all && this.show_all();
+
+        this._alreadyBuilt = true;
+        return true;
+    }
+
+    buildWidgets() {
+        if (this._alreadyBuilt)
+            return;
+
+        const margin = shellVersion < 42 ? 4 : 0
+        const box = new Gtk.Box({
+            orientation: Gtk.Orientation.VERTICAL,
+            spacing: 5,
+            homogeneous: false,
+            margin_start: margin,
+            margin_end: margin,
+            margin_top: margin,
+            margin_bottom: margin,
+        });
+        const scrolledWindow = new Gtk.ScrolledWindow({
+            hscrollbar_policy: Gtk.PolicyType.NEVER,
+            vscrollbar_policy: Gtk.PolicyType.AUTOMATIC,
+        });
+
+        const frame = new Gtk.Frame();
+        this.treeView = new Gtk.TreeView({
+            hexpand: true,
+            vexpand: true
+        });
+        this.treeView.activate_on_single_click = true;
+        this.treeView.connect('row-activated', (treeView,path,column) => {
+            if (treeView.row_expanded(path)) {
+                treeView.collapse_row(path);
+            } else {
+                treeView.expand_row(path, false);
+            }
+        });
+
         this.model = new Gtk.TreeStore();
-        this.model.set_column_types([GObject.TYPE_STRING, GObject.TYPE_STRING, GObject.TYPE_INT, GObject.TYPE_INT]);
+        this.model.set_column_types([GObject.TYPE_STRING, GObject.TYPE_STRING]);
         this.treeView.model = this.model;
         this._populateTreeview();
+
+        const btnBox = new Gtk.Box({
+            orientation: Gtk.Orientation.HORIZONTAL,
+            hexpand: true,
+            homogeneous: true,
+            spacing: 4
+        });
+        const expandButton = new Gtk.Button({
+            label: _('Expand all')
+        });
+        expandButton.connect('clicked', () => {
+            this.treeView.expand_all();
+        });
+
+        const collapseButton = new Gtk.Button({
+            label: _('Collapse all')
+        });
+        collapseButton.connect('clicked', () => {
+            this.treeView.collapse_all();
+        });
+
+        this.resetButton = new Gtk.Button();
+
+        btnBox[btnBox.add ? 'add' : 'append'](expandButton);
+        btnBox[btnBox.add ? 'add' : 'append'](collapseButton);
+        btnBox[btnBox.add ? 'add' : 'append'](this.resetButton);
+
+        scrolledWindow[this.add ? 'add' : 'set_child'](this.treeView);
+        frame[frame.add ? 'add' : 'set_child'](scrolledWindow);
+
+        box[box.add ? 'add' : 'append'](frame);
+        box[box.add ? 'add' : 'append'](btnBox);
+        this[this.add ? 'add' : 'append'](box);
+    }
+
+    _populateTreeview() {
+        let iter, iter1, iter2;
+        let submenuOnHold = null;
+        for (let i = 0; i < actionList.length; i++) {
+            const item = actionList[i];
+            const itemType = item[0];
+            const action = item[1];
+            const title = item[2];
+
+            if (_excludedItems.includes(action))
+                continue;
+
+            if (itemType === null) {
+                submenuOnHold = item;
+                continue;
+            }
+
+            if (!itemType) {
+                iter1 = this.model.append(null);
+                if (itemType === 0) {
+                    // root action item
+                    this.model.set(iter1, [0, 1], [action, title]);
+                }
+
+                iter = iter1;
+            } else {
+                if (submenuOnHold) {
+                    iter1 = this.model.append(null);
+                    this.model.set(iter1, [0, 1], ['', submenuOnHold[2]]);
+                    submenuOnHold = null;
+                }
+                iter2  = this.model.append(iter1);
+                this.model.set(iter2, [0, 1], [action, title]);
+                iter = iter2;
+            }
+        }
     }
 });
