@@ -1,6 +1,16 @@
 ## Changelog:
 
-### v16 (not released yet, WIP)
+### v17 (not released yet)
+**Added:**
+- DND Window Thumbnail: on-hover overlays - close button and icon indicating current function of the scroll wheel; secondary click shows a full size preview of the window
+
+**Fixed:**
+- Slow startup of the prferences window and lagging first switch to other corner pages - action menu combo boxes were replaced with buttons + treeview menu, means more than 9x faster startup and no lags in UI
+
+**Other changes:**
+- TreeView submenus expand on a single-click instead of double-click
+
+### v16
 **Added:**
 - Action `Close Current Workspace (all its windows)` - allows you to close all windows that belong to the currently active workspace and remove it drom the list (if you use dynamic workspaces).
 - Action `Switch to Second Last Workspace` - allows you to switch to the last non-empty workspace, if the workspaces are managed dynamically.

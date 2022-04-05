@@ -15,12 +15,11 @@ This extension is based on the original `Custom Hot Corners` exetension, but not
 - Each direcion of a scroll wheel rotation is configurable independently
 - Each trigger can activate one of many actions including command execution, workspace and window navigation, window control, power manager actions, sound volume control, MPRIS player control, color filters (for windows and global), accessibility features and more.
 - Preferences window provides an app chooser dialog for "Run Preset Command" action configuration - easy use as an application launcher
-- Each corner's area reactive to mouse clicks and scrolls can be extended both horizontally and/or vertically to cover most lenght of the monitor's edges. If the adjacent corner is not set to expand in related direction, the corner can be expanded to 7/8 of the monitor's width/height. If two adjacents corners are set to expand to each other's direction, then it is 1/2 of the length for each. You can see the result of expansion settings by activation of the *Make active corners/edges visible* option.
+- Each corner's area reactive to mouse clicks and scrolls can be extended both horizontally and/or vertically to cover most lenght of the monitor's edges. If the adjacent corner is not set to expand in related direction, the corner can be expanded to 7/8 of the monitor's width/height. If two adjacents corners are set to expand to each other's direction, then it is 1/2 of the length for each. You can see the result of expansion settings using the *Make active corners/edges visible* option.
 - Fallback hot corner triggers as option - can be used on virtualized systems with mouse pointer integration where pressure barriers are being ignored.
 - The `Monitor 1` settings are always used on the primary monitor
-- Corners can be watched for unwanted overrides from other extensions and automatically updated when needed
 - You can set global keyboard shortcuts for any actions on the menu except for those available natively in GNOME Settings.
-- You can create up to 4 Custom Menus with your own selection of actions and use them as an single action.
+- You can create up to 4 Custom Menus with your own selection of actions and use them as single action.
 
 ## Changelog
 
@@ -49,11 +48,11 @@ The code is based on window preview of *BaBar Task Bar* extension.
 
 You can install this extension in several ways.
 
-### Installing from extensions.gnome.org
+### Install from extensions.gnome.org
 
 The easiest way to install Custom Hot Corners - Extended: go to [extensions.gnome.org](https://extensions.gnome.org/extension/4167/custom-hot-corners-extended/) and toggle the switch. This installation also gives you automatic updates in the future.
 
-### Installing from the latest Github release
+### Install from the latest Github release
 
 Download the latest release archive using following command:
 
@@ -79,4 +78,16 @@ If you want to test the latest development (usually working well) version from t
 
 ### If you want development version without installing GNU Build System
 
-You can also install the stable version of the extension using one of the first two methods and then download the latest source code from GitHub and ovewrite all `*.js` and `schema/*` files in the extension directory `~/.local/share/gnome-shell/extensions/custom-hot-corners-extended@G-dH.github.com`. Then restart the Shell and new code should be loaded.
+You can also install the stable version of the extension using one of the first two methods and then download the latest source code from GitHub and ovewrite all `*.js` and `schema/*` files in the extension directory `~/.local/share/gnome-shell/extensions/custom-hot-corners-extended@G-dH.github.com`. Then restart the Shell and new code should be loaded and used.
+
+### Install from AUR on Arch based distributions
+
+*Custom Hot Corners - Extended* has also AUR repository maintainer (but I know nothing more about it):
+[https://aur.archlinux.org/packages/gnome-shell-extension-custom-hot-corners-extended](https://aur.archlinux.org/packages/gnome-shell-extension-custom-hot-corners-extended)
+
+## Contribution
+
+Contributions are welcome and I will try my best to answer quickly to all suggestions. I'd really appreciate corrections of my bad english.
+
+If you like my work and want to keep me motivated, you can also buy me a coffee:
+[buymeacoffee.com/georgdh](buymeacoffee.com/georgdh)
