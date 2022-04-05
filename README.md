@@ -17,7 +17,8 @@ This extension is based on the original `Custom Hot Corners` exetension, but not
 - Preferences window provides an app chooser dialog for "Run Preset Command" action configuration - easy use as an application launcher
 - Each corner's area reactive to mouse clicks and scrolls can be extended both horizontally and/or vertically to cover most lenght of the monitor's edges. If the adjacent corner is not set to expand in related direction, the corner can be expanded to 7/8 of the monitor's width/height. If two adjacents corners are set to expand to each other's direction, then it is 1/2 of the length for each. You can see the result of expansion settings using the *Make active corners/edges visible* option.
 - Fallback hot corner triggers as option - can be used on virtualized systems with mouse pointer integration where pressure barriers are being ignored.
-- The `Monitor 1` settings are always used on the primary monitor
+- Multi-monitor support
+- `Monitor 1` settings are always applied on the primary monitor
 - You can set global keyboard shortcuts for any actions on the menu except for those available natively in GNOME Settings.
 - You can create up to 4 Custom Menus with your own selection of actions and use them as single action.
 
@@ -39,6 +40,7 @@ The code is based on window preview of *BaBar Task Bar* extension.
     Shift + Scroll wheel  - change thumbnail opacity
 
 ![Extension configuration window](screenshot.png)
+![Extension configuration window](screenshot0.png)
 ![Extension configuration window](screenshot4.png)
 ![Extension configuration window](screenshot1.png)
 ![Extension configuration window](screenshot2.png)
