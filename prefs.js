@@ -1373,6 +1373,10 @@ class TreeviewPage extends Gtk.Box {
 
         const frame = new Gtk.Frame();
         this.treeView = new Gtk.TreeView({
+            enable_search: true,
+            search_column: 1,
+            hover_selection: true,
+            //hover_expand: true,
             hexpand: true,
             vexpand: true
         });
@@ -1732,7 +1736,7 @@ class CustomMenuPage extends TreeviewPage {
             const action = item[1];
             const title = item[2];
 
-            if (_excludedItems.includes(action))
+            if (_excludedItems.includes(action) || action === 'disabled')
                 continue;
 
             // show selected actions only
@@ -1836,7 +1840,7 @@ class ActionChooserDialog extends Gtk.Box {
             const title = this.model.get_value(iter, 1);
             if (action) {
                 this._corner.setAction(this._trigger, action);
-                this._button.set_label(title);
+                this._button.set_label(action === 'disabled' ? '-' : title);
                 this.dialog.destroy();
             }
         });
@@ -1870,6 +1874,10 @@ class ActionChooserDialog extends Gtk.Box {
 
         const frame = new Gtk.Frame();
         this.treeView = new Gtk.TreeView({
+            enable_search: true,
+            search_column: 1,
+            hover_selection: true,
+            //hover_expand: true,
             hexpand: true,
             vexpand: true
         });
@@ -1928,7 +1936,7 @@ class ActionChooserDialog extends Gtk.Box {
             const item = actionList[i];
             const itemType = item[0];
             const action = item[1];
-            const title = item[2];
+            let title = action === 'disabled' ? 'Disable' : item[2];
 
             if (_excludedItems.includes(action))
                 continue;
