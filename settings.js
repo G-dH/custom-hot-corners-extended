@@ -59,23 +59,23 @@ var MscOptions = class MscOptions {
         this._connectionIds = [];
 
         this.options = {
-            watchCorners: ['boolean', 'watch-corners'],
-            cornersVisible: ['boolean', 'corners-visible'],
-            winSwitchWrap: ['boolean', 'win-switch-wrap'],
-            winSkipMinimized: ['boolean', 'win-switch-skip-minimized'],
-            winStableSequence: ['boolean', 'win-switch-stable-sequence'],
-            winThumbnailScale: ['int', 'win-thumbnail-scale'],
-            actionEventDelay: ['int', 'action-event-delay'],
-            rippleAnimation: ['boolean', 'ripple-animation'],
-            barrierFallback: ['boolean', 'barrier-fallback'],
-            customMenu1: ['strv', 'custom-menu-1'],
-            customMenu2: ['strv', 'custom-menu-2'],
-            customMenu3: ['strv', 'custom-menu-3'],
-            customMenu4: ['strv', 'custom-menu-4'],
-            supportedExetensions: ['strv', 'supported-active-extensions'],
-            keyboardShortcuts: ['strv', 'keyboard-shortcuts'],
-            internalFlags: ['strv', 'internal-flags'],
-            showOsdMonitorIndexes: ['boolean', 'show-osd-monitor-indexes']
+            watchCorners:         {type: 'boolean', key: 'watch-corners'},
+            cornersVisible:       {type: 'boolean', key: 'corners-visible'},
+            winSwitchWrap:        {type: 'boolean', key: 'win-switch-wrap'},
+            winSkipMinimized:     {type: 'boolean', key: 'win-switch-skip-minimized'},
+            winStableSequence:    {type: 'boolean', key: 'win-switch-stable-sequence'},
+            winThumbnailScale:    {type: 'int',     key: 'win-thumbnail-scale'},
+            actionEventDelay:     {type: 'int',     key: 'action-event-delay'},
+            rippleAnimation:      {type: 'boolean', key: 'ripple-animation'},
+            barrierFallback:      {type: 'boolean', key: 'barrier-fallback'},
+            customMenu1:          {type: 'strv',    key: 'custom-menu-1'},
+            customMenu2:          {type: 'strv',    key: 'custom-menu-2'},
+            customMenu3:          {type: 'strv',    key: 'custom-menu-3'},
+            customMenu4:          {type: 'strv',    key: 'custom-menu-4'},
+            supportedExetensions: {type: 'strv',    key: 'supported-active-extensions'},
+            keyboardShortcuts:    {type: 'strv',    key: 'keyboard-shortcuts'},
+            internalFlags:        {type: 'strv',    key: 'internal-flags'},
+            showOsdMonitorIndexes:{type: 'boolean', key: 'show-osd-monitor-indexes'}
         }
     }
 
@@ -96,13 +96,15 @@ var MscOptions = class MscOptions {
     }
 
     get(option) {
-        const [format, key] = this.options[option];
+        const key = this.options[option].key;
         return this._gsettings.get_value(key).deep_unpack();
     }
 
     set(option, value) {
-        const [format, key] = this.options[option];
-        switch (format) {
+        const type = this.options[option].type;
+        const key = this.options[option].key;
+
+        switch (type) {
             case 'string':
                 this._gsettings.set_string(key, value);
                 break;
@@ -119,20 +121,20 @@ var MscOptions = class MscOptions {
     }
 
     getDefault(option) {
-        const [format, key] = this.options[option];
+        const key = this.options[option].key;
         return this._gsettings.get_default_value(key).deep_unpack();
     }
 };
 
 var Corner = class Corner {
     constructor(loadIndex, monitorIndex, top, left, x, y) {
-        this._gsettings = {};
         this.monitorIndex = monitorIndex;
         this._loadIndex = loadIndex;
         this.top = top;
         this.left = left;
         this.x = x;
         this.y = y;
+        this._gsettings = {};
         this._gsettings = this._loadSettingsForTrigges();
         this._connectionIds = [];
         this.hotCornerExists = false;

@@ -1253,9 +1253,9 @@ function _optionsItem(text, caption, widget, variable, options = []) {
     item.push(widget);
 
     if (widget && widget._is_switch) {
-        mscOptions._gsettings.bind(mscOptions.options[variable][1], widget, 'active', Gio.SettingsBindFlags.DEFAULT);
+        mscOptions._gsettings.bind(mscOptions.options[variable].key, widget, 'active', Gio.SettingsBindFlags.DEFAULT);
     } else if (widget && widget._is_spinbutton) {
-        mscOptions._gsettings.bind(mscOptions.options[variable][1], widget, 'value', Gio.SettingsBindFlags.GET);
+        mscOptions._gsettings.bind(mscOptions.options[variable].key, widget, 'value', Gio.SettingsBindFlags.GET);
         widget.timeout_id = null;
         widget.connect('value-changed', () => {
             widget.update();
