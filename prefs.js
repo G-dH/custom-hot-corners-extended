@@ -673,6 +673,9 @@ class CornerPage extends Gtk.Box {
             }
         });
 
+        this._corner._gsettings[trigger].connect('changed::action', () => {
+            actionButton.set_label(actionDict[this._corner.getAction(trigger)]);
+        });
         const context = actionButton.get_style_context();
         context.add_class('heading');
         let actionTitle = actionDict[this._corner.getAction(trigger)];

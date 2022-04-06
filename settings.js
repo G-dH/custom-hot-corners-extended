@@ -219,7 +219,7 @@ var Corner = class Corner {
             gsettings[trigger].delay();
             gsettings[trigger].connect('changed', () => {
                 if (this._writeTimeoutId)
-                GLib.Source.remove(this._writeTimeoutId);
+                    GLib.Source.remove(this._writeTimeoutId);
 
                 this._writeTimeoutId = GLib.timeout_add(
                     GLib.PRIORITY_DEFAULT,
