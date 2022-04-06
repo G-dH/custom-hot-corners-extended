@@ -1,4 +1,4 @@
-/* Copyright 2021 GdH <georgdh@gmail.com>
+/* Copyright 2021-2022 GdH <georgdh@gmail.com>
  * This is a part of Custom Hot Corners - Extended, the Gnome Shell extension
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -14,7 +14,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 'use strict';
-const {Gtk, Gdk, GLib, GObject} = imports.gi;
+const { Gtk, Gdk, GLib, Gio, GObject } = imports.gi;
 
 const ExtensionUtils = imports.misc.extensionUtils;
 const Me             = ExtensionUtils.getCurrentExtension();
@@ -24,23 +24,35 @@ const triggerLabels  = Settings.TriggerLabels;
 const actionList     = Settings.actionList;
 const actionDict     = {};
 
+// gettext
+const _  = Settings._;
+
+const shellVersion = Settings.shellVersion;
+
+const Triggers = Settings.Triggers;
+
+const Adw = null;
+if (shellVersion >= 42) Adw = imports.gi.Adw;
+
 let mscOptions;
 let _excludedItems;
 let _topBox;
 const TRANSITION_DURATION = 200;
 
-const shellVersion = Settings.shellVersion;
+const MONITOR_TITLE = _('Monitor');
+const MONITOR_ICON = 'preferences-desktop-display-symbolic';
+const KEYBOARD_TITLE = _('Keyboard');
+const KEYBOARD_ICON = 'input-keyboard-symbolic';
+const MENUS_TITLE = _('Custom Menus');
+const MENUS_ICON = 'open-menu-symbolic';
+const OPTIONS_TITLE = _('Options');
+const OPTIONS_ICON = 'preferences-other-symbolic';
 
-let Adw = null;
-try {
-  Adw = imports.gi.Adw;
-} catch (e) {
-}
 
-// gettext
-const _  = Settings._;
+// conversion of Gtk3 / Gtk4 widgets add methods
+const append = shellVersion < 40 ? 'add' : 'append';
+const set_child = shellVersion < 40 ? 'add' : 'set_child';
 
-//let WAYLAND;
 
 function init() {
     // log(`initializing ${Me.metadata.name} Preferences`);
@@ -86,7 +98,7 @@ function fillPreferencesWindow(window) {
         const [page, title] = mPage;
         const monAdwPage = new Adw.PreferencesPage({
             title: title,
-            icon_name: 'preferences-desktop-display-symbolic'
+            icon_name: MONITOR_ICON
         });
         const monGroup = new Adw.PreferencesGroup();
         page.buildPage();
@@ -96,8 +108,8 @@ function fillPreferencesWindow(window) {
     }
 
     let keyboardAdwPage = new Adw.PreferencesPage({
-        title: _('Keyboard'),
-        icon_name: 'input-keyboard-symbolic'
+        title: KEYBOARD_TITLE,
+        icon_name: KEYBOARD_ICON
     });
     let keyboardGroup = new Adw.PreferencesGroup();
     let keyboardPage = new KeyboardPage();
@@ -107,31 +119,34 @@ function fillPreferencesWindow(window) {
     keyboardAdwPage.add(keyboardGroup);
     window.add(keyboardAdwPage);
 
-    let customMenuAdwPage = new Adw.PreferencesPage({
-        title: _('Custom Menus'),
-        icon_name: 'open-menu-symbolic'
+    let customMenusAdwPage = new Adw.PreferencesPage({
+        title: MENUS_TITLE,
+        icon_name: MENUS_ICON
     });
     let customMenuGroup = new Adw.PreferencesGroup();
     let customMenusPage = new CustomMenusPage();
+    customMenusPage.buildPage();
 
     customMenuGroup.add(customMenusPage);
-    customMenuAdwPage.add(customMenuGroup);
-    window.add(customMenuAdwPage);
+    customMenusAdwPage.add(customMenuGroup);
+    window.add(customMenusAdwPage);
 
-    window.add(getAdwPage(getOptionList(), {
-        title: _('Options'),
-        icon_name: 'preferences-other-symbolic',
+    window.add(_getAdwPage(getOptionList(), {
+        title: OPTIONS_TITLE,
+        icon_name: OPTIONS_ICON
     }));
 
     window.set_search_enabled(true);
 
     // for transient dialog
     _topBox = window;
+    // make the window higher than default ..
     window.set_size_request(-1, 700);
     GLib.timeout_add(
         GLib.PRIORITY_DEFAULT,
         100,
         () => {
+            // .. but don't block user downsizing
             window.set_size_request(-1, -1);
         }
     );
@@ -139,7 +154,7 @@ function fillPreferencesWindow(window) {
     return window;
 }
 
-function getAdwPage(optionList, pageProperties = {}) {
+function _getAdwPage(optionList, pageProperties = {}) {
     const page = new Adw.PreferencesPage(pageProperties);
     let group;
     for (let item of optionList) {
@@ -184,6 +199,19 @@ function getAdwPage(optionList, pageProperties = {}) {
     return page;
 }
 
+function _newImageFromIconName(name, size = null) {
+    const args = shellVersion >= 40 ? [name] : [name, size];
+    return Gtk.Image.new_from_icon_name(...args);
+}
+
+function _setBtnFromIconName(btnWidget, iconName, size) {
+    if (btnWidget.set_icon_name) {
+        btnWidget.set_icon_name(iconName);
+    } else {
+        btnWidget.add(Gtk.Image.new_from_icon_name(iconName, size));
+    }
+}
+
 function buildPrefsWidget() {
     const stack = new Gtk.Stack({
         hexpand: true
@@ -201,13 +229,11 @@ function buildPrefsWidget() {
     const pagesBtns = [];
     const monitorPages = getMonitorPages();
 
-    const newImage = Gtk.Image.new_from_icon_name;
-
     for (let mPage of monitorPages) {
         const [page, title] = mPage;
         page.buildPage();
         stack.add_named(page, title);
-        pagesBtns.push([new Gtk.Label({ label: title }), shellVersion >= 40 ? newImage('preferences-desktop-display-symbolic') : newImage('preferences-desktop-display-symbolic', Gtk.IconSize.BUTTON)]);
+        pagesBtns.push([new Gtk.Label({ label: title }), _newImageFromIconName(MONITOR_ICON, Gtk.IconSize.BUTTON)]);
     }
 
     const kbPage = new KeyboardPage();
@@ -218,9 +244,9 @@ function buildPrefsWidget() {
     stack.add_named(cmPage, 'custom-menus');
     stack.add_named(optionsPage, 'options');
 
-    pagesBtns.push([new Gtk.Label({ label: _('Keyboard') }),shellVersion >= 40 ? newImage('input-keyboard-symbolic') : newImage('input-keyboard-symbolic', Gtk.IconSize.BUTTON)]);
-    pagesBtns.push([new Gtk.Label({ label: _('Custom Menus') }), shellVersion >= 40 ? newImage('open-menu-symbolic') : newImage('open-menu-symbolic', Gtk.IconSize.BUTTON)]);
-    pagesBtns.push([new Gtk.Label({ label: _('Options') }), shellVersion >= 40 ? newImage('preferences-other-symbolic') : newImage('preferences-other-symbolic', Gtk.IconSize.BUTTON)]);
+    pagesBtns.push([new Gtk.Label({ label: KEYBOARD_TITLE }), _newImageFromIconName(KEYBOARD_ICON, Gtk.IconSize.BUTTON)]);
+    pagesBtns.push([new Gtk.Label({ label: MENUS_TITLE }),  _newImageFromIconName(MENUS_ICON, Gtk.IconSize.BUTTON)]);
+    pagesBtns.push([new Gtk.Label({ label: OPTIONS_TITLE }),  _newImageFromIconName(OPTIONS_ICON, Gtk.IconSize.BUTTON)]);
 
     stack.show_all && stack.show_all();
 
@@ -237,8 +263,8 @@ function buildPrefsWidget() {
         const icon = pagesBtns[i][1];
         icon.margin_start = 30;
         icon.margin_end = 30;
-        box[box.add ? 'add' : 'append'](icon);
-        box[box.add ? 'add' : 'append'](pagesBtns[i][0]);
+        box[append](icon);
+        box[append](pagesBtns[i][0]);
         if (stackSwitcher.get_children) {
             stBtn = stackSwitcher.get_children()[i];
             stBtn.add(box);
@@ -292,7 +318,7 @@ function getMonitorPages() {
         monitorPage._geometry = geometry;
         monitorPage._leftHandMouse = leftHandMouse;
 
-        let labelText = `${_('Monitor')}`;
+        let labelText = `${MONITOR_TITLE}`;
         if (nMonitors > 1) {
             labelText += ` ${monitorIndex + 1} ${monitorIndex === 0 ? _('(primary)') : ''}`;
             mscOptions.set('showOsdMonitorIndexes', true);
@@ -333,7 +359,6 @@ class MonitorPage extends Gtk.Box {
             margin_bottom: shellVersion < 42 ? 0 : margin
         });
 
-        //const stackSwitcher = new Gtk.StackSidebar();
         const stack = new Gtk.Stack({
             hexpand: true
         });
@@ -388,8 +413,8 @@ class MonitorPage extends Gtk.Box {
             }
         }
 
-        this[this.add ? 'add' : 'append'](stackSwitcher);
-        this[this.add ? 'add' : 'append'](stack);
+        this[append](stackSwitcher);
+        this[append](stack);
         this.show_all && this.show_all();
         this._alreadyBuilt = true;
     }
@@ -436,10 +461,7 @@ class CornerPage extends Gtk.Box {
                 tooltip_text: _('Trigger the action only if Ctrl key is pressed'),
             });
 
-            ctrlBtn.connect('notify::active', () => {
-                this._corner.setCtrl(trigger, ctrlBtn.active);
-            });
-            ctrlBtn.set_active(this._corner.getCtrl(trigger));
+            this._corner._gsettings[trigger].bind('ctrl', ctrlBtn, 'active', Gio.SettingsBindFlags.DEFAULT);
 
             let iconName;
             if (trigger === 0) {
@@ -476,35 +498,31 @@ class CornerPage extends Gtk.Box {
                 hexpand: false,
                 tooltip_text: _("Enable this trigger in fullscreen mode"),
             });
-            if (fsBtn.set_icon_name)
-                fsBtn.set_icon_name('view-fullscreen-symbolic');
-            else
-                fsBtn.add(Gtk.Image.new_from_icon_name('view-fullscreen-symbolic', Gtk.IconSize.BUTTON));
+
+            _setBtnFromIconName(fsBtn, 'view-fullscreen-symbolic', Gtk.IconSize.BUTTON);
 
             fsBtn.set_active(this._corner.getFullscreen(trigger));
-            fsBtn.connect('notify::active', () => {
-                this._corner.setFullscreen(trigger, fsBtn.active);
-            });
+            this._corner._gsettings[trigger].bind('fullscreen', fsBtn, 'active', Gio.SettingsBindFlags.DEFAULT);
 
             const cw = this._buildTriggerWidget(trigger, iconName);
 
             grid.attach(trgIcon, 1, trigger, 1, 1);
             grid.attach(ctrlBtn, 0, trigger, 1, 1);
-            if (trigger === Settings.Triggers.PRESSURE) {
+            if (trigger === Triggers.PRESSURE) {
                 grid.attach(cw,      2, trigger, 1, 1);
                 grid.attach(fsBtn,   3, trigger, 1, 1);
             } else {
                 grid.attach(cw,      2, trigger, 1, 1);
                 grid.attach(fsBtn,   3, trigger, 2, 1);
             }
-            this[this.add ? 'add' : 'append'](grid);
+            this[append](grid);
         }
         const ew = this._buildExpandsionWidget();
         const ewFrame = new Gtk.Frame({
             margin_top: 10,
         });
-        ewFrame[ewFrame.add ? 'add' : 'set_child'](ew);
-        this[this.add ? 'add' : 'append'](ewFrame);
+        ewFrame[set_child](ew);
+        this[append](ewFrame);
         this.show_all && this.show_all();
 
         this._alreadyBuilt = true;
@@ -549,7 +567,7 @@ class CornerPage extends Gtk.Box {
         const appButton = new Gtk.Button();
 
         const actionButton = new Gtk.Button({
-            label: ' ',
+            label: ' ', // string will create the label widget
             hexpand: true
         })
 
@@ -561,8 +579,6 @@ class CornerPage extends Gtk.Box {
         }
 
         actionButtonLabel.xalign = 0;
-        const context = actionButton.get_style_context();
-        context.add_class('heading');
 
         actionButton.connect('clicked', widget => {
             const actionChooserTree = new ActionChooserDialog(widget, this._corner, trigger, iconName);
@@ -570,7 +586,7 @@ class CornerPage extends Gtk.Box {
         });
 
         let settingsBtn = null;
-        if (trigger === Settings.Triggers.PRESSURE) {
+        if (trigger === Triggers.PRESSURE) {
             const cornerPopover = new Gtk.Popover();
             const popupGrid = new Gtk.Grid({
                 margin_start: 10,
@@ -582,7 +598,7 @@ class CornerPage extends Gtk.Box {
             });
 
             popupGrid.show_all && popupGrid.show_all();
-            cornerPopover[cornerPopover.add ? 'add' : 'set_child'](popupGrid);
+            cornerPopover[set_child](popupGrid);
 
             this._buildPressureSettings(popupGrid);
             settingsBtn = new Gtk.MenuButton({
@@ -591,16 +607,10 @@ class CornerPage extends Gtk.Box {
             });
 
             // Gtk3 implements button icon as an added Gtk.Image child, Gtk4 does not
-            if (settingsBtn.set_icon_name)
-                settingsBtn.set_icon_name('emblem-system-symbolic');
-            else
-                settingsBtn.add(Gtk.Image.new_from_icon_name('emblem-system-symbolic', Gtk.IconSize.BUTTON));
+            _setBtnFromIconName(settingsBtn, 'emblem-system-symbolic', Gtk.IconSize.BUTTON);
         }
 
-        if (appButton.set_icon_name)
-            appButton.set_icon_name('find-location-symbolic');
-        else
-            appButton.add(Gtk.Image.new_from_icon_name('find-location-symbolic', Gtk.IconSize.BUTTON));
+        _setBtnFromIconName(appButton, 'find-location-symbolic', Gtk.IconSize.BUTTON);
 
         cmdGrid.attach(commandEntry, 0, 0, 1, 1);
         cmdGrid.attach(appButton, 1, 0, 1, 1);
@@ -676,10 +686,18 @@ class CornerPage extends Gtk.Box {
                 cmdConnected = true;
             }
         });
-        actionButton.set_label(actionDict[this._corner.getAction(trigger)]);
+
+        const context = actionButton.get_style_context();
+        context.add_class('heading');
+        let actionTitle = actionDict[this._corner.getAction(trigger)];
+        if (!actionTitle) {
+            actionTitle = _("Error: The stored action doesn't exist!!!");
+        }
+        actionButton.set_label(actionTitle);
 
         workspaceIndexSpinButton.value = this._corner.getWorkspaceIndex(trigger);
         workspaceIndexSpinButton.timeout_id = null;
+        this._corner._gsettings[trigger].bind('workspace-index', workspaceIndexSpinButton, 'value', Gio.SettingsBindFlags.GET);
         workspaceIndexSpinButton.connect('value-changed', () => {
             workspaceIndexSpinButton.update();
             if (workspaceIndexSpinButton.timeout_id)
@@ -816,8 +834,10 @@ class CornerPage extends Gtk.Box {
         barrierSizeSliderV.add_mark(50, Gtk.PositionType.BOTTOM, null);
         barrierSizeSliderV.add_mark(75, Gtk.PositionType.BOTTOM, null);
 
-        barrierSizeSliderH.set_value(this._corner.barrierSizeH);
         barrierSizeSliderH.timout_id = null;
+
+        this._corner._gsettings[Triggers.PRESSURE].bind('barrier-size-h', barrierAdjustmentH, 'value', Gio.SettingsBindFlags.GET);
+
         barrierSizeSliderH.connect('value-changed', () => {
             // Cancel previous timeout
             if (barrierSizeSliderH.timeout_id)
@@ -833,7 +853,9 @@ class CornerPage extends Gtk.Box {
                 }
             );
         });
-        barrierSizeSliderV.set_value(this._corner.barrierSizeV);
+
+        this._corner._gsettings[Triggers.PRESSURE].bind('barrier-size-v', barrierAdjustmentV, 'value', Gio.SettingsBindFlags.GET);
+
         barrierSizeSliderV.timout_id = null;
         barrierSizeSliderV.connect('value-changed', () => {
             // Cancel previous timeout
@@ -873,7 +895,7 @@ class CornerPage extends Gtk.Box {
         });
         const hImage = Gtk.Image.new_from_file(`${Me.dir.get_path()}/icons/${this._corner.top ? 'Top' : 'Bottom'}${this._corner.left ? 'Left' : 'Right'}HE.svg`);
         hImage.pixel_size = 40;
-        hExpandSwitch[hExpandSwitch.set_child ? 'set_child' : 'add'](hImage);
+        hExpandSwitch[set_child](hImage);
 
         const vExpandSwitch = new Gtk.ToggleButton({
             halign: Gtk.Align.CENTER,
@@ -884,16 +906,11 @@ class CornerPage extends Gtk.Box {
         });
         const vImage = Gtk.Image.new_from_file(`${Me.dir.get_path()}/icons/${this._corner.top ? 'Top' : 'Bottom'}${this._corner.left ? 'Left' : 'Right'}VE.svg`);
         vImage.pixel_size = 40;
-        vExpandSwitch[hExpandSwitch.set_child ? 'set_child' : 'add'](vImage);
+        vExpandSwitch[set_child](vImage);
 
-        hExpandSwitch.active = this._corner.hExpand;
-        vExpandSwitch.active = this._corner.vExpand;
-        hExpandSwitch.connect('notify::active', () => {
-            this._corner.hExpand = hExpandSwitch.active;
-        });
-        vExpandSwitch.connect('notify::active', () => {
-            this._corner.vExpand = vExpandSwitch.active;
-        });
+        this._corner._gsettings[Triggers.BUTTON_PRIMARY].bind('h-expand', hExpandSwitch, 'active', Gio.SettingsBindFlags.DEFAULT);
+        this._corner._gsettings[Triggers.BUTTON_PRIMARY].bind('v-expand', vExpandSwitch, 'active', Gio.SettingsBindFlags.DEFAULT);
+
         return [label, hExpandSwitch, vExpandSwitch];
     }
 
@@ -932,7 +949,7 @@ class CornerPage extends Gtk.Box {
             wrap: true,
         });
         grid.attach(cmdLabel, 0, 1, 2, 1);
-        dialog.get_content_area()[dialog.get_content_area().add ? 'add' : 'append'](grid);
+        dialog.get_content_area()[append](grid);
         dialog._appChooser.connect('application-selected', (w, appInfo) => {
             cmdLabel.set_text(`App ID:   \t${appInfo.get_id()}\nCommand: \t${appInfo.get_commandline()}`);
         }
@@ -988,7 +1005,7 @@ class OptionsPage extends Gtk.ScrolledWindow {
                 const context = lbl.get_style_context();
                 context.add_class('heading');
 
-                mainBox[mainBox.add ? 'add' : 'append'](lbl);
+                mainBox[append](lbl);
 
                 frame = new Gtk.Frame({
                     margin_bottom: 10,
@@ -996,8 +1013,8 @@ class OptionsPage extends Gtk.ScrolledWindow {
                 frameBox = new Gtk.ListBox({
                     selection_mode: null,
                 });
-                mainBox[mainBox.add ? 'add' : 'append'](frame);
-                frame[frame.add ? 'add' : 'set_child'](frameBox);
+                mainBox[append](frame);
+                frame[set_child](frameBox);
                 continue;
             }
             let box = new Gtk.Box({
@@ -1010,13 +1027,13 @@ class OptionsPage extends Gtk.ScrolledWindow {
                 spacing: 20,
             });
 
-            box[box.add ? 'add' : 'append'](option);
+            box[append](option);
             if (widget)
-                box[box.add ? 'add' : 'append'](widget);
+                box[append](widget);
 
-            frameBox[frameBox.add ? 'add' : 'append'](box);
+            frameBox[append](box);
         }
-        this[this.add ? 'add' : 'set_child'](mainBox);
+        this[set_child](mainBox);
         this.show_all && this.show_all();
         this._alreadyBuilt = true;
     }
@@ -1165,7 +1182,7 @@ function _newGtkSwitch() {
         valign: Gtk.Align.CENTER,
         hexpand: true,
     });
-    sw.is_switch = true;
+    sw._is_switch = true;
     return sw;
 }
 
@@ -1176,7 +1193,7 @@ function _newSpinButton(adjustment) {
         xalign: 0.5,
     });
     spinButton.set_adjustment(adjustment);
-    spinButton.is_spinbutton = true;
+    spinButton._is_spinbutton = true;
     return spinButton;
 }
 
@@ -1192,7 +1209,7 @@ function _newComboBox() {
     const renderer = new Gtk.CellRendererText();
     comboBox.pack_start(renderer, true);
     comboBox.add_attribute(renderer, 'text', 0);
-    comboBox.is_combo_box = true;
+    comboBox._is_combo_box = true;
     return comboBox;
 }
 
@@ -1211,7 +1228,7 @@ function _optionsItem(text, caption, widget, variable, options = []) {
             halign: Gtk.Align.START,
         });
         option.set_markup(text);
-        label[label.add ? 'add' : 'append'](option);
+        label[append](option);
 
         if (caption) {
             const captionLbl = new Gtk.Label({
@@ -1225,7 +1242,7 @@ function _optionsItem(text, caption, widget, variable, options = []) {
             context.add_class('dim-label');
             context.add_class('caption');
 
-            label[label.add ? 'add' : 'append'](captionLbl);
+            label[append](captionLbl);
         }
         label._title = text;
     } else {
@@ -1235,13 +1252,10 @@ function _optionsItem(text, caption, widget, variable, options = []) {
     item.push(label);
     item.push(widget);
 
-    if (widget && widget.is_switch) {
-        widget.active = mscOptions.get(variable);
-        widget.connect('notify::active', () => {
-            mscOptions.set(variable, widget.active);
-        });
-    } else if (widget && widget.is_spinbutton) {
-        widget.value = mscOptions.get(variable);
+    if (widget && widget._is_switch) {
+        mscOptions._gsettings.bind(mscOptions.options[variable][1], widget, 'active', Gio.SettingsBindFlags.DEFAULT);
+    } else if (widget && widget._is_spinbutton) {
+        mscOptions._gsettings.bind(mscOptions.options[variable][1], widget, 'value', Gio.SettingsBindFlags.GET);
         widget.timeout_id = null;
         widget.connect('value-changed', () => {
             widget.update();
@@ -1254,11 +1268,11 @@ function _optionsItem(text, caption, widget, variable, options = []) {
                 () => {
                     mscOptions.set(variable, widget.value);
                     widget.timeout_id = null;
-                    return 0;
+                    return GLib.SOURCE_REMOVE;
                 }
             );
         });
-    } else if (widget && widget.is_combo_box) {
+    } else if (widget && widget._is_combo_box) {
         let model = widget.get_model();
         for (const [label, value] of options) {
             let iter;
@@ -1328,8 +1342,8 @@ class CustomMenusPage extends Gtk.Box {
 
         }
 
-        this[this.add ? 'add' : 'append'](switcher);
-        this[this.add ? 'add' : 'append'](stack);
+        this[append](switcher);
+        this[append](stack);
         this.show_all && this.show_all();
         this._alreadyBuilt = true;
     }
@@ -1413,18 +1427,18 @@ class TreeviewPage extends Gtk.Box {
             label: _('Show active items only')
         });
 
-        btnBox[btnBox.add ? 'add' : 'append'](expandButton);
-        btnBox[btnBox.add ? 'add' : 'append'](collapseButton);
-        btnBox[btnBox.add ? 'add' : 'append'](this.resetButton);
+        btnBox[append](expandButton);
+        btnBox[append](collapseButton);
+        btnBox[append](this.resetButton);
 
-        scrolledWindow[this.add ? 'add' : 'set_child'](this.treeView);
-        frame[frame.add ? 'add' : 'set_child'](scrolledWindow);
+        scrolledWindow[set_child](this.treeView);
+        frame[set_child](scrolledWindow);
 
-        box[box.add ? 'add' : 'append'](this.lbl);
-        box[box.add ? 'add' : 'append'](frame);
-        box[box.add ? 'add' : 'append'](this.showActiveBtn);
-        box[box.add ? 'add' : 'append'](btnBox);
-        this[this.add ? 'add' : 'append'](box);
+        box[append](this.lbl);
+        box[append](frame);
+        box[append](this.showActiveBtn);
+        box[append](btnBox);
+        this[append](box);
     }
 
     _setNewTreeviewModel(columns) {
@@ -1811,7 +1825,7 @@ class ActionChooserDialog extends Gtk.Box {
         const headerbar = this.dialog.get_titlebar();
         headerbar.pack_start(trgIcon);
 
-        this.dialog.get_content_area()[this.dialog.get_content_area().add ? 'add' : 'append'](this);
+        this.dialog.get_content_area()[append](this);
 
         this.buildPage();
     }
@@ -1917,16 +1931,16 @@ class ActionChooserDialog extends Gtk.Box {
 
         this.resetButton = new Gtk.Button();
 
-        btnBox[btnBox.add ? 'add' : 'append'](expandButton);
-        btnBox[btnBox.add ? 'add' : 'append'](collapseButton);
-        btnBox[btnBox.add ? 'add' : 'append'](this.resetButton);
+        btnBox[append](expandButton);
+        btnBox[append](collapseButton);
+        btnBox[append](this.resetButton);
 
-        scrolledWindow[this.add ? 'add' : 'set_child'](this.treeView);
-        frame[frame.add ? 'add' : 'set_child'](scrolledWindow);
+        scrolledWindow[set_child](this.treeView);
+        frame[set_child](scrolledWindow);
 
-        box[box.add ? 'add' : 'append'](frame);
-        box[box.add ? 'add' : 'append'](btnBox);
-        this[this.add ? 'add' : 'append'](box);
+        box[append](frame);
+        box[append](btnBox);
+        this[append](box);
     }
 
     _populateTreeview() {
