@@ -56,6 +56,23 @@ function listTriggers() {
 var MscOptions = class MscOptions {
     constructor() {
         this._gsettings = this._loadSettings('misc');
+        this._gsettings.delay();
+        this._writeTimeoutId = 0;
+        this._gsettings.connect('changed', () => {
+            if (this._writeTimeoutId)
+                GLib.Source.remove(this._writeTimeoutId);
+
+            this._writeTimeoutId = GLib.timeout_add(
+                GLib.PRIORITY_DEFAULT,
+                300,
+                () => {
+                    this._gsettings.apply();
+                    this._writeTimeoutId = 0;
+                    return GLib.SOURCE_REMOVE;
+                }
+            );
+        });
+
         this._connectionIds = [];
 
         this.options = {
@@ -193,8 +210,28 @@ var Corner = class Corner {
 
     _loadSettingsForTrigges() {
         let gsettings = {};
-        for (let trigger of listTriggers())
+        this._writeTimeoutId = 0;
+
+        for (let trigger of listTriggers()) {
             gsettings[trigger] = this._loadSettings(trigger);
+
+            // delay write to backend to avoid excessive disk writes when adjusting scales and spinbuttons
+            gsettings[trigger].delay();
+            gsettings[trigger].connect('changed', () => {
+                if (this._writeTimeoutId)
+                GLib.Source.remove(this._writeTimeoutId);
+
+                this._writeTimeoutId = GLib.timeout_add(
+                    GLib.PRIORITY_DEFAULT,
+                    300,
+                    () => {
+                        gsettings[trigger].apply();
+                        this._writeTimeoutId = 0;
+                        return GLib.SOURCE_REMOVE;
+                    }
+                );
+            });
+        }
         return gsettings;
     }
 

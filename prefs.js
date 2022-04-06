@@ -665,23 +665,9 @@ class CornerPage extends Gtk.Box {
             wsIndexRevealer.reveal_child = this._corner.getAction(trigger) === 'move-to-workspace';
             if (this._corner.getAction(trigger) === 'run-command' && !cmdConnected) {
                 _connectCmdBtn();
-                commandEntry.text = this._corner.getCommand(trigger);
+                this._corner._gsettings[trigger].bind('command', commandEntry, 'text', Gio.SettingsBindFlags.DEFAULT);
                 commandEntryRevealer.reveal_child = this._corner.getAction(trigger) === 'run-command';
-                commandEntry.timeout_id = null;
-                commandEntry.connect('changed', () => {
-                    if (commandEntry.timeout_id)
-                        GLib.Source.remove(commandEntry.timeout_id);
 
-                    commandEntry.timeout_id = GLib.timeout_add(
-                        GLib.PRIORITY_DEFAULT,
-                        500,
-                        () => {
-                            this._corner.setCommand(trigger, commandEntry.text);
-                            commandEntry.timeout_id = null;
-                            return GLib.SOURCE_REMOVE;
-                        }
-                    );
-                });
                 wsIndexRevealer.reveal_child = this._corner.getAction(trigger) === 'move-to-workspace';
                 cmdConnected = true;
             }
@@ -695,24 +681,7 @@ class CornerPage extends Gtk.Box {
         }
         actionButton.set_label(actionTitle);
 
-        workspaceIndexSpinButton.value = this._corner.getWorkspaceIndex(trigger);
-        workspaceIndexSpinButton.timeout_id = null;
-        this._corner._gsettings[trigger].bind('workspace-index', workspaceIndexSpinButton, 'value', Gio.SettingsBindFlags.GET);
-        workspaceIndexSpinButton.connect('value-changed', () => {
-            workspaceIndexSpinButton.update();
-            if (workspaceIndexSpinButton.timeout_id)
-                GLib.Source.remove(workspaceIndexSpinButton.timeout_id);
-
-            workspaceIndexSpinButton.timeout_id = GLib.timeout_add(
-                GLib.PRIORITY_DEFAULT,
-                500,
-                () => {
-                    this._corner.setWorkspaceIndex(trigger, workspaceIndexSpinButton.value);
-                    workspaceIndexSpinButton.timeout_id = null;
-                    return GLib.SOURCE_REMOVE;
-                }
-            );
-        });
+        this._corner._gsettings[trigger].bind('workspace-index', workspaceIndexSpinButton, 'value', Gio.SettingsBindFlags.DEFAULT);
 
         cw.show_all && cw.show_all();
         return cw;
@@ -736,28 +705,13 @@ class CornerPage extends Gtk.Box {
             halign: Gtk.Align.END,
             hexpand: true,
         });
+
+        this._corner._gsettings[Triggers.PRESSURE].bind('pressure-threshold', pressureThresholdAdjustment, 'value', Gio.SettingsBindFlags.DEFAULT);
+
         popupGrid.attach(pressureLabel,               0, 3, 1, 1);
         popupGrid.attach(pressureThresholdSpinButton, 1, 3, 1, 1);
 
         popupGrid.show_all && popupGrid.show_all();
-
-        pressureThresholdSpinButton.value = this._corner.pressureThreshold;
-        pressureThresholdSpinButton.timeout_id = null;
-        pressureThresholdSpinButton.connect('value-changed', () => {
-            pressureThresholdSpinButton.update();
-            if (pressureThresholdSpinButton.timeout_id)
-                GLib.Source.remove(pressureThresholdSpinButton.timeout_id);
-
-            pressureThresholdSpinButton.timeout_id = GLib.timeout_add(
-                GLib.PRIORITY_DEFAULT,
-                500,
-                () => {
-                    this._corner.pressureThreshold = pressureThresholdSpinButton.value;
-                    pressureThresholdSpinButton.timeout_id = null;
-                    return GLib.SOURCE_REMOVE;
-                }
-            );
-        });
     }
 
     _buildExpandsionWidget() {
@@ -834,44 +788,8 @@ class CornerPage extends Gtk.Box {
         barrierSizeSliderV.add_mark(50, Gtk.PositionType.BOTTOM, null);
         barrierSizeSliderV.add_mark(75, Gtk.PositionType.BOTTOM, null);
 
-        barrierSizeSliderH.timout_id = null;
-
-        this._corner._gsettings[Triggers.PRESSURE].bind('barrier-size-h', barrierAdjustmentH, 'value', Gio.SettingsBindFlags.GET);
-
-        barrierSizeSliderH.connect('value-changed', () => {
-            // Cancel previous timeout
-            if (barrierSizeSliderH.timeout_id)
-                GLib.Source.remove(barrierSizeSliderH.timeout_id);
-
-            barrierSizeSliderH.timeout_id = GLib.timeout_add(
-                GLib.PRIORITY_DEFAULT,
-                500,
-                () => {
-                    this._corner.barrierSizeH = barrierSizeSliderH.get_value();
-                    barrierSizeSliderH.timeout_id = null;
-                    return GLib.SOURCE_REMOVE;
-                }
-            );
-        });
-
-        this._corner._gsettings[Triggers.PRESSURE].bind('barrier-size-v', barrierAdjustmentV, 'value', Gio.SettingsBindFlags.GET);
-
-        barrierSizeSliderV.timout_id = null;
-        barrierSizeSliderV.connect('value-changed', () => {
-            // Cancel previous timeout
-            if (barrierSizeSliderV.timeout_id)
-                GLib.Source.remove(barrierSizeSliderV.timeout_id);
-
-            barrierSizeSliderV.timeout_id = GLib.timeout_add(
-                GLib.PRIORITY_DEFAULT,
-                500,
-                () => {
-                    this._corner.barrierSizeV = barrierSizeSliderV.get_value();
-                    barrierSizeSliderV.timeout_id = null;
-                    return GLib.SOURCE_REMOVE;
-                }
-            );
-        });
+        this._corner._gsettings[Triggers.PRESSURE].bind('barrier-size-h', barrierAdjustmentH, 'value', Gio.SettingsBindFlags.DEFAULT);
+        this._corner._gsettings[Triggers.PRESSURE].bind('barrier-size-v', barrierAdjustmentV, 'value', Gio.SettingsBindFlags.DEFAULT);
 
         return [label, barrierSizeSliderH, barrierSizeSliderV];
     }
@@ -1255,23 +1173,7 @@ function _optionsItem(text, caption, widget, variable, options = []) {
     if (widget && widget._is_switch) {
         mscOptions._gsettings.bind(mscOptions.options[variable].key, widget, 'active', Gio.SettingsBindFlags.DEFAULT);
     } else if (widget && widget._is_spinbutton) {
-        mscOptions._gsettings.bind(mscOptions.options[variable].key, widget, 'value', Gio.SettingsBindFlags.GET);
-        widget.timeout_id = null;
-        widget.connect('value-changed', () => {
-            widget.update();
-            if (widget.timeout_id)
-                GLib.Source.remove(widget.timeout_id);
-
-            widget.timeout_id = GLib.timeout_add(
-                GLib.PRIORITY_DEFAULT,
-                500,
-                () => {
-                    mscOptions.set(variable, widget.value);
-                    widget.timeout_id = null;
-                    return GLib.SOURCE_REMOVE;
-                }
-            );
-        });
+        mscOptions._gsettings.bind(mscOptions.options[variable].key, widget, 'value', Gio.SettingsBindFlags.DEFAULT);
     } else if (widget && widget._is_combo_box) {
         let model = widget.get_model();
         for (const [label, value] of options) {
