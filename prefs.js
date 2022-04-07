@@ -670,13 +670,11 @@ class CornerPage extends Gtk.Box {
             }
             actionButton.set_label(actionTitle);
         }
-
-        updateActBtnLbl();
-
+        
         this._corner._gsettings[trigger].connect('changed::action', () => {
             updateActBtnLbl();
         });
-
+        
         actionButton.connect('notify::label', () => {
             commandEntryRevealer.reveal_child = this._corner.getAction(trigger) === 'run-command';
             wsIndexRevealer.reveal_child = this._corner.getAction(trigger) === 'move-to-workspace';
@@ -684,11 +682,13 @@ class CornerPage extends Gtk.Box {
                 _connectCmdBtn();
                 this._corner._gsettings[trigger].bind('command', commandEntry, 'text', Gio.SettingsBindFlags.DEFAULT);
                 commandEntryRevealer.reveal_child = this._corner.getAction(trigger) === 'run-command';
-
+                
                 wsIndexRevealer.reveal_child = this._corner.getAction(trigger) === 'move-to-workspace';
                 cmdConnected = true;
             }
         });
+        
+        updateActBtnLbl();
 
         this._corner._gsettings[trigger].bind('workspace-index', workspaceIndexSpinButton, 'value', Gio.SettingsBindFlags.DEFAULT);
 
