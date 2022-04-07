@@ -31,7 +31,7 @@ const shellVersion = Settings.shellVersion;
 
 const Triggers = Settings.Triggers;
 
-const Adw = null;
+let Adw = null;
 if (shellVersion >= 42) Adw = imports.gi.Adw;
 
 let mscOptions;
@@ -660,6 +660,23 @@ class CornerPage extends Gtk.Box {
             });
         }.bind(this);
 
+        const context = actionButton.get_style_context();
+        context.add_class('heading');
+
+        const updateActBtnLbl = () => {
+            let actionTitle = actionDict[this._corner.getAction(trigger)];
+            if (!actionTitle) {
+                actionTitle = _("Error: The stored action doesn't exist!!!");
+            }
+            actionButton.set_label(actionTitle);
+        }
+
+        updateActBtnLbl();
+
+        this._corner._gsettings[trigger].connect('changed::action', () => {
+            updateActBtnLbl();
+        });
+
         actionButton.connect('notify::label', () => {
             commandEntryRevealer.reveal_child = this._corner.getAction(trigger) === 'run-command';
             wsIndexRevealer.reveal_child = this._corner.getAction(trigger) === 'move-to-workspace';
@@ -672,17 +689,6 @@ class CornerPage extends Gtk.Box {
                 cmdConnected = true;
             }
         });
-
-        this._corner._gsettings[trigger].connect('changed::action', () => {
-            actionButton.set_label(actionDict[this._corner.getAction(trigger)]);
-        });
-        const context = actionButton.get_style_context();
-        context.add_class('heading');
-        let actionTitle = actionDict[this._corner.getAction(trigger)];
-        if (!actionTitle) {
-            actionTitle = _("Error: The stored action doesn't exist!!!");
-        }
-        actionButton.set_label(actionTitle);
 
         this._corner._gsettings[trigger].bind('workspace-index', workspaceIndexSpinButton, 'value', Gio.SettingsBindFlags.DEFAULT);
 
