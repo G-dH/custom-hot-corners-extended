@@ -1,5 +1,5 @@
 /* This is a part of Custom Hot Corners - Extended, the Gnome Shell extension
- * Copyright 2021 GdH <georgdh@gmail.com>
+ * Copyright 2021-2022 GdH <georgdh@gmail.com>
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -740,23 +740,19 @@ var Actions = class {
         if (win.fullscreen) {
             win.unmake_fullscreen();
             if (win._originalWS) {
-                let ws = false;
                 for(let i = 0; i < global.workspaceManager.n_workspaces; i++) {
                     let w = global.workspaceManager.get_workspace_by_index(i);
                     if (w === win._originalWS) {
-                        ws = true;
+                        win.change_workspace(win._originalWS);
+                        Main.wm.actionMoveWorkspace(win._originalWS);
                         break;
                     }
                 }
-                if (ws) {
-                    win.change_workspace(win._originalWS);
-                    Main.wm.actionMoveWorkspace(win._originalWS);
-                }
+                this._showWsSwitcherPopup(0, win._originalWS.index());
                 win._originalWS = null;
             }
         } else {
             let ws = win.get_workspace();
-            win.make_fullscreen();
             let nWindows = ws.list_windows().filter(
                 w =>
                     //w.get_window_type() === Meta.WindowType.NORMAL &&
@@ -767,7 +763,9 @@ var Actions = class {
                 let newWsIndex = ws.index() + 1;
                 Main.wm.insertWorkspace(newWsIndex);
                 let newWs = global.workspace_manager.get_workspace_by_index(newWsIndex);
-                win.change_workspace(newWs);
+                //win.change_workspace(newWs);
+                this.moveWinToAdjacentWs(1, [win]);
+                win.make_fullscreen();
                 win.activate(global.get_current_time());
             }
         }
@@ -871,7 +869,7 @@ var Actions = class {
         if (!Meta.is_wayland_compositor())
             Meta.restart(_('Restarting Gnome Shell...'));
         else
-            Main.notify(Me.metadata.name, _('Gnome Shell - Restart is unavailable in Wayland session' ));
+            Main.notify(Me.metadata.name, _('Gnome Shell - Restart is not available in Wayland session' ));
     }
 
     toggleShowPanel() {
