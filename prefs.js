@@ -76,7 +76,7 @@ function init() {
         _excludedItems.push('next-workspace-popup');
     }
 
-    actionList.forEach(act => actionDict[act[1]] = act[2]);
+    actionList.forEach(act => actionDict[act[1]] = {title: act[2], icon: act[4]});
 
     const ArcMenu_enabled = Settings.extensionEnabled('arcmenu@arcmenu.com');
     const ArcMenu_detected = mscOptions.get('supportedExetensions').includes('ArcMenu');
@@ -140,16 +140,8 @@ function fillPreferencesWindow(window) {
 
     // for transient dialog
     _topBox = window;
-    // make the window higher than default ..
-    window.set_size_request(-1, 700);
-    GLib.timeout_add(
-        GLib.PRIORITY_DEFAULT,
-        100,
-        () => {
-            // .. but don't block user downsizing
-            window.set_size_request(-1, -1);
-        }
-    );
+
+    window.set_default_size(400, 600);
 
     return window;
 }
@@ -204,6 +196,11 @@ function _newImageFromIconName(name, size = null) {
     return Gtk.Image.new_from_icon_name(...args);
 }
 
+function _setImageFromIconName(widget, name, size = null) {
+    const args = shellVersion >= 40 ? [name] : [name, size];
+    widget.set_from_icon_name(...args);
+}
+
 function _setBtnFromIconName(btnWidget, iconName, size) {
     if (btnWidget.set_icon_name) {
         btnWidget.set_icon_name(iconName);
@@ -254,7 +251,7 @@ function buildPrefsWidget() {
 
     stack.connect('destroy', () => {
         mscOptions.set('showOsdMonitorIndexes', false);
-        mscOptions = null;
+        //mscOptions = null;
     });
 
     let stBtn = stackSwitcher.get_first_child ? stackSwitcher.get_first_child() : null;
@@ -567,18 +564,24 @@ class CornerPage extends Gtk.Box {
         const appButton = new Gtk.Button();
 
         const actionButton = new Gtk.Button({
-            label: ' ', // string will create the label widget
+            //label: ' ', // string would create the label widget, we'll build a custom one
             hexpand: true
         })
 
-        let actionButtonLabel;
-        if (shellVersion >= 40) {
-            actionButtonLabel = actionButton.get_first_child();
-        } else {
-            actionButtonLabel = actionButton.get_children()[0];
-        }
+        const actBtnContentBox = new Gtk.Box({
+            orientation: Gtk.Orientation.HORIZONTAL,
+            spacing: 8,
+            hexpand: true
+        });
 
-        actionButtonLabel.xalign = 0;
+        const actBtnIcon = new Gtk.Image();
+        const actBtnLabel = new Gtk.Label({
+            xalign: 0,
+            hexpand: true
+        })
+        actBtnContentBox[append](actBtnIcon);
+        actBtnContentBox[append](actBtnLabel);
+        actionButton[set_child](actBtnContentBox);
 
         actionButton.connect('clicked', widget => {
             const actionChooserTree = new ActionChooserDialog(widget, this._corner, trigger, iconName);
@@ -660,22 +663,24 @@ class CornerPage extends Gtk.Box {
             });
         }.bind(this);
 
-        const context = actionButton.get_style_context();
-        context.add_class('heading');
+        /*const context = actionButton.get_style_context();
+        context.add_class('heading');*/
 
         const updateActBtnLbl = () => {
-            let actionTitle = actionDict[this._corner.getAction(trigger)];
+            let actionTitle = actionDict[this._corner.getAction(trigger)].title;
             if (!actionTitle) {
                 actionTitle = _("Error: The stored action doesn't exist!!!");
             }
-            actionButton.set_label(actionTitle);
+            const iconName = actionDict[this._corner.getAction(trigger)].icon;
+            _setImageFromIconName(actBtnIcon, iconName, Gtk.IconSize.BUTTON);
+            actBtnLabel.set_label(actionTitle);
         }
         
         this._corner._gsettings[trigger].connect('changed::action', () => {
             updateActBtnLbl();
         });
         
-        actionButton.connect('notify::label', () => {
+        actBtnLabel.connect('notify::label', () => {
             commandEntryRevealer.reveal_child = this._corner.getAction(trigger) === 'run-command';
             wsIndexRevealer.reveal_child = this._corner.getAction(trigger) === 'move-to-workspace';
             if (this._corner.getAction(trigger) === 'run-command' && !cmdConnected) {
@@ -1305,6 +1310,8 @@ class TreeviewPage extends Gtk.Box {
             hexpand: true,
             vexpand: true
         });
+
+        this.treeView.set_search_equal_func(_searchEqualFunc);
         this.treeView.activate_on_single_click = true;
         this.treeView.connect('row-activated', (treeView,path,column) => {
             if (treeView.row_expanded(path)) {
@@ -1313,17 +1320,21 @@ class TreeviewPage extends Gtk.Box {
                 treeView.expand_row(path, false);
             }
         });
+
         const btnBox = new Gtk.Box({
             orientation: Gtk.Orientation.HORIZONTAL,
             hexpand: true,
             homogeneous: true,
             spacing: 4
         });
+
         const expandButton = new Gtk.Button({
             label: _('Expand all')
         });
+
         expandButton.connect('clicked', () => {
             this.treeView.expand_all();
+            this.treeView.grab_focus();
         });
 
         const collapseButton = new Gtk.Button({
@@ -1331,6 +1342,7 @@ class TreeviewPage extends Gtk.Box {
         });
         collapseButton.connect('clicked', () => {
             this.treeView.collapse_all();
+            this.treeView.grab_focus();
         });
 
         this.resetButton = new Gtk.Button();
@@ -1390,10 +1402,12 @@ class KeyboardPage extends TreeviewPage {
             this._loadShortcuts();
             this._setNewTreeviewModel(this._treeviewModelColumns);
             this._updateTitle();
+            this.treeView.grab_focus();
         });
         this.showActiveBtn.connect('notify::active', () => {
             this._setNewTreeviewModel(this._treeviewModelColumns);
             this.treeView.expand_all();
+            this.treeView.grab_focus();
         })
 
         this._setNewTreeviewModel(this._treeviewModelColumns);
@@ -1586,10 +1600,12 @@ class CustomMenuPage extends TreeviewPage {
             mscOptions.set(`customMenu${this._menuIndex}`, this.menuItems);
             this._setNewTreeviewModel(this._treeviewModelColumns);
             this._updateTitle();
+            this.treeView.grab_focus();
         });
         this.showActiveBtn.connect('notify::active', () => {
             this._setNewTreeviewModel(this._treeviewModelColumns);
             this.treeView.expand_all();
+            this.treeView.grab_focus();
         });
         this._setNewTreeviewModel(this._treeviewModelColumns);
 
@@ -1661,7 +1677,7 @@ class CustomMenuPage extends TreeviewPage {
             const action = item[1];
             const title = item[2];
 
-            if (_excludedItems.includes(action) || action === 'disabled')
+            if (_excludedItems.includes(action) || action === 'disabled' || action === 'move-to-workspace' || action === 'run-command')
                 continue;
 
             // show selected actions only
@@ -1698,6 +1714,7 @@ class CustomMenuPage extends TreeviewPage {
     }
 });
 
+let treeViewACD = null;
 const ActionChooserDialog = GObject.registerClass(
 class ActionChooserDialog extends Gtk.Box {
     _init(button, corner, trigger, iconName) {
@@ -1709,10 +1726,11 @@ class ActionChooserDialog extends Gtk.Box {
             margin_end: shellVersion >= 42 ? margin : 0,
         });
 
-        this._button = button;
+        //this._button = button;
         this._corner = corner;
         this._trigger = trigger;
         this._iconName = iconName;
+        this._currentAction = this._corner.getAction(trigger);
 
         this.dialog = new Gtk.Dialog({
             title: _('Choose Action'),
@@ -1739,6 +1757,10 @@ class ActionChooserDialog extends Gtk.Box {
         this.dialog.get_content_area()[append](this);
 
         this.buildPage();
+
+        this.dialog.connect('destroy', () => {
+            treeViewACD = null;
+        });
     }
 
     buildPage() {
@@ -1762,10 +1784,9 @@ class ActionChooserDialog extends Gtk.Box {
             const [succ, iter] = this.model.get_iter(path);
             if (!succ) return false;
             const action  = this.model.get_value(iter, 0);
-            const title = this.model.get_value(iter, 1);
+            //const title = this.model.get_value(iter, 1);
             if (action) {
                 this._corner.setAction(this._trigger, action);
-                this._button.set_label(action === 'disabled' ? '-' : title);
                 this.dialog.destroy();
             }
         });
@@ -1801,13 +1822,15 @@ class ActionChooserDialog extends Gtk.Box {
         this.treeView = new Gtk.TreeView({
             enable_search: true,
             search_column: 1,
-            hover_selection: true,
+            //hover_selection: true,
             //hover_expand: true,
             hexpand: true,
             vexpand: true
         });
+        treeViewACD = this.treeView;
+        this.treeView.set_search_equal_func(_searchEqualFunc);
         this.treeView.activate_on_single_click = true;
-        this.treeView.connect('row-activated', (treeView,path,column) => {
+        this.treeView.connect('row-activated', (treeView, path, column) => {
             if (treeView.row_expanded(path)) {
                 treeView.collapse_row(path);
             } else {
@@ -1818,7 +1841,14 @@ class ActionChooserDialog extends Gtk.Box {
         this.model = new Gtk.TreeStore();
         this.model.set_column_types([GObject.TYPE_STRING, GObject.TYPE_STRING]);
         this.treeView.model = this.model;
+
         this._populateTreeview();
+
+        if (this._currentPath) {
+            this.treeView.expand_row(this._currentPath[0], true); // path, expand recursive
+            this.treeView.scroll_to_cell(this._currentPath[1], null, true, 0.5, 0); // path, column, align?, align row, align column
+            this.treeView.set_cursor(this._currentPath[1], null, false); // path, coulumn, start edit
+        }
 
         const btnBox = new Gtk.Box({
             orientation: Gtk.Orientation.HORIZONTAL,
@@ -1831,6 +1861,7 @@ class ActionChooserDialog extends Gtk.Box {
         });
         expandButton.connect('clicked', () => {
             this.treeView.expand_all();
+            this.treeView.grab_focus();
         });
 
         const collapseButton = new Gtk.Button({
@@ -1838,6 +1869,7 @@ class ActionChooserDialog extends Gtk.Box {
         });
         collapseButton.connect('clicked', () => {
             this.treeView.collapse_all();
+            this.treeView.grab_focus();
         });
 
         this.resetButton = new Gtk.Button();
@@ -1861,7 +1893,7 @@ class ActionChooserDialog extends Gtk.Box {
             const item = actionList[i];
             const itemType = item[0];
             const action = item[1];
-            let title = action === 'disabled' ? 'Disable' : item[2];
+            const title = action === 'disabled' ? 'Disable' : item[2];
 
             if (_excludedItems.includes(action))
                 continue;
@@ -1878,7 +1910,7 @@ class ActionChooserDialog extends Gtk.Box {
                     this.model.set(iter1, [0, 1], [action, title]);
                 }
 
-                iter = iter1;
+                //iter = iter1;
             } else {
                 if (submenuOnHold) {
                     iter1 = this.model.append(null);
@@ -1887,8 +1919,20 @@ class ActionChooserDialog extends Gtk.Box {
                 }
                 iter2  = this.model.append(iter1);
                 this.model.set(iter2, [0, 1], [action, title]);
-                iter = iter2;
+                //iter = iter2;
+                if (action === this._currentAction) {
+                    this._currentPath = [this.model.get_path(iter1),this.model.get_path(iter2)];
+                }
             }
         }
     }
 });
+
+function _searchEqualFunc (model, column, key, iter) {
+    treeViewACD && treeViewACD.expand_all();
+    const title = model.get_value(iter, 1).toLowerCase();
+    key = key.toLowerCase();
+    if (title.includes(key))
+        return false;
+    return true;
+}
