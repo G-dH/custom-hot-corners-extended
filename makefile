@@ -8,13 +8,14 @@ ZIP_NAME := $(NAME)@$(DOMAIN).zip
 # Some of the recipes below depend on some of these files.
 JS_FILES       = $(shell find -type f -and \( -name "*.js" \))
 UI_FILES       = $(shell find -type f -and \( -name "*.ui" \))
+ICONS          = $(shell find -type f -and \( -name "*.svg" \))
 RESOURCE_FILES = $(shell find resources -mindepth 2 -type f)
 LOCALES_PO     = $(wildcard po/*.po)
 LOCALES_MO     = $(patsubst po/%.po,locale/%/LC_MESSAGES/$(NAME).mo,$(LOCALES_PO))
 
 # These files will be included in the extension zip file.
-ZIP_CONTENT = $(JS_FILES) $(LOCALES_MO) \
-              schemas/gschemas.compiled metadata.json stylesheet.css ../LICENSE
+ZIP_CONTENT = $(JS_FILES) $(LOCALES_MO) $(ICONS) \
+              schemas/gschemas.compiled metadata.json LICENSE
 
 # These five recipes can be invoked by the user.
 .PHONY: zip install uninstall pot clean
