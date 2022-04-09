@@ -1,4 +1,5 @@
-/* Copyright 2021-2022 GdH <georgdh@gmail.com>
+/* Custom Hot Corners - Extended
+ * Copyright 2021-2022 GdH <G-dH@github.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -13,6 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 'use strict';
 
 const {GObject, GLib, Clutter, Meta, Shell} = imports.gi;
@@ -22,8 +24,8 @@ const Layout                 = imports.ui.layout;
 
 const ExtensionUtils         = imports.misc.extensionUtils;
 const Me                     = ExtensionUtils.getCurrentExtension();
-const Settings               = Me.imports.settings;
-const ActionTriger           = Me.imports.actionTrigger;
+const Settings               = Me.imports.src.common.settings;
+const ActionTriger           = Me.imports.src.extension.actionTrigger;
 
 let   actionTrigger;
 
@@ -40,10 +42,9 @@ let _origUpdateHotCorners;
 function init() {
     _origUpdateHotCorners = imports.ui.layout.LayoutManager.prototype._updateHotCorners;
     ExtensionUtils.initTranslations(Me.metadata['gettext-domain']);
-    const chce = new CustomHotCornersExtended();
-    // chceThis is being used to override 'this' in _updateHotCorners() function when called from Gnome Shell
-    chceThis = chce;
-    return chce;
+    chceThis = new CustomHotCornersExtended();
+    // chceThis delegates 'this' in _updateHotCorners() function when called from Gnome Shell
+    return chceThis;
 }
 
 class CustomHotCornersExtended {

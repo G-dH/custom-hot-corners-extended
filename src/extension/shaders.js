@@ -1,5 +1,6 @@
-/* This is a part of Custom Hot Corners - Extended, the Gnome Shell extension
- * Copyright 2021 GdH <georgdh@gmail.com>
+/* Custom Hot Corners - Extended
+ * Copyright 2021-2022 GdH <G-dH@github.com>
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -12,12 +13,12 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
+
 'use strict';
 
 const {GObject, Clutter}     = imports.gi;
 const ExtensionUtils         = imports.misc.extensionUtils;
-const Me                     = ExtensionUtils.getCurrentExtension();
 
 var   InvertLightnessEffect = GObject.registerClass(
 class InvertLightnessEffect extends Clutter.ShaderEffect {

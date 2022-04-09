@@ -1,5 +1,6 @@
-/* This is a part of Custom Hot Corners - Extended, the Gnome Shell extension
- * Copyright 2021 GdH <georgdh@gmail.com>
+/* Custom Hot Corners - Extended
+ * Copyright 2021-2022 GdH <G-dH@github.com>
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -12,7 +13,8 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
+
 'use strict';
 
 const { GObject, GLib, Clutter, St, Meta, Shell } = imports.gi;
@@ -66,6 +68,8 @@ class WindowThumbnail extends St.BoxLayout {
         this._addScrollModeIcon();
 
         this.connect('enter-event', () => {
+            if (this._bin.get_child() === this.icon)
+                return;
             this._closeButton.opacity = 255;
             this._scrollModeBin.opacity = SCROLL_ICON_OPACITY;
         });
@@ -108,11 +112,11 @@ class WindowThumbnail extends St.BoxLayout {
         // when this.clone source window resize, this.clone and this. actor resize accordingly
         //this.scale_x = this.scale;
         //this.scale_y = this.scale;
-        this.clone.width = this.window.width * this.scale;
-        this.clone.height = this.window.height * this.scale;
+        this._bin.width = this.window.width * this.scale;
+        this._bin.height = this.window.height * this.scale;
         if (this.icon) {
-            this.icon.scale_x = this.scale;
-            this.icon.scale_y = this.scale;
+            //this.icon.scale_x = this.scale;
+            //this.icon.scale_y = this.scale;
         }
         //this._closeButton.scale_x = 1 / this.scale;
         //this._closeButton.scale_y = 1 / this.scale;
@@ -146,27 +150,29 @@ class WindowThumbnail extends St.BoxLayout {
     }
 
     _onBtnReleased(actor, event) {
-        let button = event.get_button();
+        const button = event.get_button();
+        const state = event.get_state();
         switch (button) {
         case Clutter.BUTTON_PRIMARY:
-            if (this._ctrlPressed(event.get_state()))
+            if (this._ctrlPressed(state)) {
                 this._switchView();
-            else
+                this._setSize();
+            } else {
                 this._reverseTmbWheelFunc = !this._reverseTmbWheelFunc;
                 this._scrollModeBin.set_child(this._reverseTmbWheelFunc ? this._scrollModeSourceIcon : this._scrollModeResizeIcon);
+            }
             return Clutter.EVENT_STOP;
-            break;
         case Clutter.BUTTON_SECONDARY:
             // if (_ctrlPressed(state))
             //this._remove();
             this._showWindowPreview();
             return Clutter.EVENT_STOP;
-            break;
         case Clutter.BUTTON_MIDDLE:
-            // if (_ctrlPressed(state))
-            this.w.delete(global.get_current_time());
+            if (this._ctrlPressed(state))
+                this.w.delete(global.get_current_time());
+            else
+                this._switchView();
             return Clutter.EVENT_STOP;
-            break;
         default:
             return Clutter.EVENT_PROPAGATE;
         }
@@ -290,7 +296,7 @@ class WindowThumbnail extends St.BoxLayout {
         let icon = app
             ? app.create_icon_texture(this.height)
             : new St.Icon({icon_name: 'icon-missing', icon_size: this.height});
-        icon.x_expand = icon.y_expand = true;
+        icon.x_expand = icon.y_expand = false;
         if (this.icon)
             this.icon.destroy();
         this.icon = icon;
