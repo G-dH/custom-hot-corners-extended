@@ -896,27 +896,58 @@ var Actions = class {
     toggleTheme() {
         let intSettings = this._getInterfaceSettings();
         let theme = intSettings.get_string('gtk-theme');
+        let themeSplit = theme.split('-');
+        let yaruAccent = '';
+        if (themeSplit[0] == 'Yaru' && themeSplit.length > 1) {
+            yaruAccent = themeSplit[1];
+            if (['light', 'dark'].includes(yaruAccent)) {
+                yaruAccent = '';
+            }
+        }
+        let newTheme;
+        let dark;
+
         switch (theme) {
+            case `Yaru-${yaruAccent}`:
+                newTheme = `Yaru-${yaruAccent}-dark`;
+                dark = true;
+                break;
+            case `Yaru-${yaruAccent}-dark`:
+                newTheme = `Yaru-${yaruAccent}`;
+                dark = false;
+                break;
             case 'Yaru-light':
             case 'Yaru':
-                intSettings.set_string('gtk-theme', 'Yaru-dark');
+                newTheme = 'Yaru-dark';
+                dark = true;
                 break;
             case 'Yaru-dark':
-                let theme = shellVersion >= 40 ? 'Yaru' : 'Yaru-light'
-                intSettings.set_string('gtk-theme', theme);
+                newTheme = shellVersion >= 40 ? 'Yaru' : 'Yaru-light'
+                dark = false;
                 break;
             case 'Adwaita':
-                intSettings.set_string('gtk-theme', 'Adwaita-dark');
-                if (shellVersion >= 42)
-                    intSettings.set_string('color-scheme', 'prefer-dark');
+                newTheme = 'Adwaita-dark';
+                dark = true;
                 break;
             case 'Adwaita-dark':
-                intSettings.set_string('gtk-theme', 'Adwaita');
-                if (shellVersion >= 42)
-                    intSettings.set_string('color-scheme', 'default');
+                newTheme = 'Adwaita';
+                dark = false;
                 break;
             default:
                 Main.notify(Me.metadata.name, _('Theme switcher works with Adwaita/Adwaita-dark and Yaru(-light)/Yaru-dark themes only'));
+        }
+
+        if (newTheme) {
+            intSettings.set_string('gtk-theme', newTheme);
+        }
+
+        if (shellVersion < 42)
+            return;
+
+        if (dark) {
+            intSettings.set_string('color-scheme', 'prefer-dark');
+        } else {
+            intSettings.set_string('color-scheme', 'default');
         }
     }
 
