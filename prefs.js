@@ -33,7 +33,7 @@ const KeyboardPage    = Me.imports.src.prefs.keyboardPage.KeyboardPage;
 const CustomMenusPage = Me.imports.src.prefs.customMenusPage.CustomMenusPage;
 const OptionsPage     = Me.imports.src.prefs.optionsPage.OptionsPage;
 
-const Utils           = Me.imports.src.prefs.utils;
+const Utils           = Me.imports.src.common.utils;
 const _newImageFromIconName = Utils._newImageFromIconName;
 // conversion of Gtk3 / Gtk4 widgets add methods
 const append = Utils.append;

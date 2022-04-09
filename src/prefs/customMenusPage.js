@@ -32,7 +32,7 @@ const shellVersion = Settings.shellVersion;
 
 const _excludedItems = Settings.excludedItems;
 
-const Utils          = Me.imports.src.prefs.utils;
+const Utils          = Me.imports.src.common.utils;
 // conversion of Gtk3 / Gtk4 widgets add methods
 const append = Utils.append;
 const set_child = Utils.set_child;

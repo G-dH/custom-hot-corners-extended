@@ -22,7 +22,7 @@ const {GLib, Gio}    = imports.gi;
 const ExtensionUtils = imports.misc.extensionUtils;
 const Me             = ExtensionUtils.getCurrentExtension();
 
-const Utils          = Me.imports.src.prefs.utils;
+const Utils          = Me.imports.src.common.utils;
 
 const Config         = imports.misc.config;
 var shellVersion     = parseFloat(Config.PACKAGE_VERSION);

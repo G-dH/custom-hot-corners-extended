@@ -24,6 +24,7 @@ const Layout                 = imports.ui.layout;
 
 const ExtensionUtils         = imports.misc.extensionUtils;
 const Me                     = ExtensionUtils.getCurrentExtension();
+const Utils                  = Me.imports.src.common.utils;
 const Settings               = Me.imports.src.common.settings;
 const ActionTriger           = Me.imports.src.extension.actionTrigger;
 
@@ -120,7 +121,7 @@ class CustomHotCornersExtended {
         this._mscOptions.destroy();
 
         // don't destroy Actions and lose effects and thumbnails because of the screen lock, for example
-        let fullDisable = !Settings.extensionEnabled();
+        let fullDisable = !Utils.extensionEnabled();
         this._updateSupportedExtensionsAvailability(true);
         if (fullDisable) {
             this.actionTrigger.clean(true);

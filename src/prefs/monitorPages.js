@@ -22,7 +22,7 @@ const { Gtk, Gdk, GLib, Gio, GObject } = imports.gi;
 const ExtensionUtils = imports.misc.extensionUtils;
 const Me             = ExtensionUtils.getCurrentExtension();
 
-const Utils          = Me.imports.src.prefs.utils;
+const Utils          = Me.imports.src.common.utils;
 const _newImageFromIconName = Utils._newImageFromIconName;
 const _setImageFromIconName = Utils._setImageFromIconName;
 const _setBtnFromIconName   = Utils._setBtnFromIconName;
