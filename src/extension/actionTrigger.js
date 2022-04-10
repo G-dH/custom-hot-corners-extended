@@ -790,6 +790,18 @@ var ActionTrigger = class ActionTrigger {
             false);
     }
 
+    _tintCustomToggleWin() {
+        this.actions.toggleColorTintEffect(
+            null,
+            true);
+    }
+
+    _tintCustomToggleAll() {
+        this.actions.toggleColorTintEffect(
+            null,
+            false);
+    }
+
     _removeEffectsWin() {
         this.actions.removeWinEffects(true);
     }

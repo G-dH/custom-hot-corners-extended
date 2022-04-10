@@ -88,6 +88,11 @@
     <key name='internal-flags' type='as'>
       <default>[]</default>
     </key>
+    <key name='custom-tint-color' type='s'>
+      <default>'rgb(255,255,0)'</default>
+    </key>
+    
+
   </schema>
   <schema path='/org/gnome/shell/extensions/custom-hot-corners-extended/shortcuts/' id='org.gnome.shell.extensions.custom-hot-corners-extended.shortcuts'>
     <key name='toggle-overview-ce' type='as'>

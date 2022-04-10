@@ -114,7 +114,8 @@ var MscOptions = class MscOptions {
             supportedExetensions: {type: 'strv',    key: 'supported-active-extensions'},
             keyboardShortcuts:    {type: 'strv',    key: 'keyboard-shortcuts'},
             internalFlags:        {type: 'strv',    key: 'internal-flags'},
-            showOsdMonitorIndexes:{type: 'boolean', key: 'show-osd-monitor-indexes'}
+            showOsdMonitorIndexes:{type: 'boolean', key: 'show-osd-monitor-indexes'},
+            customTintColor:      {type: 'string',  key: 'custom-tint-color'},
         }
     }
 

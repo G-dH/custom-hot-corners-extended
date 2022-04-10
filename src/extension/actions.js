@@ -1314,6 +1314,11 @@ var Actions = class {
     }
 
     toggleColorTintEffect(color, window = true) {
+        if (!color) {
+            const [success, col] = Clutter.Color.from_string(this._mscOptions.get('customTintColor'));
+            if (!success) return;
+            else color = col;
+        }
         let name = 'color-tint';
         let effect = Clutter.ColorizeEffect;
         if (window)

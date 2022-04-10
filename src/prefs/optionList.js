@@ -163,7 +163,41 @@ function getOptionList(mscOpt) {
             )
         );
 
+        optionsList.push(
+            _optionsItem(
+                _('Custom Colors for Effects'),
+                null,
+                null
+            )
+        );
+
+        optionsList.push(
+            _optionsItem(
+                _('Tint Color'),
+                _('Color for "Custom Color Tint" action'),
+                _newColorButton(),
+                'customTintColor'
+            )
+        );
+
         return optionsList;
+}
+
+function _newScale(adjustment) {
+    const scale = new Gtk.Scale({
+        orientation: Gtk.Orientation.HORIZONTAL,
+        draw_value:  true,
+        has_origin:  false,
+        value_pos:   Gtk.PositionType.LEFT,
+        digits:      0,
+        halign:      Gtk.Align.FILL,
+        valign:      Gtk.Align.CENTER,
+        hexpand:     true,
+        vexpand:     false,
+    });
+    scale.set_adjustment(adjustment);
+    scale._is_scale = true;
+    return scale;
 }
 
 function _newGtkSwitch() {
@@ -201,6 +235,17 @@ function _newComboBox() {
     comboBox.add_attribute(renderer, 'text', 0);
     comboBox._is_combo_box = true;
     return comboBox;
+}
+
+function _newColorButton() {
+    const colorBtn = new Gtk.ColorButton({
+        hexpand: true,
+        halign: Gtk.Align.END,
+    });
+    colorBtn.set_use_alpha(false);
+    colorBtn.is_color_btn = true;
+
+    return colorBtn;
 }
 
 function _optionsItem(text, caption, widget, variable, options = []) {
@@ -244,8 +289,8 @@ function _optionsItem(text, caption, widget, variable, options = []) {
 
     if (widget && widget._is_switch) {
         mscOptions._gsettings.bind(mscOptions.options[variable].key, widget, 'active', Gio.SettingsBindFlags.DEFAULT);
-    } else if (widget && widget._is_spinbutton) {
-        mscOptions._gsettings.bind(mscOptions.options[variable].key, widget, 'value', Gio.SettingsBindFlags.DEFAULT);
+    } else if (widget && (widget._is_spinbutton || widget._is_scale)) {
+        mscOptions._gsettings.bind(mscOptions.options[variable].key, widget.adjustment, 'value', Gio.SettingsBindFlags.DEFAULT);
     } else if (widget && widget._is_combo_box) {
         let model = widget.get_model();
         for (const [label, value] of options) {
@@ -260,6 +305,26 @@ function _optionsItem(text, caption, widget, variable, options = []) {
                 return;
 
             mscOptions.set(variable, model.get_value(iter, 1));
+        });
+    } else if (widget && (widget.is_color_btn || widget.is_color_box)) {
+        let colorBtn;
+        if (widget.is_color_box) {
+            colorBtn = widget.colorBtn;
+        } else {
+            colorBtn = widget;
+        }
+        const rgba = colorBtn.get_rgba();
+        rgba.parse(mscOptions.get(variable));
+        colorBtn.set_rgba(rgba);
+
+        colorBtn.connect('color_set', () => {
+            mscOptions.set(variable, `${colorBtn.get_rgba().to_string()}`);
+        });
+
+        mscOptions._gsettings.connect(`changed::${mscOptions.options[variable].key}`,() => {
+            const rgba = colorBtn.get_rgba();
+            rgba.parse(mscOptions.get(variable));
+            colorBtn.set_rgba(rgba);
         });
     }
 

@@ -173,7 +173,6 @@ function buildPrefsWidget() {
     stack.connect('destroy', () => {
         mscOptions.set('showOsdMonitorIndexes', false);
         //mscOptions = null;
-
     });
 
     let stBtn = stackSwitcher.get_first_child ? stackSwitcher.get_first_child() : null;
