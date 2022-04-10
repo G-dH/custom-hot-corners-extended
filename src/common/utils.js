@@ -85,9 +85,10 @@ function getIconPath() {
         accent = 'orange';
     }
 
-    return `${Me.dir.get_path()}/resources/icons/${accent}`;
+    //return `${Me.dir.get_path()}/resources/icons/${accent}`;
+    return `/icons/${accent}`;
 
-    /*
+    /* using set_from_icon_name is slow compared to set_from_file or set_from_resource
     const iconTheme = Gtk.IconTheme.get_for_display
                         ? Gtk.IconTheme.get_for_display(Gdk.Display.get_default())
                         : Gtk.IconTheme.get_for_screen(Gdk.Screen.get_default());

@@ -14,7 +14,7 @@ LOCALES_PO     = $(wildcard po/*.po)
 LOCALES_MO     = $(patsubst po/%.po,locale/%/LC_MESSAGES/$(NAME).mo,$(LOCALES_PO))
 
 # These files will be included in the extension zip file.
-ZIP_CONTENT = $(JS_FILES) $(LOCALES_MO) $(ICONS) \
+ZIP_CONTENT = $(JS_FILES) $(LOCALES_MO) resources/$(NAME).gresource \
               schemas/gschemas.compiled metadata.json LICENSE
 
 # These five recipes can be invoked by the user.
@@ -70,14 +70,14 @@ schemas/gschemas.compiled: schemas/org.gnome.shell.extensions.$(NAME).gschema.xm
 	@glib-compile-schemas schemas
 
 # Compiles the gresource file from the gresources.xml.
-#resources/$(NAME).gresource: resources/$(NAME).gresource.xml
-#	@echo "Compiling resources..."
-#	@glib-compile-resources --sourcedir="resources" --generate resources/$(NAME).gresource.xml
+resources/$(NAME).gresource: resources/$(NAME).gresource.xml
+	@echo "Compiling resources..."
+	@glib-compile-resources --sourcedir="resources" --generate resources/$(NAME).gresource.xml
 
 # Generates the gresources.xml based on all files in the resources subdirectory.
-#resources/$(NAME).gresource.xml: $(RESOURCE_FILES)
-#	@echo "Creating resources xml..."
-#	@FILES=$$(find "resources" -mindepth 2 -type f -printf "%P\n" | xargs -i echo "<file>{}</file>") ; \
+resources/$(NAME).gresource.xml: $(RESOURCE_FILES)
+	@echo "Creating resources xml..."
+	@FILES=$$(find "resources" -mindepth 2 -type f -printf "%P\n" | xargs -i echo "<file>{}</file>") ; \
 	 echo "<?xml version='1.0' encoding='UTF-8'?><gresources><gresource> $$FILES </gresource></gresources>" \
 	     > resources/$(NAME).gresource.xml
 

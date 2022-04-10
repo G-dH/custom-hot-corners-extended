@@ -134,23 +134,15 @@ class MonitorPage extends Gtk.Box {
             const image = new Gtk.Image({
                 halign: Gtk.Align.CENTER,
                 valign: Gtk.Align.CENTER,
-                margin_start: 30,
-                margin_end: 30,
+                margin_start: 15,
+                margin_end: 15,
                 pixel_size: 32,
             });
 
             if (shellVersion < 40) image.icon_size = Gtk.IconSize.DND;
 
-            image.set_from_file(`${this._iconPath}/${this._corners[i].top ? 'Top' : 'Bottom'}${this._corners[i].left ? 'Left' : 'Right'}.svg`);
+            image.set_from_resource(`${this._iconPath}/${this._corners[i].top ? 'Top' : 'Bottom'}${this._corners[i].left ? 'Left' : 'Right'}.svg`);
 
-
-            /*if (shellVersion >= 40) {
-                //image.set_from_icon_name(`${this._corners[i].top ? 'Top' : 'Bottom'}${this._corners[i].left ? 'Left' : 'Right'}`);
-                image.set_from_file(`${_iconPath}/${this._corners[i].top ? 'Top' : 'Bottom'}${this._corners[i].left ? 'Left' : 'Right'}.svg`);
-            } else {
-                //image.set_from_icon_name(`${this._corners[i].top ? 'Top' : 'Bottom'}${this._corners[i].left ? 'Left' : 'Right'}`, Gtk.IconSize.DND);
-                image.set_from_file(`${_iconPath}/${this._corners[i].top ? 'Top' : 'Bottom'}${this._corners[i].left ? 'Left' : 'Right'}.svg`, Gtk.IconSize.DND);
-            }*/
             icons.push(image);
 
             const cPage = new CornerPage();
@@ -254,7 +246,8 @@ class CornerPage extends Gtk.Box {
                 // in Gtk4 image has always some extra margin and therefore it's tricky to adjust row height
             });
 
-            trgIcon.set_from_file(`${this._iconPath}/${iconName}`);
+            //trgIcon.set_from_file(`${this._iconPath}/${iconName}`);
+            trgIcon.set_from_resource(`${this._iconPath}/${iconName}`);
             trgIcon.set_tooltip_text(triggerLabels[trigger]);
 
             const fsBtn = new Gtk.ToggleButton({
@@ -432,6 +425,7 @@ class CornerPage extends Gtk.Box {
             });
         }.bind(this);
 
+        // bold action titles like GNOME 42 Adw has. But I prefer normal font
         /*const context = actionButton.get_style_context();
         context.add_class('heading');*/
 
@@ -594,9 +588,8 @@ class CornerPage extends Gtk.Box {
             hexpand: false,
             tooltip_text: _('Expand horizonatally'),
         });
-        //const hImage = Gtk.Image.new_from_file(`${Me.dir.get_path()}/icons/${this._corner.top ? 'Top' : 'Bottom'}${this._corner.left ? 'Left' : 'Right'}HE.svg`);
-        //const hImage = _newImageFromIconName(`${this._corner.top ? 'Top' : 'Bottom'}${this._corner.left ? 'Left' : 'Right'}HE`, Gtk.IconSize.BUTTON);
-        const hImage = Gtk.Image.new_from_file(`${this._iconPath}/${this._corner.top ? 'Top' : 'Bottom'}${this._corner.left ? 'Left' : 'Right'}HE.svg`);
+
+        const hImage = Gtk.Image.new_from_resource(`${this._iconPath}/${this._corner.top ? 'Top' : 'Bottom'}${this._corner.left ? 'Left' : 'Right'}HE.svg`);
         hImage.pixel_size = 40;
         hExpandSwitch[set_child](hImage);
 
@@ -607,9 +600,8 @@ class CornerPage extends Gtk.Box {
             hexpand: false,
             tooltip_text: _('Expand vertically'),
         });
-        //const vImage = Gtk.Image.new_from_file(`${Me.dir.get_path()}/icons/${this._corner.top ? 'Top' : 'Bottom'}${this._corner.left ? 'Left' : 'Right'}VE.svg`);
-        //const vImage = _newImageFromIconName(`${this._corner.top ? 'Top' : 'Bottom'}${this._corner.left ? 'Left' : 'Right'}VE`, Gtk.IconSize.BUTTON);
-        const vImage = Gtk.Image.new_from_file(`${this._iconPath}/${this._corner.top ? 'Top' : 'Bottom'}${this._corner.left ? 'Left' : 'Right'}VE.svg`);
+
+        const vImage = Gtk.Image.new_from_resource(`${this._iconPath}/${this._corner.top ? 'Top' : 'Bottom'}${this._corner.left ? 'Left' : 'Right'}VE.svg`);
         vImage.pixel_size = 40;
         vExpandSwitch[set_child](vImage);
 

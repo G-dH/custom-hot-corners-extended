@@ -17,7 +17,7 @@
 
 'use strict';
 
-const { Gtk, Gdk, GLib, GObject } = imports.gi;
+const { Gtk, Gdk, Gio, GLib, GObject } = imports.gi;
 
 const ExtensionUtils  = imports.misc.extensionUtils;
 const Me              = ExtensionUtils.getCurrentExtension();
@@ -69,6 +69,9 @@ function init() {
 function fillPreferencesWindow(window) {
     const mscOptions = new Settings.MscOptions();
 
+    const resources = Gio.Resource.load(Me.path + '/resources/custom-hot-corners-extended.gresource');
+    Gio.resources_register(resources);
+
     const monitorPages = MonitorPages.getMonitorPages(mscOptions);
     for (let mPage of monitorPages) {
         const [page, title] = mPage;
@@ -116,11 +119,19 @@ function fillPreferencesWindow(window) {
 
     window.set_default_size(400, 600);
 
+    window.connect('destroy', () => {
+        // Unregister our resources.
+        Gio.resources_unregister(resources);
+    });
+
     return window;
 }
 
 function buildPrefsWidget() {
     const mscOptions = new Settings.MscOptions();
+
+    const resources = Gio.Resource.load(Me.path + '/resources/custom-hot-corners-extended.gresource');
+    Gio.resources_register(resources);
 
     const stack = new Gtk.Stack({
         hexpand: true
@@ -162,6 +173,7 @@ function buildPrefsWidget() {
     stack.connect('destroy', () => {
         mscOptions.set('showOsdMonitorIndexes', false);
         //mscOptions = null;
+
     });
 
     let stBtn = stackSwitcher.get_first_child ? stackSwitcher.get_first_child() : null;
@@ -192,6 +204,11 @@ function buildPrefsWidget() {
         } else {
             headerbar.custom_title = stackSwitcher;
         }
+    });
+
+    stack.connect('destroy', () => {
+        // Unregister our resources.
+        Gio.resources_unregister(resources);
     });
 
     return stack;

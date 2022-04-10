@@ -69,7 +69,7 @@ class ActionChooserDialog extends Gtk.Box {
             visible: true
         });
 
-        trgIcon.set_from_file(`${this._iconPath}/${this._iconName}`);
+        trgIcon.set_from_resource(`${this._iconPath}/${this._iconName}`);
         trgIcon.icon_size = Gtk.IconSize.BUTTON;
 
         const headerbar = this.dialog.get_titlebar();
