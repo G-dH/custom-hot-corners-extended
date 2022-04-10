@@ -64,13 +64,6 @@ function init() {
     // log(`initializing ${Me.metadata.name} Preferences`);
     ExtensionUtils.initTranslations(Me.metadata['gettext-domain']);
     // WAYLAND = GLib.getenv('XDG_SESSION_TYPE') === 'wayland';
-
-    const iconTheme = Gtk.IconTheme.get_for_display
-                        ? Gtk.IconTheme.get_for_display(Gdk.Display.get_default())
-                        : Gtk.IconTheme.get_for_screen(Gdk.Screen.get_default());
-    iconTheme.add_search_path
-                        ? iconTheme.add_search_path(GLib.build_filenamev([Me.path, 'resources/icons']))
-                        : iconTheme.append_search_path(GLib.build_filenamev([Me.path, 'resources/icons']));
 }
 
 function fillPreferencesWindow(window) {

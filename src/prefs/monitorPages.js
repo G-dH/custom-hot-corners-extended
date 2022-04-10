@@ -99,6 +99,7 @@ class MonitorPage extends Gtk.Box {
         this._geometry = null;
         this._alreadyBuilt = false;
         this._leftHandMouse = false;
+        this._iconPath = Utils.getIconPath();
     }
 
     buildPage() {
@@ -137,12 +138,19 @@ class MonitorPage extends Gtk.Box {
                 margin_end: 30,
                 pixel_size: 32,
             });
-            if (shellVersion >= 40) {
-                image.set_from_icon_name(`${this._corners[i].top ? 'Top' : 'Bottom'}${this._corners[i].left ? 'Left' : 'Right'}`);
-                //image.set_from_file(`${Me.dir.get_path()}/icons/${this._corners[i].top ? 'Top' : 'Bottom'}${this._corners[i].left ? 'Left' : 'Right'}.svg`);
+
+            if (shellVersion < 40) image.icon_size = Gtk.IconSize.DND;
+
+            image.set_from_file(`${this._iconPath}/${this._corners[i].top ? 'Top' : 'Bottom'}${this._corners[i].left ? 'Left' : 'Right'}.svg`);
+
+
+            /*if (shellVersion >= 40) {
+                //image.set_from_icon_name(`${this._corners[i].top ? 'Top' : 'Bottom'}${this._corners[i].left ? 'Left' : 'Right'}`);
+                image.set_from_file(`${_iconPath}/${this._corners[i].top ? 'Top' : 'Bottom'}${this._corners[i].left ? 'Left' : 'Right'}.svg`);
             } else {
-                image.set_from_icon_name(`${this._corners[i].top ? 'Top' : 'Bottom'}${this._corners[i].left ? 'Left' : 'Right'}`, Gtk.IconSize.DND);
-            }
+                //image.set_from_icon_name(`${this._corners[i].top ? 'Top' : 'Bottom'}${this._corners[i].left ? 'Left' : 'Right'}`, Gtk.IconSize.DND);
+                image.set_from_file(`${_iconPath}/${this._corners[i].top ? 'Top' : 'Bottom'}${this._corners[i].left ? 'Left' : 'Right'}.svg`, Gtk.IconSize.DND);
+            }*/
             icons.push(image);
 
             const cPage = new CornerPage();
@@ -194,6 +202,7 @@ class CornerPage extends Gtk.Box {
         this._corner = null;
         this._geometry = null;
         this._leftHandMouse = false;
+        this._iconPath = Utils.getIconPath();
     }
 
     buildPage() {
@@ -221,7 +230,7 @@ class CornerPage extends Gtk.Box {
 
             let iconName;
             if (trigger === 0) {
-                iconName = `${this._corner.top ? 'Top' : 'Bottom'}${this._corner.left ? 'Left' : 'Right'}`;
+                iconName = `${this._corner.top ? 'Top' : 'Bottom'}${this._corner.left ? 'Left' : 'Right'}.svg`;
             } else {
                 let iconIdx = trigger;
                 if (this._leftHandMouse) {
@@ -230,11 +239,11 @@ class CornerPage extends Gtk.Box {
                     if (trigger === 2)
                         iconIdx = 1;
                 }
-                iconName = `Mouse-${iconIdx}`;
+                iconName = `Mouse-${iconIdx}.svg`;
             }
 
             const trgIcon = new Gtk.Image({
-                icon_name: iconName,
+                //icon_name: iconName,
                 halign: Gtk.Align.START,
                 margin_start: 10,
                 margin_end: 15,
@@ -245,6 +254,7 @@ class CornerPage extends Gtk.Box {
                 // in Gtk4 image has always some extra margin and therefore it's tricky to adjust row height
             });
 
+            trgIcon.set_from_file(`${this._iconPath}/${iconName}`);
             trgIcon.set_tooltip_text(triggerLabels[trigger]);
 
             const fsBtn = new Gtk.ToggleButton({
@@ -585,7 +595,8 @@ class CornerPage extends Gtk.Box {
             tooltip_text: _('Expand horizonatally'),
         });
         //const hImage = Gtk.Image.new_from_file(`${Me.dir.get_path()}/icons/${this._corner.top ? 'Top' : 'Bottom'}${this._corner.left ? 'Left' : 'Right'}HE.svg`);
-        const hImage = _newImageFromIconName(`${this._corner.top ? 'Top' : 'Bottom'}${this._corner.left ? 'Left' : 'Right'}HE`, Gtk.IconSize.BUTTON);
+        //const hImage = _newImageFromIconName(`${this._corner.top ? 'Top' : 'Bottom'}${this._corner.left ? 'Left' : 'Right'}HE`, Gtk.IconSize.BUTTON);
+        const hImage = Gtk.Image.new_from_file(`${this._iconPath}/${this._corner.top ? 'Top' : 'Bottom'}${this._corner.left ? 'Left' : 'Right'}HE.svg`);
         hImage.pixel_size = 40;
         hExpandSwitch[set_child](hImage);
 
@@ -597,7 +608,8 @@ class CornerPage extends Gtk.Box {
             tooltip_text: _('Expand vertically'),
         });
         //const vImage = Gtk.Image.new_from_file(`${Me.dir.get_path()}/icons/${this._corner.top ? 'Top' : 'Bottom'}${this._corner.left ? 'Left' : 'Right'}VE.svg`);
-        const vImage = _newImageFromIconName(`${this._corner.top ? 'Top' : 'Bottom'}${this._corner.left ? 'Left' : 'Right'}VE`, Gtk.IconSize.BUTTON);
+        //const vImage = _newImageFromIconName(`${this._corner.top ? 'Top' : 'Bottom'}${this._corner.left ? 'Left' : 'Right'}VE`, Gtk.IconSize.BUTTON);
+        const vImage = Gtk.Image.new_from_file(`${this._iconPath}/${this._corner.top ? 'Top' : 'Bottom'}${this._corner.left ? 'Left' : 'Right'}VE.svg`);
         vImage.pixel_size = 40;
         vExpandSwitch[set_child](vImage);
 

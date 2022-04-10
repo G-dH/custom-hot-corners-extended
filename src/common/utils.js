@@ -70,3 +70,28 @@ function isSupportedExtensionDetected(extensionName) {
 function bold(label) {
     return `<b>${label}</b>`;
 }
+
+function getIconPath() {
+    const colorAccents = ['red', 'bark', 'sage', 'olive', 'viridian', 'prussiangreen', 'blue', 'purple', 'magenta'];
+    const theme = this._interfaceSettings = ExtensionUtils.getSettings('org.gnome.desktop.interface').get_string('gtk-theme');
+    const themeSplit = theme.split('-');
+    let accent = 'blue';
+    if (themeSplit.length > 1 && themeSplit[0] === ('Yaru')) {
+        accent = themeSplit[1];
+        if (colorAccents.indexOf(accent) < 0) {
+            accent = 'orange';
+        }
+    } else if (themeSplit[0] === ('Yaru')) {
+        accent = 'orange';
+    }
+
+    return `${Me.dir.get_path()}/resources/icons/${accent}`;
+
+    /*
+    const iconTheme = Gtk.IconTheme.get_for_display
+                        ? Gtk.IconTheme.get_for_display(Gdk.Display.get_default())
+                        : Gtk.IconTheme.get_for_screen(Gdk.Screen.get_default());
+    iconTheme.add_search_path
+                        ? iconTheme.add_search_path(GLib.build_filenamev([Me.path, `resources/icons/${accent}`]))
+                        : iconTheme.append_search_path(GLib.build_filenamev([Me.path, `resources/icons/${accent}`]));*/
+}

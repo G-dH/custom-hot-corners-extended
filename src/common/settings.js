@@ -61,6 +61,8 @@ var MENUS_ICON = 'open-menu-symbolic';
 var OPTIONS_TITLE = _('Options');
 var OPTIONS_ICON = 'preferences-other-symbolic';
 
+const colorAccents = ['red', 'bark', 'sage', 'olive', 'viridian', 'prussiangreen', 'blue', 'purple', 'magenta'];
+
 var actionDict = {};
 actionList.forEach(act => actionDict[act[1]] = {title: act[2], icon: act[4]});
 

@@ -894,9 +894,9 @@ var Actions = class {
     }
 
     toggleTheme() {
-        let intSettings = this._getInterfaceSettings();
-        let theme = intSettings.get_string('gtk-theme');
-        let themeSplit = theme.split('-');
+        const intSettings = this._getInterfaceSettings();
+        const theme = intSettings.get_string('gtk-theme');
+        const themeSplit = theme.split('-');
         let yaruAccent = '';
         if (themeSplit[0] == 'Yaru' && themeSplit.length > 1) {
             yaruAccent = themeSplit[1];

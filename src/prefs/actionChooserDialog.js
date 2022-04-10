@@ -50,6 +50,8 @@ class ActionChooserDialog extends Gtk.Box {
         this._iconName = iconName;
         this._currentAction = this._corner.getAction(trigger);
 
+        this._iconPath = Utils.getIconPath();
+
         this.dialog = new Gtk.Dialog({
             title: _('Choose Action'),
             transient_for: transitionWidget.get_root
@@ -61,12 +63,13 @@ class ActionChooserDialog extends Gtk.Box {
         });
 
         const trgIcon = new Gtk.Image({
-            icon_name: this._iconName,
+            //icon_name: this._iconName,
             margin_start: 10,
             pixel_size: 32, // pixel_size has no effect in Gtk3, the size is the same as declared in svg image when loaded from file
             visible: true
         });
 
+        trgIcon.set_from_file(`${this._iconPath}/${this._iconName}`);
         trgIcon.icon_size = Gtk.IconSize.BUTTON;
 
         const headerbar = this.dialog.get_titlebar();
@@ -163,7 +166,7 @@ class ActionChooserDialog extends Gtk.Box {
 
         if (this._currentPath) {
             this.treeView.expand_row(this._currentPath[0], true); // path, expand recursive
-            this.treeView.scroll_to_cell(this._currentPath[1], null, true, 0.5, 0); // path, column, align?, align row, align column
+            this.treeView.scroll_to_cell(this._currentPath[1], null, true, 0, 0); // path, column, align?, align row, align column
             this.treeView.set_cursor(this._currentPath[1], null, false); // path, coulumn, start edit
         }
 
