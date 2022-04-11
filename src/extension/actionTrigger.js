@@ -544,6 +544,10 @@ var ActionTrigger = class ActionTrigger {
         this.actions.adjustVolume(0);
     }
 
+    _showScreenshotUi() {
+        this.actions.showScreenshotUi();
+    }
+
     _lockScreen() {
         this.actions.lockScreen();
     }

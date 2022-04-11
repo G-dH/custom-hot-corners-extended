@@ -629,6 +629,11 @@ var Actions = class {
         SystemActions.getDefault().activateSwitchUser();
     }
 
+    showScreenshotUi() {
+        if (shellVersion >= 42)
+            imports.ui.screenshot.showScreenshotUI();
+    }
+
     toggleLookingGlass() {
         if (Main.lookingGlass === null)
             Main.createLookingGlass();

@@ -26,7 +26,10 @@ if (!AATWS_enabled || (AATWS_enabled && !AATWS_detected)) {
 const ArcMenu_enabled = Utils.extensionEnabled('arcmenu@arcmenu.com');
 const ArcMenu_detected = Utils.isSupportedExtensionDetected('ArcMenu');
 if (!ArcMenu_enabled || (ArcMenu_enabled && !ArcMenu_detected)) {
-       excludedItems.push('toggle-arcmenu');
+    excludedItems.push('toggle-arcmenu');
+}
+if (shellVersion < 42) {
+    excludedItems.push('show-screenshot-ui');
 }
 
 // in extension itself I'd test real workspace configuration
@@ -42,6 +45,7 @@ var actionList = [
         [   1, 'run-command'                , _('Run Preset Command / Activate App ...'),   false,  'utilities-terminal-symbolic',                            false],
         [   1, 'show-desktop'               , _('Show Desktop (all monitors)'),              true,  'preferences-desktop-wallpaper-symbolic',                 false],
         [   1, 'show-desktop-mon'           , _('Show Desktop (current monitor)'),           true,  'preferences-desktop-wallpaper-symbolic',                 false],
+        [   1, 'show-screenshot-ui'         , _('Activate Screenshot Tool'),                false,  'media-record-symbolic',                                  false],
         [   1, 'prefs'                      , _('Open CHC-E Preferences'),                   true,  'preferences-system-symbolic',                            false],
         //[null, 'desktop-submenu'            , _('Desktop'),                                  true,  'video-display-symbolic',                                 false],
         //[null, 'run-submenu'                , _('Run Command'),                             false,  'utilities-terminal-symbolic',                            false],
