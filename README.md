@@ -71,7 +71,7 @@ You can also enable the extension from the command line:
 
 If you want to test the latest version from the Github repository (which is usually working well enough as it's the code I'm currently using on my own system), you can use following guide.
 
-- Make sure you have installed packages prviding following commands: `glib-compile-resources`, `glib-compile-schemas`, `git`
+Make sure you have installed packages prviding following commands: `glib-compile-resources`, `glib-compile-schemas`, `git`
 
 
     git clone https://github.com/G-dH/custom-hot-corners-extended.git
