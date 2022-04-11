@@ -37,7 +37,7 @@ pot: $(JS_FILES) $(UI_FILES)
 	@echo "Generating '$(NAME).pot'..."
 	@xgettext --from-code=UTF-8 \
 	          --add-comments=Translators \
-	          --copyright-holder="Simon Schneegans" \
+	          --copyright-holder="GdH" \
 	          --package-name="$(NAME)" \
 	          --output=po/$(NAME).pot \
 	          $(JS_FILES) $(UI_FILES)

@@ -78,7 +78,7 @@ Make sure you have installed packages prviding following commands: `glib-compile
     cd custom-hot-corners-extended
     make install
 
-### Install from AUR on Arch based distributions
+### Installation from AUR on Arch based distributions
 
 *Custom Hot Corners - Extended* has also AUR repository maintainer (but I know nothing more about it):
 [https://aur.archlinux.org/packages/gnome-shell-extension-custom-hot-corners-extended](https://aur.archlinux.org/packages/gnome-shell-extension-custom-hot-corners-extended)
@@ -97,6 +97,16 @@ After installation you need to enable the extension. Only direct installation fr
 ## Contribution
 
 Contributions are welcome and I will try my best to answer quickly to all suggestions. I'd really appreciate corrections of my bad english.
+
+### Translations
+
+You can contribute with translation to your language, source `.pot` file can be generated using
+
+    make pot
+
+command within the cloned git repository, then you can use `Poedit` application for translation and export to `.po` file.
+
+### Buy me a coffe
 
 If you like my work and want to keep me motivated, you can also buy me a coffee:
 [buymeacoffee.com/georgdh](buymeacoffee.com/georgdh)
