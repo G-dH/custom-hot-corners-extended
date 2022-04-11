@@ -136,7 +136,7 @@ class MonitorPage extends Gtk.Box {
                 valign: Gtk.Align.CENTER,
                 margin_start: 15,
                 margin_end: 15,
-                pixel_size: 32,
+                pixel_size: 36,
             });
 
             if (shellVersion < 40) image.icon_size = Gtk.IconSize.DND;

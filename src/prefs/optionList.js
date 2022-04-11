@@ -174,7 +174,7 @@ function getOptionList(mscOpt) {
         optionsList.push(
             _optionsItem(
                 _('Tint Color'),
-                _('Color for "Custom Color Tint" action'),
+                _("Color for 'Custom Color Tint' action. Lighter color means weaker filter."),
                 _newColorButton(),
                 'customTintColor'
             )
