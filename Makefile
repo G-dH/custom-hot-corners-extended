@@ -17,8 +17,10 @@ LOCALES_MO     = $(patsubst po/%.po,locale/%/LC_MESSAGES/$(NAME).mo,$(LOCALES_PO
 ZIP_CONTENT = $(JS_FILES) $(LOCALES_MO) resources/$(NAME).gresource \
               schemas/gschemas.compiled metadata.json LICENSE
 
-# These five recipes can be invoked by the user.
-.PHONY: zip install uninstall pot clean
+# These six recipes can be invoked by the user.
+.PHONY: all zip install uninstall pot clean
+
+all: $(ZIP_CONTENT)
 
 # The zip recipes only bundles the extension without installing it.
 zip: $(ZIP_NAME)
@@ -46,7 +48,8 @@ pot: $(JS_FILES) $(UI_FILES)
 clean:
 	rm -rf $(ZIP_NAME) \
 	       schemas/gschemas.compiled \
-	       locale
+	       locale \
+	       resources/custom-hot-corners-extended.gresource
 
 # This bundles the extension and checks whether it is small enough to be uploaded to
 # extensions.gnome.org. We do not use "gnome-extensions pack" for this, as this is not
