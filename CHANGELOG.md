@@ -2,13 +2,17 @@
 
 ### v17 (not released yet)
 **Added:**
-- DND Window Thumbnail: on-hover overlays - close button and icon indicating current function of the scroll wheel; secondary click shows a full size preview of the window
+- `Toggle Dark Gtk Theme` now supports new Ubuntu accented themes.
+- CHC-E preferences window icons follow Ubuntu Yaru theme accents. If Yaru is not detected, blue accent will be used, which is close to the default Adwaita accent.
+- DND Window Thumbnail: on-hover overlays - close button and icon indicating current function of the scroll wheel; secondary click shows a full size preview of the window. Still work in progress.
+- `Custom Color Tint` action - you can select any color you want on the `Options` page of CHC-E's prferences window.
 
 **Fixed:**
-- Slow startup of the prferences window and lagging first switch to other corner pages - action menu combo boxes were replaced with buttons + treeview menu, means more than 9x faster startup and no lags in UI
+- Slow startup of the prferences window and lagging first switch to other corner pages - action menu combo boxes were replaced with buttons + treeview menu which means more than 10x faster startup and no lags in UI
 
 **Other changes:**
 - TreeView submenus expand on a single-click instead of double-click
+- New Make file simplifies installation from source.
 
 ### v16
 **Added:**
