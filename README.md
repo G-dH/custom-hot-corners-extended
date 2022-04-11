@@ -120,6 +120,8 @@ During development of this extension I was inspired by many extensions and other
 - [Simon Shneegans](https://schneegans.github.io/) - amazing developer with skill and style who provided me new Make files for my extensions and a lot of inspiration.
 - And, of course, the original 'Custom Hot Corners' extension that I forked based on which this extension grew.
 
+## Screenshots
+
 ![Extension configuration window](screenshot0.png)
 ![Extension configuration window](screenshot4.png)
 ![Extension configuration window](screenshot1.png)
