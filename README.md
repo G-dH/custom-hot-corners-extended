@@ -114,11 +114,11 @@ If you like my work and want to keep me motivated, you can also buy me a coffee:
 ## Credits
 
 During development of this extension I was inspired by many extensions and other developers, I'll try to name the main contributors to my code:
-[True Color Invert](https://github.com/jackkenney/gnome-true-color-invert) - useful extension with confusing name, which brought me to shader efects and whoose modified code I use for 'Invert Lightness' action and other color filters.
-[BaBar Task Bar](https://github.com/fthx/babar) - nice panel task bar which window preview I used as a base for my 'DND Window Thumbnail'
-[GS Connect](https://github.com/GSConnect/gnome-shell-extension-gsconnect/wiki) - CHC-E relies on the keybinding module copied from this great extension.
-[Simon Shneegans](https://schneegans.github.io/) - amazing developer with skill and style who provided me new Make files for my extensions and a lot of inspiration.
-And, of course, the original 'Custom Hot Corners' extension that I forked based on which this extension grew.
+- [True Color Invert](https://github.com/jackkenney/gnome-true-color-invert) - useful extension with confusing name, which brought me to shader efects and whoose modified code I use for 'Invert Lightness' action and other color filters.
+- [BaBar Task Bar](https://github.com/fthx/babar) - nice panel task bar which window preview I used as a base for my 'DND Window Thumbnail'
+- [GS Connect](https://github.com/GSConnect/gnome-shell-extension-gsconnect/wiki) - CHC-E relies on the keybinding module copied from this great extension.
+- [Simon Shneegans](https://schneegans.github.io/) - amazing developer with skill and style who provided me new Make files for my extensions and a lot of inspiration.
+- And, of course, the original 'Custom Hot Corners' extension that I forked based on which this extension grew.
 
 ![Extension configuration window](screenshot0.png)
 ![Extension configuration window](screenshot4.png)
