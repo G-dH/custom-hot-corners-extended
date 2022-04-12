@@ -19,6 +19,9 @@
 
 const { Gtk, Gdk, GLib, Gio, GObject } = imports.gi;
 
+let Adw = null;
+try { Adw = imports.gi.Adw; } catch (e) {}
+
 const ExtensionUtils = imports.misc.extensionUtils;
 const Me             = ExtensionUtils.getCurrentExtension();
 
@@ -112,8 +115,8 @@ class MonitorPage extends Gtk.Box {
         const stackSwitcher = new Gtk.StackSwitcher({
             halign: Gtk.Align.CENTER,
             hexpand: true,
-            margin_top: shellVersion < 42 ? margin : 0,
-            margin_bottom: shellVersion < 42 ? 0 : margin
+            margin_top: Adw ? 0 : margin,
+            margin_bottom: Adw ? margin : 0
         });
 
         const stack = new Gtk.Stack({
@@ -181,10 +184,10 @@ class CornerPage extends Gtk.Box {
     _init(widgetProperties = {
         //selection_mode: null,
         orientation: Gtk.Orientation.VERTICAL,
-        margin_start: shellVersion < 42 ? 16 : 0,
-        margin_end: shellVersion < 42 ? 16 : 0,
-        margin_top: shellVersion < 42 ? 16 : 0,
-        margin_bottom: shellVersion < 42 ? 16 : 0,
+        margin_start: Adw ? 0 : 16,
+        margin_end: Adw ? 0 : 16,
+        margin_top: Adw ? 0 : 16,
+        margin_bottom: Adw ? 0 : 16,
         vexpand: true,
         visible: true
     }) {

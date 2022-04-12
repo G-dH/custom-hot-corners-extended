@@ -76,13 +76,15 @@ function getIconPath() {
     const theme = this._interfaceSettings = ExtensionUtils.getSettings('org.gnome.desktop.interface').get_string('gtk-theme');
     const themeSplit = theme.split('-');
     let accent = 'blue';
-    if (themeSplit.length > 1 && themeSplit[0] === ('Yaru')) {
+    if (themeSplit.length > 1 && themeSplit[0] === 'Yaru') {
         accent = themeSplit[1];
         if (colorAccents.indexOf(accent) < 0) {
             accent = 'orange';
         }
-    } else if (themeSplit[0] === ('Yaru')) {
+    } else if (themeSplit[0] === 'Yaru') {
         accent = 'orange';
+    } else if (themeSplit[0] === 'Pop') {
+        accent = 'prussiangreen';
     }
 
     //return `${Me.dir.get_path()}/resources/icons/${accent}`;

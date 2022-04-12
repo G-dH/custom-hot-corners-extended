@@ -36,7 +36,12 @@ const set_child = Utils.set_child;
 
 var TreeViewPage = GObject.registerClass(
 class TreeviewPage extends Gtk.Box {
-    _init(widgetProperties = {}) {
+    _init(widgetProperties = {
+        margin_start: 16,
+        margin_end: 16,
+        margin_top: 16,
+        margin_bottom: 16
+    }) {
         super._init(widgetProperties);
 
         const context = this.get_style_context();
@@ -51,15 +56,10 @@ class TreeviewPage extends Gtk.Box {
         if (this._alreadyBuilt)
             return;
 
-        const margin = shellVersion < 42 ? 16 : 0
         const box = new Gtk.Box({
             orientation: Gtk.Orientation.VERTICAL,
             spacing: 5,
             homogeneous: false,
-            margin_start: margin,
-            margin_end: margin,
-            margin_top: margin,
-            margin_bottom: margin,
         });
         const scrolledWindow = new Gtk.ScrolledWindow({
             hscrollbar_policy: Gtk.PolicyType.NEVER,

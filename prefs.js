@@ -134,7 +134,7 @@ function buildPrefsWidget() {
     Gio.resources_register(resources);
 
     const stack = new Gtk.Stack({
-        hexpand: true
+        hexpand: true,
     });
     const stackSwitcher = new Gtk.StackSwitcher();
     const context = stackSwitcher.get_style_context();
@@ -149,9 +149,13 @@ function buildPrefsWidget() {
     const pagesBtns = [];
     const monitorPages = MonitorPages.getMonitorPages(mscOptions);
 
+    let firstPageBuilt = false;
     for (let mPage of monitorPages) {
         const [page, title] = mPage;
-        page.buildPage();
+        if (!firstPageBuilt) {
+            page.buildPage();
+            firstPageBuilt = true;
+        }
         stack.add_named(page, title);
         pagesBtns.push([new Gtk.Label({ label: title }), _newImageFromIconName(MONITOR_ICON, Gtk.IconSize.BUTTON)]);
     }

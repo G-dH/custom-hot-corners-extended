@@ -23,6 +23,9 @@ const ExtensionUtils = imports.misc.extensionUtils;
 const Me             = ExtensionUtils.getCurrentExtension();
 const TreeViewPage   = Me.imports.src.prefs.treeViewPage.TreeViewPage;
 
+let Adw = null;
+try { Adw = imports.gi.Adw; } catch (e) {}
+
 const Settings       = Me.imports.src.common.settings;
 const _actionList    = Settings.actionList;
 
@@ -56,18 +59,18 @@ class CustomMenusPage extends Gtk.Box {
     buildPage() {
         if (this._alreadyBuilt)
             return;
-
+            
+        const margin =16;
         const context = this.get_style_context();
         context.add_class('background');
-        const margin = 16;
         const switcher = new Gtk.StackSwitcher({
             hexpand: true,
             halign: Gtk.Align.CENTER,
-            margin_top: shellVersion < 42 ? margin : 0,
-            margin_bottom: shellVersion < 42 ? 0 : margin
+            margin_top: Adw ? 0 : margin,
+            margin_bottom: Adw ? margin : 0
         });
         const stack = new Gtk.Stack({
-            hexpand: true
+            hexpand: true,
         });
 
         stack.connect('notify::visible-child', () => {

@@ -49,15 +49,14 @@ class OptionsPageLegacy extends Gtk.ScrolledWindow {
     buildPage() {
         if (this._alreadyBuilt)
             return false;
-        const margin = shellVersion < 42 ? 16 : 0;
         const mainBox = new Gtk.Box({
             orientation: Gtk.Orientation.VERTICAL,
             spacing: 5,
             homogeneous: false,
-            margin_start: margin,
-            margin_end: margin,
-            margin_top: margin,
-            margin_bottom: margin,
+            margin_start: 16,
+            margin_end: 16,
+            margin_top: 16,
+            margin_bottom: 16
         });
 
         const context = this.get_style_context();
@@ -114,7 +113,7 @@ class OptionsPageLegacy extends Gtk.ScrolledWindow {
     }
 });
 
-if (shellVersion >= 42) {
+if (Adw) {
     OptionsPage = Me.imports.src.prefs.optionsPageAdw.OptionsPageAdw;
 } else {
     OptionsPage = OptionsPageLegacy;
