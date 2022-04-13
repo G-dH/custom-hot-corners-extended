@@ -33,6 +33,11 @@
       <default>false</default>
     </key>
   </schema>
+
+  <schema path='/org/gnome/shell/extensions/custom-hot-corners-extended/' id='org.gnome.shell.extensions.custom-hot-corners-extended'>
+    <child  name='corner' schema='org.gnome.shell.extensions.custom-hot-corners-extended.corner'/>
+  </schema>
+
   <schema path= '/org/gnome/shell/extensions/custom-hot-corners-extended/misc/' id='org.gnome.shell.extensions.custom-hot-corners-extended.misc'>
     <key name='show-osd-monitor-indexes' type='b'>
       <default>false</default>
