@@ -9,6 +9,7 @@
 
 **Fixed:**
 - Slow startup of the prferences window and lagging first switch to other corner pages - action menu combo boxes were replaced with buttons + treeview menu which means more than 10x faster startup and no lags in UI
+- Missing path for relocatable corner schema not allowing corner settings backup. Now the `Extensions Sync` extension can store all CHC-E settings.
 
 **Other changes:**
 - TreeView submenus expand on a single-click instead of double-click

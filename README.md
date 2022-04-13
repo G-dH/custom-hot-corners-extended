@@ -35,8 +35,8 @@ The code is based on window preview of *BaBar Task Bar* extension.
     Primary cLick         - toggle scroll wheel function (resize / source)
     Scroll wheel          - resize or switch source window
     Ctrl + Scroll wheel   - switch source window or resize
-    Secondary click       - remove thumbnail
-    Middle click          - close source window
+    Secondary click       - show fullsize window preview
+    Middle click          - Toggle icon view instead of the window thumbnail
     Shift + Scroll wheel  - change thumbnail opacity
 
 

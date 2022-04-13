@@ -117,7 +117,7 @@ function fillPreferencesWindow(window) {
     window.add(optionsAdwPage);
 
 
-    window.set_default_size(400, 600);
+    window.set_default_size(400, 700);
 
     window.connect('destroy', () => {
         // Unregister our resources.

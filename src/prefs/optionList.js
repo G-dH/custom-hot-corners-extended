@@ -137,8 +137,8 @@ function getOptionList(mscOpt) {
                     _('Thumbnail control:')}\n    ${
                     _('Double click:    \t\tactivate source window')}\n    ${
                     _('Primary click:   \t\ttoggle scroll wheel function (resize / source)')}\n    ${
-                    _('Secondary click: \t\tremove thumbnail')}\n    ${
-                    _('Middle click:    \t\tclose source window')}\n    ${
+                    _('Secondary click: \t\tshow full size window preview')}\n    ${
+                    _('Middle click:    \t\ttoggle icon view')}\n    ${
                     _('Scroll wheel:    \t\tresize or change source window')}\n    ${
                     _('Ctrl + Scroll wheel: \tchange source window or resize')}\n    ${
                     _('Shift + Scroll wheel: \tadjust opacity')}\n    `
