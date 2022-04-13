@@ -213,33 +213,30 @@ class CornerPage extends Gtk.Box {
                 margin_bottom: shellVersion >= 40 ? 5 : 10,
 
             });
-            const ctrlBtn = new Gtk.CheckButton({
+            let ctrlBtn = new Gtk.CheckButton({
             //const ctrlBtn = new Gtk.ToggleButton({
-                label: _('Ctrl'),
+                label: 'Ctrl',
                 halign: Gtk.Align.START,
                 valign: Gtk.Align.CENTER,
                 vexpand: false,
                 hexpand: false,
-                tooltip_text: _('If checked this trigger will work only when Ctrl key is pressed')
+                tooltip_text: _('If checked this trigger will work only when Ctrl key is pressed'),
+                visible: true
             });
 
             this._corner._gsettings[trigger].bind('ctrl', ctrlBtn, 'active', Gio.SettingsBindFlags.DEFAULT);
 
-            if (trigger === 0) {
-                ctrlBtn.set_active(false);
-                ctrlBtn.set_sensitive(false);
-                ctrlBtn.set_tooltip_text(_('This trigger works only when Ctrl key is not pressed'));
-                //ctrlBtn.set_visible(false);
-            } else if (trigger === 6) {
-                ctrlBtn.set_active(true);
-                ctrlBtn.set_sensitive(false);
-                ctrlBtn.set_tooltip_text(_('This trigger works only when Ctrl key is pressed'));
-            }
-
-
             let iconName;
             if (trigger === 0 || trigger === 6) {
                 iconName = `${this._corner.top ? 'Top' : 'Bottom'}${this._corner.left ? 'Left' : 'Right'}.svg`;
+                if (trigger === 6) {
+                    ctrlBtn.set_visible(true);
+                    ctrlBtn.set_active(true);
+                    ctrlBtn.set_sensitive(false);
+                    ctrlBtn.set_tooltip_text(_('This trigger works only when Ctrl key is pressed'));
+                } else {
+                    ctrlBtn.set_visible(false);
+                }
             } else {
                 let iconIdx = trigger;
                 if (this._leftHandMouse) {
@@ -282,8 +279,9 @@ class CornerPage extends Gtk.Box {
 
             const cw = this._buildTriggerWidget(trigger, iconName);
 
-            grid.attach(trgIcon, 1, trigger, 1, 1);
-            grid.attach(ctrlBtn, 0, trigger, 1, 1);
+            grid.attach(trgIcon, 0, trigger, 1, 1);
+            if (ctrlBtn.visible)
+                grid.attach(ctrlBtn, 1, trigger, 1, 1);
             if (trigger === Triggers.PRESSURE) {
                 grid.attach(cw,      2, trigger, 1, 1);
                 grid.attach(fsBtn,   3, trigger, 1, 1);
@@ -368,7 +366,7 @@ class CornerPage extends Gtk.Box {
         });
 
         let settingsBtn = null;
-        if (trigger === Triggers.PRESSURE || trigger === Triggers.CTRL_PRESSURE) {
+        if (trigger === Triggers.PRESSURE) {
             const cornerPopover = new Gtk.Popover();
             const popupGrid = new Gtk.Grid({
                 margin_start: 10,
@@ -386,6 +384,7 @@ class CornerPage extends Gtk.Box {
             settingsBtn = new Gtk.MenuButton({
                 popover: cornerPopover,
                 valign: Gtk.Align.CENTER,
+                margin_end: Adw ? 20 : 16
             });
 
             // Gtk3 implements button icon as an added Gtk.Image child, Gtk4 does not
@@ -397,9 +396,9 @@ class CornerPage extends Gtk.Box {
         cmdGrid.attach(commandEntry, 0, 0, 1, 1);
         cmdGrid.attach(appButton, 1, 0, 1, 1);
 
-        comboGrid.attach(actionButton, 0, 0, 1, 1,);
+        comboGrid.attach(actionButton, 1, 0, 1, 1,);
         if (settingsBtn) {
-            comboGrid.attach(settingsBtn, 1, 0, 1, 1);
+            comboGrid.attach(settingsBtn, 0, 0, 1, 1);
         }
 
         cw.attach(comboGrid, 0, 0, 1, 1);

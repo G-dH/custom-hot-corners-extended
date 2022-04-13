@@ -34,12 +34,15 @@ const Utils          = Me.imports.src.common.utils;
 const append = Utils.append;
 const set_child = Utils.set_child;
 
+let Adw = null;
+try { Adw = imports.gi.Adw; } catch (e) {}
+
 var TreeViewPage = GObject.registerClass(
 class TreeviewPage extends Gtk.Box {
     _init(widgetProperties = {
         margin_start: 16,
         margin_end: 16,
-        margin_top: 16,
+        margin_top: Adw ? 0 : 16,
         margin_bottom: 16
     }) {
         super._init(widgetProperties);
