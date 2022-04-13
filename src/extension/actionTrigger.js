@@ -862,6 +862,30 @@ var ActionTrigger = class ActionTrigger {
         this.actions.mprisPlayerControler(2);
     }
 
+    _mprisPlayPauseSpotify() {
+        this.actions.mprisPlayerControler(0, 'org.mpris.MediaPlayer2.spotify');
+    }
+
+    _mprisNextSpotify() {
+        this.actions.mprisPlayerControler(1, 'org.mpris.MediaPlayer2.spotify');
+    }
+
+    _mprisPrevSpotify() {
+        this.actions.mprisPlayerControler(2, 'org.mpris.MediaPlayer2.spotify');
+    }
+
+    _mprisPlayPauseFirefox() {
+        this.actions.mprisPlayerControler(0, 'org.mpris.MediaPlayer2.firefox');
+    }
+
+    _mprisNextFirefox() {
+        this.actions.mprisPlayerControler(1, 'org.mpris.MediaPlayer2.firefox');
+    }
+
+    _mprisPrevFirefox() {
+        this.actions.mprisPlayerControler(2, 'org.mpris.MediaPlayer2.firefox');
+    }
+
     _moveWinToPrevWs() {
         this.actions.moveWinToAdjacentWs(Meta.MotionDirection.UP);
     }

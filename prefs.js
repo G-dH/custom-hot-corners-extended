@@ -134,7 +134,7 @@ function buildPrefsWidget() {
     Gio.resources_register(resources);
 
     const stack = new Gtk.Stack({
-        hexpand: true,
+        hexpand: true
     });
     const stackSwitcher = new Gtk.StackSwitcher();
     const context = stackSwitcher.get_style_context();

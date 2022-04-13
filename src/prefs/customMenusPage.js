@@ -59,7 +59,7 @@ class CustomMenusPage extends Gtk.Box {
     buildPage() {
         if (this._alreadyBuilt)
             return;
-            
+
         const margin =16;
         const context = this.get_style_context();
         context.add_class('background');
@@ -87,8 +87,6 @@ class CustomMenusPage extends Gtk.Box {
             const name = `menu-${i}`;
             stack.add_titled(menu, name, title);
             menu.hexpand = true;
-            //menu.buildPage();
-
         }
 
         this[append](switcher);
@@ -164,6 +162,7 @@ class CustomMenuPage extends TreeViewPage {
         });*/
 
         toggleRender.connect('toggled', (rend, path) => {
+            // the path is string, not Gtk.TreePath
             const [succ, iter] = this.model.get_iter_from_string(path);
             this.model.set_value(iter, 2, !this.model.get_value(iter, 2));
             let item  = this.model.get_value(iter, 0);
@@ -177,6 +176,17 @@ class CustomMenuPage extends TreeViewPage {
             }
             this._mscOptions.set(`customMenu${this._menuIndex}`, this.menuItems);
             this._updateTitle();
+            // clicking toggle button also activates row which expand/colapse submenu row
+            // following sort of fixes it for collapsed row but not for expanded
+            /*if (item.includes('submenu')) {
+                const pth = this.model.get_path(iter);
+                if (this.treeView.row_expanded(pth)) {
+                    this.treeView.collapse_row(pth);
+                } else {
+                    this.treeView.expand_row(pth, true);
+                }
+            }*/
+            return false;
         });
 
         this.treeView.append_column(actions);

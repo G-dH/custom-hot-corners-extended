@@ -1662,7 +1662,7 @@ var Actions = class {
     }
 
     // actions 0 - PlayPause, 1 - Next, 2 - Prev
-    mprisPlayerControler(action = 0) {
+    mprisPlayerControler(action = 0, playerID = 'org.mpris.MediaPlayer2') {
         const Methods = [
             'PlayPause',
             'Next',
@@ -1675,12 +1675,12 @@ var Actions = class {
             "/org/freedesktop",
             'org.freedesktop.DBus',
             'ListNames',
-            null, null, Gio.DBusCallFlags.NONE,-1,null,
+            null, null, Gio.DBusCallFlags.NONE, -1, null,
             (connection, res) => {
                 try {
                     let reply = connection.call_finish(res);
                     let value = reply.get_child_value(0);
-                    let mprisServices = value.get_strv().filter(n => n.includes('org.mpris.MediaPlayer2'));
+                    let mprisServices = value.get_strv().filter(n => n.includes(playerID));
                     // first in the list is usually the last created player, media keys in GNOME works the same way
                     let player = mprisServices[0];
                     this._executeMprisPlayerCommand(session, player, method);

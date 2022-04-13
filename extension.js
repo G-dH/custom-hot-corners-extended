@@ -663,36 +663,38 @@ class CustomHotCorner extends Layout.HotCorner {
         this._ripples.playAnimation(this._corner.x, this._corner.y);
     }
 
-    _ctrlPressed(mods) {
+    _ctrlPressed() {
+        const mods = global.get_pointer()[2];
         return (mods & Clutter.ModifierType.CONTROL_MASK) !== 0;
     }
 
     _onPressureTriggered() {
-        if (this._corner.ctrl[Triggers.PRESSURE]) {
-            // neither the 'enter' nor pressure 'trigger' events contain modifier state
-            let mods = global.get_pointer()[2];
-            if (!this._ctrlPressed(mods))
-                return;
+        // neither the 'enter' nor pressure 'trigger' events contain modifier state
+        let trg;
+        if (!this._ctrlPressed()) {
+            trg = Triggers.PRESSURE;
+        } else {
+            trg = Triggers.CTRL_PRESSURE;
         }
-        this._runAction(Triggers.PRESSURE);
+        
+        this._runAction(trg);
     }
 
     _onCornerClicked(actor, event) {
         // if (event.get_click_count() > 1) return; // ignore second click of double clicks
         let button = event.get_button();
         let trigger = null;
-        let mods = event.get_state();
         switch (button) {
             case Clutter.BUTTON_PRIMARY:
-                if (!(this._corner.ctrl[Triggers.BUTTON_PRIMARY] && !this._ctrlPressed(mods)))
+                if (!(this._corner.ctrl[Triggers.BUTTON_PRIMARY] && !this._ctrlPressed()))
                     trigger = Triggers.BUTTON_PRIMARY;
                 break;
             case Clutter.BUTTON_SECONDARY:
-                if (!(this._corner.ctrl[Triggers.BUTTON_SECONDARY] && !this._ctrlPressed(mods)))
+                if (!(this._corner.ctrl[Triggers.BUTTON_SECONDARY] && !this._ctrlPressed()))
                     trigger = Triggers.BUTTON_SECONDARY;
                 break;
             case Clutter.BUTTON_MIDDLE:
-                if (!(this._corner.ctrl[Triggers.BUTTON_MIDDLE] && !this._ctrlPressed(mods)))
+                if (!(this._corner.ctrl[Triggers.BUTTON_MIDDLE] && !this._ctrlPressed()))
                     trigger = Triggers.BUTTON_MIDDLE;
                 break;
             default:
@@ -706,7 +708,6 @@ class CustomHotCorner extends Layout.HotCorner {
 
     _onCornerScrolled(actor, event) {
         let direction = event.get_scroll_direction();
-        let mods = event.get_state();
 
         if (this._notValidScroll(direction))
             return;
@@ -715,12 +716,12 @@ class CustomHotCorner extends Layout.HotCorner {
         switch (direction) {
             case Clutter.ScrollDirection.UP:
             case Clutter.ScrollDirection.LEFT:
-                if (!(this._corner.ctrl[Triggers.SCROLL_UP] && !this._ctrlPressed(mods)))
+                if (!(this._corner.ctrl[Triggers.SCROLL_UP] && !this._ctrlPressed()))
                     trigger = Triggers.SCROLL_UP;
                 break;
             case Clutter.ScrollDirection.DOWN:
             case Clutter.ScrollDirection.RIGHT:
-                if (!(this._corner.ctrl[Triggers.SCROLL_DOWN] && !this._ctrlPressed(mods)))
+                if (!(this._corner.ctrl[Triggers.SCROLL_DOWN] && !this._ctrlPressed()))
                     trigger = Triggers.SCROLL_DOWN;
                 break;
             default:

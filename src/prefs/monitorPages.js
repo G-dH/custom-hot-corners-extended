@@ -204,7 +204,9 @@ class CornerPage extends Gtk.Box {
         if (this._alreadyBuilt)
             return false;
         this._alreadyBuilt = true;
-        for (let trigger of triggers) {
+        const trgOrder = [0, 6, 1, 2, 3, 4, 5];
+        //for (let trigger of triggers) {
+        for (let trigger of trgOrder) {
             const grid = new Gtk.Grid({
                 column_spacing: 5,
                 margin_top: shellVersion >= 40 ? 5 : 10,
@@ -218,13 +220,25 @@ class CornerPage extends Gtk.Box {
                 valign: Gtk.Align.CENTER,
                 vexpand: false,
                 hexpand: false,
-                tooltip_text: _('Trigger the action only if Ctrl key is pressed'),
+                tooltip_text: _('If checked this trigger will work only when Ctrl key is pressed')
             });
 
             this._corner._gsettings[trigger].bind('ctrl', ctrlBtn, 'active', Gio.SettingsBindFlags.DEFAULT);
 
-            let iconName;
             if (trigger === 0) {
+                ctrlBtn.set_active(false);
+                ctrlBtn.set_sensitive(false);
+                ctrlBtn.set_tooltip_text(_('This trigger works only when Ctrl key is not pressed'));
+                //ctrlBtn.set_visible(false);
+            } else if (trigger === 6) {
+                ctrlBtn.set_active(true);
+                ctrlBtn.set_sensitive(false);
+                ctrlBtn.set_tooltip_text(_('This trigger works only when Ctrl key is pressed'));
+            }
+
+
+            let iconName;
+            if (trigger === 0 || trigger === 6) {
                 iconName = `${this._corner.top ? 'Top' : 'Bottom'}${this._corner.left ? 'Left' : 'Right'}.svg`;
             } else {
                 let iconIdx = trigger;
@@ -354,7 +368,7 @@ class CornerPage extends Gtk.Box {
         });
 
         let settingsBtn = null;
-        if (trigger === Triggers.PRESSURE) {
+        if (trigger === Triggers.PRESSURE || trigger === Triggers.CTRL_PRESSURE) {
             const cornerPopover = new Gtk.Popover();
             const popupGrid = new Gtk.Grid({
                 margin_start: 10,

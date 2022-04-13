@@ -196,6 +196,12 @@ var actionList = [
         [   1, 'mpris-play-pause'           , _('Media Key - Play/Pause'),                  false,  'media-playback-start-symbolic',                          false],
         [   1, 'mpris-next'                 , _('Media Key - Next Track'),                  false,  'media-skip-forward-symbolic',                            false],
         [   1, 'mpris-prev'                 , _('Media Key - Previous Track'),              false,  'media-skip-backward-symbolic',                           false],
+        [   1, 'mpris-play-pause-spotify'   , _('Spotify - Play/Pause'),                    false,  'media-playback-start-symbolic',                          false],
+        [   1, 'mpris-next-spotify'         , _('Spotify - Next Track'),                    false,  'media-skip-forward-symbolic',                            false],
+        [   1, 'mpris-prev-spotify'         , _('Spotify - Previous Track'),                false,  'media-skip-backward-symbolic',                           false],
+        [   1, 'mpris-play-pause-firefox'   , _('Firefox - Play/Pause'),                    false,  'media-playback-start-symbolic',                          false],
+        [   1, 'mpris-next-firefox'         , _('Firefox - Next Track'),                    false,  'media-skip-forward-symbolic',                            false],
+        [   1, 'mpris-prev-firefox'         , _('Firefox - Previous Track'),                false,  'media-skip-backward-symbolic',                           false],
 
         [null, 'debug-submenu'              , _('Debug'),                                    true,  'edit-find-symbolic',                                     false],
         [   1, 'looking-glass'              , _('Looking Glass (GNOME Shell debugger)'),     true,  'edit-find-symbolic',                                     false],

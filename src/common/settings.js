@@ -39,6 +39,7 @@ var Triggers = {
     BUTTON_MIDDLE:    3,
     SCROLL_UP:        4,
     SCROLL_DOWN:      5,
+    CTRL_PRESSURE:    6
 };
 
 var TriggerLabels = [
@@ -48,6 +49,7 @@ var TriggerLabels = [
     _('Middle Button'),
     _('Scroll Up'),
     _('Scroll Down'),
+    _('Ctrl + Hot Corner')
 ];
 
 var TRANSITION_DURATION = 200;
