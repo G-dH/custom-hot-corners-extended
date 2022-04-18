@@ -227,6 +227,7 @@ class CornerPage extends Gtk.Box {
             this._corner._gsettings[trigger].bind('ctrl', ctrlBtn, 'active', Gio.SettingsBindFlags.DEFAULT);
 
             let iconName;
+            let settingsBtn = null;
             if (trigger === 0 || trigger === 6) {
                 iconName = `${this._corner.top ? 'Top' : 'Bottom'}${this._corner.left ? 'Left' : 'Right'}.svg`;
                 if (trigger === 6) {
@@ -235,7 +236,34 @@ class CornerPage extends Gtk.Box {
                     ctrlBtn.set_sensitive(false);
                     ctrlBtn.set_tooltip_text(_('This trigger works only when Ctrl key is pressed'));
                 } else {
-                    ctrlBtn.set_visible(false);
+                    ctrlBtn.set_active(false);
+                    ctrlBtn.set_sensitive(false);
+                    ctrlBtn.set_tooltip_text(_('This trigger works only when Ctrl key is NOT pressed'));
+                    //ctrlBtn.set_visible(false);
+                    if (trigger === Triggers.PRESSURE) {
+                        const cornerPopover = new Gtk.Popover();
+                        const popupGrid = new Gtk.Grid({
+                            margin_start: 10,
+                            margin_end: 10,
+                            margin_top: 10,
+                            margin_bottom: 10,
+                            column_spacing: 12,
+                            row_spacing: 8,
+                        });
+
+                        popupGrid.show_all && popupGrid.show_all();
+                        cornerPopover[set_child](popupGrid);
+
+                        this._buildPressureSettings(popupGrid);
+                        settingsBtn = new Gtk.MenuButton({
+                            popover: cornerPopover,
+                            valign: Gtk.Align.CENTER,
+                            //margin_end: Adw ? 20 : 16
+                        });
+
+                        // Gtk3 implements button icon as an added Gtk.Image child, Gtk4 does not
+                        _setBtnFromIconName(settingsBtn, 'emblem-system-symbolic', Gtk.IconSize.BUTTON);
+                    }
                 }
             } else {
                 let iconIdx = trigger;
@@ -279,12 +307,16 @@ class CornerPage extends Gtk.Box {
 
             const cw = this._buildTriggerWidget(trigger, iconName);
 
-            grid.attach(trgIcon, 0, trigger, 1, 1);
+            grid.attach(trgIcon, 1, trigger, 1, 1);
             if (ctrlBtn.visible)
-                grid.attach(ctrlBtn, 1, trigger, 1, 1);
+                grid.attach(ctrlBtn, 0, trigger, 1, 1);
+            /*else if (settingsBtn) {
+                grid.attach(settingsBtn, 0, trigger, 1, 1);
+            }*/
             if (trigger === Triggers.PRESSURE) {
                 grid.attach(cw,      2, trigger, 1, 1);
-                grid.attach(fsBtn,   3, trigger, 1, 1);
+                grid.attach(settingsBtn, 3, trigger, 1, 1);
+                grid.attach(fsBtn,   4, trigger, 1, 1);
             } else {
                 grid.attach(cw,      2, trigger, 1, 1);
                 grid.attach(fsBtn,   3, trigger, 2, 1);
@@ -365,41 +397,12 @@ class CornerPage extends Gtk.Box {
             actionChooserTree.dialog.show();
         });
 
-        let settingsBtn = null;
-        if (trigger === Triggers.PRESSURE) {
-            const cornerPopover = new Gtk.Popover();
-            const popupGrid = new Gtk.Grid({
-                margin_start: 10,
-                margin_end: 10,
-                margin_top: 10,
-                margin_bottom: 10,
-                column_spacing: 12,
-                row_spacing: 8,
-            });
-
-            popupGrid.show_all && popupGrid.show_all();
-            cornerPopover[set_child](popupGrid);
-
-            this._buildPressureSettings(popupGrid);
-            settingsBtn = new Gtk.MenuButton({
-                popover: cornerPopover,
-                valign: Gtk.Align.CENTER,
-                margin_end: Adw ? 20 : 16
-            });
-
-            // Gtk3 implements button icon as an added Gtk.Image child, Gtk4 does not
-            _setBtnFromIconName(settingsBtn, 'emblem-system-symbolic', Gtk.IconSize.BUTTON);
-        }
-
         _setBtnFromIconName(appButton, 'find-location-symbolic', Gtk.IconSize.BUTTON);
 
         cmdGrid.attach(commandEntry, 0, 0, 1, 1);
         cmdGrid.attach(appButton, 1, 0, 1, 1);
 
         comboGrid.attach(actionButton, 1, 0, 1, 1,);
-        if (settingsBtn) {
-            comboGrid.attach(settingsBtn, 0, 0, 1, 1);
-        }
 
         cw.attach(comboGrid, 0, 0, 1, 1);
         cw.attach(commandEntryRevealer, 0, 1, 1, 1);
@@ -454,11 +457,11 @@ class CornerPage extends Gtk.Box {
             _setImageFromIconName(actBtnIcon, iconName, Gtk.IconSize.BUTTON);
             actBtnLabel.set_label(actionTitle);
         }
-        
+
         this._corner._gsettings[trigger].connect('changed::action', () => {
             updateActBtnLbl();
         });
-        
+
         actBtnLabel.connect('notify::label', () => {
             commandEntryRevealer.reveal_child = this._corner.getAction(trigger) === 'run-command';
             wsIndexRevealer.reveal_child = this._corner.getAction(trigger) === 'move-to-workspace';
@@ -466,12 +469,12 @@ class CornerPage extends Gtk.Box {
                 _connectCmdBtn();
                 this._corner._gsettings[trigger].bind('command', commandEntry, 'text', Gio.SettingsBindFlags.DEFAULT);
                 commandEntryRevealer.reveal_child = this._corner.getAction(trigger) === 'run-command';
-                
+
                 wsIndexRevealer.reveal_child = this._corner.getAction(trigger) === 'move-to-workspace';
                 cmdConnected = true;
             }
         });
-        
+
         updateActBtnLbl();
 
         this._corner._gsettings[trigger].bind('workspace-index', workspaceIndexSpinButton, 'value', Gio.SettingsBindFlags.DEFAULT);
