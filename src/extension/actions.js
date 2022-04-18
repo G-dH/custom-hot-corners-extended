@@ -423,7 +423,7 @@ var Actions = class {
 
         this._osdMonitorsConnection = global.display.connect('notify::focus-window', () =>{
             // destroy osd when the preferences window lost focus
-            if (global.display.focus_window && !global.display.focus_window.get_title().includes('Custom Hot Corners')) {
+            if (global.display.focus_window && !global.display.focus_window.get_title().includes(Me.metadata.name)) {
                 global.display.disconnect(this._osdMonitorsConnection);
                 this._osdMonitorsConnection = 0;
                 this._removeOsdMonitorIndexes();
@@ -961,6 +961,15 @@ var Actions = class {
     }
 
     openPreferences() {
+        const windows = AltTab.getWindows(null);
+        for (let win of windows) {
+            // if prefs window already exist, move it to the current WS and activate it
+            if (win.get_title().includes(Me.metadata.name) && this._getWindowApp(win).get_name() === 'Extensions') {
+                this._moveWindowToWs(win);
+                win.activate(global.get_current_time);
+                return;
+            }
+        }
         Main.extensionManager.openExtensionPrefs(Me.metadata.uuid, '', {});
     }
 
