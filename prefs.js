@@ -116,10 +116,9 @@ function fillPreferencesWindow(window) {
     });
     window.add(optionsAdwPage);
 
-
     window.set_default_size(400, 700);
 
-    window.connect('destroy', () => {
+    window.connect('close-request', () => {
         // Unregister our resources.
         Gio.resources_unregister(resources);
     });
@@ -174,11 +173,6 @@ function buildPrefsWidget() {
 
     stack.show_all && stack.show_all();
 
-    stack.connect('destroy', () => {
-        mscOptions.set('showOsdMonitorIndexes', false);
-        //mscOptions = null;
-    });
-
     let stBtn = stackSwitcher.get_first_child ? stackSwitcher.get_first_child() : null;
     for (let i = 0; i < pagesBtns.length; i++) {
         const box = new Gtk.Box({orientation: Gtk.Orientation.VERTICAL, spacing: 6, visible: true});
@@ -199,6 +193,7 @@ function buildPrefsWidget() {
 
     stack.show_all && stack.show_all();
     stackSwitcher.show_all && stackSwitcher.show_all();
+
     stack.connect('realize', (widget) => {
         const window = widget.get_root ? widget.get_root() : widget.get_toplevel();
         const headerbar = window.get_titlebar();
@@ -207,12 +202,15 @@ function buildPrefsWidget() {
         } else {
             headerbar.custom_title = stackSwitcher;
         }
+
+        const signal = Gtk.get_major_version() === 3 ? 'destroy' : 'close-request';
+        window.connect(signal, () => {
+            mscOptions.set('showOsdMonitorIndexes', false);
+            // Unregister our resources.
+            Gio.resources_unregister(resources);
+        });
     });
 
-    stack.connect('destroy', () => {
-        // Unregister our resources.
-        Gio.resources_unregister(resources);
-    });
 
     return stack;
 }
