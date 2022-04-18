@@ -161,8 +161,8 @@ var Actions = class {
         if (this._osdMonitorLabels) {
             this._osdMonitorLabels.forEach((w) => {
                 w.destroy();
-                this._osdMonitorLabels = null;
             });
+            this._osdMonitorLabels = null;
         }
         if (this._osdMonitorsConnection && !keepConnection) {
             global.display.disconnect(this._osdMonitorsConnection);
@@ -405,14 +405,17 @@ var Actions = class {
     }
 
     _showMonitorIndexesOsd() {
+        this._removeOsdMonitorIndexes();
         const success = this._buildMonitorIndexesOsd();
         if (!success) return;
+
         this._osdMonitorsConnection = global.display.connect('notify::focus-window', () =>{
             // destroy osd when the preferences window lost focus
             if (global.display.focus_window && !global.display.focus_window.get_title().includes(Me.metadata.name)) {
                 this._removeOsdMonitorIndexes(true); // remove labeles, keep this connection
                 //this._mscOptions.set('showOsdMonitorIndexes', false);
             } else {
+                this._removeOsdMonitorIndexes(true);
                 this._buildMonitorIndexesOsd();
             }
             // disconnect this signal if prefs window was closed
@@ -450,7 +453,7 @@ var Actions = class {
     }
 
     _getOpenPrefsWindow() {
-        const windows = AltTab.getWindows(null);
+        const windows = global.display.get_tab_list(Meta.TabList.NORMAL_ALL, null);
         for (let win of windows) {
             if (win.get_title().includes(Me.metadata.name) && this._getWindowApp(win).get_name() === 'Extensions') {
                 return win;
