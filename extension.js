@@ -403,9 +403,9 @@ class CustomHotCorner extends Layout.HotCorner {
             Layout.HOT_CORNER_PRESSURE_TIMEOUT,
             Shell.ActionMode.NORMAL | Shell.ActionMode.OVERVIEW
         );
-        this.setBarrierSize([corner.barrierSizeH, corner.barrierSizeV], false);
 
-        if (this._corner.action[Triggers.PRESSURE] !== 'disabled' && !this._chceThis.BARRIER_FALLBACK) {
+        if (this._hotCornerEnabled() && !this._chceThis.BARRIER_FALLBACK) {
+            this.setBarrierSize([corner.barrierSizeH, corner.barrierSizeV], false);
             this._pressureBarrier.connect('trigger', this._onPressureTriggered.bind(this));
         }
         this._setupCornerActorsIfNeeded(Main.layoutManager);
@@ -458,9 +458,13 @@ class CustomHotCorner extends Layout.HotCorner {
             this._pressureBarrier.addBarrier(this._verticalBarrier);
             this._pressureBarrier.addBarrier(this._horizontalBarrier);
 
-            if (this._chceThis.CORNERS_VISIBLE && !this._chceThis.BARRIER_FALLBACK)
+            if (this._chceThis.CORNERS_VISIBLE && this._hotCornerEnabled() && !this._chceThis.BARRIER_FALLBACK)
                 this._drawBarriers(sizeH, sizeV);
         }
+    }
+
+    _hotCornerEnabled() {
+        return this._corner.action[Triggers.PRESSURE] !== 'disabled' || this._corner.action[Triggers.CTRL_PRESSURE] !== 'disabled';
     }
 
     _barrierCollision() {
