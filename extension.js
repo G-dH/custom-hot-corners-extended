@@ -116,18 +116,25 @@ class CustomHotCornersExtended {
         }
         this._timeoutsCollector.forEach(c => GLib.Source.remove(c));
         this._timeoutsCollector = [];
-        this._removeActionTimeout();
+        //this._removeActionTimeout();
         this._removeHotCorners();
-        this._mscOptions.destroy();
+        if (this._mscOptions) {
+            this._mscOptions.destroy();
+            this._updateSupportedExtensionsAvailability(true);
+            this._mscOptions = null;
+        }
 
         // don't destroy Actions and lose effects and thumbnails because of the screen lock, for example
         let fullDisable = !Utils.extensionEnabled();
-        this._updateSupportedExtensionsAvailability(true);
         if (fullDisable) {
-            this.actionTrigger.clean(true);
+            if (this.actionTrigger) {
+                this.actionTrigger.clean(true);
+            }
             this.actionTrigger = null;
         } else {
-            this.actionTrigger.clean(false);
+            if (this.actionTrigger) {
+                this.actionTrigger.clean(false);
+            }
         }
         this._extensionEnabled = false;
         // restore original hot corners
@@ -207,8 +214,6 @@ class CustomHotCornersExtended {
     _updateOsdMonitorIndexes() {
         if (this._mscOptions.get('showOsdMonitorIndexes')) {
             this.actionTrigger.actions._showMonitorIndexesOsd();
-        } else {
-            this.actionTrigger.actions._removeOsdMonitorIndexes();
         }
     }
 
