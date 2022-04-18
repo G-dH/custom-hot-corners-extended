@@ -98,6 +98,7 @@ var Actions = class {
 
         if (this._osdMonitorsConnection) {
             global.display.disconnect(this._osdMonitorsConnection);
+            this._osdMonitorsConnection = 0;
         }
         this._removeThumbnails(full);
         this._destroyDimmerActors();
@@ -156,12 +157,16 @@ var Actions = class {
         }
     }
 
-    _removeOsdMonitorIndexes() {
+    _removeOsdMonitorIndexes(keepConnection = false) {
         if (this._osdMonitorLabels) {
             this._osdMonitorLabels.forEach((w) => {
                 w.destroy();
                 this._osdMonitorLabels = null;
             });
+        }
+        if (this._osdMonitorsConnection && !keepConnection) {
+            global.display.disconnect(this._osdMonitorsConnection);
+            this._osdMonitorsConnection = 0;
         }
     }
 
@@ -400,14 +405,35 @@ var Actions = class {
     }
 
     _showMonitorIndexesOsd() {
-        if (this._osdMonitorLabels)
-            this._removeOsdMonitorIndexes();
+        const success = this._buildMonitorIndexesOsd();
+        if (!success) return;
+        this._osdMonitorsConnection = global.display.connect('notify::focus-window', () =>{
+            // destroy osd when the preferences window lost focus
+            if (global.display.focus_window && !global.display.focus_window.get_title().includes(Me.metadata.name)) {
+                this._removeOsdMonitorIndexes(true); // remove labeles, keep this connection
+                //this._mscOptions.set('showOsdMonitorIndexes', false);
+            } else {
+                this._buildMonitorIndexesOsd();
+            }
+            // disconnect this signal if prefs window was closed
+            if (!this._getOpenPrefsWindow()) {
+                if (this._osdMonitorsConnection) {
+                    global.display.disconnect(this._osdMonitorsConnection);
+                    this._osdMonitorsConnection = 0;
+                }
+                this._mscOptions.set('showOsdMonitorIndexes', false);
+                this._removeOsdMonitorIndexes();
+            }
+        });
+    }
+
+    _buildMonitorIndexesOsd() {
         this._osdMonitorLabels = [];
         const nMonitors = Main.layoutManager.monitors.length;
 
         if (nMonitors === 1) {
             this._mscOptions.set('showOsdMonitorIndexes', false);
-            //return;
+            return false;
         }
 
         const primaryIndex = Main.layoutManager.primaryIndex;
@@ -420,16 +446,17 @@ var Actions = class {
             const label = new OsdMonitorLabeler.OsdMonitorLabel(i, `${i + 1}`);
             this._osdMonitorLabels.push(label);
         }
+        return true;
+    }
 
-        this._osdMonitorsConnection = global.display.connect('notify::focus-window', () =>{
-            // destroy osd when the preferences window lost focus
-            if (global.display.focus_window && !global.display.focus_window.get_title().includes(Me.metadata.name)) {
-                global.display.disconnect(this._osdMonitorsConnection);
-                this._osdMonitorsConnection = 0;
-                this._removeOsdMonitorIndexes();
-                this._mscOptions.set('showOsdMonitorIndexes', false);
+    _getOpenPrefsWindow() {
+        const windows = AltTab.getWindows(null);
+        for (let win of windows) {
+            if (win.get_title().includes(Me.metadata.name) && this._getWindowApp(win).get_name() === 'Extensions') {
+                return win;
             }
-        });
+        }
+        return null;
     }
 
     /////////////////////////////////////////////////////////////////////////////
@@ -961,14 +988,12 @@ var Actions = class {
     }
 
     openPreferences() {
-        const windows = AltTab.getWindows(null);
-        for (let win of windows) {
-            // if prefs window already exist, move it to the current WS and activate it
-            if (win.get_title().includes(Me.metadata.name) && this._getWindowApp(win).get_name() === 'Extensions') {
-                this._moveWindowToWs(win);
-                win.activate(global.get_current_time);
-                return;
-            }
+        // if prefs window already exist, move it to the current WS and activate it
+        const win = this._getOpenPrefsWindow();
+        if (win) {
+            this._moveWindowToWs(win);
+            win.activate(global.get_current_time);
+            return;
         }
         Main.extensionManager.openExtensionPrefs(Me.metadata.uuid, '', {});
     }
