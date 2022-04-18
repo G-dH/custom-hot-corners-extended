@@ -129,6 +129,10 @@ var MscOptions = class MscOptions {
 
     destroy() {
         this._connectionIds.forEach(id => this._gsettings.disconnect(id));
+        if (this._writeTimeoutId) {
+            GLib.source_remove(this._writeTimeoutId);
+            this._writeTimeoutId = 0;
+        }
     }
 
     _loadSettings(schm) {
@@ -231,6 +235,10 @@ var Corner = class Corner {
 
     destroy() {
         this._connectionIds.forEach(id => id[0].disconnect(id[1]));
+        if (this._writeTimeoutId) {
+            GLib.source_remove(this._writeTimeoutId);
+            this._writeTimeoutId = 0;
+        }
     }
 
     _loadSettingsForTrigges() {
