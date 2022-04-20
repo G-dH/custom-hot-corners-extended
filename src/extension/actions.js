@@ -944,7 +944,7 @@ var Actions = class {
 
         switch (theme) {
             case `Yaru-${yaruAccent}`:
-                newTheme = `Yaru-${yaruAccent}-dark`;
+                newTheme = `Yaru-${yaruAccent}`;
                 dark = true;
                 break;
             case `Yaru-${yaruAccent}-dark`:
@@ -953,7 +953,7 @@ var Actions = class {
                 break;
             case 'Yaru-light':
             case 'Yaru':
-                newTheme = 'Yaru-dark';
+                newTheme = 'Yaru';
                 dark = true;
                 break;
             case 'Yaru-dark':
@@ -961,7 +961,7 @@ var Actions = class {
                 dark = false;
                 break;
             case 'Adwaita':
-                newTheme = 'Adwaita-dark';
+                newTheme = 'Adwaita';
                 dark = true;
                 break;
             case 'Adwaita-dark':
@@ -972,18 +972,23 @@ var Actions = class {
                 Main.notify(Me.metadata.name, _('Theme switcher works with Adwaita/Adwaita-dark and Yaru(-light)/Yaru-dark themes only'));
         }
 
+        if (shellVersion >= 42) {
+            dark = !(intSettings.get_string('color-scheme') === 'prefer-dark');
+            if (dark) {
+                intSettings.set_string('color-scheme', 'prefer-dark');
+            } else {
+                intSettings.set_string('color-scheme', 'default');
+            }
+        }
+
         if (newTheme) {
-            intSettings.set_string('gtk-theme', newTheme);
+            if (dark) {
+                intSettings.set_string('gtk-theme', `${newTheme}-dark`);
+            } else {
+                intSettings.set_string('gtk-theme', newTheme);
+            }
         }
 
-        if (shellVersion < 42)
-            return;
-
-        if (dark) {
-            intSettings.set_string('color-scheme', 'prefer-dark');
-        } else {
-            intSettings.set_string('color-scheme', 'default');
-        }
     }
 
     openRunDialog() {
