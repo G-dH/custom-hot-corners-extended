@@ -64,7 +64,6 @@ class ActionChooserDialog extends Gtk.Box {
 
         const trgIcon = new Gtk.Image({
             //icon_name: this._iconName,
-            margin_start: 10,
             pixel_size: 32, // pixel_size has no effect in Gtk3, the size is the same as declared in svg image when loaded from file
             visible: true
         });
@@ -72,8 +71,21 @@ class ActionChooserDialog extends Gtk.Box {
         trgIcon.set_from_resource(`${this._iconPath}/${this._iconName}`);
         trgIcon.icon_size = Gtk.IconSize.BUTTON;
 
+        const box = new Gtk.Box({
+            margin_start: 10,
+            spacing: 4,
+            visible: true
+        });
+        if (trigger === 6) { // 6 === CTRL_PRESSURE
+            box[append](new Gtk.Label({
+                label: 'Ctrl +',
+                visible: true
+            }));
+        }
+        box[append](trgIcon);
+
         const headerbar = this.dialog.get_titlebar();
-        headerbar.pack_start(trgIcon);
+        headerbar.pack_start(box);
 
         this.dialog.get_content_area()[append](this);
 
