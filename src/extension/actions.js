@@ -896,7 +896,7 @@ var Actions = class {
         if (win.is_on_all_workspaces()) {
             win.unstick();
             //Main.notify(Me.metadata.name, _(`Disabled: Always on Visible Workspace \n\n${win.title}` ));
-        } else{
+        } else {
             win.stick();
             //Main.notify(Me.metadata.name, _(`Enabled: Always on Visible Workspace \n\n${win.title}` ));
         }
@@ -910,10 +910,12 @@ var Actions = class {
     }
 
     toggleShowPanel() {
-        if (Main.panel.is_visible())
+        if (Main.panel.is_visible()) {
             Main.panel.hide()
-        else
+        }
+        else {
             Main.panel.show();
+        }
     }
 
     openPanelAggregateMenu() {
@@ -936,6 +938,7 @@ var Actions = class {
         if (themeSplit[0] == 'Yaru' && themeSplit.length > 1) {
             yaruAccent = themeSplit[1];
             if (['light', 'dark'].includes(yaruAccent)) {
+                // this means default accent active
                 yaruAccent = '';
             }
         }
@@ -977,19 +980,57 @@ var Actions = class {
             if (dark) {
                 intSettings.set_string('color-scheme', 'prefer-dark');
             } else {
-                intSettings.set_string('color-scheme', 'default');
+                intSettings.set_string('color-scheme', 'prefer-light');
             }
         }
 
         if (newTheme) {
+            const shellThemeSettings = this._getShellThemeSettings('org.gnome.shell.extensions.user-theme');//, '/org/gnome/shell/extensions/user-theme/');
             if (dark) {
                 intSettings.set_string('gtk-theme', `${newTheme}-dark`);
+                if (shellThemeSettings) {
+                    shellThemeSettings.set_string('name', `${newTheme}-dark`);
+                }
             } else {
                 intSettings.set_string('gtk-theme', newTheme);
+                if (shellThemeSettings) {
+                    shellThemeSettings.set_string('name', newTheme);
+                }
             }
         }
 
     }
+
+    // user Shell themes are supported via 'User Themes' extension which must be installed
+    _getShellThemeSettings(schema, path) {
+        const schemaDir = Me.dir.get_parent().get_child('user-theme@gnome-shell-extensions.gcampax.github.com/schemas');
+        let schemaSource;
+        if (schemaDir.query_exists(null)) {
+            schemaSource = Gio.SettingsSchemaSource.new_from_directory(
+                schemaDir.get_path(),
+                Gio.SettingsSchemaSource.get_default(),
+                false
+            );
+        } else {
+            schemaSource = Gio.SettingsSchemaSource.get_default();
+        }
+
+        const schemaObj = schemaSource.lookup(schema, true);
+        if (!schemaObj) {
+            //throw new Error(
+            log(
+                'Schema ' + schema + ' could not be found for extension. Please check your installation.'
+            );
+            return null;
+        }
+
+        const args = {settings_schema: schemaObj};
+        if (path) {
+            args.path = path;
+        }
+
+        return new Gio.Settings(args);
+    };
 
     openRunDialog() {
         Main.openRunDialog();
@@ -1000,10 +1041,14 @@ var Actions = class {
         const win = this._getOpenPrefsWindow();
         if (win) {
             this._moveWindowToWs(win);
-            win.activate(global.get_current_time);
+            win.activate(global.get_current_time());
             return;
         }
-        Main.extensionManager.openExtensionPrefs(Me.metadata.uuid, '', {});
+        try {
+            Main.extensionManager.openExtensionPrefs(Me.metadata.uuid, '', {});
+        } catch (e) {
+            log(e);
+        }
     }
 
     togleShowDesktop(monitorIndex = -1) {
@@ -1447,8 +1492,7 @@ var Actions = class {
             if (meta_window.has_focus()) {
                 if (actor.get_effect(name)) {
                     actor.remove_effect_by_name(name);
-                }
-                else {
+                } else {
                     let eff = new effect();
                     if (property.length)
                        eff[property[0]] = property[1];
