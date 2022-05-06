@@ -79,6 +79,14 @@ function getOptionList(mscOpt) {
 
         optionsList.push(
             _optionsItem(
+                _('Direct hot corner triggers require Shift'),
+                _('All hot corner triggers that are directly accessible (without Ctrl) require the Shift key pressed to be activated. This option is primarily meant as a temporary solution accessible also as an action using a keyboard shortcut or mouse trigger to avoid accidental activation of hot corners in specific situations as playing full-screen games.'),
+                _newGtkSwitch(), 'hotCornersRequireShift'
+            )
+        );
+
+        optionsList.push(
+            _optionsItem(
                 _('Use fallback hot corner triggers'),
                 _("If pressure barriers don't work, this option allows trigger the hot corner action by hovering the corner"),
                 _newGtkSwitch(),

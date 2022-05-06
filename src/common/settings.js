@@ -55,7 +55,8 @@ var TriggerLabels = [
 var TRANSITION_DURATION = 200;
 
 var MONITOR_TITLE = _('Monitor');
-var MONITOR_ICON = 'preferences-desktop-display-symbolic';
+//var MONITOR_ICON = 'preferences-desktop-display-symbolic';
+var MONITOR_ICON = 'video-display-symbolic';
 var KEYBOARD_TITLE = _('Keyboard');
 var KEYBOARD_ICON = 'input-keyboard-symbolic';
 var MENUS_TITLE = _('Custom Menus');
@@ -100,24 +101,25 @@ var MscOptions = class MscOptions {
         this._connectionIds = [];
 
         this.options = {
-            watchCorners:         {type: 'boolean', key: 'watch-corners'},
-            cornersVisible:       {type: 'boolean', key: 'corners-visible'},
-            winSwitchWrap:        {type: 'boolean', key: 'win-switch-wrap'},
-            winSkipMinimized:     {type: 'boolean', key: 'win-switch-skip-minimized'},
-            winStableSequence:    {type: 'boolean', key: 'win-switch-stable-sequence'},
-            winThumbnailScale:    {type: 'int',     key: 'win-thumbnail-scale'},
-            actionEventDelay:     {type: 'int',     key: 'action-event-delay'},
-            rippleAnimation:      {type: 'boolean', key: 'ripple-animation'},
-            barrierFallback:      {type: 'boolean', key: 'barrier-fallback'},
-            customMenu1:          {type: 'strv',    key: 'custom-menu-1'},
-            customMenu2:          {type: 'strv',    key: 'custom-menu-2'},
-            customMenu3:          {type: 'strv',    key: 'custom-menu-3'},
-            customMenu4:          {type: 'strv',    key: 'custom-menu-4'},
-            supportedExetensions: {type: 'strv',    key: 'supported-active-extensions'},
-            keyboardShortcuts:    {type: 'strv',    key: 'keyboard-shortcuts'},
-            internalFlags:        {type: 'strv',    key: 'internal-flags'},
-            showOsdMonitorIndexes:{type: 'boolean', key: 'show-osd-monitor-indexes'},
-            customTintColor:      {type: 'string',  key: 'custom-tint-color'},
+            watchCorners:           {type: 'boolean', key: 'watch-corners'},
+            cornersVisible:         {type: 'boolean', key: 'corners-visible'},
+            winSwitchWrap:          {type: 'boolean', key: 'win-switch-wrap'},
+            winSkipMinimized:       {type: 'boolean', key: 'win-switch-skip-minimized'},
+            winStableSequence:      {type: 'boolean', key: 'win-switch-stable-sequence'},
+            winThumbnailScale:      {type: 'int',     key: 'win-thumbnail-scale'},
+            actionEventDelay:       {type: 'int',     key: 'action-event-delay'},
+            rippleAnimation:        {type: 'boolean', key: 'ripple-animation'},
+            barrierFallback:        {type: 'boolean', key: 'barrier-fallback'},
+            customMenu1:            {type: 'strv',    key: 'custom-menu-1'},
+            customMenu2:            {type: 'strv',    key: 'custom-menu-2'},
+            customMenu3:            {type: 'strv',    key: 'custom-menu-3'},
+            customMenu4:            {type: 'strv',    key: 'custom-menu-4'},
+            supportedExetensions:   {type: 'strv',    key: 'supported-active-extensions'},
+            keyboardShortcuts:      {type: 'strv',    key: 'keyboard-shortcuts'},
+            internalFlags:          {type: 'strv',    key: 'internal-flags'},
+            showOsdMonitorIndexes:  {type: 'boolean', key: 'show-osd-monitor-indexes'},
+            customTintColor:        {type: 'string',  key: 'custom-tint-color'},
+            hotCornersRequireShift: {type: 'boolean', key: 'hot-corners-require-shift'}
         }
     }
 

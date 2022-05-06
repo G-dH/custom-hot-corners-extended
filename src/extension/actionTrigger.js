@@ -580,6 +580,13 @@ var ActionTrigger = class ActionTrigger {
         this.actions.openPreferences();
     }
 
+    _hotCornersRequireShift() {
+        const key = 'hotCornersRequireShift';
+        const state = this._mscOptions.get(key);
+        this._mscOptions.set(key, !state);
+        Main.notify(Me.metadata.name, _(`Option 'Hot Corners Require Shift' ${state ? 'disabled' : 'enabled'}`));
+    }
+
     _toggleZoom() {
         this.actions.zoom(0);
     }
@@ -847,7 +854,7 @@ var ActionTrigger = class ActionTrigger {
         if (global.toggleArcMenu)
             global.toggleArcMenu();
         else
-            Main.notify(Me.metadata.name, `Error: ArcMenu trigger not available...`);
+            Main.notify(Me.metadata.name, _(`Error: ArcMenu trigger not available...`));
     }
 
     _mprisPlayPause() {

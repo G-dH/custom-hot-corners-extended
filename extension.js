@@ -248,6 +248,7 @@ class CustomHotCornersExtended {
                 }
                 if (chceThis._shouldExistHotCorner(corner)) {
                     Main.layoutManager.hotCorners.push(new CustomHotCorner(corner, chceThis));
+                    //this._rebuildHotCorner(corner);
                     chceThis._updateWatchedCorners();
                 }
             }
@@ -296,19 +297,15 @@ class CustomHotCornersExtended {
             case 'fullscreen':
                 corner.fullscreen[trigger] = corner.getFullscreen(trigger);
                 break;
-            case 'barrier-size-h':
+            /*case 'barrier-size-h':
             case 'barrier-size-v':
-                this._rebuildHotCorner(corner);
-                break;
             case 'pressure-threshold':
                 this._rebuildHotCorner(corner);
-                break;
+                break;*/
             case 'workspace-index':
                 corner.workspaceIndex[trigger] = corner.getWorkspaceIndex(trigger);
                 break;
             case 'h-expand':
-                this._updateHotCorners();
-                break;
             case 'v-expand':
                 this._updateHotCorners();
                 break;
@@ -355,7 +352,7 @@ class CustomHotCornersExtended {
     _rebuildHotCorner(corner) {
         this._destroyHotCorner(corner);
         if (this._shouldExistHotCorner(corner)) {
-            Main.layoutManager.hotCorners.push(new CustomHotCorner(corner, this));
+            Main.layoutManager.hotCorners.push(new CustomHotCorner(corner, this, this._mscOptions));
             this._updateWatchedCorners();
         }
     }
@@ -395,6 +392,7 @@ const CustomHotCorner = GObject.registerClass(
 class CustomHotCorner extends Layout.HotCorner {
     _init(corner, chceThis) {
         this._chceThis = chceThis;
+        this._mscOptions = this._chceThis._mscOptions;
         let monitor = Main.layoutManager.monitors[corner.monitorIndex];
         super._init(Main.layoutManager, monitor, corner.x, corner.y);
         this._actionTimeoutId = this._chceThis._actionTimeoutId;
@@ -677,10 +675,17 @@ class CustomHotCorner extends Layout.HotCorner {
         return (mods & Clutter.ModifierType.CONTROL_MASK) !== 0;
     }
 
+    _shiftPressed() {
+        const mods = global.get_pointer()[2];
+        return (mods & Clutter.ModifierType.SHIFT_MASK) !== 0;
+    }
+
     _onPressureTriggered() {
         // neither the 'enter' nor pressure 'trigger' events contain modifier state
         let trg;
         if (!this._ctrlPressed()) {
+            // if direct hot corners require Shift and Shift not pressed, do nothing
+            if (this._mscOptions.get('hotCornersRequireShift') && !this._shiftPressed()) return;
             trg = Triggers.PRESSURE;
         } else {
             trg = Triggers.CTRL_PRESSURE;
@@ -717,7 +722,6 @@ class CustomHotCorner extends Layout.HotCorner {
 
     _onCornerScrolled(actor, event) {
         let direction = event.get_scroll_direction();
-
         if (this._notValidScroll(direction))
             return;
 

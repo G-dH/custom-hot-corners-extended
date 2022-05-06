@@ -46,7 +46,9 @@ var actionList = [
         [   1, 'show-desktop'               , _('Show Desktop (all monitors)'),              true,  'preferences-desktop-wallpaper-symbolic',                 false],
         [   1, 'show-desktop-mon'           , _('Show Desktop (current monitor)'),           true,  'preferences-desktop-wallpaper-symbolic',                 false],
         [   1, 'show-screenshot-ui'         , _('Activate Screenshot Tool'),                false,  'media-record-symbolic',                                  false],
-        [   1, 'prefs'                      , _('Open CHC-E Preferences'),                   true,  'preferences-system-symbolic',                            false],
+        [   1, 'black-screen'               , _('Hide Screen Content (all monitors)'),       true,  'video-display-symbolic',                                 false],
+        [   1, 'black-screen-mon'           , _('Hide Screen Content (current monitor)'),    true,  'video-display-symbolic',                                 false],
+
         //[null, 'desktop-submenu'            , _('Desktop'),                                  true,  'video-display-symbolic',                                 false],
         //[null, 'run-submenu'                , _('Run Command'),                             false,  'utilities-terminal-symbolic',                            false],
 
@@ -155,8 +157,6 @@ var actionList = [
         [   1, 'tint-custom-toggle-all'     , _('Custom Color Tint (global)'),               true,  'view-reveal-symbolic',                                   false],
         [   1, 'desaturate-all'             , _('Desaturate (global)'),                      true,  'view-reveal-symbolic',                                   false],
         [   1, 'remove-effects-all'         , _('Remove All Effects (global)'),              true,  'window-close-symbolic',                                  false],
-        [   1, 'black-screen'               , _('Black Screen (all monitors)'),              true,  'video-display-symbolic',                                 false],
-        [   1, 'black-screen-mon'           , _('Black Screen (current monitor)'),           true,  'video-display-symbolic',                                 false],
 
         [null, 'access-submenu'             , _('Universal Access'),                         true,  'preferences-desktop-accessibility-symbolic',             false],
         [   1, 'toggle-zoom'                , _('Magnifier - Zoom 2x (toggle)'),             true,  'zoom-in-symbolic',                                       false],
@@ -219,4 +219,7 @@ var actionList = [
         [   1, 'display-brightness-up'      , _('Display Brightness Up (HW)'),              false,  'display-brightness-symbolic',                            false],
         [   1, 'display-brightness-down'    , _('Display Brightness Down (HW)'),            false,  'display-brightness-symbolic',                            false],
 
+        [null, 'prefs-submenu'              , _('CHC-E Preferences'),                        true,  'preferences-system-symbolic',                            false],
+        [   1, 'prefs'                      , _('Open CHC-E Preferences'),                   true,  'preferences-system-symbolic',                            false],
+        [   1, 'hot-corners-require-shift'  , _('Toggle Hot Corners Require Shift'),         true,  'input-mouse-symbolic',                                   false],
     ]; // end

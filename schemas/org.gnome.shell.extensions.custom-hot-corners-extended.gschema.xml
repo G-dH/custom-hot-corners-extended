@@ -45,7 +45,7 @@
     <key name='watch-corners' type='b'>
       <default>true</default>
     </key>
-    <key name='fullscreen-global' type='b'>
+    <key name='hot-corners-require-shift' type='b'>
       <default>false</default>
     </key>
     <key name='corners-visible' type='b'>
