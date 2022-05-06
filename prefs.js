@@ -119,7 +119,15 @@ function fillPreferencesWindow(window) {
     window.set_default_size(400, 700);
 
     window.connect('close-request', () => {
-        // Unregister our resources.
+        mscOptions.set('showOsdMonitorIndexes', false);
+        // mscOptions/corner.destroy() removes gsetting connections
+        mscOptions.destroy();
+        monitorPages.forEach((page) => {
+            page[0]._corners.forEach((corner) => {
+                corner.destroy();
+            })
+        });
+
         Gio.resources_unregister(resources);
     });
 
@@ -206,7 +214,13 @@ function buildPrefsWidget() {
         const signal = Gtk.get_major_version() === 3 ? 'destroy' : 'close-request';
         window.connect(signal, () => {
             mscOptions.set('showOsdMonitorIndexes', false);
-            // Unregister our resources.
+            // mscOptions/corner.destroy() removes gsetting connections
+            mscOptions.destroy();
+            monitorPages.forEach((page) => {
+                page[0]._corners.forEach((corner) => {
+                    corner.destroy();
+                });
+            });
             Gio.resources_unregister(resources);
         });
     });
