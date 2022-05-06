@@ -78,13 +78,13 @@ class TreeviewPage extends Gtk.Box {
             enable_search: true,
             search_column: 1,
             hover_selection: true,
+            //activate_on_single_click: true,
             //hover_expand: true,
             hexpand: true,
             vexpand: true
         });
 
         this.treeView.set_search_equal_func(this._searchEqualFunc.bind(this));
-        this.treeView.activate_on_single_click = true;
         this.treeView.connect('row-activated', (treeView,path,column) => {
             if (treeView.row_expanded(path)) {
                 treeView.collapse_row(path);

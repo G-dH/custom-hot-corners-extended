@@ -110,7 +110,7 @@ class CustomMenuPage extends TreeViewPage {
         if (this._alreadyBuilt)
             return;
         this.buildWidgets();
-
+        //this.treeView.set_reorderable(true);
         this.menuItems = this._mscOptions.get(`customMenu${this._menuIndex}`);
 
         this._updateTitle();
