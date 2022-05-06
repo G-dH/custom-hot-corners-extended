@@ -86,7 +86,7 @@ function getMonitorPages(mscOptions) {
     }
 
     if (nMonitors)
-    return pages;
+        return pages;
 }
 
 const MonitorPage = GObject.registerClass(
@@ -449,18 +449,19 @@ class CornerPage extends Gtk.Box {
         context.add_class('heading');*/
 
         const updateActBtnLbl = () => {
-            let actionTitle = actionDict[this._corner.getAction(trigger)].title;
-            if (!actionTitle) {
-                actionTitle = _("Error: The stored action doesn't exist!!!");
+            const action = this._corner.getAction(trigger);
+            let actionTitle;
+            if (!action) {
+                actionTitle = _("Error: Stored action doesn't exist!!!");
+            } else {
+                actionTitle = actionDict[this._corner.getAction(trigger)].title
+                const iconName = actionDict[this._corner.getAction(trigger)].icon;
+                _setImageFromIconName(actBtnIcon, iconName, Gtk.IconSize.BUTTON);
             }
-            const iconName = actionDict[this._corner.getAction(trigger)].icon;
-            _setImageFromIconName(actBtnIcon, iconName, Gtk.IconSize.BUTTON);
             actBtnLabel.set_label(actionTitle);
         }
 
-        this._corner._gsettings[trigger].connect('changed::action', () => {
-            updateActBtnLbl();
-        });
+        this._corner.connect('changed::action', updateActBtnLbl, trigger);
 
         actBtnLabel.connect('notify::label', () => {
             commandEntryRevealer.reveal_child = this._corner.getAction(trigger) === 'run-command';
