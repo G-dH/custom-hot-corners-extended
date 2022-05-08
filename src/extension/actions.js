@@ -393,7 +393,7 @@ var Actions = class {
         return true;
     }
 
-    _translateDirectionToHorizontal(direction) {
+    _translateDirectionIfNeeded(direction) {
         if (this._isWsOrientationHorizontal()) {
             if (direction == Meta.MotionDirection.UP) {
                 direction = Meta.MotionDirection.LEFT;
@@ -580,7 +580,7 @@ var Actions = class {
         const nMonitors = Main.layoutManager.monitors.length;
         const lastIndex = global.workspaceManager.get_n_workspaces() - 1;
         const activeWs = global.workspaceManager.get_active_workspace();
-        const neighbor = activeWs.get_neighbor(direction);
+        const neighbor = activeWs.get_neighbor(this._translateDirectionIfNeeded(direction));
 
         if (!primaryMonitor) {
             this.rotateWorkspaces(direction, currentMonitor);
@@ -597,8 +597,8 @@ var Actions = class {
         if (neighbor !== activeWs && (neighbor.index() !== lastIndex || activeWs !== lastIndex)) {
             for (let i = 0; i < nMonitors; i++) {
                 if (i !== currentMonitor) {
-                        const opositeDirection = direction === Meta.MotionDirection.UP ? Meta.MotionDirection.DOWN : Meta.MotionDirection.UP;
-                        this.rotateWorkspaces(opositeDirection, i, step);
+                    const opositeDirection = direction === Meta.MotionDirection.UP ? Meta.MotionDirection.DOWN : Meta.MotionDirection.UP;
+                    this.rotateWorkspaces(opositeDirection, i, step);
                 }
             }
         }
@@ -1084,7 +1084,7 @@ var Actions = class {
 
     // direction: Meta.MotionDirection
     switchWorkspace(direction, showPopup = true) {
-        direction = this._translateDirectionToHorizontal(direction);
+        direction = this._translateDirectionIfNeeded(direction);
         const targetWs = global.workspaceManager.get_active_workspace().get_neighbor(direction);
         Main.wm.actionMoveWorkspace(targetWs);
         if (showPopup)
@@ -1121,7 +1121,7 @@ var Actions = class {
                 });
             }
 
-            let motion = this._translateDirectionToHorizontal(direction);
+            let motion = this._translateDirectionIfNeeded(direction);
 
             if (shellVersion >= 42) {
                 Main.wm._workspaceSwitcherPopup.display(wsIndex);
