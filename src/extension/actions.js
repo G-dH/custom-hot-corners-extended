@@ -446,7 +446,7 @@ var Actions = class {
         monIndexes.splice(0, 0, monIndexes.splice(primaryIndex, 1)[0]);
 
         for (let i = 0; i < nMonitors; ++i) {
-            const label = new OsdMonitorLabeler.OsdMonitorLabel(i, `${i + 1}`);
+            const label = new OsdMonitorLabeler.OsdMonitorLabel(monIndexes[i], `${i + 1}`);
             this._osdMonitorLabels.push(label);
         }
         return true;
