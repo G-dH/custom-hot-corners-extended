@@ -1195,6 +1195,7 @@ var Actions = class {
             () => {
                 // if the mouse pointer is still over the edge of the current monitor, we assume that the user has not yet finished the selection
                 if (this._winPreview && !this._isPointerOnEdge()) {
+                    this.moveToWorkspace(this._winPreview._window.get_workspace().index());
                     this._winPreview._window.activate(global.get_current_time());
                     this._destroyWindowPreview();
                     this._winSwitcherTimeoutId = 0;
