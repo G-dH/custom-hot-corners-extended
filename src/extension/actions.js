@@ -1145,29 +1145,12 @@ var Actions = class {
 
     switchWindow(direction, wsOnly = false, monitorIndex = -1) {
         let workspaceManager = global.workspace_manager;
-        //let workspace = wsOnly ? workspaceManager.get_active_workspace() : null;
-        // get all windows, skip-taskbar included
-        //let windows = global.display.get_tab_list(Meta.TabList.NORMAL_ALL, workspace);
+
         const workspace = null;
         let windows = AltTab.getWindows(workspace);
         if (monitorIndex > -1)
             windows = windows.filter(w => w.get_monitor() === monitorIndex);
-        // when window with attached modal window is activated, focus shifts to the modal window ...
-        //  ... and switcher can stuck trying to activate same window again ...
-        //  ... when these windows are next to each other in the window list
-        // map windows with modals attached ...
-        // ... and filter out not modal windows and duplicates
-// this is already part of AltTab.getWindows() function
-/*        let modals = windows.map(w =>
-            w.get_transient_for() ? w.get_transient_for() : null
-            ).filter((w, i, a) => w !== null && a.indexOf(w) == i);
-        // filter out skip_taskbar windows and windows with modals
-        // top modal windows should stay
-        windows = windows.filter( w => modals.indexOf(w) && !w.is_skip_taskbar());
-*/
 
-        // after the shell restarts (X11) AltTab.getWindows(ws) generates different (wrong) win order than ...getwindows(null) (tested on GS 3.36 - 41)
-        // so we will filter the list here if needed, to get consistent results in this situation for all FilterModes
         if (wsOnly) {
             const workspace = workspaceManager.get_active_workspace();
             windows = windows.filter(w => w.get_workspace() === workspace);
@@ -1207,7 +1190,10 @@ var Actions = class {
             () => {
                 // if the mouse pointer is still over the edge of the current monitor, we assume that the user has not yet finished the selection
                 if (this._winPreview && !this._isPointerOnEdge()) {
-                    this.moveToWorkspace(this._winPreview._window.get_workspace().index());
+                    const metaWin = this._winPreview._window;
+                    const switchWS = metaWin.get_workspace() !== global.workspace_manager.get_active_workspace();
+                    if (switchWS)
+                        this.moveToWorkspace(this._winPreview._window.get_workspace().index());
                     this._winPreview._window.activate(global.get_current_time());
                     this._destroyWindowPreview();
                     this._winSwitcherTimeoutId = 0;
