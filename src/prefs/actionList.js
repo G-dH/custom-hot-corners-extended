@@ -57,8 +57,8 @@ var actionList = [
         [   1, 'next-workspace'             , _('Next Workspace'),                          false,   horizontal ? 'go-next-symbolic'    : 'go-down-symbolic', false],
         [   1, 'prev-workspace-popup'       , _('Previous Workspace with Window Switcher'),  true,   horizontal ? 'go-previous-symbolic': 'go-up-symbolic'  , false],
         [   1, 'next-workspace-popup'       , _('Next Workspace with Window Switcher'),      true,   horizontal ? 'go-next-symbolic'    : 'go-down-symbolic', false],
-        [   1, 'prev-workspace-current-mon' , _('Previous Workspace - Current Monitor Only (hack)'), true, horizontal ? 'go-previous-symbolic': 'go-up-symbolic'  , false],
-        [   1, 'next-workspace-current-mon' , _('Next Workspace - Current Monitor Only (hack)'), true,   horizontal ? 'go-previous-symbolic': 'go-up-symbolic'  , false],
+        [   1, 'prev-workspace-current-mon' , _('Previous Workspace - Current Monitor Only'), true, horizontal ? 'go-previous-symbolic': 'go-up-symbolic'  , false],
+        [   1, 'next-workspace-current-mon' , _('Next Workspace - Current Monitor Only'),    true,   horizontal ? 'go-previous-symbolic': 'go-up-symbolic'  , false],
         //[   1, 'prev-workspace-overview'    , _('Previous Workspace Overview'),              true,   horizontal ? 'go-previous-symbolic': 'go-up-symbolic'  , false],
         //[   1, 'next-workspace-overview'    , _('Next Workspace Overview'),                  true,   horizontal ? 'go-next-symbolic'    : 'go-down-symbolic', false],
         [   1, 'recent-workspace'           , _('Switch to Most Recent Workspace'),          true,  'document-open-recent-symbolic',                          false],
@@ -184,6 +184,7 @@ var actionList = [
 
         [null, 'system-submenu'             , _('System'),                                   true,  'system-run-symbolic',                                    false],
         [   1, 'lock-screen'                , _('Lock Screen'),                             false,  'changes-prevent-symbolic',                               false],
+        [   1, 'screensaver'                , _('Activate ScreenSaver'),                     true,  'preferences-desktop-screensaver-symbolic',               false],
         [   1, 'suspend'                    , _('Suspend to RAM'),                           true,  'weather-clear-night-symbolic',                           false],
         [   1, 'power-off'                  , _('Power Off Dialog'),                         true,  'system-shutdown-symbolic',                               false],
         [   1, 'log-out'                    , _('Log Out Dialog'),                           true,  'system-log-out-symbolic',                                false],

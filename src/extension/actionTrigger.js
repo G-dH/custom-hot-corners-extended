@@ -552,6 +552,10 @@ var ActionTrigger = class ActionTrigger {
         this.actions.lockScreen();
     }
 
+    _screensaver() {
+        this.actions.screensaver();
+    }
+
     _suspend() {
         this.actions.suspendToRam();
     }

@@ -659,6 +659,18 @@ var Actions = class {
         SystemActions.getDefault().activateSwitchUser();
     }
 
+    screensaver() {
+        let session = Gio.DBus.session;
+        session.call(
+            'org.gnome.Shell.ScreenShield',
+            '/org/gnome/ScreenSaver',
+            'org.gnome.ScreenSaver',
+            'SetActive',
+            new GLib.Variant('(b)', [GLib.Variant.new_boolean(true)]),
+            null, Gio.DBusCallFlags.NONE,-1,null,
+         );
+    }
+
     showScreenshotUi() {
         if (shellVersion >= 42)
             imports.ui.screenshot.showScreenshotUI();
