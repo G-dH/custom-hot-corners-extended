@@ -238,7 +238,8 @@ class CornerPage extends Gtk.Box {
                 } else {
                     ctrlBtn.set_active(false);
                     ctrlBtn.set_sensitive(false);
-                    ctrlBtn.set_tooltip_text(_('This trigger works only when Ctrl key is NOT pressed'));
+                    ctrlBtn.opacity = 0;
+                    //ctrlBtn.set_tooltip_text(_('This trigger works only when Ctrl key is NOT pressed'));
                     //ctrlBtn.set_visible(false);
                     if (trigger === Triggers.PRESSURE) {
                         const cornerPopover = new Gtk.Popover();
