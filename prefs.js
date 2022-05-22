@@ -17,7 +17,7 @@
 
 'use strict';
 
-const { Gtk, Gdk, Gio, GLib, GObject } = imports.gi;
+const { Gtk, Gio, GLib, GObject } = imports.gi;
 
 const ExtensionUtils  = imports.misc.extensionUtils;
 const Me              = ExtensionUtils.getCurrentExtension();
@@ -116,7 +116,7 @@ function fillPreferencesWindow(window) {
     });
     window.add(optionsAdwPage);
 
-    window.set_default_size(400, 700);
+    window.set_default_size(600, 700);
 
     window.connect('close-request', () => {
         mscOptions.set('showOsdMonitorIndexes', false);
