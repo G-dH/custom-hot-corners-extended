@@ -541,7 +541,7 @@ var Actions = class {
         let activeWs = global.workspace_manager.get_active_workspace();
         let activeWsIdx = activeWs.index();
         let targetIdx = activeWsIdx + direction;
-        if (targetIdx > 0 || targetIdx < (global.workspace_manager.get_n_workspaces() - 1)) {
+        if (targetIdx > -1 && targetIdx < (global.workspace_manager.get_n_workspaces())) {
             global.workspace_manager.reorder_workspace(activeWs, targetIdx);
         }
         //this.showWorkspaceIndex();
