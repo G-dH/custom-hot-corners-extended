@@ -293,14 +293,17 @@ var ActionTrigger = class ActionTrigger {
         this.actions.switchToRecentWindow();
     }
 
-    _getShortcut(key) {
-        /*let settings = Settings.getSettings(
-            'org.gnome.shell.extensions.custom-hot-corners-extended.shortcuts',
-            '/org/gnome/shell/extensions/custom-hot-corners-extended/shortcuts/');
-        return settings.get_strv(key).toString();*/
-        const keybindingsManager = this._getKeybindingsManager();
-        const sc = keybindingsManager._keybindings[key];
-        return sc ? sc : null;
+    _getShortcut(action) {
+        const settings = ExtensionUtils.getSettings(
+            'org.gnome.shell.extensions.custom-hot-corners-extended.misc');
+        const shortcuts = settings.get_strv('keyboard-shortcuts');
+        const scIndex = shortcuts.findIndex(s => s.includes(`${action} `));
+        let sc = null;
+        if (scIndex > -1) {
+            sc = shortcuts[scIndex].split(' ')[1].replace(/<.+>/, '');
+        }
+
+        return sc;
     }
 
     _winSwitcherPopupAll() {

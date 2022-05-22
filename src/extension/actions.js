@@ -1679,8 +1679,9 @@ var Actions = class {
         const advancedSwitcherEnabled = altTabPopup.showOrig ? true : false;
 
         if (advancedSwitcherEnabled) {
-            // behaviour variables
+            // behavior variables
             altTabPopup.KEYBOARD_TRIGGERED = args['triggered-keyboard'];
+            altTabPopup._keyBind = args['shortcut']; // shortcut without modifiers
             altTabPopup._singleApp         = args['filter-focused-app']
                                                     ? Shell.WindowTracker.get_default().get_window_app(this._getFocusedWindow()).get_id()
                                                     : null;
@@ -1703,7 +1704,6 @@ var Actions = class {
                 altTabPopup.SHOW_APPS       = true;
             }
             altTabPopup.connect('destroy', () => altTabPopup = null);
-            altTabPopup._keyBind = args['shortcut'] ? args['shortcut'].replace(/<.+>/, '') : '';
             altTabPopup.show();
             if ( args['switch-ws'] !== undefined && args['switch-ws'] !== false) {
                 altTabPopup._switchWorkspace(args['switch-ws']);
