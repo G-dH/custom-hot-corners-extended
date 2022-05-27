@@ -836,12 +836,16 @@ var Actions = class {
     }
 
     moveWinToAdjacentWs(direction, windows = null) {
-        let selected;
-        if (!windows)
-            selected = [this._getFocusedWindow(true)];
-        else
+        let selected = [];
+        if (!windows) {
+            const focused = this._getFocusedWindow(true);
+            if (focused)
+                selected.push(focused);
+        } else if (windows && windows.length) {
             selected = windows;
-        if (!selected)
+        }
+
+        if (!selected.length)
             return;
 
         let wsIndex = global.workspace_manager.get_active_workspace_index();
