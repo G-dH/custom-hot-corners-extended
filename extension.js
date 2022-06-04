@@ -38,6 +38,7 @@ const Triggers               = Settings.Triggers;
 
 let chceThis = null;
 let _origUpdateHotCorners;
+let _originalHotCornerEnabled;
 
 
 function init() {
@@ -74,6 +75,7 @@ class CustomHotCornersExtended {
             GLib.PRIORITY_DEFAULT,
             500,
             () => {
+                _originalHotCornerEnabled = Main.layoutManager._interfaceSettings.get_boolean('enable-hot-corners');
                 Main.layoutManager._interfaceSettings.set_boolean('enable-hot-corners', false);
                 this._extensionEnabled = true;
                 this._mscOptions = new Settings.MscOptions();
@@ -139,9 +141,10 @@ class CustomHotCornersExtended {
         this._extensionEnabled = false;
         // restore original hot corners
         // some extensions also modify Main.layoutManager._updateHotCorners._updateHotCorners()
-        //   and so it'll be more secure to take the function from the source (which could be altered to but less likely)
+        //   and so it'll be more secure to take the function from the source (which could be altered too but less likely)
         Main.layoutManager._interfaceSettings.set_boolean('enable-hot-corners', this._hotCornerEnabledOrig);
         Main.layoutManager._updateHotCorners = _origUpdateHotCorners;
+        Main.layoutManager._interfaceSettings.set_boolean('enable-hot-corners', _originalHotCornerEnabled);
         Main.layoutManager._updateHotCorners();
         return fullDisable;
     }
