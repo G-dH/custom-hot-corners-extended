@@ -419,7 +419,7 @@ var Actions = class {
                 this._buildMonitorIndexesOsd();
             }
             // disconnect this signal if prefs window was closed
-            if (!this._getOpenPrefsWindow()) {
+            if (!this._getOpenPrefsWindow().isCHCE) {
                 if (this._osdMonitorsConnection) {
                     global.display.disconnect(this._osdMonitorsConnection);
                     this._osdMonitorsConnection = 0;
@@ -456,10 +456,12 @@ var Actions = class {
         const windows = global.display.get_tab_list(Meta.TabList.NORMAL_ALL, null);
         for (let win of windows) {
             if (win.get_title().includes(Me.metadata.name) && this._getWindowApp(win).get_name() === 'Extensions') {
-                return win;
+                return { metaWin: win, isCHCE: true };
+            } else if (win.wm_class.includes('org.gnome.Shell.Extensions')) {
+                return { metaWin: win, isCHCE: false };
             }
         }
-        return null;
+        return { metaWin: null, isCHCE: null };
     }
 
     /////////////////////////////////////////////////////////////////////////////
@@ -1054,12 +1056,17 @@ var Actions = class {
 
     openPreferences() {
         // if prefs window already exist, move it to the current WS and activate it
-        const win = this._getOpenPrefsWindow();
-        if (win) {
-            this._moveWindowToWs(win);
-            win.activate(global.get_current_time());
-            return;
+        const { metaWin, isCHCE } = this._getOpenPrefsWindow();
+        if (metaWin) {
+            if (!isCHCE) {
+                metaWin.delete(global.get_current_time());
+            } else {
+                this._moveWindowToWs(metaWin);
+                metaWin.activate(global.get_current_time());
+                return;
+            }
         }
+
         try {
             Main.extensionManager.openExtensionPrefs(Me.metadata.uuid, '', {});
         } catch (e) {
