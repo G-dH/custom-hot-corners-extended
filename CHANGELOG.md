@@ -2,18 +2,28 @@
 
 ### v17 (not released yet)
 **Added:**
+- `Hot Corner` trigger has been split into two independent triggers - `Hot Corner` and `Ctrl + Hot Corner`
+- Action `Activate Screenshot Tool` for GNOME 42.
+- Actions for direct control of `Spotify` and `Firefox` MPRIS media players.
+- Action `Activate Screensaver` to turn off monitor.
 - `Toggle Dark Gtk Theme` now supports new Ubuntu accented themes.
 - CHC-E preferences window icons follow Ubuntu Yaru theme accents. If Yaru is not detected, blue accent will be used, which is close to the default Adwaita accent.
 - DND Window Thumbnail: on-hover overlays - close button and icon indicating current function of the scroll wheel; secondary click shows a full size preview of the window. Still work in progress.
 - `Custom Color Tint` action - you can select any color you want on the `Options` page of CHC-E's prferences window.
+- Option: `Hot Corners Require Shift` to allow you to inhibit all direct Hot corner triggers at once when needed.
 
 **Fixed:**
 - Slow startup of the prferences window and lagging first switch to other corner pages - action menu combo boxes were replaced with buttons + treeview menu which means more than 10x faster startup and no lags in UI
 - Missing path for relocatable corner schema not allowing corner settings backup. Now the `Extensions Sync` extension can store all CHC-E settings.
+- Custom Menu - actions targetting focused window don't work, menu steals focus from window in GS 40+
+- Wrong workspace index limits in `Reorder Workspace` action.
+- Window is ready notification when switching windows
+
 
 **Other changes:**
 - TreeView submenus expand on a single-click instead of double-click
 - New Make file simplifies installation from source.
+- CHC-E `Open Preferences` action can close blocking preferences window of another extension
 
 ### v16
 **Added:**
