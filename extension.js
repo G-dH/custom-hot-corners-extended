@@ -142,9 +142,8 @@ class CustomHotCornersExtended {
         // restore original hot corners
         // some extensions also modify Main.layoutManager._updateHotCorners._updateHotCorners()
         //   and so it'll be more secure to take the function from the source (which could be altered too but less likely)
-        Main.layoutManager._interfaceSettings.set_boolean('enable-hot-corners', this._hotCornerEnabledOrig);
+        Main.layoutManager._interfaceSettings.set_boolean('enable-hot-corners', true);//this._hotCornerEnabledOrig);
         Main.layoutManager._updateHotCorners = _origUpdateHotCorners;
-        Main.layoutManager._interfaceSettings.set_boolean('enable-hot-corners', _originalHotCornerEnabled);
         Main.layoutManager._updateHotCorners();
         return fullDisable;
     }
@@ -540,7 +539,6 @@ class CustomHotCorner extends Layout.HotCorner {
         this._actors.push(this._actor);
     }
 
-    // Overridden original function
     _setupCornerActorsIfNeeded(layoutManager) {
         let shouldCreateActor = this._shouldCreateActor();
         if (!(shouldCreateActor || this._corner.hExpand || this._corner.vExpand))
