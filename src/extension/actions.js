@@ -1829,13 +1829,9 @@ var CustomMenuPopup = class CustomMenuPopup extends PopupMenu.PopupMenu {
     }
 
     buildMenu() {
-        const runActionData = {
-            action: null,
-            monitorIndex: 0,
-            workspaceIndex: 0,
-            command: null,
-            keyboard: false
-        }
+        const runActionData = this.actionTrigger.runActionData;
+        runActionData.keyboard = false;
+
         this.windowNeeded = false;
         let submenu = null;
 
@@ -1865,13 +1861,16 @@ var CustomMenuPopup = class CustomMenuPopup extends PopupMenu.PopupMenu {
                 this.addMenuItem(submenu);
             } else if (submenu) {
                 submenu.menu.addAction(name, () => {
+                    // open menu steal focus from focused window, so close it before calling the action
+                    this.act.menu.close();
                     runActionData.action = action;
-                    this.actionTrigger.runAction(runActionData);
+                    this.actionTrigger.runAction();
                 }, icon);
             } else {
                 this.addAction(name, () => {
+                    this.act.menu.close();
                     runActionData.action = action;
-                    this.actionTrigger.runAction(runActionData);
+                    this.actionTrigger.runAction();
                 }, icon);
             }
         }
