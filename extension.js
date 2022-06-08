@@ -142,7 +142,7 @@ class CustomHotCornersExtended {
         // restore original hot corners
         // some extensions also modify Main.layoutManager._updateHotCorners._updateHotCorners()
         //   and so it'll be more secure to take the function from the source (which could be altered too but less likely)
-        Main.layoutManager._interfaceSettings.set_boolean('enable-hot-corners', true);//this._hotCornerEnabledOrig);
+        Main.layoutManager._interfaceSettings.set_boolean('enable-hot-corners', true); //this._hotCornerEnabledOrig);
         Main.layoutManager._updateHotCorners = _origUpdateHotCorners;
         Main.layoutManager._updateHotCorners();
         return fullDisable;
@@ -641,7 +641,7 @@ class CustomHotCorner extends Layout.HotCorner {
 
     _connectActorEvents(actor) {
         if (this._shouldConnect([Triggers.BUTTON_PRIMARY, Triggers.BUTTON_SECONDARY, Triggers.BUTTON_MIDDLE])) {
-            actor.connect('button-press-event', this._onCornerClicked.bind(this));
+            actor.connect('button-release-event', this._onCornerClicked.bind(this));
         }
         if (this._shouldConnect([Triggers.SCROLL_UP, Triggers.SCROLL_DOWN])) {
             actor.connect('scroll-event', this._onCornerScrolled.bind(this));
