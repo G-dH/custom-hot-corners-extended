@@ -669,7 +669,7 @@ class CornerPage extends Gtk.Box {
         grid.attach(cmdLabel, 0, 1, 2, 1);
         dialog.get_content_area()[append](grid);
         dialog._appChooser.connect('application-selected', (w, appInfo) => {
-            cmdLabel.set_text(`App ID:   \t${appInfo.get_id()}\nCommand: \t${appInfo.get_commandline()}`);
+            cmdLabel.set_text(`App ID:  \t\t${appInfo.get_id()}\nCommand: \t${appInfo.get_commandline()}`);
         }
         );
         dialog.show_all && dialog.show_all();

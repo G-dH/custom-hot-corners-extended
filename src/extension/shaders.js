@@ -17,7 +17,7 @@
 
 'use strict';
 
-const {GObject, Clutter}     = imports.gi;
+const { GObject, Clutter }     = imports.gi;
 const ExtensionUtils         = imports.misc.extensionUtils;
 
 var   InvertLightnessEffect = GObject.registerClass(
