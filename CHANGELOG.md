@@ -24,6 +24,7 @@
 - TreeView submenus expand on a single-click instead of double-click
 - New Make file simplifies installation from source.
 - CHC-E `Open Preferences` action can close blocking preferences window of another extension
+- Mouse button triggeres now react on release event instead of press event.
 
 ### v16
 **Added:**
