@@ -1,6 +1,6 @@
 ## Changelog:
 
-### v17 (not released yet)
+### v17 2022-06-28
 **Added:**
 - `Hot Corner` trigger has been split into two independent triggers - `Hot Corner` and `Ctrl + Hot Corner`
 - Action `Activate Screenshot Tool` for GNOME 42.
@@ -19,12 +19,11 @@
 - Wrong workspace index limits in `Reorder Workspace` action.
 - Window is ready notification when switching windows
 
-
 **Other changes:**
 - TreeView submenus expand on a single-click instead of double-click
 - New Make file simplifies installation from source.
 - CHC-E `Open Preferences` action can close blocking preferences window of another extension
-- Mouse button triggeres now react on release event instead of press event.
+- Mouse button triggeres now react on release event instead of press event. Reasons: 1. top edge press events are sometimes blocked by unknown element in the fullscreen mode in Ubuntu 22.04, 2. prevents accidental action triggering when unmaximizing a window by dragging from the top panel, 3. button release event closes Custom Menu in GS 3.xx
 
 ### v16
 **Added:**
