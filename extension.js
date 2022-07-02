@@ -64,7 +64,7 @@ function disable() {
 
     let fullDisable;
     if (HotCorners.chce) {
-        fullDisable = chce.disable();
+        fullDisable = HotCorners.chce.disable();
         if (fullDisable) {
             HotCorners.chce = null;
         }

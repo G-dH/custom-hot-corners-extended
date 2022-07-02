@@ -68,7 +68,6 @@ var CustomHotCornersExtended = class CustomHotCornersExtended {
         );
 
         this._mscOptions.connect('changed', (settings, key) => this._updateMscOptions(key));
-        log(`${Me.metadata.name}: enabled`);
         return GLib.SOURCE_REMOVE;
     }
 
@@ -99,8 +98,6 @@ var CustomHotCornersExtended = class CustomHotCornersExtended {
             }
         }
         this._extensionEnabled = false;
-
-        log(`${Me.metadata.name}: ${fullDisable ? 'disabled' : 'suspended'}`);
 
         return fullDisable;
     }
