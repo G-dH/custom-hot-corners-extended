@@ -14,7 +14,7 @@ var shellVersion     = parseFloat(Config.PACKAGE_VERSION);
 const ExtensionUtils = imports.misc.extensionUtils;
 const Me             = ExtensionUtils.getCurrentExtension();
 const _              = imports.gettext.domain(Me.metadata['gettext-domain']).gettext;
-const Utils          = Me.imports.src.prefs.utils;
+const Utils          = Me.imports.src.common.utils;
 
 const AATWS_enabled = Utils.extensionEnabled('advanced-alt-tab@G-dH.github.com') || Utils.extensionEnabled('advanced-alt-tab@G-dH.github.com-dev');
 const AATWS_detected = Utils.isSupportedExtensionDetected('AATWS');
