@@ -33,6 +33,7 @@ var   WindowThumbnail = GObject.registerClass(
 class WindowThumbnail extends St.BoxLayout {
     _init(metaWin, parent, args) {
         this._hoverShowsPreview = false;
+        this._customOpacity = 255;
         this._initTmbHeight = args.height;
         this._minimumHeight = Math.floor(5 / 100 * global.display.get_monitor_geometry(global.display.get_current_monitor()).height);
         this._actionTimeoutId = null;
@@ -55,7 +56,7 @@ class WindowThumbnail extends St.BoxLayout {
         this._draggable._animateDragEnd = (eventTime) => {
             this._draggable._animationInProgress = true;
             this._draggable._onAnimationComplete(this._draggable._dragActor, eventTime);
-            this.opacity = 255;
+            this.opacity = this._customOpacity;
         };
 
         this.clone = new Clutter.Clone({reactive: true});
@@ -195,16 +196,20 @@ class WindowThumbnail extends St.BoxLayout {
         let state = event.get_state();
         switch (direction) {
         case Clutter.ScrollDirection.UP:
-            if (this._shiftPressed(state))
+            if (this._shiftPressed(state)) {
                 this.opacity = Math.min(255, this.opacity + 24);
+                this._customOpacity = this.opacity;
+            }
             else if (this._reverseTmbWheelFunc !== this._ctrlPressed(state))
                 this._switchSourceWin(-1);
             else if (this._reverseTmbWheelFunc === this._ctrlPressed(state))
                 this.scale = Math.max(0.05, this.scale - 0.025);
             break;
         case Clutter.ScrollDirection.DOWN:
-            if (this._shiftPressed(state))
+            if (this._shiftPressed(state)) {
                 this.opacity = Math.max(48, this.opacity - 24);
+                this._customOpacity = this.opacity;
+            }
             else if (this._reverseTmbWheelFunc !== this._ctrlPressed(state))
                 this._switchSourceWin(+1);
             else if (this._reverseTmbWheelFunc === this._ctrlPressed(state))
@@ -395,7 +400,7 @@ class WindowThumbnail extends St.BoxLayout {
             });
 
             this.ease({
-                opacity: 150,
+                opacity: Math.min(150, this._customOpacity),
                 duration: 70,
                 mode: Clutter.AnimationMode.LINEAR,
                 onComplete: () => {
@@ -418,7 +423,7 @@ class WindowThumbnail extends St.BoxLayout {
             onComplete: () => {
                 this._winPreview.destroy();
                 this._winPreview = null;
-                this.opacity = 255;
+                this.opacity = this._customOpacity;
             }
         });
         }
