@@ -1,3 +1,11 @@
+/**
+ * Custom Hot Corners - Extended
+ * Keybindings
+ *
+ * @author     GdH <G-dH@github.com>
+ * @copyright  2021-2022
+ * @license    GPL-3.0
+ */
 // This code is based on GSConnect extension
 // https://github.com/GSConnect/gnome-shell-extension-gsconnect/blob/master/src/shell/keybindings.js
 'use strict';

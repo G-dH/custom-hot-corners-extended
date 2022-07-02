@@ -1,3 +1,12 @@
+/**
+ * Custom Hot Corners - Extended
+ * ActionList
+ *
+ * @author     GdH <G-dH@github.com>
+ * @copyright  2021-2022
+ * @license    GPL-3.0
+ */
+
 'use strict'
 
 const Config         = imports.misc.config;
