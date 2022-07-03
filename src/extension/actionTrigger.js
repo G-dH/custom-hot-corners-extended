@@ -69,34 +69,6 @@ var ActionTrigger = class ActionTrigger {
     }
 
     _bindShortcuts() {
-        const keybindings = {};
-        const shortcuts = this._mscOptions.get('keyboardShortcuts');
-        const settingsKB = this._mscOptions._loadSettings('shortcuts');
-
-        // transition code from separately stored shortcuts to single gsetting key
-        // should be removed in the next version
-        // copy all separately stored shortcuts to the new key if it's empty
-        const internalFlags = this._mscOptions.get('internalFlags');
-        if (settingsKB && !internalFlags.includes('shortcuts-moved')) {
-            if (!shortcuts.length && settingsKB && settingsKB.list_keys().length) {
-                for (let key of settingsKB.list_keys()) {
-                    const action = key.replace(/-ce$/, '');
-                    const accelerator = settingsKB.get_strv(key)[0];
-                    if (accelerator)
-                        keybindings[action] = accelerator;
-                }
-                const list = [];
-                Object.keys(keybindings).forEach(s => {
-                    list.push(`${s} ${keybindings[s]}`);
-                });
-                if (list.length)
-                    this._mscOptions.set('keyboardShortcuts', list);
-            }
-            internalFlags.push('shortcuts-moved');
-            this._mscOptions.set('internalFlags', internalFlags);
-        }
-        // end of transition code
-
         if (!this._gsettingsKBid)
             this._gsettingsKBid = this._mscOptions.connect('changed::keyboard-shortcuts', this._updateKeyBinding.bind(this));
 
