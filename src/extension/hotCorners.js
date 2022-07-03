@@ -27,7 +27,7 @@ var chce = null;
 
 var CustomHotCornersExtended = class CustomHotCornersExtended {
     constructor() {
-        this._mscOptions           = new Settings.MscOptions();
+        this._mscOptions           = null;
         this.CORNERS_VISIBLE       = false;
         this.ACTION_TIMEOUT        = 0;
         this.RIPPLE_ANIMATION      = true;
@@ -46,6 +46,10 @@ var CustomHotCornersExtended = class CustomHotCornersExtended {
 
     enable() {
         this._extensionEnabled = true;
+
+        if (!this._mscOptions)
+            this._mscOptions = new Settings.MscOptions();
+
         if (!this.actionTrigger) {
             this.actionTrigger = new ActionTriger.ActionTrigger(this._mscOptions);
         } else {
