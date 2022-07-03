@@ -558,6 +558,10 @@ var ActionTrigger = class ActionTrigger {
         Main.notify(Me.metadata.name, _(`Option 'Hot Corners Require Shift' ${state ? 'disabled' : 'enabled'}`));
     }
 
+    _updateHotCorners() {
+        Main.layoutManager._updateHotCorners();
+    }
+
     _toggleZoom() {
         this.actions.zoom(0);
     }

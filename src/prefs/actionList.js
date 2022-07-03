@@ -234,7 +234,8 @@ var actionList = [
         [   1, 'display-brightness-up'      , _('Display Brightness Up (HW)'),              false,  'display-brightness-symbolic',                false],
         [   1, 'display-brightness-down'    , _('Display Brightness Down (HW)'),            false,  'display-brightness-symbolic',                false],
 
-        [null, 'prefs-submenu'              , _('CHC-E Preferences'),                        true,  'preferences-system-symbolic',                false],
+        [null, 'prefs-submenu'              , _('CHC-E'),                                    true,  'preferences-system-symbolic',                false],
         [   1, 'prefs'                      , _('Open CHC-E Preferences'),                   true,  'preferences-system-symbolic',                false],
         [   1, 'hot-corners-require-shift'  , _('Toggle Hot Corners Require Shift'),         true,  'input-mouse-symbolic',                       false],
+        [   1, 'update-hot-corners'         , _('Reset Hot Corners'),                        true,  'view-refresh-symbolic',                      false],
     ]; // end
