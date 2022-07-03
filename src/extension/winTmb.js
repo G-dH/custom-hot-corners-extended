@@ -9,7 +9,7 @@
 
 'use strict';
 
-const { GObject, GLib, Clutter, St, Meta, Shell } = imports.gi;
+const { GObject, Clutter, St, Meta, Shell } = imports.gi;
 
 const Main         = imports.ui.main;
 const DND          = imports.ui.dnd;
@@ -28,7 +28,6 @@ class WindowThumbnail extends St.BoxLayout {
         this._customOpacity = 255;
         this._initTmbHeight = args.height;
         this._minimumHeight = Math.floor(5 / 100 * global.display.get_monitor_geometry(global.display.get_current_monitor()).height);
-        this._actionTimeoutId = null;
         this._scrollTimeout = args.actionTimeout;
         this._positionOffset = args.thumbnailsOnScreen;
         this._reverseTmbWheelFunc = false;
@@ -72,7 +71,7 @@ class WindowThumbnail extends St.BoxLayout {
             this._scrollModeBin.opacity = SCROLL_ICON_OPACITY;
             if (this._hoverShowsPreview) {
                 this._closeButton.opacity = 50;
-                this._showWindowPreview();
+                this._showWindowPreview(false, true);
             }
         });
 
@@ -95,7 +94,6 @@ class WindowThumbnail extends St.BoxLayout {
             if (this)
                 this._remove();
         });
-        //this._setIcon();
     }
 
     _getInitialPosition() {
@@ -136,7 +134,6 @@ class WindowThumbnail extends St.BoxLayout {
 
     _onBtnReleased(actor, event) {
         // Clutter.Event.click_count property in no longer available, since GS42
-        //let doubleclick = event.get_click_count() === 2;
         if ((event.get_time() - this._prevBtnPressTime) < Clutter.Settings.get_default().double_click_time) {
             this._click_count +=1;
         } else {
@@ -273,22 +270,12 @@ class WindowThumbnail extends St.BoxLayout {
     }
 
     _actionTimeoutActive() {
-        if (this._actionTimeoutId)
-            return true;
-        this._actionTimeoutId = GLib.timeout_add(
-            GLib.PRIORITY_DEFAULT,
-            // timeout for resizing should be shorter than for window switching
-            this._reverseTmbWheelFunc ? this._scrollTimeout : this._scrollTimeout / 4,
-            this._removeActionTimeout.bind(this)
-        );
-        return false;
-    }
-
-    _removeActionTimeout() {
-        if (this._actionTimeoutId)
-            GLib.Source.remove(this._actionTimeoutId);
-        this._actionTimeoutId = null;
-        return false;
+        const timeout = this._reverseTmbWheelFunc ? this._scrollTimeout : this._scrollTimeout / 4;
+        if (!this._lastActionTime || Date.now() - this._lastActionTime > timeout) {
+            this._lastActionTime = Date.now();
+            return false;
+        }
+        return true;
     }
 
     _setIcon() {
@@ -361,11 +348,8 @@ class WindowThumbnail extends St.BoxLayout {
         this._scrollModeBin.opacity = 0;
     }
 
-    _showWindowPreview(update = false) {
-        // filter out double events
-        if (Date.now() - this._previewCreationTime < 100) return;
-
-        if (this._winPreview) {
+    _showWindowPreview(update = false, dontDestroy = false) {
+        if (this._winPreview && !dontDestroy) {
             this._destroyWindowPreview();
             this._previewCreationTime = 0;
             this._closeButton.opacity = CLOSE_BTN_OPACITY;
@@ -377,7 +361,6 @@ class WindowThumbnail extends St.BoxLayout {
             this._winPreview = new AltTab.CyclerHighlight();
             global.window_group.add_actor(this._winPreview);
             [this._winPreview._xPointer, this._winPreview._yPointer] = global.get_pointer();
-            this._previewCreationTime = Date.now();
         }
 
         if (!update) {
@@ -386,13 +369,13 @@ class WindowThumbnail extends St.BoxLayout {
                 opacity: 255,
                 duration: 70,
                 mode: Clutter.AnimationMode.LINEAR,
-                onComplete: () => {
+                /*onComplete: () => {
                     this._closeButton.opacity = 50;
-                },
+                },*/
             });
 
             this.ease({
-                opacity: Math.min(150, this._customOpacity),
+                opacity: Math.min(50, this._customOpacity),
                 duration: 70,
                 mode: Clutter.AnimationMode.LINEAR,
                 onComplete: () => {
