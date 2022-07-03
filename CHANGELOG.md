@@ -1,5 +1,18 @@
 ## Changelog:
 
+### v18,19 2022-07-03
+**Added:**
+- DND Window Thumbnails - Secondary mouse button toggles fullsize window preview on mouse pointer hover.
+
+**Removed:**
+- DND Window Thumbnails - Switching from window clone view to icon view using middle mouse button
+
+**Fixed:**
+- DND Window Thumbnails - resize works only in x axis after every other drag-and-drop.
+
+**Other Changes:**
+- code structure updates
+
 ### v17 2022-06-28
 **Added:**
 - `Hot Corner` trigger has been split into two independent triggers - `Hot Corner` and `Ctrl + Hot Corner`

@@ -29,14 +29,13 @@ This extension is based on the original `Custom Hot Corners` exetension, but not
 ## DND Window Thumbnails
 
 Window thumbnails are scaled-down window clones that can be used to monitor windows not currently visible on the screen. Default position for the thumbnail is bottom right corner of the current monitor. You can create as many clones as you want and place them anywhere on the screen. Each thumbnail can be independently resized, you can adjust its opacity, even change its source window. When the thumbnail's source window close, thumbnail is removed too.
-The code is based on window preview of *BaBar Task Bar* extension.
 
     Double click          - activate source window
     Primary cLick         - toggle scroll wheel function (resize / source)
     Scroll wheel          - resize or switch source window
     Ctrl + Scroll wheel   - switch source window or resize
-    Secondary click       - show fullsize window preview
-    Middle click          - Toggle icon view instead of the window thumbnail
+    Secondary click       - show fullsize window preview and toggle sowing preview on mouse hover
+    ~~Middle click          - Toggle icon view instead of the window thumbnail~~ This feature was removed for now because of complications
     Shift + Scroll wheel  - change thumbnail opacity
 
 
@@ -115,7 +114,7 @@ If you like my work and want to keep me motivated, you can also buy me a coffee:
 
 During development of this extension I was inspired by many extensions and other developers, I'll try to name the main contributors to my code:
 - [True Color Invert](https://github.com/jackkenney/gnome-true-color-invert) - useful extension with confusing name, which brought me to shader efects and whoose modified code I use for 'Invert Lightness' action and other color filters.
-- [BaBar Task Bar](https://github.com/fthx/babar) - nice panel task bar which window preview I used as a base for my 'DND Window Thumbnail'
+- [BaBar Task Bar](https://github.com/fthx/babar) - nice panel task bar which window preview I initially used as a base for my 'DND Window Thumbnail'
 - [GS Connect](https://github.com/GSConnect/gnome-shell-extension-gsconnect/wiki) - CHC-E relies on the keybinding module copied from this great extension.
 - [Simon Shneegans](https://schneegans.github.io/) - amazing developer with skill and style who provided me new Make files for my extensions and a lot of inspiration.
 - And, of course, the original 'Custom Hot Corners' extension that I forked based on which this extension grew.
