@@ -357,7 +357,6 @@ class CustomHotCorner extends Layout.HotCorner {
         this._monitor = monitor;
         this._actors  = [];
         this._corner.hotCornerExists = true;
-        this._enterd = false;
         this._pressureBarrier = new Layout.PressureBarrier(
             corner.pressureThreshold,
             Layout.HOT_CORNER_PRESSURE_TIMEOUT,

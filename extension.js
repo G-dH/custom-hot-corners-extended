@@ -56,9 +56,6 @@ function disable() {
     }
 
     // restore original hot corners
-    // some extensions also modify Main.layoutManager._updateHotCorners._updateHotCorners()
-    //   and so it'll be more secure to take the function from the source (which could be altered too but less likely)
-    Main.layoutManager._interfaceSettings.set_boolean('enable-hot-corners', true); //this._hotCornerEnabledOrig);
     Main.layoutManager._updateHotCorners = _origUpdateHotCorners;
     Main.layoutManager._updateHotCorners();
 
@@ -67,6 +64,8 @@ function disable() {
         fullDisable = HotCorners.chce.disable();
         if (fullDisable) {
             HotCorners.chce = null;
+            // always activate the hot corner on disable as the initial detection could be false and it's more annoying if the hot corner doesn't work when it sould
+            Main.layoutManager._interfaceSettings.set_boolean('enable-hot-corners', true);
         }
     }
     log(`${Me.metadata.name}: ${fullDisable ? 'disabled' : 'suspended'}`);
