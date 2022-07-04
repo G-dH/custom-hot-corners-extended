@@ -79,7 +79,7 @@ function getOptionList(mscOpt) {
 
         optionsList.push(
             _optionsItem(
-                _('Mouse Buttons Trigger on Press Event'),
+                _('Mouse buttons trigger on press event'),
                 _('Trigger an action when you press the mouse button instead of when you release it.\nTriggering on release event is default because minimizes accidental triggering when dragging objects form areas close to the edge of the monitor (like unmaximize by draging from the top panel or using scroll bars). Minor disadvantage is longer reaction time which is given by the delay you have between pressing and releasing the button.'),
                 _newGtkSwitch(), 'buttonsTriggerOnPress'
             )
