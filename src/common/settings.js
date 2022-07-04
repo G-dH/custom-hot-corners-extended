@@ -93,6 +93,7 @@ var MscOptions = class MscOptions {
         this._connectionIds = [];
 
         this.options = {
+            buttonsTriggerOnPress:  {type: 'boolean', key: 'buttons-trigger-on-press'},
             watchCorners:           {type: 'boolean', key: 'watch-corners'},
             cornersVisible:         {type: 'boolean', key: 'corners-visible'},
             winSwitchWrap:          {type: 'boolean', key: 'win-switch-wrap'},

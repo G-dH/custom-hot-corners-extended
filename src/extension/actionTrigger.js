@@ -560,6 +560,7 @@ var ActionTrigger = class ActionTrigger {
 
     _updateHotCorners() {
         Main.layoutManager._updateHotCorners();
+        Main.notify(Me.metadata.name, _('Hot corners were updated.'));
     }
 
     _toggleZoom() {

@@ -171,6 +171,10 @@ var CustomHotCornersExtended = class CustomHotCornersExtended {
             this._updateHotCorners();
         }
         this._updateWatch();
+
+        if (key === 'buttons-trigger-on-press') {
+            this._updateHotCorners();
+        }
     }
 
     _updateOsdMonitorIndexes() {
@@ -594,8 +598,9 @@ class CustomHotCorner extends Layout.HotCorner {
     }
 
     _connectActorEvents(actor) {
+        const mouseBtnEvent = this._mscOptions.get('buttonsTriggerOnPress') ? 'button-press-event' : 'button-release-event';
         if (this._shouldConnect([Triggers.BUTTON_PRIMARY, Triggers.BUTTON_SECONDARY, Triggers.BUTTON_MIDDLE])) {
-            actor.connect('button-release-event', this._onCornerClicked.bind(this));
+            actor.connect(mouseBtnEvent, this._onCornerClicked.bind(this));
         }
         if (this._shouldConnect([Triggers.SCROLL_UP, Triggers.SCROLL_DOWN])) {
             actor.connect('scroll-event', this._onCornerScrolled.bind(this));
