@@ -25,6 +25,7 @@ const Triggers               = Settings.Triggers;
 
 var chce = null;
 
+
 var CustomHotCornersExtended = class CustomHotCornersExtended {
     constructor() {
         this._mscOptions           = null;
@@ -57,9 +58,9 @@ var CustomHotCornersExtended = class CustomHotCornersExtended {
             this.actionTrigger.actions.resume();
         }
 
+        this._removeHotCorners();
         this._updateMscOptions(null, true);
         this._replace_updateHotCornersFunc();
-        this._updateWatch();
         this._delaySupportId = GLib.timeout_add(
             GLib.PRIORITY_DEFAULT,
             500,
@@ -81,6 +82,7 @@ var CustomHotCornersExtended = class CustomHotCornersExtended {
             this._delaySupportId = 0;
         }
         this._timeoutsCollector.forEach(c => GLib.Source.remove(c));
+        this._watch.timeout = null;
         this._timeoutsCollector = [];
         this._removeHotCorners();
         if (this._mscOptions) {
@@ -283,13 +285,23 @@ var CustomHotCornersExtended = class CustomHotCornersExtended {
                 3000,
                 () => {
                     // some extensions can replace the function (Dash to Panel)
-                    if (Main.layoutManager._updateHotCorners !== this._updateHotCorners)
+                    if (Main.layoutManager._updateHotCorners !== this._updateHotCorners) {
                         Main.layoutManager._updateHotCorners = this._updateHotCorners;
+                        this._updateHotCorners();
+                        log('_updateWatch: updateHotCorners function had to be updated because of external override');
+                    }
 
-                    if (Main.layoutManager.hotCorners !== this._myCorners[0] ||
-                        // some extensions (ArcMenu) can modify pressure barrier triggers, which normaly just emits a triggered event
-                        (this._myCorners[1] && Main.layoutManager.hotCorners[0]._pressureBarrier._trigger !== this._myCorners[1])
-                    ) {
+                    let cornersChanged = false;
+                    this._myCorners[0].forEach(c => {
+                        cornersChanged = cornersChanged || !Main.layoutManager.hotCorners.includes(c);
+                    });
+                    if (cornersChanged) {
+                        this._updateHotCorners();
+                        log(Me.metadata.name, 'Hot Corners had to be updated because of external override');
+                        return this._watch.active;
+                    }
+                    // some extensions (ArcMenu) can modify pressure barrier triggers, which normaly just emits a triggered event
+                    if ((this._myCorners[1] && Main.layoutManager.hotCorners[0] && Main.layoutManager.hotCorners[0]._pressureBarrier._trigger !== this._myCorners[1])) {
                         this._updateHotCorners();
                         // Main.notify(Me.metadata.name, `Hot Corners had to be updated because of external override`);
                         log(Me.metadata.name, 'Hot Corners had to be updated because of external override');
@@ -306,7 +318,7 @@ var CustomHotCornersExtended = class CustomHotCornersExtended {
     }
 
     _updateWatchedCorners() {
-        this._myCorners[0] = Main.layoutManager.hotCorners;
+        this._myCorners[0] = [...Main.layoutManager.hotCorners];
         this._myCorners[1] = Main.layoutManager.hotCorners[0] ? Main.layoutManager.hotCorners[0]._pressureBarrier._trigger : null;
     }
 
@@ -325,7 +337,7 @@ var CustomHotCornersExtended = class CustomHotCornersExtended {
                 if (hc[i].destroy)
                     hc[i].destroy();
             }
-            else if (hc[i]._corner.top  === corner.top &&
+            else if (hc[i] && hc[i]._corner.top  === corner.top &&
                 hc[i]._corner.left === corner.left &&
                 hc[i]._corner.monitorIndex === corner.monitorIndex) {
                 for (let a of Main.layoutManager.hotCorners[i]._actors) {
