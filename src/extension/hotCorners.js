@@ -119,9 +119,6 @@ var CustomHotCornersExtended = class CustomHotCornersExtended {
                 this.actionTrigger.clean(false);
             }
         }
-
-        this._myCorners = [null, null];
-
         this._extensionEnabled = false;
         // restore original hot corners
         // some extensions also modify Main.layoutManager._updateHotCorners._updateHotCorners()
@@ -130,11 +127,14 @@ var CustomHotCornersExtended = class CustomHotCornersExtended {
         Main.layoutManager._updateHotCorners = _origUpdateHotCorners;
         Main.layoutManager._updateHotCorners();
 
+        this._myCorners = [null, null];
+
         log(`${Me.metadata.name}: ${fullDisable ? 'disabled' : 'suspended'}`);
     }
 
     _replace_updateHotCornersFunc() {
         Main.layoutManager._updateHotCorners = this._updateHotCorners;
+        Main.layoutManager._updateHotCorners();
     }
 
     _updateSupportedExtensionsAvailability(reset = false) {
