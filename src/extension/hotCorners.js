@@ -22,12 +22,15 @@ const ActionTriger           = Me.imports.src.extension.actionTrigger;
 
 const listTriggers           = Settings.listTriggers();
 const Triggers               = Settings.Triggers;
+const _origUpdateHotCorners  = imports.ui.layout.LayoutManager.prototype._updateHotCorners;
 
-var chce = null;
+let chce;
 
 
 var CustomHotCornersExtended = class CustomHotCornersExtended {
     constructor() {
+        chce                       = this;
+        this._originalHotCornerEnabled;
         this._mscOptions           = null;
         this.CORNERS_VISIBLE       = false;
         this.ACTION_TIMEOUT        = 0;
@@ -42,47 +45,60 @@ var CustomHotCornersExtended = class CustomHotCornersExtended {
         this._actionTimeoutId      = null;
         this._extensionEnabled     = false;
         this._watch                = {};
-        this._hotCornerEnabledOrig = Main.layoutManager._interfaceSettings.get_boolean('enable-hot-corners');
     }
 
     enable() {
-        this._extensionEnabled = true;
-
-        if (!this._mscOptions)
-            this._mscOptions = new Settings.MscOptions();
-
-        if (!this.actionTrigger) {
-            this.actionTrigger = new ActionTriger.ActionTrigger(this._mscOptions);
-        } else {
-            this.actionTrigger._bindShortcuts();
-            this.actionTrigger.actions.resume();
-        }
-
-        this._removeHotCorners();
-        this._updateMscOptions(null, true);
-        this._replace_updateHotCornersFunc();
-        this._delaySupportId = GLib.timeout_add(
+        // delayed start to avoid initial hot corners overrides from other extensions
+        // and also to not slowing down the screen unlock animation - the killer is registration of keyboard shortcuts
+        this._delayId = GLib.timeout_add(
             GLib.PRIORITY_DEFAULT,
             500,
             () => {
-                // delay to be sure that all extensions are loaded and active
-                this._updateSupportedExtensionsAvailability();
-                this._delaySupportId = 0;
+                this._originalHotCornerEnabled = Main.layoutManager._interfaceSettings.get_boolean('enable-hot-corners');
+                Main.layoutManager._interfaceSettings.set_boolean('enable-hot-corners', false);
+                this._extensionEnabled = true;
+                this._mscOptions = new Settings.MscOptions();
+                if (!this.actionTrigger) {
+                    this.actionTrigger = new ActionTriger.ActionTrigger(this._mscOptions);
+                }
+                else {
+                    this.actionTrigger._bindShortcuts();
+                    this.actionTrigger.actions.resume();
+                }
+
+                this._updateMscOptions(null, true);
+                this._replace_updateHotCornersFunc();
+                this._updateWatch();
+                this._delaySupportId = GLib.timeout_add(
+                    GLib.PRIORITY_DEFAULT,
+                    500,
+                    () => {
+                        // delay to be sure that all extensions are loaded and active
+                        this._updateSupportedExtensionsAvailability();
+                        this._delaySupportId = 0;
+                        return GLib.SOURCE_REMOVE;
+                    }
+                );
+                this._mscOptions.connect('changed', (settings, key) => this._updateMscOptions(key));
+
+                log(`${Me.metadata.name}: enabled`);
+
+                this._delayId = 0;
                 return GLib.SOURCE_REMOVE;
             }
         );
-
-        this._mscOptions.connect('changed', (settings, key) => this._updateMscOptions(key));
-        return GLib.SOURCE_REMOVE;
     }
 
     disable() {
+        if (this._delayId) {
+            GLib.source_remove(this._delayId);
+            this._delayId = 0;
+        }
         if (this._delaySupportId) {
             GLib.source_remove(this._delaySupportId);
             this._delaySupportId = 0;
         }
         this._timeoutsCollector.forEach(c => GLib.Source.remove(c));
-        this._watch.timeout = null;
         this._timeoutsCollector = [];
         this._removeHotCorners();
         if (this._mscOptions) {
@@ -103,14 +119,22 @@ var CustomHotCornersExtended = class CustomHotCornersExtended {
                 this.actionTrigger.clean(false);
             }
         }
-        this._extensionEnabled = false;
 
-        return fullDisable;
+        this._myCorners = [null, null];
+
+        this._extensionEnabled = false;
+        // restore original hot corners
+        // some extensions also modify Main.layoutManager._updateHotCorners._updateHotCorners()
+        //   and so it'll be more secure to take the function from the source (which could be altered too but less likely)
+        Main.layoutManager._interfaceSettings.set_boolean('enable-hot-corners', true); //this._hotCornerEnabledOrig);
+        Main.layoutManager._updateHotCorners = _origUpdateHotCorners;
+        Main.layoutManager._updateHotCorners();
+
+        log(`${Me.metadata.name}: ${fullDisable ? 'disabled' : 'suspended'}`);
     }
 
     _replace_updateHotCornersFunc() {
-        Main.layoutManager._updateHotCorners = this._updateHotCorners;//.bind(this);
-        Main.layoutManager._updateHotCorners();
+        Main.layoutManager._updateHotCorners = this._updateHotCorners;
     }
 
     _updateSupportedExtensionsAvailability(reset = false) {
@@ -148,8 +172,6 @@ var CustomHotCornersExtended = class CustomHotCornersExtended {
     }
 
     _updateMscOptions(key, doNotUpdateHC = false) {
-        /*if (!actionTrigger.actions._mscOptions)
-            actions._mscOptions = _mscOptions;*/
         const actions = this.actionTrigger.actions;
         if (key === 'show-osd-monitor-indexes') {
             this._updateOsdMonitorIndexes();
@@ -216,7 +238,6 @@ var CustomHotCornersExtended = class CustomHotCornersExtended {
                 }
                 if (chce._shouldExistHotCorner(corner)) {
                     Main.layoutManager.hotCorners.push(new CustomHotCorner(corner, chce));
-                    //this._rebuildHotCorner(corner);
                     chce._updateWatchedCorners();
                 }
             }
@@ -303,7 +324,6 @@ var CustomHotCornersExtended = class CustomHotCornersExtended {
                     // some extensions (ArcMenu) can modify pressure barrier triggers, which normaly just emits a triggered event
                     if ((this._myCorners[1] && Main.layoutManager.hotCorners[0] && Main.layoutManager.hotCorners[0]._pressureBarrier._trigger !== this._myCorners[1])) {
                         this._updateHotCorners();
-                        // Main.notify(Me.metadata.name, `Hot Corners had to be updated because of external override`);
                         log(Me.metadata.name, 'Hot Corners had to be updated because of external override');
                     }
                     if (!this._watch.active) {
