@@ -47,7 +47,6 @@ var TriggerLabels = [
 var TRANSITION_DURATION = 200;
 
 var MONITOR_TITLE = _('Monitor');
-//var MONITOR_ICON = 'preferences-desktop-display-symbolic';
 var MONITOR_ICON = 'video-display-symbolic';
 var KEYBOARD_TITLE = _('Keyboard');
 var KEYBOARD_ICON = 'input-keyboard-symbolic';
@@ -69,6 +68,7 @@ const winSwitcherPopup = Utils.extensionEnabled('advanced-alt-tab@G-dH.github.co
 function listTriggers() {
     return Object.values(Triggers);
 }
+
 
 var MscOptions = class MscOptions {
     constructor() {
@@ -175,7 +175,6 @@ var Corner = class Corner {
         this.left = left;
         this.x = x;
         this.y = y;
-        this._gsettings = {};
         this._gsettings = this._loadSettingsForTrigges();
         this._connectionIds = [];
         this.hotCornerExists = false;
@@ -187,26 +186,69 @@ var Corner = class Corner {
         this.command = {};
         this.fullscreen = {};
         this.workspaceIndex = {};
-        for (let trigger of listTriggers()) {
-            this.action[trigger] = this.getAction(trigger);
-            this.ctrl[trigger] = this.getCtrl(trigger);
-            this.command[trigger] = this.getCommand(trigger);
-            this.fullscreen[trigger] = this.getFullscreen(trigger);
-            this.workspaceIndex[trigger] = this.getWorkspaceIndex(trigger);
+
+        this.options = {
+            action: ['string', 'action',],
+            command: ['string', 'command',],
+            fullscreen: ['boolean', 'fullscreen',],
+            ctrl: ['boolean', 'ctrl',],
+            workspaceIndex: ['int', 'workspace-index',],
+            hExpand: ['boolean', 'h-expand', Triggers.BUTTON_PRIMARY],
+            vExpand: ['boolean', 'v-expand', Triggers.BUTTON_PRIMARY],
+            barrierSizeH: ['int', 'barrier-size-h', Triggers.PRESSURE],
+            barrierSizeV: ['int', 'barrier-size-v', Triggers.PRESSURE],
+            pressureThreshold: ['int', 'pressure-threshold', Triggers.PRESSURE],
         }
-        //prepered for possible future use
-        /*this.options = {
-            action: ['string', 'action'],
-            command: ['string', 'command'],
-            fullscreen: ['boolean', 'fullscreen'],
-            ctrl: ['boolean', 'ctrl'],
-            workspaceIndex: ['int', 'workspace-index'],
-            hExpand: ['boolean', 'h-expand'],
-            vExpand: ['boolean', 'v-expand'],
-            barrierSizeH: ['int', 'barrier-size-h'],
-            barrierSizeV: ['int', 'barrier-size-v'],
-            pressureThreshold: ['int', 'pressure-threshold'],
-        }*/
+
+        this.cachedOptions = {};
+        for (let trigger of listTriggers()) {
+            this.cachedOptions[trigger] = {};
+        }
+    }
+
+    _updateCachedSettings(trigger) {
+        Object.keys(this.options).forEach(v => this.get(v, true, trigger));
+    }
+
+    get(option, trigger, updateCache = false) {
+        if (updateCache || this.cachedOptions[option] === undefined) {
+            const [format, key, defaultTrigger] = this.options[option];
+            if (trigger ===undefined && defaultTrigger !== undefined) {
+                trigger = defaultTrigger;
+            }
+
+            let gSettings = this._gsettings[trigger];
+
+            this.cachedOptions[trigger][option] = gSettings.get_value(key).deep_unpack();
+        }
+
+        return this.cachedOptions[trigger][option];
+    }
+
+    set(option, value, trigger) {
+        const [format, key, defaultTrigger] = this.options[option];
+        if (trigger ===undefined && defaultTrigger !== undefined) {
+            trigger = defaultTrigger;
+        }
+        switch (format) {
+            case 'string':
+                this._gsettings[trigger].set_string(key, value);
+                break;
+            case 'int':
+                this._gsettings[trigger].set_int(key, value);
+                break;
+            case 'boolean':
+                this._gsettings[trigger].set_boolean(key, value);
+                break;
+        }
+    }
+
+    getDefault(option, trigger) {
+        const [format, key, defaultTrigger] = this.options[option];
+        if (trigger ===undefined && defaultTrigger !== undefined) {
+            trigger = defaultTrigger;
+        }
+        return this._gsettings[trigger].get_default_value(key).deep_unpack();
     }
 
     static forMonitor(loadIndex, index, geometry) {
@@ -254,6 +296,7 @@ var Corner = class Corner {
                     300,
                     () => {
                         gsettings[trigger].apply();
+                        this._updateCachedSettings(trigger);
                         this._writeTimeoutId = 0;
                         return GLib.SOURCE_REMOVE;
                     }
@@ -261,86 +304,6 @@ var Corner = class Corner {
             });
         }
         return gsettings;
-    }
-
-    getAction(trigger) {
-        return this._gsettings[trigger].get_string('action');
-    }
-
-    setAction(trigger, action) {
-        this._gsettings[trigger].set_string('action', action);
-    }
-
-    getCommand(trigger) {
-        return this._gsettings[trigger].get_string('command');
-    }
-
-    setCommand(trigger, command) {
-        this._gsettings[trigger].set_string('command', command);
-    }
-
-    getFullscreen(trigger) {
-        return this._gsettings[trigger].get_boolean('fullscreen');
-    }
-
-    setFullscreen(trigger, bool_val) {
-        this._gsettings[trigger].set_boolean('fullscreen', bool_val);
-    }
-
-    getWorkspaceIndex(trigger) {
-        return this._gsettings[trigger].get_int('workspace-index');
-    }
-
-    setWorkspaceIndex(trigger, index) {
-        this._gsettings[trigger].set_int('workspace-index', index);
-    }
-
-    getCtrl(trigger) {
-        return this._gsettings[trigger].get_boolean('ctrl');
-    }
-
-    setCtrl(trigger, ctrl) {
-        this._gsettings[trigger].set_boolean('ctrl', ctrl);
-    }
-
-    get hExpand() {
-        return this._gsettings[Triggers.BUTTON_PRIMARY].get_boolean('h-expand');
-    }
-
-    set hExpand(bool_val) {
-        this._gsettings[Triggers.BUTTON_PRIMARY].set_boolean('h-expand', bool_val);
-    }
-
-    get vExpand() {
-        return this._gsettings[Triggers.BUTTON_PRIMARY].get_boolean('v-expand');
-    }
-
-    set vExpand(bool_val) {
-        this._gsettings[Triggers.BUTTON_PRIMARY].set_boolean('v-expand', bool_val);
-    }
-
-    get barrierSizeH() {
-        return this._gsettings[Triggers.PRESSURE].get_int('barrier-size-h');
-    }
-
-    set barrierSizeH(size) {
-        this._gsettings[Triggers.PRESSURE].set_int('barrier-size-h', size);
-    }
-
-    get barrierSizeV() {
-        return this._gsettings[Triggers.PRESSURE].get_int('barrier-size-v');
-    }
-
-    set barrierSizeV(size) {
-        this._gsettings[Triggers.PRESSURE].set_int('barrier-size-v', size);
-    }
-
-    get pressureThreshold() {
-        return this._gsettings[Triggers.PRESSURE].get_int('pressure-threshold');
-    }
-
-    set pressureThreshold(threshold) {
-        this._gsettings[Triggers.PRESSURE].set_int('pressure-threshold', threshold);
     }
 
     _loadSettings(trigger) {

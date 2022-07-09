@@ -295,7 +295,7 @@ class CornerPage extends Gtk.Box {
 
             _setBtnFromIconName(fsBtn, 'view-fullscreen-symbolic', Gtk.IconSize.BUTTON);
 
-            fsBtn.set_active(this._corner.getFullscreen(trigger));
+            fsBtn.set_active(this._corner.get('fullscreen', trigger));
             this._corner._gsettings[trigger].bind('fullscreen', fsBtn, 'active', Gio.SettingsBindFlags.DEFAULT);
 
             const cw = this._buildTriggerWidget(trigger, iconName);
@@ -442,13 +442,13 @@ class CornerPage extends Gtk.Box {
         context.add_class('heading');*/
 
         const updateActBtnLbl = () => {
-            const action = this._corner.getAction(trigger);
+            const action = this._corner.get('action', trigger);
             let actionTitle;
             if (!action) {
                 actionTitle = _("Error: Stored action doesn't exist!!!");
             } else {
-                actionTitle = actionDict[this._corner.getAction(trigger)].title
-                const iconName = actionDict[this._corner.getAction(trigger)].icon;
+                actionTitle = actionDict[action].title
+                const iconName = actionDict[action].icon;
                 _setImageFromIconName(actBtnIcon, iconName, Gtk.IconSize.BUTTON);
             }
             actBtnLabel.set_label(actionTitle);
@@ -457,14 +457,15 @@ class CornerPage extends Gtk.Box {
         this._corner.connect('changed::action', updateActBtnLbl, trigger);
 
         actBtnLabel.connect('notify::label', () => {
-            commandEntryRevealer.reveal_child = this._corner.getAction(trigger) === 'run-command';
-            wsIndexRevealer.reveal_child = this._corner.getAction(trigger) === 'move-to-workspace';
-            if (this._corner.getAction(trigger) === 'run-command' && !cmdConnected) {
+            const action = this._corner.get('action', trigger);
+            commandEntryRevealer.reveal_child = action === 'run-command';
+            wsIndexRevealer.reveal_child = action === 'move-to-workspace';
+            if (action === 'run-command' && !cmdConnected) {
                 _connectCmdBtn();
                 this._corner._gsettings[trigger].bind('command', commandEntry, 'text', Gio.SettingsBindFlags.DEFAULT);
-                commandEntryRevealer.reveal_child = this._corner.getAction(trigger) === 'run-command';
+                commandEntryRevealer.reveal_child = action === 'run-command';
 
-                wsIndexRevealer.reveal_child = this._corner.getAction(trigger) === 'move-to-workspace';
+                wsIndexRevealer.reveal_child = action === 'move-to-workspace';
                 cmdConnected = true;
             }
         });
