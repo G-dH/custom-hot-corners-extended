@@ -32,7 +32,7 @@ let chce;
 var CustomHotCornersExtended = class CustomHotCornersExtended {
     constructor() {
         chce                       = this;
-        this._originalHotCornerEnabled;
+        //this._originalHotCornerEnabled;
         this._mscOptions           = null;
         this.CORNERS_VISIBLE       = false;
         this.RIPPLE_ANIMATION      = true;
@@ -51,7 +51,7 @@ var CustomHotCornersExtended = class CustomHotCornersExtended {
     enable() {
         // delayed start to avoid initial hot corners overrides from other extensions
         // and also to not slowing down the screen unlock animation - the killer is registration of keyboard shortcuts
-        this._originalHotCornerEnabled = Main.layoutManager._interfaceSettings.get_boolean('enable-hot-corners');
+        //this._originalHotCornerEnabled = Main.layoutManager._interfaceSettings.get_boolean('enable-hot-corners');
         //Main.layoutManager._interfaceSettings.set_boolean('enable-hot-corners', false);
         let enableDelay;
         if (this.actionTrigger) {

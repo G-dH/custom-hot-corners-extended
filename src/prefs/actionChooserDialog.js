@@ -40,7 +40,7 @@ class ActionChooserDialog extends Gtk.Box {
         this._corner = corner;
         this._trigger = trigger;
         this._iconName = iconName;
-        this._currentAction = this._corner.getAction(trigger);
+        this._currentAction = this._corner.get('action', trigger);
 
         this._iconPath = Utils.getIconPath();
 
@@ -110,7 +110,7 @@ class ActionChooserDialog extends Gtk.Box {
             const action  = this.model.get_value(iter, 0);
             //const title = this.model.get_value(iter, 1);
             if (action) {
-                this._corner.setAction(this._trigger, action);
+                this._corner.set('action', action, this._trigger);
                 this.dialog.destroy();
             }
         });

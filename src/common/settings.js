@@ -207,7 +207,7 @@ var Corner = class Corner {
     }
 
     _updateCachedSettings(trigger) {
-        Object.keys(this.options).forEach(v => this.get(v, true, trigger));
+        Object.keys(this.options).forEach(v => this.get(v, trigger, true));
     }
 
     get(option, trigger, updateCache = false) {
