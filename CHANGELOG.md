@@ -1,5 +1,13 @@
 ## Changelog:
 
+### v20 2022-07-11
+**Fixed:**
+- Hot corners works unreliably after screen unlock in Wayland session
+
+**Other Changes:**
+- Settings code refactoring
+
+
 ### v18,19 2022-07-03
 **Added:**
 - DND Window Thumbnails - Secondary mouse button toggles fullsize window preview on mouse pointer hover.
