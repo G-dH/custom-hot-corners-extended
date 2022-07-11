@@ -55,7 +55,7 @@ var CustomHotCornersExtended = class CustomHotCornersExtended {
         //Main.layoutManager._interfaceSettings.set_boolean('enable-hot-corners', false);
         let enableDelay;
         if (this.actionTrigger) {
-            enableDelay = 2;
+            enableDelay = 1;
             this.actionTrigger.actions.resume();
         } else {
             enableDelay = 6;
