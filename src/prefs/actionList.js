@@ -89,9 +89,11 @@ var actionList = [
         [   1, 'prev-win-mon'               , _('Previous Window (current monitor)'),        true,  'go-previous-symbolic',                       false],
         [   1, 'prev-win-ws'                , _('Previous Window (current WS)'),             true,  'go-previous-symbolic',                       false],
         [   1, 'prev-win-all'               , _('Previous Window (all)'),                    true,  'go-previous-symbolic',                       false],
+        [   1, 'prev-win-all-app'           , _('Previous Window - Current App (all)'),      true,  'go-previous-symbolic',                       false],
         [   1, 'next-win-mon'               , _('Next Window (current monitor)'),            true,  'go-next-symbolic',                           false],
         [   1, 'next-win-ws'                , _('Next Window (current WS)'),                 true,  'go-next-symbolic',                           false],
         [   1, 'next-win-all'               , _('Next Window (all)'),                        true,  'go-next-symbolic',                           false],
+        [   1, 'next-win-all-app'           , _('Next Window - Current App (all)'),          true,  'go-next-symbolic',                           false],
 
         [null, 'win-switcher-popup-submenu' , _('Windows/App - Switcher Popups'),            true,  'focus-windows-symbolic',                     false],
         [   1, 'win-switcher-popup-all'     , _('Window Switcher Popup (all/default)'),      true,  'focus-windows-symbolic',                     false],
@@ -118,6 +120,7 @@ var actionList = [
         [   1, 'quit-app'                   , _('Quit Focused Application'),                 true,  'window-close-symbolic',                       true],
         [   1, 'kill-app'                   , _('Force Quit Focused Application'),           true,  'process-stop-symbolic',                       true],
         [   1, 'unminimize-all-ws'          , _('Unminimize All Windows (workspace)'),       true,  'window-restore-symbolic',                     true],
+        [   1, 'unminimize-all'             , _('Unminimize All Windows'),                   true,  'window-restore-symbolic',                     true],
 
         [null, 'win-reloc-submenu'          , _('Windows - Relocations'),                    true,  'focus-windows-symbolic',                     false],
         [   1, 'move-win-to-prev-ws'        , _('Move Window to Previous workspace'),        true,  prevIcon,                                      true],
@@ -128,6 +131,7 @@ var actionList = [
         [   1, 'move-app-to-prev-new-ws'    , _('Move App windows to New Workspace Prev'),   true,  prevIcon,                                      true],
         [   1, 'move-app-to-next-ws'        , _('Move App windows to Next Workspace'),       true,  nextIcon,                                      true],
         [   1, 'move-app-to-next-new-ws'    , _('Move App windows to New Workspace Next'),   true,  nextIcon,                                      true],
+        [   1, 'move-win-to-next-monitor'   , _('Move Window to Next Monitor'),              true,  'video-display-symbolic',                      true],
 
         [null, 'win-thumbnails-submenu'     , _('DND Window Thumbnails (PIP)'),              true,  '',                                           false],
         [   1, 'make-thumbnail-win'         , _('Create Window Thumbnail (at bottom-right)'),true,  'insert-image-symbolic',                       true],

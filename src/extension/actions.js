@@ -439,6 +439,17 @@ var Actions = class {
 
         for (let i = 0; i < nMonitors; ++i) {
             const label = new OsdMonitorLabeler.OsdMonitorLabel(monIndexes[i], `${i + 1}`);
+            label._label.style_class = '';
+            label._label.set_style(`background-color: rgba(35, 35, 35, 1.0);
+                                    color: rgba(255, 255, 255, 1.0);
+                                    border-radius: 12px;
+                                    font-size: 3em;
+                                    font-weight: bold;
+                                    margin: 12px;
+                                    padding: 0.2em;
+                                    text-align: center;
+                                    min-width: 1.3em;
+                                    border: solid, 1px, rgba(83, 83, 83, 1.0);`);
             this._osdMonitorLabels.push(label);
         }
         return true;
@@ -886,6 +897,29 @@ var Actions = class {
         }
     }
 
+    moveWinToNextMonitor(metaWindow = null) {
+        let win;
+        if (!metaWindow)
+            win = this._getFocusedWindow(true);
+        else
+            win = metaWindow;
+        if (!win)
+            return;
+
+        const nMonitors = Main.layoutManager.monitors.length;
+        const currentMonitorIndex = win.get_monitor();
+        if (nMonitors) {
+            const targetMonitorIndex = (currentMonitorIndex + 1) % nMonitors;
+            let actor = win.get_compositor_private();
+            let targetMonitor  = this._getMonitorByIndex(targetMonitorIndex);
+
+            let x = targetMonitor.x + Math.max(Math.floor(targetMonitor.width - actor.width) / 2, 0);
+            let y = targetMonitor.y + Math.max(Math.floor(targetMonitor.height - actor.height) / 2, 0);
+            win.move_frame(true, x, y);
+        }
+
+    }
+
     toggleAboveWindow(metaWindow) {
         let win = metaWindow || this._getFocusedWindow(true);
         if (!win)
@@ -921,10 +955,19 @@ var Actions = class {
 
     toggleShowPanel() {
         if (Main.panel.is_visible()) {
-            Main.panel.hide()
+            Main.panel.hide();
         }
         else {
             Main.panel.show();
+            this._panelBarrierTimeoutId = GLib.timeout_add(
+                GLib.PRIORITY_DEFAULT,
+                1000,
+                () => {
+                    Main.layoutManager._updateHotCorners();
+                    this._panelBarrierTimeoutId = 0;
+                    return GLib.SOURCE_REMOVE;
+                }
+            );
         }
     }
 
@@ -1146,7 +1189,7 @@ var Actions = class {
         }
     }
 
-    switchWindow(direction, wsOnly = false, monitorIndex = -1) {
+    switchWindow(direction, wsOnly = false, monitorIndex = -1, app = false) {
         let workspaceManager = global.workspace_manager;
 
         const workspace = null;
@@ -1161,6 +1204,11 @@ var Actions = class {
 
         if (this.WIN_SKIP_MINIMIZED)
             windows = windows.filter(win => !win.minimized);
+
+        if (app) {
+            app = this._getWindowApp(this._getFocusedWindow());
+            windows = windows.filter(win => this._getWindowApp(win) === app);
+        }
 
         if (!windows.length) return;
 

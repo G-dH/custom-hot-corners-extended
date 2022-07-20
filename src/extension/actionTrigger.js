@@ -253,6 +253,15 @@ var ActionTrigger = class ActionTrigger {
         this.actions.switchWindow(+1, true, global.display.get_current_monitor());
     }
 
+    //------------------------------------
+    _prevWinAllApp() {
+        this.actions.switchWindow(-1, false, -1, true);
+    }
+
+    _nextWinAllApp() {
+        this.actions.switchWindow(+1, false, -1, true);
+    }
+    //-------------------------------------
     _recentWin() {
         this.actions.switchToRecentWindow();
     }
@@ -477,6 +486,10 @@ var ActionTrigger = class ActionTrigger {
 
     _unminimizeAllWs() {
         this.actions.unminimizeAll(true);
+    }
+
+    _unminimizeAll() {
+        this.actions.unminimizeAll(false);
     }
 
     _fullscreenWin() {
@@ -899,6 +912,10 @@ var ActionTrigger = class ActionTrigger {
 
     _moveAppToNextNewWs() {
         this.actions.moveWinToNewWs(Meta.MotionDirection.DOWN, this.actions._getWindowsOfFocusedAppOnActiveWs());
+    }
+
+    _moveWinToNextMonitor() {
+        this.actions.moveWinToNextMonitor();
     }
 
     _displayBrightnessUp() {

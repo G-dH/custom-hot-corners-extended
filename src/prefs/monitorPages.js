@@ -69,9 +69,9 @@ function getMonitorPages(mscOptions) {
         monitorPage._geometry = geometry;
         monitorPage._leftHandMouse = leftHandMouse;
 
-        let labelText = `${MONITOR_TITLE}`;
+        let labelText = `  ${MONITOR_TITLE}`;
         if (nMonitors > 1) {
-            labelText += ` ${monitorIndex + 1} ${monitorIndex === 0 ? _('(primary)') : ''}`;
+            labelText += ` ${monitorIndex + 1} ${monitorIndex === 0 ? _('(primary)') : ''}  `;
             mscOptions.set('showOsdMonitorIndexes', true);
         }
         pages.push([monitorPage, labelText]);

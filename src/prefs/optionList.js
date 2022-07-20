@@ -72,7 +72,7 @@ function getOptionList(mscOpt) {
         optionsList.push(
             _optionsItem(
                 _('Direct hot corner triggers require Shift'),
-                _('All hot corner triggers that are directly accessible (without Ctrl) require the Shift key pressed to be activated. This option is primarily meant as a temporary solution accessible also as an action using a keyboard shortcut or mouse trigger to avoid accidental activation of hot corners in specific situations as playing full-screen games.'),
+                _('All hot corner triggers that are directly accessible (without Ctrl) require the Shift key pressed to be activated. This option is primarily meant as a temporary solution accessible also as an action using a keyboard shortcut or mouse trigger to avoid accidental activation of hot corners in specific situations such as playing full-screen games.'),
                 _newGtkSwitch(), 'hotCornersRequireShift'
             )
         );
@@ -80,7 +80,7 @@ function getOptionList(mscOpt) {
         optionsList.push(
             _optionsItem(
                 _('Mouse buttons trigger on press event'),
-                _('Trigger an action when you press the mouse button instead of when you release it.\nTriggering on release event is default because minimizes accidental triggering when dragging objects form areas close to the edge of the monitor (like unmaximize by draging from the top panel or using scroll bars). Minor disadvantage is longer reaction time which is given by the delay you have between pressing and releasing the button.'),
+                _('Trigger an action when you press the mouse button instead of when you release it.\nTriggering on release event is default because minimizes accidental triggering when dragging objects form areas close to the edge of the monitor (like unmaximize by draging from the top panel or using scroll bars). Minor disadvantage is longer reaction time which is given by the delay between pressing and releasing the button.'),
                 _newGtkSwitch(), 'buttonsTriggerOnPress'
             )
         );

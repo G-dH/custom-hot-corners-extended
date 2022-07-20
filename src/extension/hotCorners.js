@@ -88,6 +88,7 @@ var CustomHotCornersExtended = class CustomHotCornersExtended {
                         return GLib.SOURCE_REMOVE;
                     }
                 );
+                this._mscOptions.set('showOsdMonitorIndexes', false);
                 this._mscOptions.connect('changed', (settings, key) => this._updateMscOptions(key));
 
                 log(`${Me.metadata.name}: enabled`);
