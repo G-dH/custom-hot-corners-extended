@@ -108,7 +108,7 @@ command within the cloned git repository, then you can use `Poedit` application 
 ### Buy me a coffe
 
 If you like my work and want to keep me motivated, you can also buy me a coffee:
-[buymeacoffee.com/georgdh](buymeacoffee.com/georgdh)
+[buymeacoffee.com/georgdh](https://buymeacoffee.com/georgdh)
 
 ## Credits
 
