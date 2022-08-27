@@ -36,6 +36,8 @@ class KeyboardPage extends TreeViewPage {
         super._init();
         this._mscOptions = mscOptions;
         this._alreadyBuilt = false;
+
+        this.buildPage();
     }
 
     buildPage() {

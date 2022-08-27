@@ -40,7 +40,7 @@ const shellVersion   = Settings.shellVersion;
 const MONITOR_TITLE  = Settings.MONITOR_TITLE;
 const MONITOR_ICON   = Settings.MONITOR_ICON;
 
-const TRANSITION_DURATION = Settings.TRANSITION_DURATION;
+const TRANSITION_TIME = Settings.TRANSITION_TIME;
 
 function getMonitorPages(mscOptions) {
     let pages = [];
@@ -121,7 +121,7 @@ class MonitorPage extends Gtk.Box {
         });
 
         stackSwitcher.set_stack(stack);
-        stack.set_transition_duration(TRANSITION_DURATION);
+        stack.set_transition_duration(TRANSITION_TIME);
         stack.set_transition_type(Gtk.StackTransitionType.SLIDE_LEFT_RIGHT);
 
         let icons = [];

@@ -44,7 +44,7 @@ var TriggerLabels = [
     _('Ctrl + Hot Corner')
 ];
 
-var TRANSITION_DURATION = 200;
+var TRANSITION_TIME = 200;
 
 var MONITOR_TITLE = _('Monitor');
 var MONITOR_ICON = 'video-display-symbolic';

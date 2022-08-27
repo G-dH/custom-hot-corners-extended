@@ -34,18 +34,20 @@ const set_child = Utils.set_child;
 
 const _bold = Utils.bold;
 
-const TRANSITION_DURATION = Settings.TRANSITION_DURATION;
+const TRANSITION_TIME = Settings.TRANSITION_TIME;
 
 var CustomMenusPage = GObject.registerClass(
 class CustomMenusPage extends Gtk.Box {
-    _init(mscOptions, widgetProperties ={
-        orientation: Gtk.Orientation.VERTICAL,
-        visible: true
-    }) {
-        super._init(widgetProperties);
+    _init(mscOptions) {
+        super._init({
+            orientation: Gtk.Orientation.VERTICAL,
+            visible: true
+        });
         this._mscOptions = mscOptions;
         this._menusCount = 4;
         this._alreadyBuilt = false;
+
+        this.buildPage();
     }
 
     buildPage() {
@@ -69,7 +71,7 @@ class CustomMenusPage extends Gtk.Box {
             stack.get_visible_child().buildPage();
         });
 
-        stack.set_transition_duration(TRANSITION_DURATION);
+        stack.set_transition_duration(TRANSITION_TIME);
         stack.set_transition_type(Gtk.StackTransitionType.SLIDE_LEFT_RIGHT);
         switcher.set_stack(stack);
 
