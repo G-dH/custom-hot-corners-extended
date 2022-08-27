@@ -14,16 +14,14 @@ const { Gtk, Gio, GLib, GObject } = imports.gi;
 const ExtensionUtils  = imports.misc.extensionUtils;
 const Me              = ExtensionUtils.getCurrentExtension();
 
+const OptionsFactory  = Me.imports.src.prefs.optionsFactory;
 const Settings        = Me.imports.src.common.settings;
-const triggers        = Settings.listTriggers();
-const triggerLabels   = Settings.TriggerLabels;
-const _actionList     = Settings.actionList;
-const _excludedItems  = Settings.excludedItems;
 
 const MonitorPages    = Me.imports.src.prefs.monitorPages;
 const KeyboardPage    = Me.imports.src.prefs.keyboardPage.KeyboardPage;
 const CustomMenusPage = Me.imports.src.prefs.customMenusPage.CustomMenusPage;
-const OptionsPage     = Me.imports.src.prefs.optionsPage.OptionsPage;
+const OptionsPage     = Me.imports.src.prefs.optionsPage;
+const AboutPage       = Me.imports.src.prefs.aboutPage;
 
 const Utils           = Me.imports.src.common.utils;
 const _newImageFromIconName = Utils._newImageFromIconName;
@@ -37,25 +35,44 @@ const _  = Settings._;
 const shellVersion = Settings.shellVersion;
 
 const Triggers = Settings.Triggers;
+const TRANSITION_TIME = Settings.TRANSITION_TIME;
 
 let Adw = null;
 try { Adw = imports.gi.Adw; } catch (e) {}
 
-const TRANSITION_DURATION = Settings.TRANSITION_DURATION;
-
-const MONITOR_ICON = Settings.MONITOR_ICON;
-const KEYBOARD_TITLE = Settings.KEYBOARD_TITLE;
-const KEYBOARD_ICON = Settings.KEYBOARD_ICON;
-const MENUS_TITLE = Settings.MENUS_TITLE;
-const MENUS_ICON = Settings.MENUS_ICON;
-const OPTIONS_TITLE = Settings.OPTIONS_TITLE;
-const OPTIONS_ICON = Settings.OPTIONS_ICON;
-
+let pageList;
 
 function init() {
     // log(`initializing ${Me.metadata.name} Preferences`);
     ExtensionUtils.initTranslations(Me.metadata['gettext-domain']);
     // WAYLAND = GLib.getenv('XDG_SESSION_TYPE') === 'wayland';
+
+    pageList = [
+        {
+            name: 'keyboard',
+            title: Settings.KEYBOARD_TITLE,
+            iconName: Settings.KEYBOARD_ICON,
+            pageClass: KeyboardPage
+        },
+        {
+            name: 'menus',
+            title: Settings.MENUS_TITLE,
+            iconName: Settings.MENUS_ICON,
+            pageClass: CustomMenusPage
+        },
+        {
+            name: 'options',
+            title: Settings.OPTIONS_TITLE,
+            iconName: Settings.OPTIONS_ICON,
+            pageClass: Adw ? OptionsPage.MscOptionsPageAdw : OptionsPage.MscOptionsPageLegacy
+        },
+        {
+            name: 'about',
+            title: _('About'),
+            iconName: 'preferences-system-details-symbolic',
+            pageClass: Adw ? AboutPage.AboutPageAdw : AboutPage.AboutPageLegacy
+        }
+    ];
 }
 
 function fillPreferencesWindow(window) {
@@ -69,46 +86,39 @@ function fillPreferencesWindow(window) {
         const [page, title] = mPage;
         const monAdwPage = new Adw.PreferencesPage({
             title: title,
-            icon_name: MONITOR_ICON
+            icon_name: Settings.MONITOR_ICON
         });
-        const monGroup = new Adw.PreferencesGroup();
         page.buildPage();
-        monGroup.add(page);
-        monAdwPage.add(monGroup);
+        const group = new Adw.PreferencesGroup();
+        group.add(page);
+        monAdwPage.add(group);
         window.add(monAdwPage);
     }
 
-    let keyboardAdwPage = new Adw.PreferencesPage({
-        title: KEYBOARD_TITLE,
-        icon_name: KEYBOARD_ICON
-    });
-    let keyboardGroup = new Adw.PreferencesGroup();
-    let keyboardPage = new KeyboardPage(mscOptions);
-    keyboardPage.buildPage();
 
-    keyboardGroup.add(keyboardPage);
-    keyboardAdwPage.add(keyboardGroup);
-    window.add(keyboardAdwPage);
+    for (let page of pageList) {
+        const title = page.title;
+        const icon_name = page.iconName;
+        const pageClass = page.pageClass;
 
-    let customMenusAdwPage = new Adw.PreferencesPage({
-        title: MENUS_TITLE,
-        icon_name: MENUS_ICON
-    });
-    let customMenuGroup = new Adw.PreferencesGroup();
-    let customMenusPage = new CustomMenusPage(mscOptions);
-    customMenusPage.buildPage();
+        const pp = new pageClass(mscOptions, {title, icon_name});
+        // only options pages return complete Adw.Page
+        if (pp instanceof Adw.PreferencesPage) {
+            page = pp;
+        } else {
+            page = new Adw.PreferencesPage({
+                title,
+                icon_name
+            });
+            const group = new Adw.PreferencesGroup();
+            group.add(pp);
+            page.add(group);
+        }
 
-    customMenuGroup.add(customMenusPage);
-    customMenusAdwPage.add(customMenuGroup);
-    window.add(customMenusAdwPage);
+        window.add(page);
+    }
 
-    const optionsAdwPage = new OptionsPage(mscOptions, {
-        title: OPTIONS_TITLE,
-        icon_name: OPTIONS_ICON
-    });
-    window.add(optionsAdwPage);
-
-    window.set_default_size(600, 700);
+    window.set_default_size(700, 800);
 
     window.connect('close-request', () => {
         mscOptions.set('showOsdMonitorIndexes', false);
@@ -119,6 +129,8 @@ function fillPreferencesWindow(window) {
                 corner.destroy();
             })
         });
+
+        pageList = null;
 
         Gio.resources_unregister(resources);
     });
@@ -132,22 +144,26 @@ function buildPrefsWidget() {
     const resources = Gio.Resource.load(Me.path + '/resources/custom-hot-corners-extended.gresource');
     Gio.resources_register(resources);
 
+
+
     const stack = new Gtk.Stack({
         hexpand: true
     });
-    const stackSwitcher = new Gtk.StackSwitcher();
+    const stackSwitcher = new Gtk.StackSwitcher({
+        halign: Gtk.Align.CENTER,
+        hexpand: true
+    });
+    if (shellVersion < 40) stackSwitcher.homogeneous = true;
     const context = stackSwitcher.get_style_context();
     context.add_class('caption');
-    stack.connect('notify::visible-child', () => {
-        stack.get_visible_child().buildPage();
-    });
+
     stackSwitcher.set_stack(stack);
-    stack.set_transition_duration(TRANSITION_DURATION);
+    stack.set_transition_duration(TRANSITION_TIME);
     stack.set_transition_type(Gtk.StackTransitionType.SLIDE_LEFT_RIGHT);
 
     const pagesBtns = [];
-    const monitorPages = MonitorPages.getMonitorPages(mscOptions);
 
+    const monitorPages = MonitorPages.getMonitorPages(mscOptions);
     let firstPageBuilt = false;
     for (let mPage of monitorPages) {
         const [page, title] = mPage;
@@ -156,20 +172,20 @@ function buildPrefsWidget() {
             firstPageBuilt = true;
         }
         stack.add_named(page, title);
-        pagesBtns.push([new Gtk.Label({ label: title }), _newImageFromIconName(MONITOR_ICON, Gtk.IconSize.BUTTON)]);
+        pagesBtns.push([new Gtk.Label({ label: title }), _newImageFromIconName(Settings.MONITOR_ICON, Gtk.IconSize.BUTTON)]);
     }
 
-    const kbPage = new KeyboardPage(mscOptions);
-    const cmPage = new CustomMenusPage(mscOptions);
-    const optionsPage = new OptionsPage(mscOptions);
+    for (let page of pageList) {
+        const name = page.name;
+        const title = page.title;
+        const iconName = page.iconName;
+        const pageClass = page.pageClass;
 
-    stack.add_named(kbPage, 'keyboard');
-    stack.add_named(cmPage, 'custom-menus');
-    stack.add_named(optionsPage, 'options');
-
-    pagesBtns.push([new Gtk.Label({ label: KEYBOARD_TITLE }), _newImageFromIconName(KEYBOARD_ICON, Gtk.IconSize.BUTTON)]);
-    pagesBtns.push([new Gtk.Label({ label: MENUS_TITLE }),  _newImageFromIconName(MENUS_ICON, Gtk.IconSize.BUTTON)]);
-    pagesBtns.push([new Gtk.Label({ label: OPTIONS_TITLE }),  _newImageFromIconName(OPTIONS_ICON, Gtk.IconSize.BUTTON)]);
+        stack.add_named(new pageClass(mscOptions), name);
+        pagesBtns.push(
+            [new Gtk.Label({ label: title}), _newImageFromIconName(iconName, Gtk.IconSize.BUTTON)]
+        );
+    }
 
     stack.show_all && stack.show_all();
 
