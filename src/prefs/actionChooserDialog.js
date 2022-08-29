@@ -146,7 +146,7 @@ class ActionChooserDialog extends Gtk.Box {
         this.treeView = new Gtk.TreeView({
             enable_search: true,
             search_column: 1,
-            //hover_selection: true,
+            hover_selection: true,
             //hover_expand: true,
             hexpand: true,
             vexpand: true

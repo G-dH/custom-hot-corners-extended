@@ -47,6 +47,12 @@ class KeyboardPage extends TreeViewPage {
         this.buildWidgets();
         this._loadShortcuts();
         this._treeviewModelColumns = [GObject.TYPE_STRING, GObject.TYPE_STRING, GObject.TYPE_INT, GObject.TYPE_INT];
+        this._mscOptions.connect('changed::keyboard-shortcuts', () => {
+            if (!this._mscOptions.get('keyboardShortcuts', true).length) {
+                // only reset page, skip writing to settings
+                this._resetShortcuts(false);
+            }
+        });
 
         this._updateTitle();
         this.lbl.set_tooltip_text(`${_('Click on the Shortcut Key cell to set new shortcut.')}\n${
@@ -56,19 +62,15 @@ class KeyboardPage extends TreeViewPage {
         this.resetButton.set_label(_('Disable all'));
         this.resetButton.set_tooltip_text(_('Remove all keyboard shortcuts'));
         this.resetButton.connect('clicked', () => {
-            mscOptions.set('keyboardShortcuts', []);
-            this._loadShortcuts();
-            this._setNewTreeviewModel(this._treeviewModelColumns);
-            this._updateTitle();
-            this.treeView.grab_focus();
+            this._resetShortcuts();
         });
         this.showActiveBtn.connect('notify::active', () => {
-            this._setNewTreeviewModel(this._treeviewModelColumns);
+            this.setNewTreeviewModel();
             this.treeView.expand_all();
             this.treeView.grab_focus();
         })
 
-        this._setNewTreeviewModel(this._treeviewModelColumns);
+        this.setNewTreeviewModel();
 
         // Hotkey
         const actions     = new Gtk.TreeViewColumn({title: _('Action'), expand: true});
@@ -180,6 +182,14 @@ class KeyboardPage extends TreeViewPage {
             list.push(`${s} ${keybindings[s]}`);
         });
         this._mscOptions.set('keyboardShortcuts', list);
+    }
+
+    _resetShortcuts(writeSettings = true) {
+        writeSettings && this._mscOptions.set('keyboardShortcuts', []);
+        this._loadShortcuts();
+        this.setNewTreeviewModel();
+        this._updateTitle();
+        this.treeView.grab_focus();
     }
 
     _populateTreeview() {

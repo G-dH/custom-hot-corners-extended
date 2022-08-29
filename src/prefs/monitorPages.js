@@ -63,11 +63,7 @@ function getMonitorPages(mscOptions) {
 
         let corners = Settings.Corner.forMonitor(monitorIndex, monitorIndex, geometry);
 
-        const monitorPage = new MonitorPage();
-        monitorPage._monitor = monitor;
-        monitorPage._corners = corners;
-        monitorPage._geometry = geometry;
-        monitorPage._leftHandMouse = leftHandMouse;
+        const monitorPage = new MonitorPage(monitor, monitorIndex, corners, leftHandMouse);
 
         let labelText = `  ${MONITOR_TITLE}`;
         if (nMonitors > 1) {
@@ -83,15 +79,17 @@ function getMonitorPages(mscOptions) {
 
 const MonitorPage = GObject.registerClass(
 class MonitorPage extends Gtk.Box {
-    _init(widgetProperties = {
+    _init(monitor, monitorIndex, corners, leftHandMouse, widgetProperties = {
         orientation: Gtk.Orientation.VERTICAL,
         spacing: 6
     }) {
         super._init(widgetProperties);
 
-        this._corners = [];
-        this._monitor = null;
-        this._geometry = null;
+        this._corners = corners;
+        this._monitor = monitor;
+        this._monitorIndex = monitorIndex;
+        this._geometry = monitor.get_geometry();
+
         this._alreadyBuilt = false;
         this._leftHandMouse = false;
         this._iconPath = Utils.getIconPath();
@@ -101,7 +99,7 @@ class MonitorPage extends Gtk.Box {
         if (this._alreadyBuilt)
             return;
 
-        const context = this.get_style_context();
+        let context = this.get_style_context();
         context.add_class('background');
         const margin = 16;
         const stackSwitcher = new Gtk.StackSwitcher({
@@ -110,6 +108,40 @@ class MonitorPage extends Gtk.Box {
             margin_top: Adw ? 0 : margin,
             margin_bottom: Adw ? margin : 0
         });
+
+        const stackGrid = new Gtk.Grid({
+            row_spacing: 8
+        });
+
+        const monitorLabel = new Gtk.Label({
+            valign: Gtk.Align.START,
+            label: _('Monitor') + ` ${this._monitorIndex + 1}`
+        });
+        context = monitorLabel.get_style_context();
+        context.add_class('heading');
+
+        const resetBtn = new Gtk.Button({
+            tooltip_text: _('Disable all triggers and reset settings of this corner'),
+            vexpand: false,
+            hexpand: true,
+            halign: Gtk.Align.END,
+            valign: Gtk.Align.START,
+        });
+
+        resetBtn.connect('clicked', () => Settings.resetCorner(this._monitorIndex, stack.get_visible_child_name()));
+
+        if (shellVersion >= 40) {
+            resetBtn.icon_name = 'view-refresh-symbolic';
+        } else {
+            resetBtn.add(Gtk.Image.new_from_icon_name('view-refresh-symbolic', Gtk.IconSize.BUTTON));
+        }
+
+        context = resetBtn.get_style_context();
+        context.add_class('destructive-action');
+
+        stackGrid.attach(monitorLabel, 0, 0, 1, 1);
+        stackGrid.attach(stackSwitcher, 1, 0, 4, 1);
+        stackGrid.attach(resetBtn, 5, 0, 1, 1);
 
         const stack = new Gtk.Stack({
             hexpand: true
@@ -146,7 +178,7 @@ class MonitorPage extends Gtk.Box {
             cPage._leftHandMouse = this._leftHandMouse;
             if (i === 0)
                 cPage.buildPage();
-            const pName = `corner ${i}`;
+            const pName = `${this._corners[i].top ? 'top' : 'bottom'}-${this._corners[i].left ? 'left' : 'right'}`;
             const title = `${this._corners[i].top ? _('Top') : _('Bottom')}-${this._corners[i].left ? _('Left') : _('Right')}`;
             image.set_tooltip_text(title);
             stack.add_named(cPage, pName);
@@ -164,7 +196,7 @@ class MonitorPage extends Gtk.Box {
             }
         }
 
-        this[append](stackSwitcher);
+        this[append](stackGrid);
         this[append](stack);
         this.show_all && this.show_all();
         this._alreadyBuilt = true;
@@ -212,7 +244,7 @@ class CornerPage extends Gtk.Box {
                 valign: Gtk.Align.CENTER,
                 vexpand: false,
                 hexpand: false,
-                tooltip_text: _('If checked this trigger will work only when Ctrl key is pressed'),
+                tooltip_text: _('If checked this trigger will only work when the Ctrl key is pressed'),
                 visible: true
             });
 
@@ -226,7 +258,7 @@ class CornerPage extends Gtk.Box {
                     ctrlBtn.set_visible(true);
                     ctrlBtn.set_active(true);
                     ctrlBtn.set_sensitive(false);
-                    ctrlBtn.set_tooltip_text(_('This trigger works only when Ctrl key is pressed'));
+                    ctrlBtn.set_tooltip_text(_('This trigger only works when the Ctrl key is pressed'));
                 } else {
                     ctrlBtn.set_active(false);
                     ctrlBtn.set_sensitive(false);

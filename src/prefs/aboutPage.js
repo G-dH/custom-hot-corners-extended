@@ -23,7 +23,6 @@ const _  = Settings._;
 
 var shellVersion = parseFloat(imports.misc.config.PACKAGE_VERSION);
 
-
 if (Adw) {
 var AboutPageAdw = GObject.registerClass(
     class AboutPageAdw extends optionsFactory.OptionsPageAdw {
@@ -56,11 +55,11 @@ function getOptionList(mscOptions) {
         itemFactory.newLabel(Me.metadata.version.toString()),
     ));
 
-    /*optionList.push(itemFactory.getRowWidget(
+    optionList.push(itemFactory.getRowWidget(
         _('Reset all options'),
-        _('Set all options to default values.'),
+        _('Disable all triggers and set all options to default values.'),
         itemFactory.newOptionsResetButton(),
-    ));*/
+    ));
 
 
     optionList.push(itemFactory.getRowWidget(

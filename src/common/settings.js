@@ -60,8 +60,8 @@ const colorAccents = ['red', 'bark', 'sage', 'olive', 'viridian', 'prussiangreen
 var actionDict = {};
 actionList.forEach(act => actionDict[act[1]] = {title: act[2], icon: act[4]});
 
-const _schema = 'org.gnome.shell.extensions.custom-hot-corners-extended';
-const _path = '/org/gnome/shell/extensions/custom-hot-corners-extended';
+var _schema = 'org.gnome.shell.extensions.custom-hot-corners-extended';
+var _path = '/org/gnome/shell/extensions/custom-hot-corners-extended';
 
 const winSwitcherPopup = Utils.extensionEnabled('advanced-alt-tab@G-dH.github.com-dev');
 
@@ -165,7 +165,41 @@ var MscOptions = class MscOptions {
         const key = this.options[option].key;
         return this._gsettings.get_default_value(key).deep_unpack();
     }
+
+    resetAll() {
+        const settings = this._gsettings;
+        settings.list_keys().forEach(key => {
+            settings.reset(key);
+        });
+    }
 };
+
+var resetAllCorners = function() {
+    // since we can't find all created monitor directories in gsettings without using dconf,
+    // we assume that max monitor count of 6 is enough for all users
+    for (const monitor of [0,1,2,3,4,5]) {
+        for (const corner of ['top-left', 'top-right', 'bottom-left', 'bottom-right']) {
+            resetCorner(monitor, corner);
+        }
+    }
+}
+
+var resetCorner = function(monitorIndex, corner) {
+    const schema = _schema + '.corner';
+    for (const trigger of [0,1,2,3,4,5,6]) {
+        const path = `${_path}/monitor-${monitorIndex}-${corner}-${trigger}/`;
+        const settings = getSettings(schema, path);
+        if (settings) {
+            settings.list_keys().forEach(key => {
+                settings.reset(key);
+            });
+            // ctrlBtn for the secondary hot corner action must be always checked
+            if (trigger == 6) {
+                settings.set_boolean('ctrl', true);
+            }
+        }
+    }
+}
 
 var Corner = class Corner {
     constructor(loadIndex, monitorIndex, top, left, x, y) {

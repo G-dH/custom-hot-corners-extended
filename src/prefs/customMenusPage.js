@@ -97,33 +97,39 @@ class CustomMenuPage extends TreeViewPage {
         this._mscOptions = mscOptions;
         this._alreadyBuilt = false;
         this._menuIndex = menuIndex;
+
         this._treeviewModelColumns = [GObject.TYPE_STRING, GObject.TYPE_STRING, GObject.TYPE_INT, GObject.TYPE_INT];
+        this.buildPage()
     }
 
     buildPage() {
         if (this._alreadyBuilt)
             return;
+
         this.buildWidgets();
         //this.treeView.set_reorderable(true);
-        this.menuItems = this._mscOptions.get(`customMenu${this._menuIndex}`);
+        const mscVar = `customMenu${this._menuIndex}`;
+        this.menuItems = this._mscOptions.get(mscVar);
+        this._mscOptions.connect(`changed::custom-menu-${this._menuIndex}`, () => {
+            if (!this._mscOptions.get(mscVar, true).length) {
+                // only reset page, skip writing to settings
+                this._resetMenu(false);
+            }
+        });
 
         this._updateTitle();
         this.lbl.set_tooltip_text(`${_('Check items you want to have in the Custom Menu action.')}\n${_('You can decide whether the action menu items will be in its section submenu or in the root of the menu by checking/unchecking the section item')}`);
         this.resetButton.set_label(_('Deselect all'));
         this.resetButton.set_tooltip_text(_('Remove all items from this menu'));
         this.resetButton.connect('clicked', () => {
-            this.menuItems = [];
-            this._mscOptions.set(`customMenu${this._menuIndex}`, this.menuItems);
-            this._setNewTreeviewModel(this._treeviewModelColumns);
-            this._updateTitle();
-            this.treeView.grab_focus();
+            this._resetMenu();
         });
         this.showActiveBtn.connect('notify::active', () => {
-            this._setNewTreeviewModel(this._treeviewModelColumns);
+            this.setNewTreeviewModel();
             this.treeView.expand_all();
             this.treeView.grab_focus();
         });
-        this._setNewTreeviewModel(this._treeviewModelColumns);
+        this.setNewTreeviewModel();
 
         // Menu items
         const actions     = new Gtk.TreeViewColumn({title: _('Menu Item'), expand: true});
@@ -168,7 +174,7 @@ class CustomMenuPage extends TreeViewPage {
             } else if (value) {
                 this.menuItems.push(item);
             }
-            this._mscOptions.set(`customMenu${this._menuIndex}`, this.menuItems);
+            this._mscOptions.set(mscVar, this.menuItems);
             this._updateTitle();
             // clicking toggle button also activates row which expand/colapse submenu row
             // following sort of fixes it for collapsed row but not for expanded
@@ -194,6 +200,14 @@ class CustomMenuPage extends TreeViewPage {
 
     _updateTitle() {
         this.lbl.set_markup(_bold(_('Select items for Custom Menu')) + _bold(` ${this._menuIndex}`) + `     ( ${this.menuItems.length} ${_('items')} )`);
+    }
+
+    _resetMenu(writeSettings = true) {
+        this.menuItems = [];
+        writeSettings && this._mscOptions.set(mscVar, this.menuItems);
+        this.setNewTreeviewModel();
+        this._updateTitle();
+        this.treeView.grab_focus();
     }
 
     _populateTreeview() {

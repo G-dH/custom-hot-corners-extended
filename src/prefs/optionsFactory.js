@@ -236,6 +236,9 @@ var ItemFactory = class ItemFactory {
             hexpand: true,
         });
 
+        const context = btn.get_style_context();
+        context.add_class('destructive-action');
+
         if (shellVersion >= 40) {
             btn.icon_name = 'view-refresh-symbolic';
         } else {
@@ -243,9 +246,8 @@ var ItemFactory = class ItemFactory {
         }
 
         btn.connect('clicked', () => {
-            Object.keys(gOptions.options).forEach(key => {
-                gOptions.set(key, gOptions.getDefault(key));
-            });
+            this._options.resetAll();
+            Settings.resetAllCorners();
         });
         btn._activatable = false;
         return btn;

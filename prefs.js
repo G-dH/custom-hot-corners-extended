@@ -45,7 +45,6 @@ let pageList;
 function init() {
     // log(`initializing ${Me.metadata.name} Preferences`);
     ExtensionUtils.initTranslations(Me.metadata['gettext-domain']);
-    // WAYLAND = GLib.getenv('XDG_SESSION_TYPE') === 'wayland';
 
     pageList = [
         {

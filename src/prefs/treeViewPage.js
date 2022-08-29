@@ -110,13 +110,16 @@ class TreeviewPage extends Gtk.Box {
         });
 
         this.resetButton = new Gtk.Button();
+        const context = this.resetButton.get_style_context();
+        context.add_class('destructive-action');
+
         this.showActiveBtn = new Gtk.ToggleButton({
             label: _('Show active items only')
         });
-
-        btnBox[append](expandButton);
-        btnBox[append](collapseButton);
+        
         btnBox[append](this.resetButton);
+        btnBox[append](collapseButton);
+        btnBox[append](expandButton);
 
         scrolledWindow[set_child](this.treeView);
         frame[set_child](scrolledWindow);
@@ -128,12 +131,12 @@ class TreeviewPage extends Gtk.Box {
         this[append](box);
     }
 
-    _setNewTreeviewModel(columns) {
+    setNewTreeviewModel() {
         if (this.model) {
             this.model = null;
         }
         this.model = new Gtk.TreeStore();
-        this.model.set_column_types(columns);
+        this.model.set_column_types(this._treeviewModelColumns);
         this.treeView.model = this.model;
         this._populateTreeview();
     }
