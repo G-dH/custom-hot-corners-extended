@@ -105,12 +105,14 @@ class MonitorPage extends Gtk.Box {
         const stackSwitcher = new Gtk.StackSwitcher({
             halign: Gtk.Align.CENTER,
             hexpand: true,
-            margin_top: Adw ? 0 : margin,
-            margin_bottom: Adw ? margin : 0
         });
 
         const stackGrid = new Gtk.Grid({
-            row_spacing: 8
+            row_spacing: 8,
+            margin_top: Adw ? 0 : margin,
+            margin_bottom: Adw ? margin : 0,
+            margin_left: margin,
+            margin_right: margin
         });
 
         const monitorLabel = new Gtk.Label({
