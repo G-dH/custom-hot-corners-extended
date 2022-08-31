@@ -81,7 +81,11 @@ const MonitorPage = GObject.registerClass(
 class MonitorPage extends Gtk.Box {
     _init(monitor, monitorIndex, corners, leftHandMouse, widgetProperties = {
         orientation: Gtk.Orientation.VERTICAL,
-        spacing: 6
+        spacing: 16,
+        margin_start: Adw ? 0 : 16,
+        margin_end: Adw ? 0 : 16,
+        margin_top: Adw ? 0 : 16,
+        margin_bottom: Adw ? 0 : 16,
     }) {
         super._init(widgetProperties);
 
@@ -109,10 +113,6 @@ class MonitorPage extends Gtk.Box {
 
         const stackGrid = new Gtk.Grid({
             row_spacing: 8,
-            margin_top: Adw ? 0 : margin,
-            margin_bottom: Adw ? margin : 0,
-            margin_left: margin,
-            margin_right: margin
         });
 
         const monitorLabel = new Gtk.Label({
@@ -210,10 +210,6 @@ class CornerPage extends Gtk.Box {
     _init(widgetProperties = {
         //selection_mode: null,
         orientation: Gtk.Orientation.VERTICAL,
-        margin_start: Adw ? 0 : 16,
-        margin_end: Adw ? 0 : 16,
-        margin_top: Adw ? 0 : 16,
-        margin_bottom: Adw ? 0 : 16,
         vexpand: true,
         visible: true
     }) {
