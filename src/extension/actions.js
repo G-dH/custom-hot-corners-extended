@@ -113,7 +113,12 @@ var Actions = class {
 
         if (this._osdMonitorsTimeoutId) {
             GLib.source_remove(this._osdMonitorsTimeoutId);
-            this._osdMonitorsTimeoutId
+            this._osdMonitorsTimeoutId = 0;
+        }
+
+        if (this._panelBarrierTimeoutId) {
+            GLib.source_remove(this._panelBarrierTimeoutId);
+            this._panelBarrierTimeoutId = 0;
         }
     }
 
@@ -1591,7 +1596,8 @@ var Actions = class {
                         reactive: true,
                     });
                     actor.connect('button-press-event', () => this.toggleDimmMonitors(null, null, monitorIndex));
-                    Main.layoutManager.addChrome(actor);
+                    //Main.layoutManager.addChrome(actor);
+                    global.stage.add_actor(actor);
                     this._dimmerActors.push(actor);
                 }
             }
