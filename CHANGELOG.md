@@ -1,4 +1,11 @@
 ## Changelog:
+### v21 2022-09-06
+**Added:**
+- GNOME 43 compatibility
+- Settings button for resetting corner options
+- Option to reset all settings to default values
+- About page in Settings
+
 
 ### v20 2022-07-11
 **Fixed:**
