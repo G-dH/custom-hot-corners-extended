@@ -155,9 +155,9 @@ var actionList = [
         [   1, 'invert-light-win'           , _('Invert Lightness (window)'),                true,  'view-reveal-symbolic',                        true],
         [   1, 'invert-light-shift-win'     , _('Invert Lightness - White to Grey (window)'),true,  'view-reveal-symbolic',                        true],
         [   1, 'invert-colors-win'          , _('Invert Colors (window)'),                   true,  'view-reveal-symbolic',                        true],
-        [   1, 'tint-red-toggle-win'        , _('Red Tint Monochrome (window)'),             true,  'view-reveal-symbolic',                        true],
-        [   1, 'tint-green-toggle-win'      , _('Green Tint Monochrome (window)'),           true,  'view-reveal-symbolic',                        true],
-        [   1, 'tint-custom-toggle-win'     , _('Custom Tint Monochrome (window)'),          true,  'view-reveal-symbolic',                        true],
+        [   1, 'tint-red-toggle-win'        , _('Red Tint (window)'),                        true,  'view-reveal-symbolic',                        true],
+        [   1, 'tint-green-toggle-win'      , _('Green Tint (window)'),                      true,  'view-reveal-symbolic',                        true],
+        [   1, 'tint-custom-toggle-win'     , _('Custom Color Tint (window)'),               true,  'view-reveal-symbolic',                        true],
         [   1, 'desaturate-win'             , _('Desaturate (window)'),                      true,  'view-reveal-symbolic',                        true],
         [   1, 'remove-effects-win'         , _('Remove All Effects (window)'),              true,  'window-close-symbolic',                       true],
 
