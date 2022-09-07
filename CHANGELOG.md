@@ -7,10 +7,10 @@
 - Action: `Move Window to Next Monitor`
 - Option to reset corner settings
 - Option to reset all settings to default values
-- About page in Settings
+- About page in Preferences window
 
 **Other Changes:**
-- Settings code refactored
+- Preferences code refactored
 
 
 ### v20 2022-07-11
@@ -18,7 +18,7 @@
 - Hot corners works unreliably after screen unlock in Wayland session
 
 **Other Changes:**
-- Settings code refactored
+- Preferences refactored
 
 
 ### v18,19 2022-07-03
