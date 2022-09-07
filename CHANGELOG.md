@@ -2,9 +2,15 @@
 ### v21 2022-09-06
 **Added:**
 - GNOME 43 compatibility
-- Settings button for resetting corner options
+- Action: `Previous/Nex Window - Current App (all)`
+- Action: `Unminimize All Windows`
+- Action: `Move Window to Next Monitor`
+- Option to reset corner settings
 - Option to reset all settings to default values
 - About page in Settings
+
+**Other Changes:**
+- Settings code refactored
 
 
 ### v20 2022-07-11
@@ -12,7 +18,7 @@
 - Hot corners works unreliably after screen unlock in Wayland session
 
 **Other Changes:**
-- Settings code refactoring
+- Settings code refactored
 
 
 ### v18,19 2022-07-03
@@ -27,6 +33,7 @@
 
 **Other Changes:**
 - code structure updates
+
 
 ### v17 2022-06-28
 **Added:**
