@@ -208,7 +208,6 @@ class MonitorPage extends Gtk.Box {
 const CornerPage = GObject.registerClass(
 class CornerPage extends Gtk.Box {
     _init(widgetProperties = {
-        //selection_mode: null,
         orientation: Gtk.Orientation.VERTICAL,
         vexpand: true,
         visible: true
@@ -474,7 +473,7 @@ class CornerPage extends Gtk.Box {
         const updateActBtnLbl = () => {
             const action = this._corner.get('action', trigger);
             let actionTitle;
-            if (!action) {
+            if (!actionDict[action]) {
                 actionTitle = _("Error: Stored action doesn't exist!!!");
             } else {
                 actionTitle = actionDict[action].title
