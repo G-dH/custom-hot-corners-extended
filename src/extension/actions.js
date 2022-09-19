@@ -1127,7 +1127,10 @@ var Actions = class {
                     win.window_type === Meta.WindowType.DOCK ||
                     win.skip_taskbar
                 ))) {
+                win._focusedBeforeShowDesktop = false;
                 wins.push(win);
+                if (win === global.display.get_focus_window())
+                    win._focusedBeforeShowDesktop = true;
             }
         }
 
@@ -1137,8 +1140,11 @@ var Actions = class {
             this._minimizedWindows = wins;
         } else if (this._minimizedWindows !== 0) {
             for (let win of this._minimizedWindows) {
-                if (win)
-                    win.unminimize();
+                win.unminimize();
+                if (win._focusedBeforeShowDesktop) {
+                    win.activate(global.get_current_time());
+                    win._focusedBeforeShowDesktop = false;
+                }
             }
 
             this._minimizedWindows = [];
@@ -1152,27 +1158,6 @@ var Actions = class {
         Main.wm.actionMoveWorkspace(targetWs);
         if (showPopup)
             this._showWsSwitcherPopup(direction, targetWs.index());
-        /*
-            let n_workspaces = global.workspaceManager.n_workspaces;
-            let lastWsIndex =  n_workspaces - (this.WS_IGNORE_LAST ? 2 : 1);
-
-            let activeWs  = global.workspaceManager.get_active_workspace();
-            let activeIdx = activeWs.index();
-            let targetIdx = this.WS_WRAPAROUND ?
-                            (activeIdx + (direction ? 1 : lastWsIndex )) % (lastWsIndex + 1) :
-                            activeIdx + (direction ? 1 : -1);
-            if (targetIdx < 0 || targetIdx > lastWsIndex) {
-                targetIdx = activeIdx;
-            }
-            let ws = global.workspaceManager.get_workspace_by_index(targetIdx);
-
-            Main.wm.actionMoveWorkspace(ws);
-
-            // show default workspace indicator popup
-            if (this.WS_INDICATOR_MODE === ws_indicator_mode.DEFAULT) {
-                this._showWsSwitcherPopup(direction, ws.index());
-            } else if (this.WS_INDICATOR_MODE > ws_indicator_mode.DEFAULT)
-        */
     }
 
     _showWsSwitcherPopup(direction, wsIndex) {
@@ -1190,6 +1175,57 @@ var Actions = class {
                 Main.wm._workspaceSwitcherPopup.display(wsIndex);
             } else {
                 Main.wm._workspaceSwitcherPopup.display(motion, wsIndex);
+            }
+        }
+    }
+
+
+    touchSwipeSimulator(direction, workspace) {
+        if (! workspace && !this._swipeOverviewTimeoutId)
+            Main.overview._swipeTracker._beginTouchSwipe(null, global.get_current_time(), 200, 150);
+        if (workspace && !this._swipeWsTimeoutId)
+            Main.wm._workspaceAnimation._swipeTracker._beginTouchSwipe(null, global.get_current_time(), 200, 150);
+
+        const state = global.get_pointer()[2];
+        const distance = 100;
+        const step = (state & Clutter.ModifierType.SHIFT_MASK) ? 1 : 10; // 1% / 10% when distance == 100
+        const delta = direction * step;
+        const time = global.get_current_time();
+        if (workspace) {
+            Main.wm._workspaceAnimation._swipeTracker._updateGesture(null, time, delta, distance);
+            if (!this._swipeWsTimeoutId) {
+                this._swipeWsTimeoutId = GLib.timeout_add(
+                    GLib.PRIORITY_DEFAULT,
+                    300,
+                    () => {
+                        // if the mouse pointer is still over the edge of the current monitor, we assume that the user has not yet finished the selection
+                        const [x, y] = global.get_pointer();
+                        if (!this._isPointerOnEdge(x, y)) {
+                            Main.wm._workspaceAnimation._swipeTracker._endGesture(global.get_current_time(), 700, true);
+                            this._swipeWsTimeoutId = 0;
+                            return GLib.SOURCE_REMOVE;
+                        }
+                        return GLib.SOURCE_CONTINUE;
+                    }
+                );
+            }
+        } else {
+            Main.overview._swipeTracker._updateGesture(null, time, delta, distance);
+            if (!this._swipeOverviewTimeoutId) {
+                this._swipeOverviewTimeoutId = GLib.timeout_add(
+                    GLib.PRIORITY_DEFAULT,
+                    300,
+                    () => {
+                        // if the mouse pointer is still over the edge of the current monitor, we assume that the user has not yet finished the selection
+                        const [x, y] = global.get_pointer();
+                        if (!this._isPointerOnEdge(x, y)) {
+                            Main.overview._swipeTracker._endGesture(global.get_current_time(), 700, true);
+                            this._swipeOverviewTimeoutId = 0;
+                            return GLib.SOURCE_REMOVE;
+                        }
+                        return GLib.SOURCE_CONTINUE;
+                    }
+                );
             }
         }
     }
@@ -1245,7 +1281,7 @@ var Actions = class {
             300,
             () => {
                 // if the mouse pointer is still over the edge of the current monitor, we assume that the user has not yet finished the selection
-                if (this._winPreview && !this._isPointerOnEdge()) {
+                if (this._winPreview && !this._isPointerOnEdge(this._winPreview._xPointer, this._winPreview._yPointer)) {
                     const metaWin = this._winPreview._window;
                     const switchWS = metaWin.get_workspace() !== global.workspace_manager.get_active_workspace();
                     if (switchWS)
@@ -1261,12 +1297,13 @@ var Actions = class {
     }
 
     // returns true if the mouse pointer is at the edge of the current monitor and not further than 100px on the other axis
-    _isPointerOnEdge() {
+    // xPointer/yPointer hold pointer position in time of action activation
+    _isPointerOnEdge(xPointer, yPointer) {
         let [x, y] = global.get_pointer();
         const geometry = global.display.get_monitor_geometry(global.display.get_current_monitor());
-        if ([geometry.x, geometry.x + geometry.width -1].includes(x) && Math.abs(this._winPreview._yPointer - y) < 100)
+        if ([geometry.x, geometry.x + geometry.width -1].includes(x) && Math.abs(yPointer - y) < 100)
             return true;
-        if ([geometry.y, geometry.y + geometry.height - 1].includes(y) && Math.abs(this._winPreview._xPointer - x) < 100)
+        if ([geometry.y, geometry.y + geometry.height - 1].includes(y) && Math.abs(xPointer - x) < 100)
             return true;
 
         return false;

@@ -58,7 +58,7 @@ var CustomHotCornersExtended = class CustomHotCornersExtended {
             enableDelay = 1;
             this.actionTrigger.actions.resume();
         } else {
-            enableDelay = 6;
+            enableDelay = 4;
         }
 
         this._delayId = GLib.timeout_add_seconds(
@@ -636,7 +636,7 @@ class CustomHotCorner extends Layout.HotCorner {
         } else {
             trg = Triggers.CTRL_PRESSURE;
         }
-        
+
         this._runAction(trg);
     }
 
@@ -668,8 +668,18 @@ class CustomHotCorner extends Layout.HotCorner {
 
     _onCornerScrolled(actor, event) {
         let direction = event.get_scroll_direction();
-        if (this._notValidScroll(direction))
+
+        // scroll wheel provides two types of direction information:
+        // 1. Clutter.ScrollDirection.DOWN / Clutter.ScrollDirection.UP
+        // 2. Clutter.ScrollDirection.SMOOTH + event.get_scroll_delta()
+        if (event.get_scroll_delta && this._notValidScroll(direction)) {
             return;
+        }
+        if (event.get_scroll_delta) {
+            let [, dy] = event.get_scroll_delta();
+            if (dy === 0) return;
+            direction = dy > 0 ? Clutter.ScrollDirection.DOWN : Clutter.ScrollDirection.UP;
+        }
 
         let trigger = null;
         switch (direction) {
@@ -693,7 +703,7 @@ class CustomHotCorner extends Layout.HotCorner {
     }
 
     _runAction(trigger) {
-        const timeoutWhitelist = ['volume-up', 'volume-down', 'display-brightness-up', 'display-brightness-down'];
+        const timeoutWhitelist = ['volume-up', 'volume-down', 'display-brightness-up', 'display-brightness-down', 'swipe-ws-up', 'swipe-ws-down', 'swipe-overview-up', 'swipe-overview-down'];
         if ((this._actionTimeoutActive(trigger) && !timeoutWhitelist.includes(this._corner.get('action', trigger))) ||
             this._corner.get('action', trigger) === 'disabled')
             return false;
@@ -720,7 +730,7 @@ class CustomHotCorner extends Layout.HotCorner {
     }
 
     _notValidScroll(direction) {
-        if (direction === Clutter.ScrollDirection.SMOOTH)
+        if (direction !== Clutter.ScrollDirection.SMOOTH)
             return true;
         return false;
     }

@@ -560,6 +560,22 @@ var ActionTrigger = class ActionTrigger {
         this.actions.activateUiInspector();
     }
 
+    _swipeWsUp() {
+        this.actions.touchSwipeSimulator(-1, true);
+    }
+
+    _swipeWsDown() {
+        this.actions.touchSwipeSimulator(1, true);
+    }
+
+    _swipeOverviewUp() {
+        this.actions.touchSwipeSimulator(-1, false);
+    }
+
+    _swipeOverviewDown() {
+        this.actions.touchSwipeSimulator(1, false);
+    }
+
     _prefs() {
         this.actions.openPreferences();
     }

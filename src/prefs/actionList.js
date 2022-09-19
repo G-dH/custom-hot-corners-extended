@@ -222,12 +222,6 @@ var actionList = [
         [   1, 'mpris-next-firefox'         , _('Firefox - Next Track'),                    false,  'media-skip-forward-symbolic',                false],
         [   1, 'mpris-prev-firefox'         , _('Firefox - Previous Track'),                false,  'media-skip-backward-symbolic',               false],
 
-        [null, 'debug-submenu'              , _('Debug'),                                    true,  'edit-find-symbolic',                         false],
-        [   1, 'looking-glass'              , _('Looking Glass (GNOME Shell debugger)'),     true,  'edit-find-symbolic',                         false],
-        [   1, 'lg-inspector'               , _('GNOME Shell UI Inspector'),                 true,  'find-location-symbolic',                     false],
-        [   1, 'restart-shell'              , _('Restart GNOME Shell (X11 only)'),           true,  'view-refresh-symbolic',                      false],
-        [   1, 'run-prompt'                 , _('Show Run Command Prompt'),                 false,  'utilities-terminal-symbolic',                false],
-
         [null, 'custom-menus-submenu'       , _('Custom Menus'),                             true,  'open-menu-symbolic',                         false],
         [   1, 'show-custom-menu-1'         , _('Show Custom Menu 1'),                       true,  'open-menu-symbolic',                         false],
         [   1, 'show-custom-menu-2'         , _('Show Custom Menu 2'),                       true,  'open-menu-symbolic',                         false],
@@ -237,6 +231,16 @@ var actionList = [
         [null, 'hardware-submenu'           , _('Hardware Control'),                         true,  'system-run-symbolic',                        false],
         [   1, 'display-brightness-up'      , _('Display Brightness Up (HW)'),              false,  'display-brightness-symbolic',                false],
         [   1, 'display-brightness-down'    , _('Display Brightness Down (HW)'),            false,  'display-brightness-symbolic',                false],
+
+        [null, 'debug-submenu'              , _('Debug'),                                    true,  'edit-find-symbolic',                         false],
+        [   1, 'looking-glass'              , _('Looking Glass (GNOME Shell debugger)'),     true,  'edit-find-symbolic',                         false],
+        [   1, 'lg-inspector'               , _('GNOME Shell UI Inspector'),                 true,  'find-location-symbolic',                     false],
+        [   1, 'restart-shell'              , _('Restart GNOME Shell (X11 only)'),           true,  'view-refresh-symbolic',                      false],
+        [   1, 'run-prompt'                 , _('Show Run Command Prompt'),                 false,  'utilities-terminal-symbolic',                false],
+        [   1, 'swipe-ws-up'                , _('Swipe Workspace Up (Shift mods step)'),    false,  'input-touchpad-symbolic',                    false],
+        [   1, 'swipe-ws-down'              , _('Swipe Workspace Down (Shift mods step)'),  false,  'input-touchpad-symbolic',                    false],
+        [   1, 'swipe-overview-up'          , _('Swipe Overview Up (Shift mods step)'),     false,  'input-touchpad-symbolic',                    false],
+        [   1, 'swipe-overview-down'        , _('Swipe Overview Down (Shift mods step)'),   false,  'input-touchpad-symbolic',                    false],
 
         [null, 'prefs-submenu'              , _('CHC-E'),                                    true,  'preferences-system-symbolic',                false],
         [   1, 'prefs'                      , _('Open CHC-E Preferences'),                   true,  'preferences-system-symbolic',                false],
