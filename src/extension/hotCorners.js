@@ -18,7 +18,7 @@ const ExtensionUtils         = imports.misc.extensionUtils;
 const Me                     = ExtensionUtils.getCurrentExtension();
 const Utils                  = Me.imports.src.common.utils;
 const Settings               = Me.imports.src.common.settings;
-const ActionTriger           = Me.imports.src.extension.actionTrigger;
+const ActionTrigger           = Me.imports.src.extension.actionTrigger;
 
 const listTriggers           = Settings.listTriggers();
 const Triggers               = Settings.Triggers;
@@ -69,7 +69,7 @@ var CustomHotCornersExtended = class CustomHotCornersExtended {
                 this._extensionEnabled = true;
                 this._mscOptions = new Settings.MscOptions();
                 if (!this.actionTrigger) {
-                    this.actionTrigger = new ActionTriger.ActionTrigger(this._mscOptions);
+                    this.actionTrigger = new ActionTrigger.ActionTrigger(this._mscOptions);
                 }
                 else {
                     this.actionTrigger._bindShortcuts();
@@ -149,18 +149,18 @@ var CustomHotCornersExtended = class CustomHotCornersExtended {
     }
 
     _updateSupportedExtensionsAvailability(reset = false) {
-        let supportedExetensions = [];
+        let supportedExtensions = [];
         if (!reset) {
             // test ArcMenu
             if (global.toggleArcMenu)
-                supportedExetensions.push('ArcMenu');
+                supportedExtensions.push('ArcMenu');
             // test AATWS
             if (imports.ui.altTab.WindowSwitcherPopup.prototype.showOrig)
-                supportedExetensions.push('AATWS');
+                supportedExtensions.push('AATWS');
             if (global.workspaceManager.layout_rows === -1)
-                supportedExetensions.push('VerticalWS')
+                supportedExtensions.push('VerticalWS')
         }
-        this._mscOptions.set('supportedExetensions', supportedExetensions);
+        this._mscOptions.set('supportedExtensions', supportedExtensions);
     }
 
     _updateMscOptions(key, doNotUpdateHC = false) {
@@ -212,11 +212,11 @@ var CustomHotCornersExtended = class CustomHotCornersExtended {
             return;
 
         let monIndexes = [...Main.layoutManager.monitors.keys()];
-        // index of the primary monitor to the first possition
+        // index of the primary monitor to the first position
         monIndexes.splice(0, 0, monIndexes.splice(primaryIndex, 1)[0]);
 
         for (let i = 0; i < Main.layoutManager.monitors.length; ++i) {
-            // Monitor 1 in preferences will allways refer to the primary monitor
+            // Monitor 1 in preferences will always refer to the primary monitor
             const corners = Settings.Corner.forMonitor(i, monIndexes[i], global.display.get_monitor_geometry(monIndexes[i]));
             chce._setExpansionLimits(corners);
 
@@ -300,7 +300,7 @@ var CustomHotCornersExtended = class CustomHotCornersExtended {
                         log(Me.metadata.name, 'Hot Corners had to be updated because of external override');
                         return this._watch.active;
                     }
-                    // some extensions (ArcMenu) can modify pressure barrier triggers, which normaly just emits a triggered event
+                    // some extensions (ArcMenu) can modify pressure barrier triggers, which normally just emits a triggered event
                     if ((this._myCorners[1] && Main.layoutManager.hotCorners[0] && Main.layoutManager.hotCorners[0]._pressureBarrier._trigger !== this._myCorners[1])) {
                         this._updateHotCorners();
                         log(Me.metadata.name, 'Hot Corners had to be updated because of external override');
@@ -368,8 +368,8 @@ class CustomHotCorner extends Layout.HotCorner {
     }
 
     // Overridden to allow all 4 monitor corners
-    setBarrierSize(size, forignAccess = true) {
-        if (forignAccess)
+    setBarrierSize(size, foreignAccess = true) {
+        if (foreignAccess)
             return;
         // Use code of parent class to remove old barriers but new barriers
         // must be created here since the properties are construct only.
@@ -418,7 +418,7 @@ class CustomHotCorner extends Layout.HotCorner {
     }
 
     _barrierCollision() {
-        // avoid barrier collisions on multimonitor system under X11 session
+        // avoid barrier collisions on multi-monitor system under X11 session
         let x = false;
         let y = false;
         for (let c of Main.layoutManager.hotCorners) {
@@ -500,7 +500,7 @@ class CustomHotCorner extends Layout.HotCorner {
             hSize = this._corner.fullExpandHorizontal ? geometry.width / 8 * 7 : geometry.width / 2 - 5;
             vSize = this._corner.fullExpandVertical ? geometry.height / 8 * 7 : geometry.height / 2 - 5;
         }
-        // the corner's reactive area can be expanded horizontaly and/or verticaly
+        // the corner's reactive area can be expanded horizontally and/or vertically
         // if only one expansion is needed, only one actor will be created
         if (v && !h) {
             hSize = aSize;

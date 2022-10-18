@@ -62,7 +62,7 @@ function getOptionList(mscOptions) {
         optionsList.push(
             itemFactory.getRowWidget(
                 _('Watch hot corners for external overrides'),
-                _('Update corners when something (usualy other extensions) change them'),
+                _('Update corners when something (usually other extensions) change them'),
                 itemFactory.newSwitch(), 'watchCorners'
             )
         );
@@ -102,7 +102,7 @@ function getOptionList(mscOptions) {
         optionsList.push(
             itemFactory.getRowWidget(
                 _('Mouse buttons trigger on press event'),
-                _('Trigger an action when you press the mouse button instead of when you release it.\nTriggering on release event is default because minimizes accidental triggering when dragging objects form areas close to the edge of the monitor (like unmaximize by draging from the top panel or using scroll bars). Minor disadvantage is longer reaction time which is given by the delay between pressing and releasing the button.'),
+                _('Trigger an action when you press the mouse button instead of when you release it.\nTriggering on release event is default because minimizes accidental triggering when dragging objects form areas close to the edge of the monitor (like unmaximize by dragging from the top panel or using scroll bars). Minor disadvantage is longer reaction time which is given by the delay between pressing and releasing the button.'),
                 itemFactory.newSwitch(), 'buttonsTriggerOnPress'
             )
         );
@@ -163,7 +163,7 @@ function getOptionList(mscOptions) {
         optionsList.push(
             itemFactory.getRowWidget(
                 _('DND Window Thumbnails'),
-                `${_('Window thumbnails are overlay clones of windows, can be draged by mouse anywhere on the screen')}\n${
+                `${_('Window thumbnails are overlay clones of windows, can be dragged by mouse anywhere on the screen')}\n${
                     _('Thumbnail control:')}\n    ${
                     _('Double click:    \t\tactivate source window')}\n    ${
                     _('Primary click:   \t\ttoggle scroll wheel function (resize / source)')}\n    ${

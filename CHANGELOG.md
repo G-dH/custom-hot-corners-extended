@@ -1,5 +1,7 @@
 ## Changelog:
-### v21 2022-09-06
+### v23
+
+### v21, v22 2022-09-06
 **Added:**
 - GNOME 43 compatibility
 - Action: `Previous/Nex Window - Current App (all)`
@@ -23,7 +25,7 @@
 
 ### v18,19 2022-07-03
 **Added:**
-- DND Window Thumbnails - Secondary mouse button toggles fullsize window preview on mouse pointer hover.
+- DND Window Thumbnails - Secondary mouse button toggles full-size window preview on mouse pointer hover.
 
 **Removed:**
 - DND Window Thumbnails - Switching from window clone view to icon view using middle mouse button
@@ -44,13 +46,13 @@
 - `Toggle Dark Gtk Theme` now supports new Ubuntu accented themes.
 - CHC-E preferences window icons follow Ubuntu Yaru theme accents. If Yaru is not detected, blue accent will be used, which is close to the default Adwaita accent.
 - DND Window Thumbnail: on-hover overlays - close button and icon indicating current function of the scroll wheel; secondary click shows a full size preview of the window. Still work in progress.
-- `Custom Color Tint` action - you can select any color you want on the `Options` page of CHC-E's prferences window.
+- `Custom Color Tint` action - you can select any color you want on the `Options` page of CHC-E's preferences window.
 - Option: `Hot Corners Require Shift` to allow you to inhibit all direct Hot corner triggers at once when needed.
 
 **Fixed:**
-- Slow startup of the prferences window and lagging first switch to other corner pages - action menu combo boxes were replaced with buttons + treeview menu which means more than 10x faster startup and no lags in UI
+- Slow startup of the preferences window and lagging first switch to other corner pages - action menu combo boxes were replaced with buttons + treeview menu which means more than 10x faster startup and no lags in UI
 - Missing path for relocatable corner schema not allowing corner settings backup. Now the `Extensions Sync` extension can store all CHC-E settings.
-- Custom Menu - actions targetting focused window don't work, menu steals focus from window in GS 40+
+- Custom Menu - actions targeting focused window don't work, menu steals focus from window in GS 40+
 - Wrong workspace index limits in `Reorder Workspace` action.
 - Window is ready notification when switching windows
 
@@ -58,18 +60,18 @@
 - TreeView submenus expand on a single-click instead of double-click
 - New Make file simplifies installation from source.
 - CHC-E `Open Preferences` action can close blocking preferences window of another extension
-- Mouse button triggeres now react on release event instead of press event. Reasons: 1. top edge press events are sometimes blocked by unknown element in the fullscreen mode in Ubuntu 22.04, 2. prevents accidental action triggering when unmaximizing a window by dragging from the top panel, 3. button release event closes Custom Menu in GS 3.xx
+- Mouse button triggers now react on release event instead of press event. Reasons: 1. top edge press events are sometimes blocked by unknown element in the full-screen mode in Ubuntu 22.04, 2. prevents accidental action triggering when unmaximizing a window by dragging from the top panel, 3. button release event closes Custom Menu in GS 3.xx
 
 ### v16
 **Added:**
-- Action `Close Current Workspace (all its windows)` - allows you to close all windows that belong to the currently active workspace and remove it drom the list (if you use dynamic workspaces).
+- Action `Close Current Workspace (all its windows)` - allows you to close all windows that belong to the currently active workspace and remove it from the list (if you use dynamic workspaces).
 - Action `Switch to Second Last Workspace` - allows you to switch to the last non-empty workspace, if the workspaces are managed dynamically.
 - DND Window Thumbnail can be switched to the app icon and back to the window thumbnail using Ctrl + primary click.
 - Window Switcher (actions `Previous Window`, `Next Window`) now uses full-size windows previews instead of activating them directly. This change allows you to switch windows in MRU order, not just in stable sequence.
 - Option `Sort by Stable Sequence` for the Window Switcher (actions `Previous Window`, `Next Window`) allows you to scroll through windows in a stable order (as they were created) instead of the default Most Recently Used order.
-- Action `Rotate Windows Across Workspaces Left/Right/Up/Down` allows you to move all windows that belong to the current monitor (the one with the mouse pointer) one workspace left/right (or up/down) in wraparound cycle. This action allows to fake switch workspace on secondary moniotrs, if option `Workspaces on primary monitor only` is disabled (you can use GNOME Tweaks app).
-- Action `Switch Workspace on Current Monitor Only` allows the same as the previous one, but for the primary monitor it switches workspace as usual and moves windows on other monitors across workspaces in the oposite direction to compensate for the change, so you will see the same windows on secondary monitors, like the workspace didn't change.
-- On multimonitor system when you open preferences window, osd label with monitor index appears on each display
+- Action `Rotate Windows Across Workspaces Left/Right/Up/Down` allows you to move all windows that belong to the current monitor (the one with the mouse pointer) one workspace left/right (or up/down) in wraparound cycle. This action allows to fake switch workspace on secondary monitors, if option `Workspaces on primary monitor only` is disabled (you can use GNOME Tweaks app).
+- Action `Switch Workspace on Current Monitor Only` allows the same as the previous one, but for the primary monitor it switches workspace as usual and moves windows on other monitors across workspaces in the opposite direction to compensate for the change, so you will see the same windows on secondary monitors, like the workspace didn't change.
+- On multi-monitor system when you open preferences window, osd label with monitor index appears on each display
 
 **Fixed:**
 - Keyboard shortcuts do not update on-change
@@ -78,7 +80,7 @@
 **Other changes**
 - Action `Switch to Most Recent Workspace` is now based on the AltTab window list instead of workspace change tracking, so you'll get the workspace with the recent user interaction.
 - GSettings i/o operations were refactored
-- Preferences window now supports new GNOME 42 Adwaita toolkit and also Gtk3 and Gtk4 versions of prefs windows were refactored to get visually closer to the Adwaita version.
+- Preferences window now supports new GNOME 42 Adwaita toolkit and also Gtk3 and Gtk4 versions of preferences windows were refactored to get visually closer to the Adwaita version.
 
 ### v15
 **Fixed:**
@@ -86,7 +88,7 @@
 
 ### v14
 **Fixed:**
-- Option `Show active items only` on `Keyboard` pages crashes after shortchuts change.
+- Option `Show active items only` on `Keyboard` pages crashes after shortcuts change.
 
 ### v13 (12 was skipped due to packaging error):
 
@@ -101,21 +103,21 @@
 - `Open Panel Aggregate Menu`, `Open Panel Date Menu`, `Open Panel App Menu` in `GNOME` section.
 
 **Fixes:**
-- added gschema paths for not dynamically created settings - now global settings can be backed up using `Extensions Sync` extension. Unfotunately, dynamically created settings directories storing settings of all individual triggers don't have unique schema id, so can not be backed up using mentioned extension.
+- added gschema paths for not dynamically created settings - now global settings can be backed up using `Extensions Sync` extension. Unfortunately, dynamically created settings directories storing settings of all individual triggers don't have unique schema id, so can not be backed up using mentioned extension.
 - GS41 not detected
 - Custom Menus - items without its own submenu were added to the previous submenu instead of to the root menu.
-- Sceen keyboard won't show when activated from Custom Menu
+- Screen keyboard won't show when activated from Custom Menu
 
 **Other changes:**
 - added compatibility with GNOME Shell 42.
-- default value for `Enable this trigger in fullscreen mode` option has been set to `true` and its control has been moved from the settings popup menu to the main page right beside each Action dropdown menu.
-- global option `Enable all trigers in fullscreen` has been removed.
+- default value for `Enable this trigger in full-screen mode` option has been set to `true` and its control has been moved from the settings popup menu to the main page right beside each Action dropdown menu.
+- global option `Enable all triggers in full-screen` has been removed.
 - redesigned `Monitor` corner settings page, added toggle button for direct control over `Enable in Fullscreen` option.
-- redesigned `Keyboard` and `Custom Menus` Options pages and added butons for control over tree view.
-- workspace switcher options have been removed, you can use my `Workspace Switcher Manager` extension to customize workspace switcher behavior globaly.
+- redesigned `Keyboard` and `Custom Menus` Options pages and added buttons for control over tree view.
+- workspace switcher options have been removed, you can use my `Workspace Switcher Manager` extension to customize workspace switcher behavior globally.
 - Custom menu adds title of the focused window as the first item if the menu contains actions that target the window.
-- action `Run Preset Command ...` now can activate application by app id (`.desktop` launcher file name) and was renamed to `Run Preset Command / Activate App ...`. App chooser dialog can now produce command or app id and the latter is default (preffered) option as it's native way to launch / activate application in GNOME Shell.
-- some actions have been moved to submenus to reduce menu height, some useless actions heve been removed
+- action `Run Preset Command ...` now can activate application by app id (`.desktop` launcher file name) and was renamed to `Run Preset Command / Activate App ...`. App chooser dialog can now produce command or app id and the latter is default (preferred) option as it's native way to launch / activate application in GNOME Shell.
+- some actions have been moved to submenus to reduce menu height, some useless actions have been removed
 - Action menu was reordered to make the root list shorter, removed actions `Previous/Next Workspace Overview`.
 
 ### v11:
@@ -133,11 +135,11 @@
 ### v9:
 - *Ctrl* "safety lock" finally works with Wayland
 - Pressure barrier sizes are now adjustable by scale controllers on the main corner page along with clickable area expansion for better orientation in settings.
-- Barrier size is now adjustable in percentage of the monitor's width/heigt instead of pixels.
+- Barrier size is now adjustable in percentage of the monitor's width/height instead of pixels.
 - Option *Make active corners/edges visible* now also shows the pressure barriers.
 - Added action **Window Thumbnail (PIP)** - make a thumbnail preview (like Picture in Picture) of the active window which you can drag and drop anywhere on the screen. Thumbnail size can be adjusted by a mouse scroll wheel and you can even change the source window of the thumbnail. You can make as many thumbnails as you want, not just one.
 - Added new shader filters - color blind vision simulation and correction filters in Accessibility menu. Inversion filters have been enhanced - Invert Lightness, Invert Lightness - Wite to Grey (for lower contrast at night time) and full color inversion, now all gamma corrected to make deep dark shades distinguishable.
-- Added actions to trigger default Window and App Switcher Pop-ups. When you install and enable the **Advanced Alt+TAb Window Switcher** extension you'll be able to use more actions with diffrent settigs of this extended window switcher pop-up.
+- Added actions to trigger default Window and App Switcher Pop-ups. When you install and enable the **Advanced Alt+TAb Window Switcher** extension you'll be able to use more actions with different settings of this extended window switcher pop-up.
 - Added 4 **Custom Menus** to action menu - you can populate up to 4 different menus with actions of your choice and trigger them the same way as other single actions.
 - Added **Minimize to thumbnail** action - live window thumbnail of the focused window will be created and window will be minimized.
 - Workspace switcher has **new** optional **workspace switcher indicator - overlay index**. Shows a big transparent index number of switched workspace on the bottom half of the screen.
@@ -147,4 +149,4 @@
 - The *Invert Lightness* action is now available in Gnome 40
 - Toggle Light/Dark GTK theme action - supports Adwaita and Ubuntu Yaru(Light) themes
 - Multiple color effect actions for whole desktop and single windows including **red/green color tint, contrast, brightness, transparency and system Night Light switch**
-- *Reorder workspace* action alows you to move whole workspace up/down (left/right in gnome 40) in the workspace list.
+- *Reorder workspace* action allows you to move whole workspace up/down (left/right in gnome 40) in the workspace list.

@@ -60,7 +60,7 @@ class ColorInversionEffect extends Clutter.ShaderEffect {
 var   ColorMixerEffect1 = GObject.registerClass(
 class ColorMixerEffect1 extends Clutter.ShaderEffect {
     vfunc_get_static_shader_source() {
-        return ShaderLib.getChanellMix(1);
+        return ShaderLib.getChannelMix(1);
     }
 
     vfunc_paint_target(node, paint_context) {
@@ -75,7 +75,7 @@ class ColorMixerEffect1 extends Clutter.ShaderEffect {
 var   ColorMixerEffect2 = GObject.registerClass(
 class ColorMixerEffect2 extends Clutter.ShaderEffect {
     vfunc_get_static_shader_source() {
-        return ShaderLib.getChanellMix(2);
+        return ShaderLib.getChannelMix(2);
     }
 
     vfunc_paint_target(node, paint_context) {
@@ -253,7 +253,7 @@ var ShaderLib = class {
         `;
     }
 
-    static getChanellMix(mode) {
+    static getChannelMix(mode) {
         return `
             uniform sampler2D tex;
             #define MIX_MODE ${mode}

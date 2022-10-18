@@ -171,7 +171,7 @@ class ActionChooserDialog extends Gtk.Box {
         if (this._currentPath) {
             this.treeView.expand_row(this._currentPath[0], true); // path, expand recursive
             this.treeView.scroll_to_cell(this._currentPath[1], null, true, 0.25, 0); // path, column, align?, align row, align column
-            this.treeView.set_cursor(this._currentPath[1], null, false); // path, coulumn, start edit
+            this.treeView.set_cursor(this._currentPath[1], null, false); // path, column, start edit
         }
 
         const btnBox = new Gtk.Box({

@@ -50,6 +50,7 @@ var Actions = class {
         this._interfaceSettings     = null;
         this._shellSettings         = null;
         this._soundSettings         = null;
+        this._displayBrightnessProxy= null;
 
         this.keyboardTimeoutId      = 0;
 
@@ -289,14 +290,14 @@ var Actions = class {
     }
 
     _getDisplayBrightnessProxy() {
-        if (!this._dispalyBrightnessProxy) {
+        if (!this._displayBrightnessProxy) {
             const { loadInterfaceXML } = imports.misc.fileUtils;
             const BUS_NAME = 'org.gnome.SettingsDaemon.Power';
             const OBJECT_PATH = '/org/gnome/SettingsDaemon/Power';
 
             const BrightnessInterface = loadInterfaceXML('org.gnome.SettingsDaemon.Power.Screen');
             const BrightnessProxy = Gio.DBusProxy.makeProxyWrapper(BrightnessInterface);
-            this._dispalyBrightnessProxy = new BrightnessProxy(Gio.DBus.session, BUS_NAME, OBJECT_PATH,
+            this._displayBrightnessProxy = new BrightnessProxy(Gio.DBus.session, BUS_NAME, OBJECT_PATH,
                 (proxy, error) => {
                     if (error) {
                         log(error.message);
@@ -305,7 +306,7 @@ var Actions = class {
                 }
             );
         }
-        return this._dispalyBrightnessProxy;
+        return this._displayBrightnessProxy;
     }
 
     _destroyDimmerActors() {
@@ -409,7 +410,7 @@ var Actions = class {
         this._osdMonitorsConnection = global.display.connect('notify::focus-window', () =>{
             // destroy osd when the preferences window lost focus
             if (global.display.focus_window && !global.display.focus_window.get_title().includes(Me.metadata.name)) {
-                this._removeOsdMonitorIndexes(true); // remove labeles, keep this connection
+                this._removeOsdMonitorIndexes(true); // remove labels, keep this connection
                 //this._mscOptions.set('showOsdMonitorIndexes', false);
             } else {
                 this._removeOsdMonitorIndexes(true);
@@ -438,8 +439,8 @@ var Actions = class {
 
         const primaryIndex = Main.layoutManager.primaryIndex;
         let monIndexes = [...Main.layoutManager.monitors.keys()];
-        // index of the primary monitor to the first possition
-        // Monitor 1 in preferences will allways refer to the primary monitor
+        // index of the primary monitor to the first position
+        // Monitor 1 in preferences will always refer to the primary monitor
         monIndexes.splice(0, 0, monIndexes.splice(primaryIndex, 1)[0]);
 
         for (let i = 0; i < nMonitors; ++i) {
@@ -486,7 +487,7 @@ var Actions = class {
             // but in GS40 with Dash to Dock and its App button set to "no animation", this whole sequence is problematic
             if (shellVersion < 40)
                 Main.overview.dash.showAppsButton.checked = true;
-            // in 3.36 pressing the button is usualy enough to activate overview, but not always
+            // in 3.36 pressing the button is usually enough to activate overview, but not always
             Main.overview.show();
             // pressing apps btn before overview has no effect in GS 40, so once again
             Main.overview.dash.showAppsButton.checked = true;
@@ -607,8 +608,8 @@ var Actions = class {
         if (neighbor !== activeWs && (neighbor.index() !== lastIndex || activeWs !== lastIndex)) {
             for (let i = 0; i < nMonitors; i++) {
                 if (i !== currentMonitor) {
-                    const opositeDirection = direction === Meta.MotionDirection.UP ? Meta.MotionDirection.DOWN : Meta.MotionDirection.UP;
-                    this.rotateWorkspaces(opositeDirection, i, step);
+                    const oppositeDirection = direction === Meta.MotionDirection.UP ? Meta.MotionDirection.DOWN : Meta.MotionDirection.UP;
+                    this.rotateWorkspaces(oppositeDirection, i, step);
                 }
             }
         }
@@ -1114,7 +1115,7 @@ var Actions = class {
         }
     }
 
-    togleShowDesktop(monitorIndex = -1) {
+    toggleShowDesktop(monitorIndex = -1) {
         if (Main.overview.visible)
             return;
         let metaWorkspace = global.workspace_manager.get_active_workspace();
@@ -1253,10 +1254,10 @@ var Actions = class {
 
         if (!windows.length) return;
 
-        // if window selection is in the process, the previewd window must be the current one
+        // if window selection is in the process, the previewed window must be the current one
         let currentWin  = this._winPreview ? this._winPreview._window : windows[0];
         if (this.WIN_STABLE_SEQUENCE) {
-            // tab list is sorted by MRU order, active window is allways idx 0
+            // tab list is sorted by MRU order, active window is always idx 0
             // each window has index in global stable order list (as launched)
             windows.sort((a, b) => {
                     return a.get_stable_sequence() - b.get_stable_sequence();
@@ -1594,7 +1595,7 @@ var Actions = class {
         });
     }
 
-    toggleDimmMonitors(alpha, text, monitorIndex = -1) {
+    toggleDimMonitors(alpha, text, monitorIndex = -1) {
         // reverse order to avoid conflicts after dimmer removed
         let createNew = true;
         if (monitorIndex === -1 && (this._dimmerActors.length === Main.layoutManager.monitors.length)) {
@@ -1632,7 +1633,7 @@ var Actions = class {
                         opacity: alpha,
                         reactive: true,
                     });
-                    actor.connect('button-press-event', () => this.toggleDimmMonitors(null, null, monitorIndex));
+                    actor.connect('button-press-event', () => this.toggleDimMonitors(null, null, monitorIndex));
                     //Main.layoutManager.addChrome(actor);
                     global.stage.add_actor(actor);
                     this._dimmerActors.push(actor);
@@ -1661,7 +1662,7 @@ var Actions = class {
 
             if (value <= 1) {
                 value = 1;
-                // when Zoom = 1 enabled, graphics artefacts might follow mouse pointer
+                // when Zoom = 1 enabled, graphics artifacts might follow mouse pointer
                 if (appSettings.get_boolean('screen-magnifier-enabled'))
                     appSettings.set_boolean('screen-magnifier-enabled', false);
                     return;
@@ -1841,7 +1842,7 @@ var Actions = class {
     }
 
     // actions 0 - PlayPause, 1 - Next, 2 - Prev
-    mprisPlayerControler(action = 0, playerID = 'org.mpris.MediaPlayer2') {
+    mprisPlayerController(action = 0, playerID = 'org.mpris.MediaPlayer2') {
         const Methods = [
             'PlayPause',
             'Next',

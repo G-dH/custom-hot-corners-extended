@@ -107,7 +107,7 @@ var MscOptions = class MscOptions {
             customMenu2:            {type: 'strv',    key: 'custom-menu-2'},
             customMenu3:            {type: 'strv',    key: 'custom-menu-3'},
             customMenu4:            {type: 'strv',    key: 'custom-menu-4'},
-            supportedExetensions:   {type: 'strv',    key: 'supported-active-extensions'},
+            supportedExtensions:    {type: 'strv',    key: 'supported-active-extensions'},
             keyboardShortcuts:      {type: 'strv',    key: 'keyboard-shortcuts'},
             internalFlags:          {type: 'strv',    key: 'internal-flags'},
             showOsdMonitorIndexes:  {type: 'boolean', key: 'show-osd-monitor-indexes'},
@@ -209,7 +209,7 @@ var Corner = class Corner {
         this.left = left;
         this.x = x;
         this.y = y;
-        this._gsettings = this._loadSettingsForTrigges();
+        this._gsettings = this._loadSettingsForTriggers();
         this._connectionIds = [];
         this.hotCornerExists = false;
         this.fullExpandHorizontal = false;
@@ -312,7 +312,7 @@ var Corner = class Corner {
         }
     }
 
-    _loadSettingsForTrigges() {
+    _loadSettingsForTriggers() {
         let gsettings = {};
         this._writeTimeoutId = 0;
 

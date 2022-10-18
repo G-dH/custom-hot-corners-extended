@@ -135,17 +135,17 @@ var ActionTrigger = class ActionTrigger {
     }
 
     _showDesktop() {
-        this.actions.togleShowDesktop();
+        this.actions.toggleShowDesktop();
     }
 
     _showDesktopMon() {
-        this.actions.togleShowDesktop(global.display.get_current_monitor());
+        this.actions.toggleShowDesktop(global.display.get_current_monitor());
     }
 
     _blackScreen() {
         let opacity = 255;
         let note = Me.metadata.name;
-        this.actions.toggleDimmMonitors(
+        this.actions.toggleDimMonitors(
             opacity,
             note
         );
@@ -154,7 +154,7 @@ var ActionTrigger = class ActionTrigger {
     _blackScreenMon() {
         let opacity = 255;
         let note = Me.metadata.name;
-        this.actions.toggleDimmMonitors(
+        this.actions.toggleDimMonitors(
             opacity,
             note,
             global.display.get_current_monitor()
@@ -863,39 +863,39 @@ var ActionTrigger = class ActionTrigger {
     }
 
     _mprisPlayPause() {
-        this.actions.mprisPlayerControler(0);
+        this.actions.mprisPlayerController(0);
     }
 
     _mprisNext() {
-        this.actions.mprisPlayerControler(1);
+        this.actions.mprisPlayerController(1);
     }
 
     _mprisPrev() {
-        this.actions.mprisPlayerControler(2);
+        this.actions.mprisPlayerController(2);
     }
 
     _mprisPlayPauseSpotify() {
-        this.actions.mprisPlayerControler(0, 'org.mpris.MediaPlayer2.spotify');
+        this.actions.mprisPlayerController(0, 'org.mpris.MediaPlayer2.spotify');
     }
 
     _mprisNextSpotify() {
-        this.actions.mprisPlayerControler(1, 'org.mpris.MediaPlayer2.spotify');
+        this.actions.mprisPlayerController(1, 'org.mpris.MediaPlayer2.spotify');
     }
 
     _mprisPrevSpotify() {
-        this.actions.mprisPlayerControler(2, 'org.mpris.MediaPlayer2.spotify');
+        this.actions.mprisPlayerController(2, 'org.mpris.MediaPlayer2.spotify');
     }
 
     _mprisPlayPauseFirefox() {
-        this.actions.mprisPlayerControler(0, 'org.mpris.MediaPlayer2.firefox');
+        this.actions.mprisPlayerController(0, 'org.mpris.MediaPlayer2.firefox');
     }
 
     _mprisNextFirefox() {
-        this.actions.mprisPlayerControler(1, 'org.mpris.MediaPlayer2.firefox');
+        this.actions.mprisPlayerController(1, 'org.mpris.MediaPlayer2.firefox');
     }
 
     _mprisPrevFirefox() {
-        this.actions.mprisPlayerControler(2, 'org.mpris.MediaPlayer2.firefox');
+        this.actions.mprisPlayerController(2, 'org.mpris.MediaPlayer2.firefox');
     }
 
     _moveWinToPrevWs() {

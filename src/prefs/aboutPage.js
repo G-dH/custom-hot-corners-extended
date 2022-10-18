@@ -73,7 +73,7 @@ function getOptionList(mscOptions) {
     ));
 
     optionList.push(itemFactory.getRowWidget(
-        _('Gome Extensions'),
+        _('Gnome Extensions'),
         _('Rate and comment the extension on GNOME Extensions site.'),
         itemFactory.newLinkButton('https://extensions.gnome.org/extension/4467'),
     ));
