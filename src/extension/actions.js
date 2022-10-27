@@ -977,8 +977,11 @@ var Actions = class {
         }
     }
 
-    openPanelAggregateMenu() {
-        Main.panel.statusArea.aggregateMenu.menu.toggle();
+    openPanelSystemMenu() {
+        if (Main.panel.statusArea.aggregateMenu)
+            Main.panel.statusArea.aggregateMenu.menu.toggle();
+        if (Main.panel.statusArea.quickSettings)
+            Main.panel.statusArea.quickSettings.menu.toggle();
     }
 
     openPanelDateMenu() {

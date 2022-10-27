@@ -620,8 +620,8 @@ var ActionTrigger = class ActionTrigger {
         this.actions.toggleShowPanel();
     }
 
-    _openPanelAggregateMenu() {
-        this.actions.openPanelAggregateMenu();
+    _openPanelSystemMenu() {
+        this.actions.openPanelSystemMenu();
     }
 
     _openPanelDateMenu() {
