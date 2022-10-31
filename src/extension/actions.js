@@ -1424,6 +1424,18 @@ var Actions = class {
         }
 
         windowSurface.opacity = value;
+
+        if (toggleValue)
+            return;
+
+        const focusWin = this._getWindowApp(global.display.get_focus_window());
+        const winTitle = (window && focusWin) ? focusWin.get_name() : '';
+        let title = _('Opacity') + `  (${winTitle})`;
+        const maxLevel = 255;
+        const ampScale = 1;
+        const gicon = new Gio.ThemedIcon({ name: 'view-reveal-symbolic' });
+        const level = value/ maxLevel;
+        Main.osdWindowManager.show(-1, gicon, title, level, ampScale);
     }
 
     adjustSwBrightnessContrast(step = 0, window = false, brightness = true, valueO = null) {
@@ -1473,6 +1485,9 @@ var Actions = class {
         }
 
         setBCValue(value);
+
+        if (valueO)
+            return;
 
         const focusWin = this._getWindowApp(global.display.get_focus_window());
         const winTitle = (window && focusWin) ? focusWin.get_name() : '';
