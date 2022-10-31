@@ -1474,8 +1474,20 @@ var Actions = class {
 
         setBCValue(value);
 
+        const focusWin = this._getWindowApp(global.display.get_focus_window());
+        const winTitle = (window && focusWin) ? focusWin.get_name() : '';
+        const suffix = window ? _(`(${winTitle})`) : _('(global)');
+        let title = brightness ? _('Brightness') : _('Contrast');
+        title = `${title} ${suffix}`;
+        const maxLevelNorm = 100;
+        const maxLevel = brightness ? 100 : 130;
+        const ampScale = maxLevel / maxLevelNorm;
+        const gicon = new Gio.ThemedIcon({ name: brightness ? 'display-brightness-symbolic' : 'view-reveal-symbolic' });
+        const level = (value * 100 + 100) / maxLevel * ampScale;
+        Main.osdWindowManager.show(-1, gicon, title, level, ampScale);
+
         // notify when normal contrast is reached
-        if (!valueO && value === 0) {
+        /*if (!valueO && value === 0) {
             brightness
                 ? brightnessContrast.set_brightness(-0.3)
                 : brightnessContrast.set_contrast(-0.1);
@@ -1488,8 +1500,7 @@ var Actions = class {
                     return GLib.SOURCE_REMOVE;
                 }
             );
-        }
-
+        }*/
     }
 
     toggleDesaturateEffect(window = true) {
