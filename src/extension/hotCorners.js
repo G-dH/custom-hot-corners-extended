@@ -39,7 +39,6 @@ var CustomHotCornersExtended = class CustomHotCornersExtended {
         this.BARRIER_FALLBACK      = false;
         this._myCorners            = [null, null];
         this._delayId              = 0;
-        this._delaySupportId       = 0;
         this._timeoutsCollector    = [];
         this._cornersCollector     = [];
         this._actorsCollector      = [];
@@ -78,16 +77,7 @@ var CustomHotCornersExtended = class CustomHotCornersExtended {
                 this._updateMscOptions(null, true);
                 this._replace_updateHotCornersFunc();
                 this._updateWatch();
-                this._delaySupportId = GLib.timeout_add(
-                    GLib.PRIORITY_DEFAULT,
-                    500,
-                    () => {
-                        // delay to be sure that all extensions are loaded and active
-                        this._updateSupportedExtensionsAvailability();
-                        this._delaySupportId = 0;
-                        return GLib.SOURCE_REMOVE;
-                    }
-                );
+                this._updateSupportedExtensionsAvailability();
                 this._mscOptions.set('showOsdMonitorIndexes', false);
                 this._mscOptions.connect('changed', (settings, key) => this._updateMscOptions(key));
 
@@ -103,10 +93,6 @@ var CustomHotCornersExtended = class CustomHotCornersExtended {
         if (this._delayId) {
             GLib.source_remove(this._delayId);
             this._delayId = 0;
-        }
-        if (this._delaySupportId) {
-            GLib.source_remove(this._delaySupportId);
-            this._delaySupportId = 0;
         }
         this._timeoutsCollector.forEach(c => GLib.Source.remove(c));
         this._timeoutsCollector = [];
@@ -155,7 +141,8 @@ var CustomHotCornersExtended = class CustomHotCornersExtended {
             if (global.toggleArcMenu)
                 supportedExtensions.push('ArcMenu');
             // test AATWS
-            if (imports.ui.altTab.WindowSwitcherPopup.prototype.showOrig)
+            const aatws = imports.ui.altTab.WindowSwitcherPopup.prototype;
+            if (aatws._showPopup || aatws.showOrig)
                 supportedExtensions.push('AATWS');
             if (global.workspaceManager.layout_rows === -1)
                 supportedExtensions.push('VerticalWS')

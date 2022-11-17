@@ -350,12 +350,9 @@ var Actions = class {
     }
 
     _getWindowSurface(metaWindow) {
-        let windowActor = metaWindow.get_compositor_private();
-        for (let child of windowActor.get_children()) {
-            if (child.constructor.name.includes('MetaSurfaceActor'))
-                return child;
-        }
-        return null;
+        if (!metaWindow)
+            return null;
+        return metaWindow.get_compositor_private().get_first_child();
     }
 
     _getFocusedActor() {
@@ -1800,10 +1797,11 @@ var Actions = class {
     }) {
         const WindowSwitcherPopup = AltTab.WindowSwitcherPopup;
         let altTabPopup = new WindowSwitcherPopup();
-        const advancedSwitcherEnabled = altTabPopup.showOrig ? true : false;
+        const advancedSwitcherEnabled = (altTabPopup.showOrig || altTabPopup._showPopup) ? true : false;
 
         if (advancedSwitcherEnabled) {
             // behavior variables
+            altTabPopup.CHCE_TRIGGERED = true;
             altTabPopup.KEYBOARD_TRIGGERED = args['triggered-keyboard'];
             altTabPopup._keyBind = args['shortcut']; // shortcut without modifiers
             altTabPopup._singleApp         = args['filter-focused-app']
