@@ -473,7 +473,31 @@ var Actions = class {
     /////////////////////////////////////////////////////////////////////////////
 
     toggleOverview() {
-        Main.overview.toggle();
+        if (Main.overview._visible) {
+            Main.overview.hide();
+        } else {
+            const focusWindow = global.display.get_focus_window();
+            // at least GS 42 is unable to show overview in X11 session if VirtualBox Machine window grabbed keyboard
+            if (shellVersion >= 42 && !Meta.is_wayland_compositor() && focusWindow && focusWindow.wm_class.includes('VirtualBox Machine')) {
+                // following should help when windowed VBox Machine has focus.
+                global.stage.set_key_focus(Main.panel);
+                // key focus doesn't take the effect immediately, we must wait for it
+                // still looking for better solution!
+                this._pushModalTimeoutId = GLib.timeout_add(
+                    GLib.PRIORITY_DEFAULT,
+                    // delay cannot be too short
+                    200,
+                    () => {
+                        Main.overview.show();
+
+                        this._pushModalTimeoutId = 0;
+                        return GLib.SOURCE_REMOVE;
+                    }
+                )
+            } else {
+                Main.overview.show();
+            }
+        }
     }
 
     showApplications() {
