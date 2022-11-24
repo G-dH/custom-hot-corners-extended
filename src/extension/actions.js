@@ -41,6 +41,7 @@ function get_current_monitor_geometry() {
 var Actions = class {
     constructor(mscOptions) {
         this._signalsCollector      = [];
+        this._timeouts              = {};
 
         this._minimizedWindows      = [];
         this._dimmerActors          = [];
@@ -51,8 +52,6 @@ var Actions = class {
         this._shellSettings         = null;
         this._soundSettings         = null;
         this._displayBrightnessProxy= null;
-
-        this.keyboardTimeoutId      = 0;
 
         this.WS_IGNORE_LAST         = false;
         this.WS_WRAPAROUND          = false;
@@ -99,28 +98,11 @@ var Actions = class {
         this._destroyWindowPreview();
         this._removeOsdMonitorIndexes();
 
-        if (this.keyboardTimeoutId) {
-            GLib.source_remove(this.keyboardTimeoutId);
-            this.keyboardTimeoutId = 0;
-        }
-        if (this._winSwitcherTimeoutId) {
-            GLib.source_remove(this._winSwitcherTimeoutId);
-            this._winSwitcherTimeoutId = 0;
-        }
-        if (this._setBCTimeoutId) {
-            GLib.source_remove(this._setBCTimeoutId);
-            this._setBCTimeoutId = 0;
-        }
-
-        if (this._osdMonitorsTimeoutId) {
-            GLib.source_remove(this._osdMonitorsTimeoutId);
-            this._osdMonitorsTimeoutId = 0;
-        }
-
-        if (this._panelBarrierTimeoutId) {
-            GLib.source_remove(this._panelBarrierTimeoutId);
-            this._panelBarrierTimeoutId = 0;
-        }
+        Object.values(this._timeouts).forEach((t) => {
+            if (t) {
+                GLib.source_remove(t);
+            }
+        });
     }
 
     resume() {
@@ -483,14 +465,14 @@ var Actions = class {
                 global.stage.set_key_focus(Main.panel);
                 // key focus doesn't take the effect immediately, we must wait for it
                 // still looking for better solution!
-                this._pushModalTimeoutId = GLib.timeout_add(
+                this._timeouts.releaseKeyboardTimeoutId = GLib.timeout_add(
                     GLib.PRIORITY_DEFAULT,
                     // delay cannot be too short
                     200,
                     () => {
                         Main.overview.show();
 
-                        this._pushModalTimeoutId = 0;
+                        this._timeouts.releaseKeyboardTimeoutId = 0;
                         return GLib.SOURCE_REMOVE;
                     }
                 )
@@ -986,12 +968,12 @@ var Actions = class {
         }
         else {
             Main.panel.show();
-            this._panelBarrierTimeoutId = GLib.timeout_add(
+            this._timeouts.panelBarrierTimeoutId = GLib.timeout_add(
                 GLib.PRIORITY_DEFAULT,
                 1000,
                 () => {
                     Main.layoutManager._updateHotCorners();
-                    this._panelBarrierTimeoutId = 0;
+                    this._timeouts.panelBarrierTimeoutId = 0;
                     return GLib.SOURCE_REMOVE;
                 }
             );
@@ -1206,9 +1188,9 @@ var Actions = class {
 
 
     touchSwipeSimulator(direction, workspace) {
-        if (! workspace && !this._swipeOverviewTimeoutId)
+        if (! workspace && !this._timeouts.swipeOverviewTimeoutId)
             Main.overview._swipeTracker._beginTouchSwipe(null, global.get_current_time(), 200, 150);
-        if (workspace && !this._swipeWsTimeoutId)
+        if (workspace && !this._timeouts.swipeWsTimeoutId)
             Main.wm._workspaceAnimation._swipeTracker._beginTouchSwipe(null, global.get_current_time(), 200, 150);
 
         const state = global.get_pointer()[2];
@@ -1218,8 +1200,8 @@ var Actions = class {
         const time = global.get_current_time();
         if (workspace) {
             Main.wm._workspaceAnimation._swipeTracker._updateGesture(null, time, delta, distance);
-            if (!this._swipeWsTimeoutId) {
-                this._swipeWsTimeoutId = GLib.timeout_add(
+            if (!this._timeouts.swipeWsTimeoutId) {
+                this._timeouts.swipeWsTimeoutId = GLib.timeout_add(
                     GLib.PRIORITY_DEFAULT,
                     300,
                     () => {
@@ -1227,7 +1209,7 @@ var Actions = class {
                         const [x, y] = global.get_pointer();
                         if (!this._isPointerOnEdge(x, y)) {
                             Main.wm._workspaceAnimation._swipeTracker._endGesture(global.get_current_time(), 700, true);
-                            this._swipeWsTimeoutId = 0;
+                            this._timeouts.swipeWsTimeoutId = 0;
                             return GLib.SOURCE_REMOVE;
                         }
                         return GLib.SOURCE_CONTINUE;
@@ -1236,8 +1218,8 @@ var Actions = class {
             }
         } else {
             Main.overview._swipeTracker._updateGesture(null, time, delta, distance);
-            if (!this._swipeOverviewTimeoutId) {
-                this._swipeOverviewTimeoutId = GLib.timeout_add(
+            if (!this._timeouts.swipeOverviewTimeoutId) {
+                this._timeouts.swipeOverviewTimeoutId = GLib.timeout_add(
                     GLib.PRIORITY_DEFAULT,
                     300,
                     () => {
@@ -1245,7 +1227,7 @@ var Actions = class {
                         const [x, y] = global.get_pointer();
                         if (!this._isPointerOnEdge(x, y)) {
                             Main.overview._swipeTracker._endGesture(global.get_current_time(), 700, true);
-                            this._swipeOverviewTimeoutId = 0;
+                            this._timeouts.swipeOverviewTimeoutId = 0;
                             return GLib.SOURCE_REMOVE;
                         }
                         return GLib.SOURCE_CONTINUE;
@@ -1297,11 +1279,11 @@ var Actions = class {
         }
 
         this._showWindowPreview(windows[targetIdx]);
-        if (this._winSwitcherTimeoutId) {
-            GLib.source_remove(this._winSwitcherTimeoutId);
-            this._winSwitcherTimeoutId = 0;
+        if (this._timeouts.winSwitcherTimeoutId) {
+            GLib.source_remove(this._timeouts.winSwitcherTimeoutId);
+            this._timeouts.winSwitcherTimeoutId = 0;
         }
-        this._winSwitcherTimeoutId = GLib.timeout_add(
+        this._timeouts.winSwitcherTimeoutId = GLib.timeout_add(
             GLib.PRIORITY_DEFAULT,
             300,
             () => {
@@ -1313,7 +1295,7 @@ var Actions = class {
                         this.moveToWorkspace(this._winPreview._window.get_workspace().index());
                     this._winPreview._window.activate(global.get_current_time());
                     this._destroyWindowPreview();
-                    this._winSwitcherTimeoutId = 0;
+                    this._timeouts.winSwitcherTimeoutId = 0;
                     return GLib.SOURCE_REMOVE;
                 }
                 return GLib.SOURCE_CONTINUE;
@@ -1521,22 +1503,6 @@ var Actions = class {
         const gicon = new Gio.ThemedIcon({ name: brightness ? 'display-brightness-symbolic' : 'view-reveal-symbolic' });
         const level = (value * 100 + 100) / maxLevel * ampScale;
         Main.osdWindowManager.show(-1, gicon, title, level, ampScale);
-
-        // notify when normal contrast is reached
-        /*if (!valueO && value === 0) {
-            brightness
-                ? brightnessContrast.set_brightness(-0.3)
-                : brightnessContrast.set_contrast(-0.1);
-            this._setBCTimeoutId = GLib.timeout_add(
-                GLib.PRIORITY_DEFAULT,
-                100,
-                () => {
-                    setBCValue(value);
-                    this._setBCTimeoutId = 0;
-                    return GLib.SOURCE_REMOVE;
-                }
-            );
-        }*/
     }
 
     toggleDesaturateEffect(window = true) {
@@ -1729,7 +1695,7 @@ var Actions = class {
 
     toggleKeyboard(monitorIndex = -1) {
         // timeout added because of activation from menu, keyboard doesn't show up if menu is up
-        this.keyboardTimeoutId = GLib.timeout_add(
+        this._timeouts.keyboardTimeoutId = GLib.timeout_add(
             GLib.PRIORITY_DEFAULT,
             200,
             () => {
@@ -1746,7 +1712,7 @@ var Actions = class {
                     Main.keyboard.open(monitorIndex);
                 }
 
-                this.keyboardTimeoutId = 0;
+                this._timeouts.keyboardTimeoutId = 0;
                 return GLib.SOURCE_REMOVE;
             }
         );
