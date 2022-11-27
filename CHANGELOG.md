@@ -1,5 +1,5 @@
 ## Changelog:
-### v23 (not yet released)
+### v23 (2022-11-24)
 **Added**
 - `Open Panel System Menu` action - replaces `Open Panel Aggregate Menu` and now includes both Aggregate and Quick Settings menus depending on the version of GS.
 - Swipe gesture actions in `Debug` section - allows developers to test three finger gestures transition animations for workspace switching and Activities state switching.
