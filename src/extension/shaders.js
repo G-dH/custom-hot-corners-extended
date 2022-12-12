@@ -87,85 +87,18 @@ class ColorMixerEffect2 extends Clutter.ShaderEffect {
     }
 });
 
-var   ColorMixerProtan = GObject.registerClass(
-class ColorMixerProtan extends Clutter.ShaderEffect {
+var   DaltonismEffect = GObject.registerClass(
+class DaltonismEffect extends Clutter.ShaderEffect {
+    _init(properties) {
+        super._init();
+        this._mode = properties.mode;
+        this._simulation = properties.simulate;
+
+        this.set_shader_source(ShaderLib.getDaltonism(this._mode, this._simulation));
+    }
+
     vfunc_get_static_shader_source() {
-        return ShaderLib.getDaltonism(1);
-    }
-
-    vfunc_paint_target(node, paint_context) {
-        this.set_uniform_value('tex', 0);
-        if (paint_context === undefined)
-            super.vfunc_paint_target(node);
-        else
-            super.vfunc_paint_target(node, paint_context);
-    }
-});
-
-var   ColorMixerDeuter = GObject.registerClass(
-class ColorMixerDeuter extends Clutter.ShaderEffect {
-    vfunc_get_static_shader_source() {
-        return ShaderLib.getDaltonism(2);
-    }
-
-    vfunc_paint_target(node, paint_context) {
-        this.set_uniform_value('tex', 0);
-        if (paint_context === undefined)
-            super.vfunc_paint_target(node);
-        else
-            super.vfunc_paint_target(node, paint_context);
-    }
-});
-
-var   ColorMixerTritan = GObject.registerClass(
-class ColorMixerTritan extends Clutter.ShaderEffect {
-    vfunc_get_static_shader_source() {
-        return ShaderLib.getDaltonism(3);
-    }
-
-    vfunc_paint_target(node, paint_context) {
-        this.set_uniform_value('tex', 0);
-        if (paint_context === undefined)
-            super.vfunc_paint_target(node);
-        else
-            super.vfunc_paint_target(node, paint_context);
-    }
-});
-
-var   ColorMixerProtanSimulation = GObject.registerClass(
-class ColorMixerProtanSimulation extends Clutter.ShaderEffect {
-    vfunc_get_static_shader_source() {
-        return ShaderLib.getDaltonism(1);
-    }
-
-    vfunc_paint_target(node, paint_context) {
-        this.set_uniform_value('tex', 0);
-        if (paint_context === undefined)
-            super.vfunc_paint_target(node);
-        else
-            super.vfunc_paint_target(node, paint_context);
-    }
-});
-
-var   ColorMixerDeuterSimulation = GObject.registerClass(
-class ColorMixerDeuterSimulation extends Clutter.ShaderEffect {
-    vfunc_get_static_shader_source() {
-        return ShaderLib.getDaltonism(2);
-    }
-
-    vfunc_paint_target(node, paint_context) {
-        this.set_uniform_value('tex', 0);
-        if (paint_context === undefined)
-            super.vfunc_paint_target(node);
-        else
-            super.vfunc_paint_target(node, paint_context);
-    }
-});
-
-var   ColorMixerTritanSimulation = GObject.registerClass(
-class ColorMixerTritanSimulation extends Clutter.ShaderEffect {
-    vfunc_get_static_shader_source() {
-        return ShaderLib.getDaltonism(3);
+        return ShaderLib.getDaltonism(this._mode, this._simulation);
     }
 
     vfunc_paint_target(node, paint_context) {
@@ -180,15 +113,13 @@ class ColorMixerTritanSimulation extends Clutter.ShaderEffect {
 
 var ShaderLib = class {
     constructor() {
-        this.daltonSimulation = 0;
-        this.invertWhiteBias = 1;
     }
 
-    static getDaltonism(mode = 1) {
+    static getDaltonism(mode = 1, simulate) {
         return `
             uniform sampler2D tex;
             #define COLORBLIND_MODE ${mode}
-            #define SIMULATE ${this.daltonSimulation}
+            #define SIMULATE ${simulate}
             void main() {
                 vec4 c = texture2D(tex, cogl_tex_coord_in[0].st);
             // RGB to LMS matrix
@@ -229,22 +160,24 @@ var ShaderLib = class {
                 #if (SIMULATE == 0)
             // Isolate invisible colors to color vision deficiency (calculate error matrix)
                     error = (c - error);
-            // Shift colors towards visible spectrum (apply error modifications)
+            // Shift colors similar to Android colorblind filters
                     vec4 correction;
                 #if ( COLORBLIND_MODE == 1 )
-                    correction.r = 0;//-error.r;
-                    correction.g = (((error.r > 0 ? error.r : error.r/2) * 0.9 + (error.g > 0 ? error.g : 0))* 0.6 );
-                    correction.b = (((error.r > 0 ? error.r : error.r/2) * 0.1 + (error.b > 0 ? error.b : 0))* 0.1 );
+                    correction.r = -error.r/4 - error.g;
+                    correction.g = -error.g;
+                    correction.b = (error.r/3 + error.b);
+
                 #elif ( COLORBLIND_MODE == 2 )
-                    correction.r = 0;//-error.r;
-                    correction.g = (((error.r > 0 ? error.r : error.r/2) * 0.9 + (error.g > 0 ? error.g : 0))* 0.6 );
-                    correction.b = (((error.r > 0 ? error.r : error.r/2) * 0.1 + (error.b > 0 ? error.b : 0))* 0.1 );
+                // this one needs more work
+                    correction.r = -0.7 * error.r;
+                    correction.g = error.r/2 + error.g;
+                    correction.b = -error.r/3 + error.b;
                 #elif ( COLORBLIND_MODE == 3 )
-                    correction.r = (((error.b > 0 ? error.b : 0) + (error.r > 0 ? error.r : 0)) * 0.3);
-                    correction.g = (((error.b > 0 ? error.b : 0) + (error.g > 0 ? error.g : 0)) * 0.3);
-                    correction.b = (-error.b * 0.7);
+                    correction.r = (error.b + error.r) * 0.3;
+                    correction.g = (error.b + error.g) * 0.3;
+                    correction.b = -error.b * 0.7;
                 #endif
-            // Add compensation to original values
+                // Add compensation to original values
                     correction = c + correction;
                     correction.a = c.a;
                     cogl_color_out = correction.rgba;

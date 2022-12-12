@@ -34,7 +34,7 @@ let Shaders                  = null;
 let WinTmb                   = null;
 let _origAltTabWSP           = null;
 
-function get_current_monitor_geometry() {
+function getCurrentMonitorGeometry() {
     return global.display.get_monitor_geometry(global.display.get_current_monitor());
 }
 
@@ -1188,7 +1188,7 @@ var Actions = class {
 
 
     touchSwipeSimulator(direction, workspace) {
-        if (! workspace && !this._timeouts.swipeOverviewTimeoutId)
+        if (!workspace && !this._timeouts.swipeOverviewTimeoutId)
             Main.overview._swipeTracker._beginTouchSwipe(null, global.get_current_time(), 200, 150);
         if (workspace && !this._timeouts.swipeWsTimeoutId)
             Main.wm._workspaceAnimation._swipeTracker._beginTouchSwipe(null, global.get_current_time(), 200, 150);
@@ -1307,7 +1307,7 @@ var Actions = class {
     // xPointer/yPointer hold pointer position in time of action activation
     _isPointerOnEdge(xPointer, yPointer) {
         let [x, y] = global.get_pointer();
-        const geometry = global.display.get_monitor_geometry(global.display.get_current_monitor());
+        const geometry = getCurrentMonitorGeometry();
         if ([geometry.x, geometry.x + geometry.width -1].includes(x) && Math.abs(yPointer - y) < 100)
             return true;
         if ([geometry.y, geometry.y + geometry.height - 1].includes(y) && Math.abs(xPointer - x) < 100)
@@ -1523,9 +1523,9 @@ var Actions = class {
         let name = 'color-tint';
         let effect = Clutter.ColorizeEffect;
         if (window)
-            this._toggleWindowEffect(name, effect, ['tint', color]);
+            this._toggleWindowEffect(name, effect, { tint: color });
         else
-            this._toggleGlobalEffect(name, effect, ['tint', color]);
+            this._toggleGlobalEffect(name, effect, { tint: color });
     }
 
     toggleLightnessInvertEffect(window = true, whiteShift = true) {
@@ -1554,7 +1554,9 @@ var Actions = class {
     toggleColorBlindShaderEffect(window = true, mode = 0, simulate = false) {
         let name = 'color-blind';
         this._getShaders();
-        Shaders.ShaderLib.daltonSimulation = simulate ? 1 : 0;
+
+        const effect = Shaders.DaltonismEffect;
+        /*
         let effect;
         if (mode === 1 && !simulate)
             effect = Shaders.ColorMixerProtan;
@@ -1567,11 +1569,13 @@ var Actions = class {
         if (mode === 2 && simulate)
             effect = Shaders.ColorMixerDeuterSimulation;
         if (mode === 3 && simulate)
-            effect = Shaders.ColorMixerTritanSimulation;
+            effect = Shaders.ColorMixerTritanSimulation;*/
+
+        simulate = simulate ? 1 : 0;
         if (window)
-            this._toggleWindowEffect(name, effect);
+            this._toggleWindowEffect(name, effect, { mode, simulate });
         else
-            this._toggleGlobalEffect(name, effect);
+            this._toggleGlobalEffect(name, effect, { mode, simulate });
     }
 
     toggleColorMixerEffect(window = true, mode = 1) {
@@ -1584,27 +1588,23 @@ var Actions = class {
             this._toggleGlobalEffect(name, effect);
     }
 
-    _toggleGlobalEffect(name, effect, property = []) {
+    _toggleGlobalEffect(name, effect, properties = {}) {
         if (Main.uiGroup.get_effect(name)) {
             Main.uiGroup.remove_effect_by_name(name);
         } else {
-            let eff = new effect();
-            if (property.length)
-                eff[property[0]] = property[1];
+            let eff = new effect(properties);
             Main.uiGroup.add_effect_with_name(name, eff);
         }
     }
 
-    _toggleWindowEffect(name, effect, property = []) {
+    _toggleWindowEffect(name, effect, properties = {}) {
         global.get_window_actors().forEach( (actor) => {
             let meta_window = actor.get_meta_window();
             if (meta_window.has_focus()) {
                 if (actor.get_effect(name)) {
                     actor.remove_effect_by_name(name);
                 } else {
-                    let eff = new effect();
-                    if (property.length)
-                       eff[property[0]] = property[1];
+                    let eff = new effect(properties);
                     actor.add_effect_with_name(name, eff);
                 }
             }
@@ -1756,7 +1756,7 @@ var Actions = class {
             this._tmbConnected = true;
         }
 
-        let monitorHeight = get_current_monitor_geometry().height;
+        let monitorHeight = getCurrentMonitorGeometry().height;
         let scale = this._mscOptions.get('winThumbnailScale');
         this.windowThumbnails.push(new WinTmb.WindowThumbnail(metaWin, this, {
             'actionTimeout': this._mscOptions.get('actionEventDelay'),
@@ -1892,13 +1892,17 @@ var Actions = class {
     }
 
     _executeMprisPlayerCommand(session, player, method) {
-        session.call(
-            player,
-            "/org/mpris/MediaPlayer2",
-            'org.mpris.MediaPlayer2.Player',
-            method,
-            null, null, Gio.DBusCallFlags.NONE,-1,null
-        );
+        try {
+            session.call(
+                player,
+                "/org/mpris/MediaPlayer2",
+                'org.mpris.MediaPlayer2.Player',
+                method,
+                null, null, Gio.DBusCallFlags.NONE,-1,null
+            );
+        } catch (e) {
+            log(e);
+        }
     }
 };
 
