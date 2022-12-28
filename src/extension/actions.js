@@ -486,15 +486,36 @@ var Actions = class {
         if (Main.overview.dash.showAppsButton.checked) {
             Main.overview.hide();
         } else {
-            // Pressing the apps btn before overview activation avoids icons animation in GS 3.36/3.38
-            // but in GS40 with Dash to Dock and its App button set to "no animation", this whole sequence is problematic
-            if (shellVersion < 40)
-                Main.overview.dash.showAppsButton.checked = true;
-            // in 3.36 pressing the button is usually enough to activate overview, but not always
-            Main.overview.show();
-            // pressing apps btn before overview has no effect in GS 40, so once again
-            Main.overview.dash.showAppsButton.checked = true;
+            const focusWindow = global.display.get_focus_window();
+            // at least GS 42 is unable to show overview in X11 session if VirtualBox Machine window grabbed keyboard
+            if (shellVersion >= 42 && !Meta.is_wayland_compositor() && focusWindow && focusWindow.wm_class.includes('VirtualBox Machine')) {
+                // following should help when windowed VBox Machine has focus.
+                global.stage.set_key_focus(Main.panel);
+                // key focus doesn't take the effect immediately, we must wait for it
+                // still looking for better solution!
+                this._timeouts.releaseKeyboardTimeoutId = GLib.timeout_add(
+                    GLib.PRIORITY_DEFAULT,
+                    // delay cannot be too short
+                    200,
+                    () => {
+                        Main.overview.show();
+                        // pressing apps btn before overview has no effect in GS 40, so once again
+                        Main.overview.dash.showAppsButton.checked = true;
 
+                        this._timeouts.releaseKeyboardTimeoutId = 0;
+                        return GLib.SOURCE_REMOVE;
+                    }
+                )
+            } else {
+                // Pressing the apps btn before overview activation avoids icons animation in GS 3.36/3.38
+                // but in GS40 with Dash to Dock and its App button set to "no animation", this whole sequence is problematic
+                if (shellVersion < 40)
+                    Main.overview.dash.showAppsButton.checked = true;
+                // in 3.36 pressing the button is usually enough to activate overview, but not always
+                Main.overview.show();
+                // pressing apps btn before overview has no effect in GS 40, so once again
+                Main.overview.dash.showAppsButton.checked = true;
+            }
             // Main.overview.showApps()  // GS 40 only, can show app grid, but not when overview is already active
             // Main.overview.viewSelector._toggleAppsPage();  // GS 36/38
         }
@@ -1488,6 +1509,11 @@ var Actions = class {
         }
 
         setBCValue(value);
+        if (!value) {
+            brightnessContrast.set_enabled(false);
+        } else {
+            brightnessContrast.set_enabled(true);
+        }
 
         if (valueO)
             return;
@@ -1556,20 +1582,6 @@ var Actions = class {
         this._getShaders();
 
         const effect = Shaders.DaltonismEffect;
-        /*
-        let effect;
-        if (mode === 1 && !simulate)
-            effect = Shaders.ColorMixerProtan;
-        if (mode === 2 && !simulate)
-            effect = Shaders.ColorMixerDeuter;
-        if (mode === 3 && !simulate)
-            effect = Shaders.ColorMixerTritan;
-        if (mode === 1 && simulate)
-            effect = Shaders.ColorMixerProtanSimulation;
-        if (mode === 2 && simulate)
-            effect = Shaders.ColorMixerDeuterSimulation;
-        if (mode === 3 && simulate)
-            effect = Shaders.ColorMixerTritanSimulation;*/
 
         simulate = simulate ? 1 : 0;
         if (window)
@@ -1892,6 +1904,7 @@ var Actions = class {
     }
 
     _executeMprisPlayerCommand(session, player, method) {
+        if (!player) return;
         try {
             session.call(
                 player,
