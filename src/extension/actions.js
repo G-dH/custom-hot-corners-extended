@@ -455,7 +455,9 @@ var Actions = class {
     /////////////////////////////////////////////////////////////////////////////
 
     toggleOverview() {
-        if (Main.overview._visible) {
+        if (Main.overview.dash.showAppsButton.checked) {
+            Main.overview.dash.showAppsButton.checked = false;
+        } else if (Main.overview._visible) {
             Main.overview.hide();
         } else {
             const focusWindow = global.display.get_focus_window();
@@ -498,9 +500,7 @@ var Actions = class {
                     // delay cannot be too short
                     200,
                     () => {
-                        Main.overview.show();
-                        // pressing apps btn before overview has no effect in GS 40, so once again
-                        Main.overview.dash.showAppsButton.checked = true;
+                        Main.overview.show(2);
 
                         this._timeouts.releaseKeyboardTimeoutId = 0;
                         return GLib.SOURCE_REMOVE;
@@ -509,12 +509,17 @@ var Actions = class {
             } else {
                 // Pressing the apps btn before overview activation avoids icons animation in GS 3.36/3.38
                 // but in GS40 with Dash to Dock and its App button set to "no animation", this whole sequence is problematic
-                if (shellVersion < 40)
+                if (shellVersion < 40) {
+                    // in 3.36 pressing the button is usually enough to activate overview, but not always
                     Main.overview.dash.showAppsButton.checked = true;
-                // in 3.36 pressing the button is usually enough to activate overview, but not always
-                Main.overview.show();
-                // pressing apps btn before overview has no effect in GS 40, so once again
-                Main.overview.dash.showAppsButton.checked = true;
+                    Main.overview.show();
+                } else {
+                    if (Main.overview._shown) {
+                        Main.overview.dash.showAppsButton.checked = true;
+                    } else {
+                        Main.overview.show(2); // 2 for App Grid
+                    }
+                }
             }
             // Main.overview.showApps()  // GS 40 only, can show app grid, but not when overview is already active
             // Main.overview.viewSelector._toggleAppsPage();  // GS 36/38
