@@ -97,6 +97,7 @@ class MonitorPage extends Gtk.Box {
         this._alreadyBuilt = false;
         this._leftHandMouse = false;
         this._iconPath = Utils.getIconPath();
+        this.buildPage();
     }
 
     buildPage() {
