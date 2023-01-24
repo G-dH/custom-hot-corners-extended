@@ -18,7 +18,8 @@ const ExtensionUtils         = imports.misc.extensionUtils;
 const Me                     = ExtensionUtils.getCurrentExtension();
 const Utils                  = Me.imports.src.common.utils;
 const Settings               = Me.imports.src.common.settings;
-const ActionTrigger           = Me.imports.src.extension.actionTrigger;
+const ActionTrigger          = Me.imports.src.extension.actionTrigger;
+//const PanelButton            = Me.imports.src.extension.panelButton;
 
 const listTriggers           = Settings.listTriggers();
 const Triggers               = Settings.Triggers;
@@ -83,6 +84,9 @@ var CustomHotCornersExtended = class CustomHotCornersExtended {
 
                 log(`${Me.metadata.name}: enabled`);
 
+                //this._panelButton = new PanelButton.MenuButton(this._mscOptions);
+                //Main.panel.addToStatusArea("CustomHotCorners", this._panelButton, 0, "right");
+
                 this._delayId = 0;
                 return GLib.SOURCE_REMOVE;
             }
@@ -125,6 +129,8 @@ var CustomHotCornersExtended = class CustomHotCornersExtended {
         Main.layoutManager._updateHotCorners();
 
         this._myCorners = [null, null];
+
+        //this._panelButton.destroy();
 
         log(`${Me.metadata.name}: ${fullDisable ? 'disabled' : 'suspended'}`);
     }
@@ -654,19 +660,9 @@ class CustomHotCorner extends Layout.HotCorner {
     }
 
     _onCornerScrolled(actor, event) {
-        let direction = event.get_scroll_direction();
-
-        // scroll wheel provides two types of direction information:
-        // 1. Clutter.ScrollDirection.DOWN / Clutter.ScrollDirection.UP
-        // 2. Clutter.ScrollDirection.SMOOTH + event.get_scroll_delta()
-        if (event.get_scroll_delta && this._notValidScroll(direction)) {
+        const direction = this._getScrollDirection(event);
+        if (direction === null)
             return;
-        }
-        if (event.get_scroll_delta) {
-            let [, dy] = event.get_scroll_delta();
-            if (dy === 0) return;
-            direction = dy > 0 ? Clutter.ScrollDirection.DOWN : Clutter.ScrollDirection.UP;
-        }
 
         let trigger = null;
         switch (direction) {
@@ -689,13 +685,36 @@ class CustomHotCorner extends Layout.HotCorner {
             return Clutter.EVENT_PROPAGATE;
     }
 
+    _getScrollDirection(event) {
+        // scroll wheel provides two types of direction information:
+        // 1. Clutter.ScrollDirection.DOWN / Clutter.ScrollDirection.UP
+        // 2. Clutter.ScrollDirection.SMOOTH + event.get_scroll_delta()
+        // first SMOOTH event returns 0 delta,
+        //  so we need to always read event.direction
+        //  since mouse without smooth scrolling provides exactly one SMOOTH event on one wheel rotation click
+        // on the other hand, under X11, one wheel rotation click sometimes doesn't send direction event, only several SMOOTH events
+        // so we also need to convert the delta to direction
+        let direction = event.get_scroll_direction();
+
+        if (direction !== Clutter.ScrollDirection.SMOOTH)
+            return direction;
+
+        let [, delta] = event.get_scroll_delta();
+
+        if (!delta)
+            return null;
+
+        direction = delta > 0 ? Clutter.ScrollDirection.DOWN : Clutter.ScrollDirection.UP;
+
+        return direction;
+    }
+
     _runAction(trigger) {
         const timeoutWhitelist = ['volume-up', 'volume-down', 'display-brightness-up', 'display-brightness-down', 'swipe-ws-up', 'swipe-ws-down', 'swipe-overview-up', 'swipe-overview-down'];
         if ((this._actionTimeoutActive(trigger) && !timeoutWhitelist.includes(this._corner.get('action', trigger))) ||
             this._corner.get('action', trigger) === 'disabled')
             return false;
-        if (!this._monitor.inFullscreen ||
-            (this._monitor.inFullscreen && this._corner.get('fullscreen', trigger))) {
+        if (!(this._monitor.inFullscreen && !this._corner.get('fullscreen', trigger))) {
             if (this._chce.RIPPLE_ANIMATION)
                 this._rippleAnimation();
             this._chce.actionTrigger.runActionData.action = this._corner.get('action', trigger);
@@ -714,11 +733,5 @@ class CustomHotCorner extends Layout.HotCorner {
             return false;
         }
         return true;
-    }
-
-    _notValidScroll(direction) {
-        if (direction !== Clutter.ScrollDirection.SMOOTH)
-            return true;
-        return false;
     }
 });
