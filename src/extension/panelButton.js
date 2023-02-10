@@ -112,7 +112,7 @@ var MenuButton = GObject.registerClass ({
         const state = this._hotCornersRequireShift;
         this._mscOptions.set(key, !state);
         this._update();
-        Main.notify(Me.metadata.name, _(`Option 'Hot Corners Require Shift' ${state ? 'disabled' : 'enabled'}`));
+        //Main.notify(Me.metadata.name, _(`Option 'Hot Corners Require Shift' ${state ? 'disabled' : 'enabled'}`));
     }
 
     _toggleDisable(item) {
@@ -121,7 +121,7 @@ var MenuButton = GObject.registerClass ({
         this._mscOptions.set(key, !state);
         this._update();
         Main.layoutManager._updateHotCorners();
-        Main.notify(Me.metadata.name, _(`All triggers ${state ? 'disabled' : 'enabled'}`));
+        //Main.notify(Me.metadata.name, _(`All triggers ${state ? 'disabled' : 'enabled'}`));
     }
 
     _reset(item) {
