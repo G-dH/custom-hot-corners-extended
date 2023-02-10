@@ -112,7 +112,8 @@ var MscOptions = class MscOptions {
             internalFlags:          {type: 'strv',    key: 'internal-flags'},
             showOsdMonitorIndexes:  {type: 'boolean', key: 'show-osd-monitor-indexes'},
             customTintColor:        {type: 'string',  key: 'custom-tint-color'},
-            hotCornersRequireShift: {type: 'boolean', key: 'hot-corners-require-shift'}
+            hotCornersRequireShift: {type: 'boolean', key: 'hot-corners-require-shift'},
+            hotCornersEnabled:      {type: 'boolean', key: 'hot-corners-enabled'}
         }
     }
 

@@ -48,6 +48,9 @@
     <key name='watch-corners' type='b'>
       <default>true</default>
     </key>
+    <key name='hot-corners-enabled' type='b'>
+      <default>true</default>
+    </key>
     <key name='hot-corners-require-shift' type='b'>
       <default>false</default>
     </key>
