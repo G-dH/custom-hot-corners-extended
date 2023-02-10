@@ -19,7 +19,7 @@ const Me                     = ExtensionUtils.getCurrentExtension();
 const Utils                  = Me.imports.src.common.utils;
 const Settings               = Me.imports.src.common.settings;
 const ActionTrigger          = Me.imports.src.extension.actionTrigger;
-//const PanelButton            = Me.imports.src.extension.panelButton;
+const PanelButton            = Me.imports.src.extension.panelButton;
 
 const listTriggers           = Settings.listTriggers();
 const Triggers               = Settings.Triggers;
@@ -84,8 +84,8 @@ var CustomHotCornersExtended = class CustomHotCornersExtended {
 
                 log(`${Me.metadata.name}: enabled`);
 
-                //this._panelButton = new PanelButton.MenuButton(this._mscOptions);
-                //Main.panel.addToStatusArea("CustomHotCorners", this._panelButton, 0, "right");
+                this._panelButton = new PanelButton.MenuButton(this._mscOptions);
+                Main.panel.addToStatusArea("CustomHotCorners", this._panelButton, 0, "right");
 
                 this._delayId = 0;
                 return GLib.SOURCE_REMOVE;
@@ -130,7 +130,7 @@ var CustomHotCornersExtended = class CustomHotCornersExtended {
 
         this._myCorners = [null, null];
 
-        //this._panelButton.destroy();
+        this._panelButton.destroy();
 
         log(`${Me.metadata.name}: ${fullDisable ? 'disabled' : 'suspended'}`);
     }
@@ -192,11 +192,23 @@ var CustomHotCornersExtended = class CustomHotCornersExtended {
         }
     }
 
+    _removePanelBarrier() {
+        if (Main.layoutManager._rightPanelBarrier) {
+            Main.layoutManager._rightPanelBarrier.destroy();
+            Main.layoutManager._rightPanelBarrier = null;
+        }
+    }
+
     _updateHotCorners() {
         // when the layout manager calls this function as a callback with its own 'this', we need to override it by chce
         chce._removeHotCorners();
         Main.layoutManager.hotCorners = [];
         chce._updateWatchedCorners();
+
+        // corners can be temporarily disabled from panel menu
+        const cornersDisabled = !chce._mscOptions.get('hotCornersEnabled', true);
+        if (cornersDisabled)
+            return;
 
         let primaryIndex = Main.layoutManager.primaryIndex;
         // avoid creating new corners if this extension is disabled...
@@ -225,6 +237,9 @@ var CustomHotCornersExtended = class CustomHotCornersExtended {
                 if (chce._shouldExistHotCorner(corner)) {
                     Main.layoutManager.hotCorners.push(new CustomHotCorner(corner, chce));
                     chce._updateWatchedCorners();
+                    if (i === 0 && corner.top && !corner.left) {
+                        chce._removePanelBarrier();
+                    }
                 }
             }
         }
