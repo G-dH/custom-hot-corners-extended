@@ -16,7 +16,9 @@ const Me             = ExtensionUtils.getCurrentExtension();
 const TreeViewPage   = Me.imports.src.prefs.treeViewPage.TreeViewPage;
 
 let Adw = null;
-try { Adw = imports.gi.Adw; } catch (e) {}
+try {
+    Adw = imports.gi.Adw;
+} catch (e) {}
 
 const Settings       = Me.imports.src.common.settings;
 const _actionList    = Settings.actionList;
@@ -30,7 +32,6 @@ const _excludedItems = Settings.excludedItems;
 const Utils          = Me.imports.src.common.utils;
 // conversion of Gtk3 / Gtk4 widgets add methods
 const append = Utils.append;
-const set_child = Utils.set_child;
 
 const _bold = Utils.bold;
 
@@ -41,7 +42,7 @@ class CustomMenusPage extends Gtk.Box {
     _init(mscOptions) {
         super._init({
             orientation: Gtk.Orientation.VERTICAL,
-            visible: true
+            visible: true,
         });
         this._mscOptions = mscOptions;
         this._menusCount = 4;
@@ -54,14 +55,14 @@ class CustomMenusPage extends Gtk.Box {
         if (this._alreadyBuilt)
             return;
 
-        const margin =16;
+        const margin = 16;
         const context = this.get_style_context();
         context.add_class('background');
         const switcher = new Gtk.StackSwitcher({
             hexpand: true,
             halign: Gtk.Align.CENTER,
             margin_top: Adw ? 0 : margin,
-            margin_bottom: Adw ? margin : 0
+            margin_bottom: Adw ? margin : 0,
         });
         const stack = new Gtk.Stack({
             hexpand: true,
@@ -85,7 +86,8 @@ class CustomMenusPage extends Gtk.Box {
 
         this[append](switcher);
         this[append](stack);
-        this.show_all && this.show_all();
+        if (this.show_all)
+            this.show_all();
         this._alreadyBuilt = true;
     }
 });
@@ -99,7 +101,7 @@ class CustomMenuPage extends TreeViewPage {
         this._menuIndex = menuIndex;
 
         this._treeviewModelColumns = [GObject.TYPE_STRING, GObject.TYPE_STRING, GObject.TYPE_INT, GObject.TYPE_INT];
-        this.buildPage()
+        this.buildPage();
     }
 
     buildPage() {
@@ -107,13 +109,13 @@ class CustomMenuPage extends TreeViewPage {
             return;
 
         this.buildWidgets();
-        //this.treeView.set_reorderable(true);
+        // this.treeView.set_reorderable(true);
         const mscVar = `customMenu${this._menuIndex}`;
         this.menuItems = this._mscOptions.get(mscVar);
         this._mscOptions.connect(`changed::custom-menu-${this._menuIndex}`, () => {
             if (!this._mscOptions.get(mscVar, true).length) {
                 // only reset page, skip writing to settings
-                this._resetMenu(false);
+                this._resetMenu(false, mscVar);
             }
         });
 
@@ -122,7 +124,7 @@ class CustomMenuPage extends TreeViewPage {
         this.resetButton.set_label(_('Deselect all'));
         this.resetButton.set_tooltip_text(_('Remove all items from this menu'));
         this.resetButton.connect('clicked', () => {
-            this._resetMenu();
+            this._resetMenu(true, mscVar);
         });
         this.showActiveBtn.connect('notify::active', () => {
             this.setNewTreeviewModel();
@@ -132,10 +134,10 @@ class CustomMenuPage extends TreeViewPage {
         this.setNewTreeviewModel();
 
         // Menu items
-        const actions     = new Gtk.TreeViewColumn({title: _('Menu Item'), expand: true});
+        const actions     = new Gtk.TreeViewColumn({ title: _('Menu Item'), expand: true });
         const nameRender  = new Gtk.CellRendererText();
 
-        const toggles      = new Gtk.TreeViewColumn({title: _('Add to Menu')});
+        const toggles      = new Gtk.TreeViewColumn({ title: _('Add to Menu') });
         const toggleRender = new Gtk.CellRendererToggle({
             activatable: true,
             active: false,
@@ -147,13 +149,13 @@ class CustomMenuPage extends TreeViewPage {
         actions.add_attribute(nameRender, 'text', 1);
         toggles.add_attribute(toggleRender, 'active', 2);
 
-        /*actions.set_cell_data_func(nameRender, (column, cell, model, iter) => {
+        /* actions.set_cell_data_func(nameRender, (column, cell, model, iter) => {
             if (model.get_value(iter, 0).includes('submenu')) {
                 // not used
             }
         });*/
 
-        /*toggles.set_cell_data_func(toggleRender, (column, cell, model, iter) => {
+        /* toggles.set_cell_data_func(toggleRender, (column, cell, model, iter) => {
             if (model.get_value(iter, 0).includes('submenu')) {
                 cell.set_visible(false);
             } else {
@@ -163,7 +165,7 @@ class CustomMenuPage extends TreeViewPage {
 
         toggleRender.connect('toggled', (rend, path) => {
             // the path is string, not Gtk.TreePath
-            const [succ, iter] = this.model.get_iter_from_string(path);
+            const [/* succ*/, iter] = this.model.get_iter_from_string(path);
             this.model.set_value(iter, 2, !this.model.get_value(iter, 2));
             let item  = this.model.get_value(iter, 0);
             let value = this.model.get_value(iter, 2);
@@ -178,7 +180,7 @@ class CustomMenuPage extends TreeViewPage {
             this._updateTitle();
             // clicking toggle button also activates row which expand/colapse submenu row
             // following sort of fixes it for collapsed row but not for expanded
-            /*if (item.includes('submenu')) {
+            /* if (item.includes('submenu')) {
                 const pth = this.model.get_path(iter);
                 if (this.treeView.row_expanded(pth)) {
                     this.treeView.collapse_row(pth);
@@ -192,19 +194,20 @@ class CustomMenuPage extends TreeViewPage {
         this.treeView.append_column(actions);
         this.treeView.append_column(toggles);
 
-        this.show_all && this.show_all();
+        if (this.show_all)
+            this.show_all();
 
         this._alreadyBuilt = true;
-        return true;
     }
 
     _updateTitle() {
-        this.lbl.set_markup(_bold(_('Select items for Custom Menu')) + _bold(` ${this._menuIndex}`) + `     ( ${this.menuItems.length} ${_('items')} )`);
+        this.lbl.set_markup(`${_bold(_('Select items for Custom Menu')) + _bold(` ${this._menuIndex}`)}     ( ${this.menuItems.length} ${_('items')} )`);
     }
 
-    _resetMenu(writeSettings = true) {
+    _resetMenu(writeSettings = true, mscVar) {
         this.menuItems = [];
-        writeSettings && this._mscOptions.set(mscVar, this.menuItems);
+        if (writeSettings)
+            this._mscOptions.set(mscVar, this.menuItems);
         this.setNewTreeviewModel();
         this._updateTitle();
         this.treeView.grab_focus();

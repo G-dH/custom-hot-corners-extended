@@ -17,17 +17,17 @@ const Settings       = Me.imports.src.common.settings;
 const shellVersion   = Settings.shellVersion;
 const _              = Settings._;
 
-const actionList     = Settings.actionList
+const actionList     = Settings.actionList;
 
 const Utils          = Me.imports.src.common.utils;
 // conversion of Gtk3 / Gtk4 widgets add methods
 const append         = Utils.append;
-const set_child      = Utils.set_child;
+const setChild      = Utils.setChild;
 
 var ActionChooserDialog = GObject.registerClass(
 class ActionChooserDialog extends Gtk.Box {
     _init(button, corner, trigger, iconName, transitionWidget) {
-        //this._transWidget = transitionWidget;
+        // this._transWidget = transitionWidget;
         const margin = 16;
         super._init({
             margin_top: shellVersion >= 42 ? margin : 0,
@@ -36,7 +36,7 @@ class ActionChooserDialog extends Gtk.Box {
             margin_end: shellVersion >= 42 ? margin : 0,
         });
 
-        //this._button = button;
+        // this._button = button;
         this._corner = corner;
         this._trigger = trigger;
         this._iconName = iconName;
@@ -51,13 +51,13 @@ class ActionChooserDialog extends Gtk.Box {
                 : transitionWidget.get_toplevel(),
             use_header_bar: true,
             modal: true,
-            height_request: 600
+            height_request: 600,
         });
 
         const trgIcon = new Gtk.Image({
-            //icon_name: this._iconName,
+            // icon_name: this._iconName,
             pixel_size: 32, // pixel_size has no effect in Gtk3, the size is the same as declared in svg image when loaded from file
-            visible: true
+            visible: true,
         });
 
         trgIcon.set_from_resource(`${this._iconPath}/${this._iconName}`);
@@ -66,12 +66,12 @@ class ActionChooserDialog extends Gtk.Box {
         const box = new Gtk.Box({
             margin_start: 10,
             spacing: 4,
-            visible: true
+            visible: true,
         });
         if (trigger === 6) { // 6 === CTRL_PRESSURE
             box[append](new Gtk.Label({
                 label: 'Ctrl +',
-                visible: true
+                visible: true,
             }));
         }
         box[append](trgIcon);
@@ -97,27 +97,31 @@ class ActionChooserDialog extends Gtk.Box {
         // Actions
         const actions = new Gtk.TreeViewColumn({
             title: _('Action'),
-            expand: true
+            expand: true,
         });
         const nameRender = new Gtk.CellRendererText();
 
         actions.pack_start(nameRender, true);
         actions.add_attribute(nameRender, 'text', 1);
 
-        this.treeView.connect('row-activated', (treeView,path,column) => {
+        this.treeView.connect('row-activated', (treeView, path/* , column*/) => {
             const [succ, iter] = this.model.get_iter(path);
-            if (!succ) return false;
+            if (!succ)
+                return false;
             const action  = this.model.get_value(iter, 0);
-            //const title = this.model.get_value(iter, 1);
+            // const title = this.model.get_value(iter, 1);
             if (action) {
                 this._corner.set('action', action, this._trigger);
                 this.dialog.destroy();
+                return true;
             }
+            return false;
         });
 
         this.treeView.append_column(actions);
 
-        this.show_all && this.show_all();
+        if (this.show_all)
+            this.show_all();
 
         this._alreadyBuilt = true;
         return true;
@@ -127,7 +131,7 @@ class ActionChooserDialog extends Gtk.Box {
         if (this._alreadyBuilt)
             return;
 
-        const margin = shellVersion < 42 ? 4 : 0
+        const margin = shellVersion < 42 ? 4 : 0;
         const box = new Gtk.Box({
             orientation: Gtk.Orientation.VERTICAL,
             spacing: 5,
@@ -147,19 +151,18 @@ class ActionChooserDialog extends Gtk.Box {
             enable_search: true,
             search_column: 1,
             hover_selection: true,
-            //hover_expand: true,
+            // hover_expand: true,
             hexpand: true,
-            vexpand: true
+            vexpand: true,
         });
 
         this.treeView.set_search_equal_func(this._searchEqualFunc.bind(this));
         this.treeView.activate_on_single_click = true;
-        this.treeView.connect('row-activated', (treeView, path, column) => {
-            if (treeView.row_expanded(path)) {
+        this.treeView.connect('row-activated', (treeView, path/* , column*/) => {
+            if (treeView.row_expanded(path))
                 treeView.collapse_row(path);
-            } else {
+            else
                 treeView.expand_row(path, false);
-            }
         });
 
         this.model = new Gtk.TreeStore();
@@ -178,10 +181,10 @@ class ActionChooserDialog extends Gtk.Box {
             orientation: Gtk.Orientation.HORIZONTAL,
             hexpand: true,
             homogeneous: true,
-            spacing: 4
+            spacing: 4,
         });
         const expandButton = new Gtk.Button({
-            label: _('Expand all')
+            label: _('Expand all'),
         });
         expandButton.connect('clicked', () => {
             this.treeView.expand_all();
@@ -189,7 +192,7 @@ class ActionChooserDialog extends Gtk.Box {
         });
 
         const collapseButton = new Gtk.Button({
-            label: _('Collapse all')
+            label: _('Collapse all'),
         });
         collapseButton.connect('clicked', () => {
             this.treeView.collapse_all();
@@ -202,8 +205,8 @@ class ActionChooserDialog extends Gtk.Box {
         btnBox[append](collapseButton);
         btnBox[append](this.resetButton);
 
-        scrolledWindow[set_child](this.treeView);
-        frame[set_child](scrolledWindow);
+        scrolledWindow[setChild](this.treeView);
+        frame[setChild](scrolledWindow);
 
         box[append](frame);
         box[append](btnBox);
@@ -211,7 +214,7 @@ class ActionChooserDialog extends Gtk.Box {
     }
 
     _populateTreeview() {
-        let iter, iter1, iter2;
+        let iter1, iter2;
         let submenuOnHold = null;
         for (let i = 0; i < actionList.length; i++) {
             const item = actionList[i];
@@ -234,7 +237,7 @@ class ActionChooserDialog extends Gtk.Box {
                     this.model.set(iter1, [0, 1], [action, title]);
                 }
 
-                //iter = iter1;
+                // iter = iter1;
             } else {
                 if (submenuOnHold) {
                     iter1 = this.model.append(null);
@@ -243,16 +246,15 @@ class ActionChooserDialog extends Gtk.Box {
                 }
                 iter2  = this.model.append(iter1);
                 this.model.set(iter2, [0, 1], [action, title]);
-                //iter = iter2;
-                if (action === this._currentAction) {
-                    this._currentPath = [this.model.get_path(iter1),this.model.get_path(iter2)];
-                }
+                // iter = iter2;
+                if (action === this._currentAction)
+                    this._currentPath = [this.model.get_path(iter1), this.model.get_path(iter2)];
             }
         }
     }
 
     // treeview search function
-    _searchEqualFunc (model, column, key, iter) {
+    _searchEqualFunc(model, column, key, iter) {
         this.treeView.expand_all();
         const title = model.get_value(iter, 1).toLowerCase();
         key = key.toLowerCase();

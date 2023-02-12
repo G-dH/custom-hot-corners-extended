@@ -12,7 +12,9 @@
 const { Gtk, Gdk, GLib, Gio, GObject } = imports.gi;
 
 let Adw = null;
-try { Adw = imports.gi.Adw; } catch (e) {}
+try {
+    Adw = imports.gi.Adw;
+} catch (e) {}
 
 const ExtensionUtils = imports.misc.extensionUtils;
 const Me             = ExtensionUtils.getCurrentExtension();
@@ -23,7 +25,7 @@ const _setImageFromIconName = Utils._setImageFromIconName;
 const _setBtnFromIconName   = Utils._setBtnFromIconName;
 // conversion of Gtk3 / Gtk4 widgets add methods
 const append         = Utils.append;
-const set_child      = Utils.set_child;
+const setChild      = Utils.setChild;
 
 const Settings       = Me.imports.src.common.settings;
 const Triggers       = Settings.Triggers;
@@ -75,6 +77,8 @@ function getMonitorPages(mscOptions) {
 
     if (nMonitors)
         return pages;
+
+    return null;
 }
 
 const MonitorPage = GObject.registerClass(
@@ -106,7 +110,6 @@ class MonitorPage extends Gtk.Box {
 
         let context = this.get_style_context();
         context.add_class('background');
-        const margin = 16;
         const stackSwitcher = new Gtk.StackSwitcher({
             halign: Gtk.Align.CENTER,
             hexpand: true,
@@ -118,7 +121,7 @@ class MonitorPage extends Gtk.Box {
 
         const monitorLabel = new Gtk.Label({
             valign: Gtk.Align.START,
-            label: _('Monitor') + ` ${this._monitorIndex + 1}`
+            label: `${_('Monitor')} ${this._monitorIndex + 1}`,
         });
         context = monitorLabel.get_style_context();
         context.add_class('heading');
@@ -133,11 +136,11 @@ class MonitorPage extends Gtk.Box {
 
         resetBtn.connect('clicked', () => Settings.resetCorner(this._monitorIndex, stack.get_visible_child_name()));
 
-        if (shellVersion >= 40) {
+        if (shellVersion >= 40)
             resetBtn.icon_name = 'view-refresh-symbolic';
-        } else {
+        else
             resetBtn.add(Gtk.Image.new_from_icon_name('view-refresh-symbolic', Gtk.IconSize.BUTTON));
-        }
+
 
         context = resetBtn.get_style_context();
         context.add_class('destructive-action');
@@ -147,7 +150,7 @@ class MonitorPage extends Gtk.Box {
         stackGrid.attach(resetBtn, 5, 0, 1, 1);
 
         const stack = new Gtk.Stack({
-            hexpand: true
+            hexpand: true,
         });
 
         stack.connect('notify::visible-child', () => {
@@ -169,7 +172,8 @@ class MonitorPage extends Gtk.Box {
                 pixel_size: 36,
             });
 
-            if (shellVersion < 40) image.icon_size = Gtk.IconSize.DND;
+            if (shellVersion < 40)
+                image.icon_size = Gtk.IconSize.DND;
 
             image.set_from_resource(`${this._iconPath}/${this._corners[i].top ? 'Top' : 'Bottom'}${this._corners[i].left ? 'Left' : 'Right'}.svg`);
 
@@ -201,7 +205,8 @@ class MonitorPage extends Gtk.Box {
 
         this[append](stackGrid);
         this[append](stack);
-        this.show_all && this.show_all();
+        if (this.show_all)
+            this.show_all();
         this._alreadyBuilt = true;
     }
 });
@@ -211,7 +216,7 @@ class CornerPage extends Gtk.Box {
     _init(widgetProperties = {
         orientation: Gtk.Orientation.VERTICAL,
         vexpand: true,
-        visible: true
+        visible: true,
     }) {
         super._init(widgetProperties);
 
@@ -224,10 +229,10 @@ class CornerPage extends Gtk.Box {
 
     buildPage() {
         if (this._alreadyBuilt)
-            return false;
+            return;
         this._alreadyBuilt = true;
         const trgOrder = [0, 6, 1, 2, 3, 4, 5];
-        //for (let trigger of triggers) {
+        // for (let trigger of triggers) {
         for (let trigger of trgOrder) {
             const grid = new Gtk.Grid({
                 column_spacing: 5,
@@ -236,14 +241,14 @@ class CornerPage extends Gtk.Box {
 
             });
             let ctrlBtn = new Gtk.CheckButton({
-            //const ctrlBtn = new Gtk.ToggleButton({
+            // const ctrlBtn = new Gtk.ToggleButton({
                 label: 'Ctrl',
                 halign: Gtk.Align.START,
                 valign: Gtk.Align.CENTER,
                 vexpand: false,
                 hexpand: false,
                 tooltip_text: _('If checked this trigger will only work when the Ctrl key is pressed'),
-                visible: true
+                visible: true,
             });
 
             this._corner._gsettings[trigger].bind('ctrl', ctrlBtn, 'active', Gio.SettingsBindFlags.DEFAULT);
@@ -261,8 +266,8 @@ class CornerPage extends Gtk.Box {
                     ctrlBtn.set_active(false);
                     ctrlBtn.set_sensitive(false);
                     ctrlBtn.opacity = 0;
-                    //ctrlBtn.set_tooltip_text(_('This trigger works only when Ctrl key is NOT pressed'));
-                    //ctrlBtn.set_visible(false);
+                    // ctrlBtn.set_tooltip_text(_('This trigger works only when Ctrl key is NOT pressed'));
+                    // ctrlBtn.set_visible(false);
                     if (trigger === Triggers.PRESSURE) {
                         const cornerPopover = new Gtk.Popover();
                         const popupGrid = new Gtk.Grid({
@@ -274,14 +279,15 @@ class CornerPage extends Gtk.Box {
                             row_spacing: 8,
                         });
 
-                        popupGrid.show_all && popupGrid.show_all();
-                        cornerPopover[set_child](popupGrid);
+                        if (popupGrid.show_all)
+                            popupGrid.show_all();
+                        cornerPopover[setChild](popupGrid);
 
                         this._buildPressureSettings(popupGrid);
                         settingsBtn = new Gtk.MenuButton({
                             popover: cornerPopover,
                             valign: Gtk.Align.CENTER,
-                            //margin_end: Adw ? 20 : 16
+                            // margin_end: Adw ? 20 : 16
                         });
 
                         // Gtk3 implements button icon as an added Gtk.Image child, Gtk4 does not
@@ -300,7 +306,7 @@ class CornerPage extends Gtk.Box {
             }
 
             const trgIcon = new Gtk.Image({
-                //icon_name: iconName,
+                // icon_name: iconName,
                 halign: Gtk.Align.START,
                 margin_start: 10,
                 margin_end: 15,
@@ -311,7 +317,7 @@ class CornerPage extends Gtk.Box {
                 // in Gtk4 image has always some extra margin and therefore it's tricky to adjust row height
             });
 
-            //trgIcon.set_from_file(`${this._iconPath}/${iconName}`);
+            // trgIcon.set_from_file(`${this._iconPath}/${iconName}`);
             trgIcon.set_from_resource(`${this._iconPath}/${iconName}`);
             trgIcon.set_tooltip_text(triggerLabels[trigger]);
 
@@ -320,7 +326,7 @@ class CornerPage extends Gtk.Box {
                 valign: Gtk.Align.CENTER,
                 vexpand: false,
                 hexpand: false,
-                tooltip_text: _("Enable this trigger in fullscreen mode"),
+                tooltip_text: _('Enable this trigger in fullscreen mode'),
             });
 
             _setBtnFromIconName(fsBtn, 'view-fullscreen-symbolic', Gtk.IconSize.BUTTON);
@@ -333,7 +339,7 @@ class CornerPage extends Gtk.Box {
             grid.attach(trgIcon, 1, trigger, 1, 1);
             if (ctrlBtn.visible)
                 grid.attach(ctrlBtn, 0, trigger, 1, 1);
-            /*else if (settingsBtn) {
+            /* else if (settingsBtn) {
                 grid.attach(settingsBtn, 0, trigger, 1, 1);
             }*/
             if (trigger === Triggers.PRESSURE) {
@@ -350,9 +356,10 @@ class CornerPage extends Gtk.Box {
         const ewFrame = new Gtk.Frame({
             margin_top: 10,
         });
-        ewFrame[set_child](ew);
+        ewFrame[setChild](ew);
         this[append](ewFrame);
-        this.show_all && this.show_all();
+        if (this.show_all)
+            this.show_all();
 
         this._alreadyBuilt = true;
     }
@@ -388,32 +395,32 @@ class CornerPage extends Gtk.Box {
             child: workspaceIndexSpinButton,
         });
         workspaceIndexSpinButton.set_adjustment(wsIndexAdjustment);
-        const commandEntry = new Gtk.Entry({hexpand: true});
+        const commandEntry = new Gtk.Entry({ hexpand: true });
         commandEntry.set_placeholder_text(_('Enter command or choose app ID'));
         commandEntry.set_icon_from_icon_name(Gtk.EntryIconPosition.SECONDARY, 'edit-clear-symbolic');
         commandEntry.set_icon_activatable(Gtk.EntryIconPosition.SECONDARY, true);
-        commandEntry.connect('icon-press', (e) => e.set_text(''));
+        commandEntry.connect('icon-press', e => e.set_text(''));
         const appButton = new Gtk.Button();
 
         const actionButton = new Gtk.Button({
-            //label: ' ', // string would create the label widget, we'll build a custom one
-            hexpand: true
-        })
+            // label: ' ', // string would create the label widget, we'll build a custom one
+            hexpand: true,
+        });
 
         const actBtnContentBox = new Gtk.Box({
             orientation: Gtk.Orientation.HORIZONTAL,
             spacing: 8,
-            hexpand: true
+            hexpand: true,
         });
 
         const actBtnIcon = new Gtk.Image();
         const actBtnLabel = new Gtk.Label({
             xalign: 0,
-            hexpand: true
-        })
+            hexpand: true,
+        });
         actBtnContentBox[append](actBtnIcon);
         actBtnContentBox[append](actBtnLabel);
-        actionButton[set_child](actBtnContentBox);
+        actionButton[setChild](actBtnContentBox);
 
         actionButton.connect('clicked', widget => {
             const actionChooserTree = new ActionChooserDialog(widget, this._corner, trigger, iconName, cw);
@@ -425,7 +432,7 @@ class CornerPage extends Gtk.Box {
         cmdGrid.attach(commandEntry, 0, 0, 1, 1);
         cmdGrid.attach(appButton, 1, 0, 1, 1);
 
-        comboGrid.attach(actionButton, 1, 0, 1, 1,);
+        comboGrid.attach(actionButton, 1, 0, 1, 1);
 
         cw.attach(comboGrid, 0, 0, 1, 1);
         cw.attach(commandEntryRevealer, 0, 1, 1, 1);
@@ -439,7 +446,8 @@ class CornerPage extends Gtk.Box {
             appButton.connect('clicked', () => {
                 function fillCmdEntry(cmd) {
                     let appInfo = dialog._appChooser.get_app_info();
-                    if (!appInfo) return;
+                    if (!appInfo)
+                        return;
 
                     if (cmd)
                         commandEntry.text = appInfo.get_commandline().replace(/ %.$/, '');
@@ -468,7 +476,7 @@ class CornerPage extends Gtk.Box {
         }.bind(this);
 
         // bold action titles like GNOME 42 Adw has. But I prefer normal font
-        /*const context = actionButton.get_style_context();
+        /* const context = actionButton.get_style_context();
         context.add_class('heading');*/
 
         const updateActBtnLbl = () => {
@@ -477,12 +485,12 @@ class CornerPage extends Gtk.Box {
             if (!actionDict[action]) {
                 actionTitle = _("Error: Stored action doesn't exist!!!");
             } else {
-                actionTitle = actionDict[action].title
+                actionTitle = actionDict[action].title;
                 const iconName = actionDict[action].icon;
                 _setImageFromIconName(actBtnIcon, iconName, Gtk.IconSize.BUTTON);
             }
             actBtnLabel.set_label(actionTitle);
-        }
+        };
 
         this._corner.connect('changed::action', updateActBtnLbl, trigger);
 
@@ -504,7 +512,8 @@ class CornerPage extends Gtk.Box {
 
         this._corner._gsettings[trigger].bind('workspace-index', workspaceIndexSpinButton, 'value', Gio.SettingsBindFlags.DEFAULT);
 
-        cw.show_all && cw.show_all();
+        if (cw.show_all)
+            cw.show_all();
         return cw;
     }
 
@@ -532,7 +541,8 @@ class CornerPage extends Gtk.Box {
         popupGrid.attach(pressureLabel,               0, 3, 1, 1);
         popupGrid.attach(pressureThresholdSpinButton, 1, 3, 1, 1);
 
-        popupGrid.show_all && popupGrid.show_all();
+        if (popupGrid.show_all)
+            popupGrid.show_all();
     }
 
     _buildExpandsionWidget() {
@@ -635,7 +645,7 @@ class CornerPage extends Gtk.Box {
 
         const hImage = Gtk.Image.new_from_resource(`${this._iconPath}/${this._corner.top ? 'Top' : 'Bottom'}${this._corner.left ? 'Left' : 'Right'}HE.svg`);
         hImage.pixel_size = 40;
-        hExpandSwitch[set_child](hImage);
+        hExpandSwitch[setChild](hImage);
 
         const vExpandSwitch = new Gtk.ToggleButton({
             halign: Gtk.Align.CENTER,
@@ -647,7 +657,7 @@ class CornerPage extends Gtk.Box {
 
         const vImage = Gtk.Image.new_from_resource(`${this._iconPath}/${this._corner.top ? 'Top' : 'Bottom'}${this._corner.left ? 'Left' : 'Right'}VE.svg`);
         vImage.pixel_size = 40;
-        vExpandSwitch[set_child](vImage);
+        vExpandSwitch[setChild](vImage);
 
         this._corner._gsettings[Triggers.BUTTON_PRIMARY].bind('h-expand', hExpandSwitch, 'active', Gio.SettingsBindFlags.DEFAULT);
         this._corner._gsettings[Triggers.BUTTON_PRIMARY].bind('v-expand', vExpandSwitch, 'active', Gio.SettingsBindFlags.DEFAULT);
@@ -695,7 +705,8 @@ class CornerPage extends Gtk.Box {
             cmdLabel.set_text(`App ID:  \t\t${appInfo.get_id()}\nCommand: \t${appInfo.get_commandline()}`);
         }
         );
-        dialog.show_all && dialog.show_all();
+        if (dialog.show_all)
+            dialog.show_all();
         dialog.show();
         return dialog;
     }

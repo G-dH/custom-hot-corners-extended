@@ -18,12 +18,12 @@ class InvertLightnessEffect extends Clutter.ShaderEffect {
         return ShaderLib.getInversion(0);
     }
 
-    vfunc_paint_target(node, paint_context) {
+    vfunc_paint_target(node, paintContext) {
         this.set_uniform_value('tex', 0);
-        if (paint_context === undefined)
+        if (paintContext === undefined)
             super.vfunc_paint_target(node);
         else
-            super.vfunc_paint_target(node, paint_context);
+            super.vfunc_paint_target(node, paintContext);
     }
 });
 
@@ -33,12 +33,12 @@ class InvertLightnessShiftEffect extends Clutter.ShaderEffect {
         return ShaderLib.getInversion(1);
     }
 
-    vfunc_paint_target(node, paint_context) {
+    vfunc_paint_target(node, paintContext) {
         this.set_uniform_value('tex', 0);
-        if (paint_context === undefined)
+        if (paintContext === undefined)
             super.vfunc_paint_target(node);
         else
-            super.vfunc_paint_target(node, paint_context);
+            super.vfunc_paint_target(node, paintContext);
     }
 });
 
@@ -48,12 +48,12 @@ class ColorInversionEffect extends Clutter.ShaderEffect {
         return ShaderLib.getInversion(2);
     }
 
-    vfunc_paint_target(node, paint_context) {
+    vfunc_paint_target(node, paintContext) {
         this.set_uniform_value('tex', 0);
-        if (paint_context === undefined)
+        if (paintContext === undefined)
             super.vfunc_paint_target(node);
         else
-            super.vfunc_paint_target(node, paint_context);
+            super.vfunc_paint_target(node, paintContext);
     }
 });
 
@@ -63,12 +63,12 @@ class ColorMixerEffect1 extends Clutter.ShaderEffect {
         return ShaderLib.getChannelMix(1);
     }
 
-    vfunc_paint_target(node, paint_context) {
+    vfunc_paint_target(node, paintContext) {
         this.set_uniform_value('tex', 0);
-        if (paint_context === undefined)
+        if (paintContext === undefined)
             super.vfunc_paint_target(node);
         else
-            super.vfunc_paint_target(node, paint_context);
+            super.vfunc_paint_target(node, paintContext);
     }
 });
 
@@ -78,12 +78,12 @@ class ColorMixerEffect2 extends Clutter.ShaderEffect {
         return ShaderLib.getChannelMix(2);
     }
 
-    vfunc_paint_target(node, paint_context) {
+    vfunc_paint_target(node, paintContext) {
         this.set_uniform_value('tex', 0);
-        if (paint_context === undefined)
+        if (paintContext === undefined)
             super.vfunc_paint_target(node);
         else
-            super.vfunc_paint_target(node, paint_context);
+            super.vfunc_paint_target(node, paintContext);
     }
 });
 
@@ -101,20 +101,17 @@ class DaltonismEffect extends Clutter.ShaderEffect {
         return ShaderLib.getDaltonism(this._mode, this._simulation);
     }
 
-    vfunc_paint_target(node, paint_context) {
+    vfunc_paint_target(node, paintContext) {
         this.set_uniform_value('tex', 0);
-        if (paint_context === undefined)
+        if (paintContext === undefined)
             super.vfunc_paint_target(node);
         else
-            super.vfunc_paint_target(node, paint_context);
+            super.vfunc_paint_target(node, paintContext);
     }
 });
 
 
 var ShaderLib = class {
-    constructor() {
-    }
-
     static getDaltonism(mode = 1, simulate) {
         return `
             uniform sampler2D tex;

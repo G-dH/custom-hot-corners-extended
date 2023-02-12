@@ -23,8 +23,7 @@ const Actions = Me.imports.src.extension.actions;
 const Gettext = imports.gettext.domain(Me.metadata['gettext-domain']);
 const _ = Gettext.gettext;
 
-var MenuButton = GObject.registerClass ({
-    GTypeName: 'CHCEMenuButton',}, class MenuButton extends PanelMenu.Button {
+var MenuButton = GObject.registerClass({ GTypeName: 'CHCEMenuButton' }, class MenuButton extends PanelMenu.Button {
     _init(mscOptions) {
         super._init(0.5, 'CHCE-Menu', false);
 
@@ -66,7 +65,7 @@ var MenuButton = GObject.registerClass ({
         this._updatePanelIcon();
         this._update();
 
-        this.connect('destroy', ()=> {
+        this.connect('destroy', () => {
 
         });
     }
@@ -92,9 +91,9 @@ var MenuButton = GObject.registerClass ({
     }
 
     _getActions() {
-        if (!this._actions) {
+        if (!this._actions)
             this._actions = new Actions.Actions();
-        }
+
 
         return this._actions;
     }
@@ -107,29 +106,29 @@ var MenuButton = GObject.registerClass ({
         this._updatePanelIcon();
     }
 
-    _toggleRequireShift(item) {
+    _toggleRequireShift() {
         const key = 'hotCornersRequireShift';
         const state = this._hotCornersRequireShift;
         this._mscOptions.set(key, !state);
         this._update();
-        //Main.notify(Me.metadata.name, _(`Option 'Hot Corners Require Shift' ${state ? 'disabled' : 'enabled'}`));
+        // Main.notify(Me.metadata.name, _(`Option 'Hot Corners Require Shift' ${state ? 'disabled' : 'enabled'}`));
     }
 
-    _toggleDisable(item) {
+    _toggleDisable() {
         const key = 'hotCornersEnabled';
         const state = this._hotCornersEnabled;
         this._mscOptions.set(key, !state);
         this._update();
         Main.layoutManager._updateHotCorners();
-        //Main.notify(Me.metadata.name, _(`All triggers ${state ? 'disabled' : 'enabled'}`));
+        // Main.notify(Me.metadata.name, _(`All triggers ${state ? 'disabled' : 'enabled'}`));
     }
 
-    _reset(item) {
+    _reset() {
         Main.layoutManager._updateHotCorners();
         Main.notify(Me.metadata.name, _('Hot corners were re-created.'));
     }
 
-    _openPrefs(item) {
+    _openPrefs() {
         this._getActions().openPreferences();
     }
 });

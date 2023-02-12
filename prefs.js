@@ -27,7 +27,6 @@ const Utils           = Me.imports.src.common.utils;
 const _newImageFromIconName = Utils._newImageFromIconName;
 // conversion of Gtk3 / Gtk4 widgets add methods
 const append = Utils.append;
-const set_child = Utils.set_child;
 
 // gettext
 const _  = Settings._;
@@ -38,7 +37,9 @@ const Triggers = Settings.Triggers;
 const TRANSITION_TIME = Settings.TRANSITION_TIME;
 
 let Adw = null;
-try { Adw = imports.gi.Adw; } catch (e) {}
+try {
+    Adw = imports.gi.Adw;
+} catch (e) {}
 
 let pageList;
 
@@ -51,41 +52,41 @@ function init() {
             name: 'keyboard',
             title: Settings.KEYBOARD_TITLE,
             iconName: Settings.KEYBOARD_ICON,
-            pageClass: KeyboardPage
+            pageClass: KeyboardPage,
         },
         {
             name: 'menus',
             title: Settings.MENUS_TITLE,
             iconName: Settings.MENUS_ICON,
-            pageClass: CustomMenusPage
+            pageClass: CustomMenusPage,
         },
         {
             name: 'options',
             title: Settings.OPTIONS_TITLE,
             iconName: Settings.OPTIONS_ICON,
-            pageClass: Adw ? OptionsPage.MscOptionsPageAdw : OptionsPage.MscOptionsPageLegacy
+            pageClass: Adw ? OptionsPage.MscOptionsPageAdw : OptionsPage.MscOptionsPageLegacy,
         },
         {
             name: 'about',
             title: _('About'),
             iconName: 'preferences-system-details-symbolic',
-            pageClass: Adw ? AboutPage.AboutPageAdw : AboutPage.AboutPageLegacy
-        }
+            pageClass: Adw ? AboutPage.AboutPageAdw : AboutPage.AboutPageLegacy,
+        },
     ];
 }
 
 function fillPreferencesWindow(window) {
     const mscOptions = new Settings.MscOptions();
 
-    const resources = Gio.Resource.load(Me.path + '/resources/custom-hot-corners-extended.gresource');
+    const resources = Gio.Resource.load(`${Me.path}/resources/custom-hot-corners-extended.gresource`);
     Gio.resources_register(resources);
 
     const monitorPages = MonitorPages.getMonitorPages(mscOptions);
     for (let mPage of monitorPages) {
         const [page, title] = mPage;
         const monAdwPage = new Adw.PreferencesPage({
-            title: title,
-            icon_name: Settings.MONITOR_ICON
+            title,
+            icon_name: Settings.MONITOR_ICON,
         });
         page.buildPage();
         const group = new Adw.PreferencesGroup();
@@ -97,17 +98,17 @@ function fillPreferencesWindow(window) {
 
     for (let page of pageList) {
         const title = page.title;
-        const icon_name = page.iconName;
+        const iconName = page.iconName;
         const pageClass = page.pageClass;
 
-        const pp = new pageClass(mscOptions, {title, icon_name});
+        const pp = new pageClass(mscOptions, { title, iconName });
         // only options pages return complete Adw.Page
         if (pp instanceof Adw.PreferencesPage) {
             page = pp;
         } else {
             page = new Adw.PreferencesPage({
                 title,
-                icon_name
+                iconName,
             });
             const group = new Adw.PreferencesGroup();
             group.add(pp);
@@ -123,10 +124,10 @@ function fillPreferencesWindow(window) {
         mscOptions.set('showOsdMonitorIndexes', false);
         // mscOptions/corner.destroy() removes gsetting connections
         mscOptions.destroy();
-        monitorPages.forEach((page) => {
-            page[0]._corners.forEach((corner) => {
+        monitorPages.forEach(page => {
+            page[0]._corners.forEach(corner => {
                 corner.destroy();
-            })
+            });
         });
 
         pageList = null;
@@ -140,19 +141,20 @@ function fillPreferencesWindow(window) {
 function buildPrefsWidget() {
     const mscOptions = new Settings.MscOptions();
 
-    const resources = Gio.Resource.load(Me.path + '/resources/custom-hot-corners-extended.gresource');
+    const resources = Gio.Resource.load(`${Me.path}/resources/custom-hot-corners-extended.gresource`);
     Gio.resources_register(resources);
 
 
 
     const stack = new Gtk.Stack({
-        hexpand: true
+        hexpand: true,
     });
     const stackSwitcher = new Gtk.StackSwitcher({
         halign: Gtk.Align.CENTER,
-        hexpand: true
+        hexpand: true,
     });
-    if (shellVersion < 40) stackSwitcher.homogeneous = true;
+    if (shellVersion < 40)
+        stackSwitcher.homogeneous = true;
     const context = stackSwitcher.get_style_context();
     context.add_class('caption');
 
@@ -182,15 +184,16 @@ function buildPrefsWidget() {
 
         stack.add_named(new pageClass(mscOptions), name);
         pagesBtns.push(
-            [new Gtk.Label({ label: title}), _newImageFromIconName(iconName, Gtk.IconSize.BUTTON)]
+            [new Gtk.Label({ label: title }), _newImageFromIconName(iconName, Gtk.IconSize.BUTTON)]
         );
     }
 
-    stack.show_all && stack.show_all();
+    if (stack.show_all)
+        stack.show_all();
 
     let stBtn = stackSwitcher.get_first_child ? stackSwitcher.get_first_child() : null;
     for (let i = 0; i < pagesBtns.length; i++) {
-        const box = new Gtk.Box({orientation: Gtk.Orientation.VERTICAL, spacing: 6, visible: true});
+        const box = new Gtk.Box({ orientation: Gtk.Orientation.VERTICAL, spacing: 6, visible: true });
         const icon = pagesBtns[i][1];
         icon.margin_start = 30;
         icon.margin_end = 30;
@@ -206,25 +209,27 @@ function buildPrefsWidget() {
         }
     }
 
-    stack.show_all && stack.show_all();
-    stackSwitcher.show_all && stackSwitcher.show_all();
+    if (stack.show_all)
+        stack.show_all();
+    if (stackSwitcher.show_all)
+        stackSwitcher.show_all();
 
-    stack.connect('realize', (widget) => {
+    stack.connect('realize', widget => {
         const window = widget.get_root ? widget.get_root() : widget.get_toplevel();
         const headerbar = window.get_titlebar();
-        if (shellVersion >= 40) {
+        if (shellVersion >= 40)
             headerbar.title_widget = stackSwitcher;
-        } else {
+        else
             headerbar.custom_title = stackSwitcher;
-        }
+
 
         const signal = Gtk.get_major_version() === 3 ? 'destroy' : 'close-request';
         window.connect(signal, () => {
             mscOptions.set('showOsdMonitorIndexes', false);
             // mscOptions/corner.destroy() removes gsetting connections
             mscOptions.destroy();
-            monitorPages.forEach((page) => {
-                page[0]._corners.forEach((corner) => {
+            monitorPages.forEach(page => {
+                page[0]._corners.forEach(corner => {
                     corner.destroy();
                 });
             });

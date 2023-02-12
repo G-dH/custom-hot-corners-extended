@@ -30,7 +30,6 @@ const Shell = imports.gi.Shell;
  *     https://gitlab.gnome.org/GNOME/gnome-shell/blob/master/js/ui/windowManager.js#L1093-1112
  */
 var Manager = class Manager {
-
     constructor() {
         this._keybindings = new Map();
 
@@ -40,7 +39,7 @@ var Manager = class Manager {
         );
     }
 
-    _onAcceleratorActivated(display, action, inputDevice, timestamp) {
+    _onAcceleratorActivated(display, action/* , inputDevice, timestamp*/) {
         try {
             const binding = this._keybindings.get(action);
 
@@ -67,12 +66,13 @@ var Manager = class Manager {
 
             const name = Meta.external_binding_name_for_action(action);
             Main.wm.allowKeybinding(name, Shell.ActionMode.ALL);
-            this._keybindings.set(action, {name: name, callback: callback, actionName: actionName});
+            this._keybindings.set(action, { name, callback, actionName });
 
             return action;
         } catch (e) {
             logError(e);
         }
+        return 0;
     }
 
     /**

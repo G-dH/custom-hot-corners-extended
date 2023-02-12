@@ -24,9 +24,6 @@ const _  = Settings._;
 const shellVersion = Settings.shellVersion;
 
 const Utils          = Me.imports.src.common.utils;
-// conversion of Gtk3 / Gtk4 widgets add methods
-const append = Utils.append;
-const set_child = Utils.set_child;
 
 const _bold = Utils.bold;
 
@@ -68,15 +65,15 @@ class KeyboardPage extends TreeViewPage {
             this.setNewTreeviewModel();
             this.treeView.expand_all();
             this.treeView.grab_focus();
-        })
+        });
 
         this.setNewTreeviewModel();
 
         // Hotkey
-        const actions     = new Gtk.TreeViewColumn({title: _('Action'), expand: true});
+        const actions     = new Gtk.TreeViewColumn({ title: _('Action'), expand: true });
         const nameRender  = new Gtk.CellRendererText();
 
-        const accels      = new Gtk.TreeViewColumn({title: _('Shortcut'), min_width: 150});
+        const accels      = new Gtk.TreeViewColumn({ title: _('Shortcut'), min_width: 150 });
         const accelRender = new Gtk.CellRendererAccel({
             editable: true,
             accel_mode: Gtk.CellRendererAccelMode.GTK,
@@ -89,7 +86,7 @@ class KeyboardPage extends TreeViewPage {
         accels.add_attribute(accelRender, 'accel-mods', 2);
         accels.add_attribute(accelRender, 'accel-key', 3);
 
-        /*actions.set_cell_data_func(nameRender, (column, cell, model, iter) => {
+        /* actions.set_cell_data_func(nameRender, (column, cell, model, iter) => {
             if (!model.get_value(iter, 0)) {
                 // not used
             }
@@ -99,12 +96,11 @@ class KeyboardPage extends TreeViewPage {
             // this function is for dynamic control of column cells properties
             // and is called whenever the content has to be redrawn,
             // which is even on mouse pointer hover over items
-            if (!model.get_value(iter, 0)) {
+            if (!model.get_value(iter, 0))
                 cell.set_visible(false);
-                //[cell.accel_key, cell.accel_mods] = [45, 0];
-            } else {
+                // [cell.accel_key, cell.accel_mods] = [45, 0];
+            else
                 cell.set_visible(true);
-            }
         });
 
         accelRender.connect('accel-edited', (rend, path, key, mods) => {
@@ -115,7 +111,6 @@ class KeyboardPage extends TreeViewPage {
             const [succ, iter] = this.model.get_iter_from_string(path);
             if (!succ)
                 throw new Error('Error updating keybinding');
-
             const name = this.model.get_value(iter, 0);
             // exclude group items and avoid duplicate accels
             // accels for group items now cannot be set, it was fixed
@@ -128,9 +123,9 @@ class KeyboardPage extends TreeViewPage {
             }
             this._updateTitle();
         });
-        const uniqueVal = function (dict, value) {
+        const uniqueVal = (dict, value) => {
             let unique = true;
-            Object.entries(dict).forEach(([key, val]) => {
+            Object.entries(dict).forEach(([/* key*/, val]) => {
                 if (value === val)
                     unique = false;
             }
@@ -138,7 +133,7 @@ class KeyboardPage extends TreeViewPage {
             return unique;
         };
 
-        accelRender.connect('accel-cleared', (rend, path, key, mods) => {
+        accelRender.connect('accel-cleared', (rend, path/* , key, mods*/) => {
             const [succ, iter] = this.model.get_iter_from_string(path);
             if (!succ)
                 throw new Error('Error clearing keybinding');
@@ -156,22 +151,23 @@ class KeyboardPage extends TreeViewPage {
         this.treeView.append_column(actions);
         this.treeView.append_column(accels);
 
-        this.show_all && this.show_all();
+        if (this.show_all)
+            this.show_all();
 
         this._alreadyBuilt = true;
         return true;
     }
 
     _updateTitle() {
-        this.lbl.set_markup(_bold(_('Keyboard Shortcuts')) + `    (active: ${Object.keys(this.keybindings).length})`);
+        this.lbl.set_markup(`${_bold(_('Keyboard Shortcuts'))}    (active: ${Object.keys(this.keybindings).length})`);
     }
 
     _loadShortcuts() {
         this.keybindings = {};
         const shortcuts = this._mscOptions.get('keyboardShortcuts');
         shortcuts.forEach(sc => {
-            // split by non ascii character (causes automake gettext error) which was used before, or space which is used now
-            let [action, accelerator] = sc.split(/[^\x00-\x7F]| /);
+            // action, accelerator pairs are separated by a space
+            let [action, accelerator] = sc.split(' ');
             this.keybindings[action] = accelerator;
         });
     }
@@ -185,7 +181,8 @@ class KeyboardPage extends TreeViewPage {
     }
 
     _resetShortcuts(writeSettings = true) {
-        writeSettings && this._mscOptions.set('keyboardShortcuts', []);
+        if (writeSettings)
+            this._mscOptions.set('keyboardShortcuts', []);
         this._loadShortcuts();
         this.setNewTreeviewModel();
         this._updateTitle();
@@ -225,11 +222,10 @@ class KeyboardPage extends TreeViewPage {
             }
             if (!itemMeaning) {
                 iter1  = this.model.append(null);
-                if (itemMeaning === 0) {
+                if (itemMeaning === 0)
                     this.model.set(iter1, [0, 1, 2, 3], [action, title, ...a]);
-                } else {
+                else
                     this.model.set(iter1, [1], [title]);
-                }
             } else {
                 if (submenuOnHold) {
                     iter1 = this.model.append(null);

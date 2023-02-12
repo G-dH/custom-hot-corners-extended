@@ -18,6 +18,9 @@ const Settings       = Me.imports.src.common.settings;
 const Actions        = Me.imports.src.extension.actions;
 const Keybindings    = Me.imports.src.extension.keybindings;
 
+// gettext
+const _ = Settings._;
+
 var ActionTrigger = class ActionTrigger {
     constructor(mscOptions) {
         this.actions = new Actions.Actions(mscOptions);
@@ -27,8 +30,8 @@ var ActionTrigger = class ActionTrigger {
             monitorIndex: 0,
             workspaceIndex: 0,
             command: null,
-            keyboard: false
-        }
+            keyboard: false,
+        };
         this.m = new Map();
         let actionList = Settings.actionList;
 
@@ -41,8 +44,6 @@ var ActionTrigger = class ActionTrigger {
         this._shortcutsBindingIds = [];
         this._gsettingsKBid = 0;
         this._bindShortcuts();
-
-        this._keybindingsManager;
     }
 
     clean(full = true) {
@@ -78,8 +79,9 @@ var ActionTrigger = class ActionTrigger {
 
         const manager = this._getKeybindingsManager();
         list.forEach(sc => {
-            // split by non ascii character (causes automake gettext error) which was used before, or space which is used now
-            const [action, accelerator] = sc.split(/[^\x00-\x7F]| /);
+            // action, accelerator pairs are separated by a space
+            // todo - data validation to avoid errors
+            const [action, accelerator] = sc.split(' ');
             const callback = () => {
                 this._runKeyAction(action);
             };
@@ -113,15 +115,14 @@ var ActionTrigger = class ActionTrigger {
     }
 
     _removeShortcuts() {
-        if (this._keybindingsManager) {
+        if (this._keybindingsManager)
             this._keybindingsManager.removeAll();
-        }
     }
 
     // translates key to action function
     _translateActionToFunction(key) {
         let regex = /-(.)/g;
-        return key.replace(regex, function ($0, $1) {
+        return key.replace(regex, ($0, $1) => {
             return $0.replace($0, $1.toUpperCase());
         });
     }
@@ -253,7 +254,7 @@ var ActionTrigger = class ActionTrigger {
         this.actions.switchWindow(+1, true, global.display.get_current_monitor());
     }
 
-    //------------------------------------
+    // ------------------------------------
     _prevWinAllApp() {
         this.actions.switchWindow(-1, false, -1, true);
     }
@@ -261,7 +262,8 @@ var ActionTrigger = class ActionTrigger {
     _nextWinAllApp() {
         this.actions.switchWindow(+1, false, -1, true);
     }
-    //-------------------------------------
+
+    // -------------------------------------
     _recentWin() {
         this.actions.switchToRecentWindow();
     }
@@ -272,9 +274,9 @@ var ActionTrigger = class ActionTrigger {
         const shortcuts = settings.get_strv('keyboard-shortcuts');
         const scIndex = shortcuts.findIndex(s => s.includes(`${action} `));
         let sc = null;
-        if (scIndex > -1) {
+        if (scIndex > -1)
             sc = shortcuts[scIndex].split(' ')[1].replace(/<.+>/, '');
-        }
+
 
         return sc;
     }
@@ -831,8 +833,9 @@ var ActionTrigger = class ActionTrigger {
     }
 
     _minimizeToThumbnail() {
-        this.actions.makeThumbnailWindow();
-        this.actions.minimizeWindow();
+        const metaWindow = null;
+        const minimize = true;
+        this.actions.makeThumbnailWindow(metaWindow, minimize);
     }
 
     _removeWinThumbnails() {
@@ -859,7 +862,7 @@ var ActionTrigger = class ActionTrigger {
         if (global.toggleArcMenu)
             global.toggleArcMenu();
         else
-            Main.notify(Me.metadata.name, _(`Error: ArcMenu trigger not available...`));
+            Main.notify(Me.metadata.name, _('Error: ArcMenu trigger not available...'));
     }
 
     _mprisPlayPause() {
@@ -940,5 +943,9 @@ var ActionTrigger = class ActionTrigger {
 
     _displayBrightnessDown() {
         this.actions.setDisplayBrightness(Meta.MotionDirection.DOWN);
+    }
+
+    _searchOpenWindows() {
+        this.actions.searchOpenWindows();
     }
 };

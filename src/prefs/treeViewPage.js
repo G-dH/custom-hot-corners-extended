@@ -24,10 +24,12 @@ const shellVersion = Settings.shellVersion;
 const Utils          = Me.imports.src.common.utils;
 // conversion of Gtk3 / Gtk4 widgets add methods
 const append = Utils.append;
-const set_child = Utils.set_child;
+const setChild = Utils.setChild;
 
 let Adw = null;
-try { Adw = imports.gi.Adw; } catch (e) {}
+try {
+    Adw = imports.gi.Adw;
+} catch (e) {}
 
 var TreeViewPage = GObject.registerClass(
 class TreeviewPage extends Gtk.Box {
@@ -35,7 +37,7 @@ class TreeviewPage extends Gtk.Box {
         margin_start: 16,
         margin_end: 16,
         margin_top: Adw ? 0 : 16,
-        margin_bottom: 16
+        margin_bottom: 16,
     }) {
         super._init(widgetProperties);
 
@@ -70,30 +72,29 @@ class TreeviewPage extends Gtk.Box {
             enable_search: true,
             search_column: 1,
             hover_selection: true,
-            //activate_on_single_click: true,
-            //hover_expand: true,
+            // activate_on_single_click: true,
+            // hover_expand: true,
             hexpand: true,
-            vexpand: true
+            vexpand: true,
         });
 
         this.treeView.set_search_equal_func(this._searchEqualFunc.bind(this));
-        this.treeView.connect('row-activated', (treeView,path,column) => {
-            if (treeView.row_expanded(path)) {
+        this.treeView.connect('row-activated', (treeView, path/* , column*/) => {
+            if (treeView.row_expanded(path))
                 treeView.collapse_row(path);
-            } else {
+            else
                 treeView.expand_row(path, false);
-            }
         });
 
         const btnBox = new Gtk.Box({
             orientation: Gtk.Orientation.HORIZONTAL,
             hexpand: true,
             homogeneous: true,
-            spacing: 4
+            spacing: 4,
         });
 
         const expandButton = new Gtk.Button({
-            label: _('Expand all')
+            label: _('Expand all'),
         });
 
         expandButton.connect('clicked', () => {
@@ -102,7 +103,7 @@ class TreeviewPage extends Gtk.Box {
         });
 
         const collapseButton = new Gtk.Button({
-            label: _('Collapse all')
+            label: _('Collapse all'),
         });
         collapseButton.connect('clicked', () => {
             this.treeView.collapse_all();
@@ -114,15 +115,15 @@ class TreeviewPage extends Gtk.Box {
         context.add_class('destructive-action');
 
         this.showActiveBtn = new Gtk.ToggleButton({
-            label: _('Show active items only')
+            label: _('Show active items only'),
         });
-        
+
         btnBox[append](this.resetButton);
         btnBox[append](collapseButton);
         btnBox[append](expandButton);
 
-        scrolledWindow[set_child](this.treeView);
-        frame[set_child](scrolledWindow);
+        scrolledWindow[setChild](this.treeView);
+        frame[setChild](scrolledWindow);
 
         box[append](this.lbl);
         box[append](frame);
@@ -132,9 +133,9 @@ class TreeviewPage extends Gtk.Box {
     }
 
     setNewTreeviewModel() {
-        if (this.model) {
+        if (this.model)
             this.model = null;
-        }
+
         this.model = new Gtk.TreeStore();
         this.model.set_column_types(this._treeviewModelColumns);
         this.treeView.model = this.model;
@@ -142,7 +143,7 @@ class TreeviewPage extends Gtk.Box {
     }
 
     // treeview search function
-    _searchEqualFunc (model, column, key, iter) {
+    _searchEqualFunc(model, column, key, iter) {
         this.treeView.expand_all();
         const title = model.get_value(iter, 1).toLowerCase();
         key = key.toLowerCase();

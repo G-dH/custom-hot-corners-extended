@@ -51,7 +51,7 @@ var Actions = class {
         this._interfaceSettings     = null;
         this._shellSettings         = null;
         this._soundSettings         = null;
-        this._displayBrightnessProxy= null;
+        this._displayBrightnessProxy = null;
 
         this.WS_IGNORE_LAST         = false;
         this.WS_WRAPAROUND          = false;
@@ -66,7 +66,7 @@ var Actions = class {
         this._mainPanelVisible      = Main.panel.is_visible();
 
         this.customMenu             = [];
-        this._winPreview            = null
+        this._winPreview            = null;
 
         this._mscOptions = mscOptions;
     }
@@ -74,9 +74,10 @@ var Actions = class {
     clean(full = true) {
         // don't reset effects and destroy thumbnails if extension is enabled (GS calls ext. disable() before locking the screen f.e.)
         if (full) {
-            this._mainPanelVisible
-                ? Main.panel.show()
-                : Main.panel.hide();
+            if (this._mainPanelVisible)
+                Main.panel.show();
+            else
+                Main.panel.hide();
             this.removeAllEffects();
             this._resetSettings();
 
@@ -98,10 +99,9 @@ var Actions = class {
         this._destroyWindowPreview();
         this._removeOsdMonitorIndexes();
 
-        Object.values(this._timeouts).forEach((t) => {
-            if (t) {
+        Object.values(this._timeouts).forEach(t => {
+            if (t)
                 GLib.source_remove(t);
-            }
         });
     }
 
@@ -139,7 +139,7 @@ var Actions = class {
 
     _removeOsdMonitorIndexes(keepConnection = false) {
         if (this._osdMonitorLabels) {
-            this._osdMonitorLabels.forEach((w) => {
+            this._osdMonitorLabels.forEach(w => {
                 w.destroy();
             });
             this._osdMonitorLabels = null;
@@ -161,7 +161,7 @@ var Actions = class {
         this._mutterSettings        = null;
     }
 
-    removeAllEffects(full = false) {
+    removeAllEffects() {
         for (let actor of global.get_window_actors())
             this._removeEffects(actor);
         // remove global effect
@@ -202,7 +202,7 @@ var Actions = class {
     _getShellSettings() {
         if (!this._shellSettings) {
             this._shellSettings = ExtensionUtils.getSettings(
-                            'org.gnome.shell'
+                'org.gnome.shell'
             );
         }
         return this._shellSettings;
@@ -211,8 +211,8 @@ var Actions = class {
     _getMutterSettings() {
         if (!this._mutterSettings) {
             this._mutterSettings = ExtensionUtils.getSettings(
-                            'org.gnome.mutter'
-            )
+                'org.gnome.mutter'
+            );
         }
         return this._mutterSettings;
     }
@@ -220,7 +220,7 @@ var Actions = class {
     _getA11yAppSettings() {
         if (!this._a11yAppsSettings) {
             this._a11yAppsSettings = ExtensionUtils.getSettings(
-                            'org.gnome.desktop.a11y.applications'
+                'org.gnome.desktop.a11y.applications'
             );
         }
         return this._a11yAppsSettings;
@@ -229,7 +229,7 @@ var Actions = class {
     _getA11yMagnifierSettings() {
         if (!this._a11yMagnifierSettings) {
             this._a11yMagnifierSettings = ExtensionUtils.getSettings(
-                            'org.gnome.desktop.a11y.magnifier'
+                'org.gnome.desktop.a11y.magnifier'
             );
         }
         return this._a11yMagnifierSettings;
@@ -238,7 +238,7 @@ var Actions = class {
     _getInterfaceSettings() {
         if (!this._interfaceSettings) {
             this._interfaceSettings = ExtensionUtils.getSettings(
-                            'org.gnome.desktop.interface'
+                'org.gnome.desktop.interface'
             );
         }
         return this._interfaceSettings;
@@ -247,7 +247,7 @@ var Actions = class {
     _getColorSettings() {
         if (!this._colorSettings) {
             this._colorSettings = ExtensionUtils.getSettings(
-                            'org.gnome.settings-daemon.plugins.color'
+                'org.gnome.settings-daemon.plugins.color'
             );
         }
         return this._colorSettings;
@@ -256,7 +256,7 @@ var Actions = class {
     _getWsNamesSettings() {
         if (!this._wsNamesSettings) {
             this._wsNamesSettings = ExtensionUtils.getSettings(
-                            'org.gnome.desktop.wm.preferences'
+                'org.gnome.desktop.wm.preferences'
             );
         }
         return this._wsNamesSettings;
@@ -265,7 +265,7 @@ var Actions = class {
     _getSoundSettings() {
         if (!this._soundSettings) {
             this._soundSettings = ExtensionUtils.getSettings(
-                            'org.gnome.desktop.sound'
+                'org.gnome.desktop.sound'
             );
         }
         return this._soundSettings;
@@ -281,10 +281,8 @@ var Actions = class {
             const BrightnessProxy = Gio.DBusProxy.makeProxyWrapper(BrightnessInterface);
             this._displayBrightnessProxy = new BrightnessProxy(Gio.DBus.session, BUS_NAME, OBJECT_PATH,
                 (proxy, error) => {
-                    if (error) {
+                    if (error)
                         log(error.message);
-                        return;
-                    }
                 }
             );
         }
@@ -313,7 +311,8 @@ var Actions = class {
     }
 
     _getWindowApp(metaWindow) {
-        if (!metaWindow) return null;
+        if (!metaWindow)
+            return null;
         let tracker = Shell.WindowTracker.get_default();
         return tracker.get_window_app(metaWindow);
     }
@@ -325,7 +324,7 @@ var Actions = class {
         let wsWidows = ws.list_windows();
         let result = [];
         wsWidows.forEach(w => {
-           if (this._getWindowApp(w).get_id() === app.get_id())
+            if (this._getWindowApp(w).get_id() === app.get_id())
                 result.push(w);
         });
         return result;
@@ -340,8 +339,8 @@ var Actions = class {
     _getFocusedActor() {
         let actor = null;
         for (let act of global.get_window_actors()) {
-            let meta_window = act.get_meta_window();
-            if (meta_window.has_focus())
+            let metaWin = act.get_meta_window();
+            if (metaWin.has_focus())
                 actor = act;
         }
 
@@ -365,18 +364,17 @@ var Actions = class {
     }
 
     _isWsOrientationHorizontal() {
-        if (global.workspace_manager.layout_rows == -1)
-			return false;
+        if (global.workspace_manager.layout_rows === -1)
+            return false;
         return true;
     }
 
     _translateDirectionIfNeeded(direction) {
         if (this._isWsOrientationHorizontal()) {
-            if (direction == Meta.MotionDirection.UP) {
+            if (direction === Meta.MotionDirection.UP)
                 direction = Meta.MotionDirection.LEFT;
-            } else {
+            else
                 direction = Meta.MotionDirection.RIGHT;
-            }
         }
         return direction;
     }
@@ -384,13 +382,14 @@ var Actions = class {
     _showMonitorIndexesOsd() {
         this._removeOsdMonitorIndexes();
         const success = this._buildMonitorIndexesOsd();
-        if (!success) return;
+        if (!success)
+            return;
 
-        this._osdMonitorsConnection = global.display.connect('notify::focus-window', () =>{
+        this._osdMonitorsConnection = global.display.connect('notify::focus-window', () => {
             // destroy osd when the preferences window lost focus
             if (global.display.focus_window && !global.display.focus_window.get_title().includes(Me.metadata.name)) {
                 this._removeOsdMonitorIndexes(true); // remove labels, keep this connection
-                //this._mscOptions.set('showOsdMonitorIndexes', false);
+                // this._mscOptions.set('showOsdMonitorIndexes', false);
             } else {
                 this._removeOsdMonitorIndexes(true);
                 this._buildMonitorIndexesOsd();
@@ -443,16 +442,15 @@ var Actions = class {
     _getOpenPrefsWindow() {
         const windows = global.display.get_tab_list(Meta.TabList.NORMAL_ALL, null);
         for (let win of windows) {
-            if (win.get_title().includes(Me.metadata.name) && this._getWindowApp(win).get_name() === 'Extensions') {
+            if (win.get_title().includes(Me.metadata.name) && this._getWindowApp(win).get_name() === 'Extensions')
                 return { metaWin: win, isCHCE: true };
-            } else if (win.wm_class.includes('org.gnome.Shell.Extensions')) {
+            else if (win.wm_class.includes('org.gnome.Shell.Extensions'))
                 return { metaWin: win, isCHCE: false };
-            }
         }
         return { metaWin: null, isCHCE: null };
     }
 
-    /////////////////////////////////////////////////////////////////////////////
+    // ///////////////////////////////////////////////////////////////////////////
 
     toggleOverview() {
         if (Main.overview.dash.showAppsButton.checked) {
@@ -477,7 +475,7 @@ var Actions = class {
                         this._timeouts.releaseKeyboardTimeoutId = 0;
                         return GLib.SOURCE_REMOVE;
                     }
-                )
+                );
             } else {
                 Main.overview.show();
             }
@@ -505,24 +503,37 @@ var Actions = class {
                         this._timeouts.releaseKeyboardTimeoutId = 0;
                         return GLib.SOURCE_REMOVE;
                     }
-                )
-            } else {
+                );
+            } else if (shellVersion < 40) {
                 // Pressing the apps btn before overview activation avoids icons animation in GS 3.36/3.38
                 // but in GS40 with Dash to Dock and its App button set to "no animation", this whole sequence is problematic
-                if (shellVersion < 40) {
-                    // in 3.36 pressing the button is usually enough to activate overview, but not always
-                    Main.overview.dash.showAppsButton.checked = true;
-                    Main.overview.show();
-                } else {
-                    if (Main.overview._shown) {
-                        Main.overview.dash.showAppsButton.checked = true;
-                    } else {
-                        Main.overview.show(2); // 2 for App Grid
-                    }
-                }
+
+                // in 3.36 pressing the button is usually enough to activate overview, but not always
+                Main.overview.dash.showAppsButton.checked = true;
+                Main.overview.show();
+            } else if (Main.overview._shown) {
+                Main.overview.dash.showAppsButton.checked = true;
+            } else {
+                Main.overview.show(2); // 2 for App Grid
             }
             // Main.overview.showApps()  // GS 40 only, can show app grid, but not when overview is already active
             // Main.overview.viewSelector._toggleAppsPage();  // GS 36/38
+        }
+    }
+
+    searchOpenWindows() {
+        if (!Main.overview._overview._controls._searchController._searchActive) {
+            Main.overview.show();
+            const prefix = 'wq// ';
+            const position = prefix.length;
+            const searchEntry = Main.overview.searchEntry;
+            searchEntry.set_text(prefix);
+            // searchEntry.grab_key_focus();
+            searchEntry.get_first_child().set_cursor_position(position);
+            searchEntry.get_first_child().set_selection(position, position);
+        } else {
+            // Main.overview.searchEntry.text = '';
+            Main.overview.hide();
         }
     }
 
@@ -548,12 +559,12 @@ var Actions = class {
             return;
         const maxIndex = global.workspaceManager.n_workspaces - 1;
         if (maxIndex < index)
-        index = maxIndex;
+            index = maxIndex;
         const ws = global.workspaceManager.get_workspace_by_index(index);
 
         const direction = global.workspaceManager.get_active_workspace_index() > index
-                    ? Meta.MotionDirection.UP
-                    : Meta.MotionDirection.Down;
+            ? Meta.MotionDirection.UP
+            : Meta.MotionDirection.Down;
 
         Main.wm.actionMoveWorkspace(ws);
 
@@ -576,33 +587,35 @@ var Actions = class {
     }
 
     reorderWorkspace(direction = 0) {
-        //if (!Main.overview.visible)
+        // if (!Main.overview.visible)
         //    return;
         let activeWs = global.workspace_manager.get_active_workspace();
         let activeWsIdx = activeWs.index();
         let targetIdx = activeWsIdx + direction;
-        if (targetIdx > -1 && targetIdx < (global.workspace_manager.get_n_workspaces())) {
+        if (targetIdx > -1 && targetIdx < global.workspace_manager.get_n_workspaces())
             global.workspace_manager.reorder_workspace(activeWs, targetIdx);
-        }
-        //this.showWorkspaceIndex();
+
+        // this.showWorkspaceIndex();
         direction = direction > 0 ? Meta.MotionDirection.DOWN : Meta.MotionDirection.UP;
         this._showWsSwitcherPopup(direction, targetIdx);
     }
 
     rotateWorkspaces(direction = 0, monitorIndex = -1, step = 1) {
-        step = direction === Meta.MotionDirection.UP ? +step : -step;
+        step = direction === Meta.MotionDirection.UP ? Number(step) : -step;
         const monitor = monitorIndex > -1 ? monitorIndex : global.display.get_current_monitor();
         const dynamicWs = this._getMutterSettings().get_boolean('dynamic-workspaces');
         const lastIndex = global.workspaceManager.get_n_workspaces() - (dynamicWs ? 1 : 0);
-        //let windows = global.display.get_tab_list(Meta.TabList.NORMAL_ALL, null);
+        // let windows = global.display.get_tab_list(Meta.TabList.NORMAL_ALL, null);
         let windows = AltTab.getWindows(null);
         for (let win of windows.reverse()) {
             // avoid moving modal windows as they move their parents (and vice versa) immediately, before we move the parent window.
             if (win.get_monitor() === monitor && !win.is_always_on_all_workspaces() && !win.is_attached_dialog() && !win.get_transient_for()) {
                 let wWs = win.get_workspace().index();
                 wWs += step;
-                if (wWs < 0) wWs = (lastIndex - 1);
-                if (wWs > lastIndex - 1) wWs = 0;
+                if (wWs < 0)
+                    wWs = lastIndex - 1;
+                if (wWs > lastIndex - 1)
+                    wWs = 0;
                 const ws = global.workspaceManager.get_workspace_by_index(wWs);
                 win.change_workspace(ws);
             }
@@ -610,8 +623,8 @@ var Actions = class {
     }
 
     switchWorkspaceCurrentMonitor(direction) {
-        //const focusedWindow = global.display.get_focus_window();
-        //const currentMonitor = focusedWindow ? focusedWindow.get_monitor() : global.display.get_current_monitor();
+        // const focusedWindow = global.display.get_focus_window();
+        // const currentMonitor = focusedWindow ? focusedWindow.get_monitor() : global.display.get_current_monitor();
         // using focused window to determine current monitor can lead to inconsistent behavior and switching monitors between switches
         // depending on which window takes focus on each workspace
         // mouse pointer is more stable source in this case
@@ -630,9 +643,9 @@ var Actions = class {
         // for case that workspace switcher is in wraparound mode
         let diff = neighbor.index() - activeWs.index();
         let step = 1;
-        if (!(Math.abs(diff) !== 1 && diff !== 0)) {
+        if (!(Math.abs(diff) !== 1 && diff !== 0))
             step = Math.abs(diff);
-        }
+
 
         if (neighbor !== activeWs && (neighbor.index() !== lastIndex || activeWs !== lastIndex)) {
             for (let i = 0; i < nMonitors; i++) {
@@ -649,9 +662,8 @@ var Actions = class {
         const activeWs = global.workspace_manager.get_active_workspace();
         const windows = AltTab.getWindows(activeWs);
         for (let i = 0; i < windows.length; i++) {
-            if (!windows[i].is_on_all_workspaces()) {
-                windows[i].delete(global.get_current_time()+i);
-            }
+            if (!windows[i].is_on_all_workspaces())
+                windows[i].delete(global.get_current_time() + i);
         }
         const vertical = global.workspaceManager.layout_rows === -1;
         const direction = vertical ? Meta.MotionDirection.DOWN : Meta.MotionDirection.RIGHT;
@@ -664,11 +676,11 @@ var Actions = class {
         if (value === null)
             return;
         const STEP = 5;
-        if (direction === Meta.MotionDirection.UP) {
+        if (direction === Meta.MotionDirection.UP)
             value += STEP;
-        } else {
+        else
             value -= STEP;
-        }
+
 
         if (value > 100)
             value = 100;
@@ -679,11 +691,11 @@ var Actions = class {
     }
 
     lockScreen() {
-        //Main.screenShield.lock(true);
+        // Main.screenShield.lock(true);
         SystemActions.getDefault().activateLockScreen();
     }
 
-    suspendToRam () {
+    suspendToRam() {
         SystemActions.getDefault().activateSuspend();
     }
 
@@ -707,8 +719,8 @@ var Actions = class {
             'org.gnome.ScreenSaver',
             'SetActive',
             new GLib.Variant('(b)', [GLib.Variant.new_boolean(true)]),
-            null, Gio.DBusCallFlags.NONE,-1,null,
-         );
+            null, Gio.DBusCallFlags.NONE, -1, null
+        );
     }
 
     showScreenshotUi() {
@@ -740,14 +752,14 @@ var Actions = class {
             });
             lg.hide();
             return Clutter.EVENT_STOP;
-        }
+        };
 
         lg.openInspector();
     }
 
     switchToRecentWindow() {
         AltTab.getWindows(null)[1].activate(global.get_current_time());
-        //global.display.get_tab_list(0, null)[1].activate(global.get_current_time());
+        // global.display.get_tab_list(0, null)[1].activate(global.get_current_time());
     }
 
     closeWindow() {
@@ -777,7 +789,8 @@ var Actions = class {
             return;
         if (win.maximized_horizontally && win.maximized_vertically)
             win.unmaximize(Meta.MaximizeFlags.BOTH);
-        else win.maximize(Meta.MaximizeFlags.BOTH);
+        else
+            win.maximize(Meta.MaximizeFlags.BOTH);
     }
 
     minimizeWindow() {
@@ -785,7 +798,7 @@ var Actions = class {
         if (!win)
             return;
         win.minimize();
-        //global.display.get_tab_list(0, null)[0].minimize();
+        // global.display.get_tab_list(0, null)[0].minimize();
     }
 
     unminimizeAll(workspace = true) {
@@ -829,7 +842,7 @@ var Actions = class {
         if (win.fullscreen) {
             win.unmake_fullscreen();
             if (win._originalWS) {
-                for(let i = 0; i < global.workspaceManager.n_workspaces; i++) {
+                for (let i = 0; i < global.workspaceManager.n_workspaces; i++) {
                     let w = global.workspaceManager.get_workspace_by_index(i);
                     if (w === win._originalWS) {
                         win.change_workspace(win._originalWS);
@@ -844,15 +857,15 @@ var Actions = class {
             let ws = win.get_workspace();
             let nWindows = ws.list_windows().filter(
                 w =>
-                    //w.get_window_type() === Meta.WindowType.NORMAL &&
+                    // w.get_window_type() === Meta.WindowType.NORMAL &&
                     !w.is_on_all_workspaces()
-                ).length;
+            ).length;
             if (nWindows > 1) {
                 win._originalWS = ws;
                 let newWsIndex = ws.index() + 1;
                 Main.wm.insertWorkspace(newWsIndex);
-                let newWs = global.workspace_manager.get_workspace_by_index(newWsIndex);
-                //win.change_workspace(newWs);
+                // let newWs = global.workspace_manager.get_workspace_by_index(newWsIndex);
+                // win.change_workspace(newWs);
                 this.moveWinToAdjacentWs(1, [win]);
                 win.make_fullscreen();
                 win.activate(global.get_current_time());
@@ -861,7 +874,7 @@ var Actions = class {
     }
 
     moveWinToNewWs(direction, windows = null) {
-        let selected
+        let selected;
         if (!windows)
             selected = [this._getFocusedWindow(true)];
         else
@@ -870,9 +883,9 @@ var Actions = class {
             return;
 
         let wsIndex = global.workspace_manager.get_active_workspace_index();
-            wsIndex = wsIndex + (direction === Meta.MotionDirection.UP ? 0 : 1);
-            Main.wm.insertWorkspace(wsIndex);
-            this.moveWinToAdjacentWs(direction, selected);
+        wsIndex += direction === Meta.MotionDirection.UP ? 0 : 1;
+        Main.wm.insertWorkspace(wsIndex);
+        this.moveWinToAdjacentWs(direction, selected);
     }
 
     moveWinToAdjacentWs(direction, windows = null) {
@@ -889,7 +902,7 @@ var Actions = class {
             return;
 
         let wsIndex = global.workspace_manager.get_active_workspace_index();
-        wsIndex = wsIndex + (direction === Meta.MotionDirection.UP ? -1 : 1);
+        wsIndex += direction === Meta.MotionDirection.UP ? -1 : 1;
         wsIndex = Math.min(wsIndex, global.workspace_manager.get_n_workspaces() - 1);
         if (wsIndex < 0) {
             this.moveWinToNewWs(direction, selected);
@@ -952,47 +965,43 @@ var Actions = class {
             let y = targetMonitor.y + Math.max(Math.floor(targetMonitor.height - actor.height) / 2, 0);
             win.move_frame(true, x, y);
         }
-
     }
 
     toggleAboveWindow(metaWindow) {
         let win = metaWindow || this._getFocusedWindow(true);
         if (!win)
             return;
-        if (win.is_above()) {
+        if (win.is_above())
             win.unmake_above();
-            //Main.notify(Me.metadata.name, _(`Disabled: Always on Top \n\n${win.title}` ));
-        } else {
+            // Main.notify(Me.metadata.name, _(`Disabled: Always on Top \n\n${win.title}` ));
+        else
             win.make_above();
-            //Main.notify(Me.metadata.name, _(`Enabled: Always on Top \n\n${win.title}` ));
-        }
+            // Main.notify(Me.metadata.name, _(`Enabled: Always on Top \n\n${win.title}` ));
     }
 
     toggleStickWindow(metaWindow) {
         let win = metaWindow || this._getFocusedWindow(true);
         if (!win)
             return;
-        if (win.is_on_all_workspaces()) {
+        if (win.is_on_all_workspaces())
             win.unstick();
-            //Main.notify(Me.metadata.name, _(`Disabled: Always on Visible Workspace \n\n${win.title}` ));
-        } else {
+            // Main.notify(Me.metadata.name, _(`Disabled: Always on Visible Workspace \n\n${win.title}` ));
+        else
             win.stick();
-            //Main.notify(Me.metadata.name, _(`Enabled: Always on Visible Workspace \n\n${win.title}` ));
-        }
+            // Main.notify(Me.metadata.name, _(`Enabled: Always on Visible Workspace \n\n${win.title}` ));
     }
 
     restartGnomeShell() {
         if (!Meta.is_wayland_compositor())
             Meta.restart(_('Restarting Gnome Shell...'));
         else
-            Main.notify(Me.metadata.name, _('Gnome Shell - Restart is not available in Wayland session' ));
+            Main.notify(Me.metadata.name, _('Gnome Shell - Restart is not available in Wayland session'));
     }
 
     toggleShowPanel() {
         if (Main.panel.is_visible()) {
             Main.panel.hide();
-        }
-        else {
+        } else {
             Main.panel.show();
             this._timeouts.panelBarrierTimeoutId = GLib.timeout_add(
                 GLib.PRIORITY_DEFAULT,
@@ -1026,7 +1035,7 @@ var Actions = class {
         const theme = intSettings.get_string('gtk-theme');
         const themeSplit = theme.split('-');
         let yaruAccent = '';
-        if (themeSplit[0] == 'Yaru' && themeSplit.length > 1) {
+        if (themeSplit[0] === 'Yaru' && themeSplit.length > 1) {
             yaruAccent = themeSplit[1];
             if (['light', 'dark'].includes(yaruAccent)) {
                 // this means default accent active
@@ -1037,59 +1046,55 @@ var Actions = class {
         let dark;
 
         switch (theme) {
-            case `Yaru-${yaruAccent}`:
-                newTheme = `Yaru-${yaruAccent}`;
-                dark = true;
-                break;
-            case `Yaru-${yaruAccent}-dark`:
-                newTheme = `Yaru-${yaruAccent}`;
-                dark = false;
-                break;
-            case 'Yaru-light':
-            case 'Yaru':
-                newTheme = 'Yaru';
-                dark = true;
-                break;
-            case 'Yaru-dark':
-                newTheme = shellVersion >= 40 ? 'Yaru' : 'Yaru-light'
-                dark = false;
-                break;
-            case 'Adwaita':
-                newTheme = 'Adwaita';
-                dark = true;
-                break;
-            case 'Adwaita-dark':
-                newTheme = 'Adwaita';
-                dark = false;
-                break;
-            default:
-                Main.notify(Me.metadata.name, _('Theme switcher works with Adwaita/Adwaita-dark and Yaru(-light)/Yaru-dark themes only'));
+        case `Yaru-${yaruAccent}`:
+            newTheme = `Yaru-${yaruAccent}`;
+            dark = true;
+            break;
+        case `Yaru-${yaruAccent}-dark`:
+            newTheme = `Yaru-${yaruAccent}`;
+            dark = false;
+            break;
+        case 'Yaru-light':
+        case 'Yaru':
+            newTheme = 'Yaru';
+            dark = true;
+            break;
+        case 'Yaru-dark':
+            newTheme = shellVersion >= 40 ? 'Yaru' : 'Yaru-light';
+            dark = false;
+            break;
+        case 'Adwaita':
+            newTheme = 'Adwaita';
+            dark = true;
+            break;
+        case 'Adwaita-dark':
+            newTheme = 'Adwaita';
+            dark = false;
+            break;
+        default:
+            Main.notify(Me.metadata.name, _('Theme switcher works with Adwaita/Adwaita-dark and Yaru(-light)/Yaru-dark themes only'));
         }
 
         if (shellVersion >= 42) {
             dark = !(intSettings.get_string('color-scheme') === 'prefer-dark');
-            if (dark) {
+            if (dark)
                 intSettings.set_string('color-scheme', 'prefer-dark');
-            } else {
+            else
                 intSettings.set_string('color-scheme', 'prefer-light');
-            }
         }
 
         if (newTheme) {
-            const shellThemeSettings = this._getShellThemeSettings('org.gnome.shell.extensions.user-theme');//, '/org/gnome/shell/extensions/user-theme/');
+            const shellThemeSettings = this._getShellThemeSettings('org.gnome.shell.extensions.user-theme');// , '/org/gnome/shell/extensions/user-theme/');
             if (dark) {
                 intSettings.set_string('gtk-theme', `${newTheme}-dark`);
-                if (shellThemeSettings) {
+                if (shellThemeSettings)
                     shellThemeSettings.set_string('name', `${newTheme}-dark`);
-                }
             } else {
                 intSettings.set_string('gtk-theme', newTheme);
-                if (shellThemeSettings) {
+                if (shellThemeSettings)
                     shellThemeSettings.set_string('name', newTheme);
-                }
             }
         }
-
     }
 
     // user Shell themes are supported via 'User Themes' extension which must be installed
@@ -1108,20 +1113,20 @@ var Actions = class {
 
         const schemaObj = schemaSource.lookup(schema, true);
         if (!schemaObj) {
-            //throw new Error(
+            // throw new Error(
             log(
-                'Schema ' + schema + ' could not be found for extension. Please check your installation.'
+                `Schema ${schema} could not be found for extension. Please check your installation.`
             );
             return null;
         }
 
-        const args = {settings_schema: schemaObj};
-        if (path) {
+        const args = { settings_schema: schemaObj };
+        if (path)
             args.path = path;
-        }
+
 
         return new Gio.Settings(args);
-    };
+    }
 
     openRunDialog() {
         Main.openRunDialog();
@@ -1155,11 +1160,11 @@ var Actions = class {
         let wins = [];
         for (let win of windows) {
             if ((monitorIndex < 0 ? true : win.get_monitor() === monitorIndex) &&
-                    (!(win.minimized ||
+                    !(win.minimized ||
                     win.window_type === Meta.WindowType.DESKTOP ||
                     win.window_type === Meta.WindowType.DOCK ||
                     win.skip_taskbar
-                ))) {
+                    )) {
                 win._focusedBeforeShowDesktop = false;
                 wins.push(win);
                 if (win === global.display.get_focus_window())
@@ -1195,7 +1200,7 @@ var Actions = class {
 
     _showWsSwitcherPopup(direction, wsIndex) {
         if (!Main.overview.visible) {
-            if (Main.wm._workspaceSwitcherPopup == null) {
+            if (Main.wm._workspaceSwitcherPopup === null) {
                 Main.wm._workspaceSwitcherPopup = new WorkspaceSwitcherPopup.WorkspaceSwitcherPopup();
                 Main.wm._workspaceSwitcherPopup.connect('destroy', () => {
                     Main.wm._workspaceSwitcherPopup = null;
@@ -1204,11 +1209,10 @@ var Actions = class {
 
             let motion = this._translateDirectionIfNeeded(direction);
 
-            if (shellVersion >= 42) {
+            if (shellVersion >= 42)
                 Main.wm._workspaceSwitcherPopup.display(wsIndex);
-            } else {
+            else
                 Main.wm._workspaceSwitcherPopup.display(motion, wsIndex);
-            }
         }
     }
 
@@ -1221,7 +1225,7 @@ var Actions = class {
 
         const state = global.get_pointer()[2];
         const distance = 100;
-        const step = (state & Clutter.ModifierType.SHIFT_MASK) ? 1 : 10; // 1% / 10% when distance == 100
+        const step = state & Clutter.ModifierType.SHIFT_MASK ? 1 : 10; // 1% / 10% when distance == 100
         const delta = direction * step;
         const time = global.get_current_time();
         if (workspace) {
@@ -1266,13 +1270,13 @@ var Actions = class {
     switchWindow(direction, wsOnly = false, monitorIndex = -1, app = false) {
         let workspaceManager = global.workspace_manager;
 
-        const workspace = null;
+        let workspace = null;
         let windows = AltTab.getWindows(workspace);
         if (monitorIndex > -1)
             windows = windows.filter(w => w.get_monitor() === monitorIndex);
 
         if (wsOnly) {
-            const workspace = workspaceManager.get_active_workspace();
+            workspace = workspaceManager.get_active_workspace();
             windows = windows.filter(w => w.get_workspace() === workspace);
         }
 
@@ -1284,7 +1288,8 @@ var Actions = class {
             windows = windows.filter(win => this._getWindowApp(win) === app);
         }
 
-        if (!windows.length) return;
+        if (!windows.length)
+            return;
 
         // if window selection is in the process, the previewed window must be the current one
         let currentWin  = this._winPreview ? this._winPreview._window : windows[0];
@@ -1292,17 +1297,17 @@ var Actions = class {
             // tab list is sorted by MRU order, active window is always idx 0
             // each window has index in global stable order list (as launched)
             windows.sort((a, b) => {
-                    return a.get_stable_sequence() - b.get_stable_sequence();
-                }).reverse(); // reverse the list to get the same sequence direction as MRU list has
+                return a.get_stable_sequence() - b.get_stable_sequence();
+            }).reverse(); // reverse the list to get the same sequence direction as MRU list has
         }
         const currentIdx = windows.indexOf(currentWin);
-        let targetIdx = currentIdx + ( - direction); // reverse the direction to follow MRU ordered list
+        let targetIdx = currentIdx +  -direction; // reverse the direction to follow MRU ordered list
 
-        if (targetIdx > windows.length - 1) {
+        if (targetIdx > windows.length - 1)
             targetIdx = this.WIN_WRAPAROUND ? 0 : currentIdx;
-        } else if (targetIdx < 0) {
+        else if (targetIdx < 0)
             targetIdx = this.WIN_WRAPAROUND ? windows.length - 1 : currentIdx;
-        }
+
 
         this._showWindowPreview(windows[targetIdx]);
         if (this._timeouts.winSwitcherTimeoutId) {
@@ -1334,7 +1339,7 @@ var Actions = class {
     _isPointerOnEdge(xPointer, yPointer) {
         let [x, y] = global.get_pointer();
         const geometry = getCurrentMonitorGeometry();
-        if ([geometry.x, geometry.x + geometry.width -1].includes(x) && Math.abs(yPointer - y) < 100)
+        if ([geometry.x, geometry.x + geometry.width - 1].includes(x) && Math.abs(yPointer - y) < 100)
             return true;
         if ([geometry.y, geometry.y + geometry.height - 1].includes(y) && Math.abs(xPointer - x) < 100)
             return true;
@@ -1343,9 +1348,10 @@ var Actions = class {
     }
 
     _showWindowPreview(metaWin) {
-        if (!metaWin) return;
+        if (!metaWin)
+            return;
 
-        /*if (this._winPreview) {
+        /* if (this._winPreview) {
             this._destroyWindowPreview();
         }*/
 
@@ -1367,12 +1373,13 @@ var Actions = class {
         }
     }
 
-    //direction +1 / -1, 0 for toggle mute
+    // direction +1 / -1, 0 for toggle mute
     adjustVolume(direction) {
         let mixerControl = Volume.getMixerControl();
         let sink = mixerControl.get_default_sink();
 
-        if (!sink) return;
+        if (!sink)
+            return;
 
         const soundSettings = this._getSoundSettings();
         const alowOverAmplification = soundSettings.get_boolean('allow-volume-above-100-percent');
@@ -1389,7 +1396,7 @@ var Actions = class {
 
         const step = direction * 2048;
 
-        volume = volume + step;
+        volume += step;
         if (volume > maxLevel)
             volume = maxLevel;
         if (volume < 0)
@@ -1399,13 +1406,13 @@ var Actions = class {
         sink.push_volume();
 
         // OSD
-        let icons = ["audio-volume-muted-symbolic",
-                     "audio-volume-low-symbolic",
-                     "audio-volume-medium-symbolic",
-                     "audio-volume-high-symbolic",
-                     "audio-volume-overamplified-symbolic"];
+        let icons = ['audio-volume-muted-symbolic',
+            'audio-volume-low-symbolic',
+            'audio-volume-medium-symbolic',
+            'audio-volume-high-symbolic',
+            'audio-volume-overamplified-symbolic'];
 
-                     let n;
+        let n;
         if (sink.is_muted || volume <= 0) {
             n = 0;
         } else {
@@ -1441,8 +1448,8 @@ var Actions = class {
         let value;
         if (toggleValue) {
             value = windowSurface.opacity === 255
-                        ? toggleValue
-                        : 255;
+                ? toggleValue
+                : 255;
         } else {
             value = windowSurface.opacity;
             value += step;
@@ -1458,12 +1465,12 @@ var Actions = class {
             return;
 
         const focusWin = this._getWindowApp(global.display.get_focus_window());
-        const winTitle = (window && focusWin) ? focusWin.get_name() : '';
-        let title = _('Opacity') + `  (${winTitle})`;
+        const winTitle = focusWin ? focusWin.get_name() : '';
+        let title = `${_('Opacity')}  (${winTitle})`;
         const maxLevel = 255;
         const ampScale = 1;
         const gicon = new Gio.ThemedIcon({ name: 'view-reveal-symbolic' });
-        const level = value/ maxLevel;
+        const level = value / maxLevel;
         Main.osdWindowManager.show(-1, gicon, title, level, ampScale);
     }
 
@@ -1473,29 +1480,30 @@ var Actions = class {
         let name = brightness ? 'brightness' : 'contrast';
         let brightnessContrast, value;
 
-        const getBCValue = function () {
+        const getBCValue = () => {
             return brightness
-                            ? brightnessContrast.get_brightness()[0] // Clutter returns value in [r,g,b] format
-                            : brightnessContrast.get_contrast()[0];
+                ? brightnessContrast.get_brightness()[0] // Clutter returns value in [r,g,b] format
+                : brightnessContrast.get_contrast()[0];
         };
 
-        const setBCValue = function (val) {
+        const setBCValue = val => {
             return brightness
-                            ? brightnessContrast.set_brightness(val)
-                            : brightnessContrast.set_contrast(val);
+                ? brightnessContrast.set_brightness(val)
+                : brightnessContrast.set_contrast(val);
         };
 
         if (window) {
             let actor = this._getFocusedActor();
-            if (!actor) return;
-            if (!actor.get_effect(name)) {
+            if (!actor)
+                return;
+            if (!actor.get_effect(name))
                 actor.add_effect_with_name(name, new Clutter.BrightnessContrastEffect());
-            }
+
             brightnessContrast = actor.get_effect(name);
         } else {
-            if (!Main.uiGroup.get_effect(name)) {
-                Main.uiGroup.add_effect_with_name( name, new Clutter.BrightnessContrastEffect());
-            }
+            if (!Main.uiGroup.get_effect(name))
+                Main.uiGroup.add_effect_with_name(name, new Clutter.BrightnessContrastEffect());
+
             brightnessContrast = Main.uiGroup.get_effect(name);
         }
 
@@ -1504,8 +1512,10 @@ var Actions = class {
             // multiply to avoid value shifting
             value = Math.round((value * 1000) + (step * 1000));
             let max = brightness ? 0 : 300;
-            if (value > max) value = max;
-            if (value < -750) value = -750;
+            if (value > max)
+                value = max;
+            if (value < -750)
+                value = -750;
             value /= 1000;
         } else {
             value = valueO;
@@ -1514,17 +1524,17 @@ var Actions = class {
         }
 
         setBCValue(value);
-        if (!value) {
+        if (!value)
             brightnessContrast.set_enabled(false);
-        } else {
+        else
             brightnessContrast.set_enabled(true);
-        }
+
 
         if (valueO)
             return;
 
         const focusWin = this._getWindowApp(global.display.get_focus_window());
-        const winTitle = (window && focusWin) ? focusWin.get_name() : '';
+        const winTitle = window && focusWin ? focusWin.get_name() : '';
         const suffix = window ? _(`(${winTitle})`) : _('(global)');
         let title = brightness ? _('Brightness') : _('Contrast');
         title = `${title} ${suffix}`;
@@ -1548,8 +1558,10 @@ var Actions = class {
     toggleColorTintEffect(color, window = true) {
         if (!color) {
             const [success, col] = Clutter.Color.from_string(this._mscOptions.get('customTintColor'));
-            if (!success) return;
-            else color = col;
+            if (!success)
+                return;
+            else
+                color = col;
         }
         let name = 'color-tint';
         let effect = Clutter.ColorizeEffect;
@@ -1562,9 +1574,9 @@ var Actions = class {
     toggleLightnessInvertEffect(window = true, whiteShift = true) {
         let name = 'inversion';
         this._getShaders();
-        let effect;
-        whiteShift ? effect = Shaders.InvertLightnessShiftEffect
-                   : effect = Shaders.InvertLightnessEffect;
+        let effect = whiteShift
+            ? Shaders.InvertLightnessShiftEffect
+            : Shaders.InvertLightnessEffect;
         if (window)
             this._toggleWindowEffect(name, effect);
         else
@@ -1595,7 +1607,7 @@ var Actions = class {
             this._toggleGlobalEffect(name, effect, { mode, simulate });
     }
 
-    toggleColorMixerEffect(window = true, mode = 1) {
+    toggleColorMixerEffect(window = true) {
         let name = 'color-mixer';
         this._getShaders();
         let effect = Shaders.ColorMixerEffect2;
@@ -1615,9 +1627,9 @@ var Actions = class {
     }
 
     _toggleWindowEffect(name, effect, properties = {}) {
-        global.get_window_actors().forEach( (actor) => {
-            let meta_window = actor.get_meta_window();
-            if (meta_window.has_focus()) {
+        global.get_window_actors().forEach(actor => {
+            let metaWindow = actor.get_meta_window();
+            if (metaWindow.has_focus()) {
                 if (actor.get_effect(name)) {
                     actor.remove_effect_by_name(name);
                 } else {
@@ -1632,13 +1644,11 @@ var Actions = class {
         // reverse order to avoid conflicts after dimmer removed
         let createNew = true;
         if (monitorIndex === -1 && (this._dimmerActors.length === Main.layoutManager.monitors.length)) {
-                this._destroyDimmerActors();
-                createNew = false;
+            this._destroyDimmerActors();
+            createNew = false;
         }
         for (let i = this._dimmerActors.length - 1; i > -1;  i--) {
-
             if (this._dimmerActors[i].name === `${monitorIndex}`) {
-
                 let idx = this._dimmerActors.indexOf(this._dimmerActors[i]);
                 if (idx > -1) {
                     this._dimmerActors[i].destroy();
@@ -1648,16 +1658,16 @@ var Actions = class {
             }
         }
         if (createNew) {
-            if (monitorIndex === -1) this._destroyDimmerActors();
+            if (monitorIndex === -1)
+                this._destroyDimmerActors();
             let monitors = [...Main.layoutManager.monitors.keys()];
 
             for (let monitor of monitors) {
-
-                if ( (monitorIndex < 0 ? true : monitor === monitorIndex)) {
+                if (monitorIndex < 0 ? true : monitor === monitorIndex) {
                     let geometry = global.display.get_monitor_geometry(monitor);
-                    let actor = new St.Label ({
+                    let actor = new St.Label({
                         name: `${monitor}`,
-                        text: text,
+                        text,
                         x: geometry.x,
                         y: geometry.y,
                         width: geometry.width,
@@ -1667,7 +1677,7 @@ var Actions = class {
                         reactive: true,
                     });
                     actor.connect('button-press-event', () => this.toggleDimMonitors(null, null, monitorIndex));
-                    //Main.layoutManager.addChrome(actor);
+                    // Main.layoutManager.addChrome(actor);
                     global.stage.add_actor(actor);
                     this._dimmerActors.push(actor);
                 }
@@ -1680,17 +1690,16 @@ var Actions = class {
         let magSettings = this._getA11yMagnifierSettings();
 
         if (step === 0) {
-            if (  ! appSettings.get_boolean('screen-magnifier-enabled')
-                 && magSettings.get_double('mag-factor') === 1
-                )
+            if (!appSettings.get_boolean('screen-magnifier-enabled') &&
+                 magSettings.get_double('mag-factor') === 1
+            )
                 magSettings.set_double('mag-factor', 2);
             appSettings.set_boolean('screen-magnifier-enabled',
-                                                !appSettings.get_boolean('screen-magnifier-enabled')
+                !appSettings.get_boolean('screen-magnifier-enabled')
             );
         } else {
-
             if (!appSettings.get_boolean('screen-magnifier-enabled'))
-               magSettings.set_double('mag-factor', 1);
+                magSettings.set_double('mag-factor', 1);
             let value = magSettings.get_double('mag-factor') + step;
 
             if (value <= 1) {
@@ -1698,14 +1707,15 @@ var Actions = class {
                 // when Zoom = 1 enabled, graphics artifacts might follow mouse pointer
                 if (appSettings.get_boolean('screen-magnifier-enabled'))
                     appSettings.set_boolean('screen-magnifier-enabled', false);
-                    return;
+                return;
             }
 
-            if (value > 5) value = 5;
+            if (value > 5)
+                value = 5;
             magSettings.set_double('mag-factor', value);
 
             if (!appSettings.get_boolean('screen-magnifier-enabled'))
-               appSettings.set_boolean('screen-magnifier-enabled', true);
+                appSettings.set_boolean('screen-magnifier-enabled', true);
         }
         // Main.magnifier.setActive(true); // simple way to activate zoom
     }
@@ -1720,9 +1730,9 @@ var Actions = class {
                     monitorIndex = global.display.get_current_monitor();
                 let visible = Main.keyboard.visible;
                 let appSettings = this._getA11yAppSettings();
-                if (visible)
+                if (visible) {
                     appSettings.set_boolean('screen-keyboard-enabled', false);
-                else {
+                } else {
                     if (!appSettings.get_boolean('screen-keyboard-enabled'))
                         appSettings.set_boolean('screen-keyboard-enabled', true);
                     // open the keyboard even if incompatible input is currently in focus
@@ -1738,8 +1748,8 @@ var Actions = class {
     toggleScreenReader() {
         let appSettings = this._getA11yAppSettings();
         appSettings.set_boolean(
-                        'screen-reader-enabled',
-                        !appSettings.get_boolean('screen-reader-enabled')
+            'screen-reader-enabled',
+            !appSettings.get_boolean('screen-reader-enabled')
         );
     }
 
@@ -1747,10 +1757,11 @@ var Actions = class {
         let intSettings = this._getInterfaceSettings();
         if (intSettings.get_double('text-scaling-factor') > 1)
             intSettings.reset('text-scaling-factor');
-        else intSettings.set_double('text-scaling-factor', 1.25);
+        else
+            intSettings.set_double('text-scaling-factor', 1.25);
     }
 
-    makeThumbnailWindow(metaWindow = null) {
+    makeThumbnailWindow(metaWindow = null, minimize = false) {
         if (!WinTmb)
             WinTmb = Me.imports.src.extension.winTmb;
 
@@ -1766,8 +1777,12 @@ var Actions = class {
             return;
 
         if (!this._tmbConnected) {
-            let conS = Main.overview.connect('showing', () => { this.windowThumbnails.forEach((t) => {t.hide();}); });
-            let conH = Main.overview.connect('hiding',  () => { this.windowThumbnails.forEach((t) => {t.show();}); });
+            let conS = Main.overview.connect('showing', () => {
+                this.windowThumbnails.forEach(t => t.hide());
+            });
+            let conH = Main.overview.connect('hiding',  () => {
+                this.windowThumbnails.forEach(t => t.show());
+            });
             this._signalsCollector.push([Main.overview, conS]);
             this._signalsCollector.push([Main.overview, conH]);
             this._tmbConnected = true;
@@ -1776,20 +1791,21 @@ var Actions = class {
         let monitorHeight = getCurrentMonitorGeometry().height;
         let scale = this._mscOptions.get('winThumbnailScale');
         this.windowThumbnails.push(new WinTmb.WindowThumbnail(metaWin, this, {
-            'actionTimeout': this._mscOptions.get('actionEventDelay'),
-            'height' : Math.floor(scale / 100 * monitorHeight),
-            'thumbnailsOnScreen' : this.windowThumbnails.length,
-            })
+            actionTimeout: this._mscOptions.get('actionEventDelay'),
+            height: Math.floor(scale / 100 * monitorHeight),
+            thumbnailsOnScreen: this.windowThumbnails.length,
+            minimize,
+        })
         );
     }
 
     showAppSwitcherPopup() {
         let appSwitcher = new AltTab.AppSwitcherPopup();
         appSwitcher._resetNoModsTimeout = () => {};
-        appSwitcher.show(0,0,0);
+        appSwitcher.show(0, 0, 0);
     }
 
-    showWindowSwitcherPopup( args = {
+    showWindowSwitcherPopup(args = {
         'monitor-index':     -1,
         'position-pointer':   null,
         'filter-mode':       -1,
@@ -1802,9 +1818,10 @@ var Actions = class {
         'apps':               false,
         'switch-ws':          false,
     }) {
-        const WindowSwitcherPopup = AltTab.WindowSwitcherPopup;
+        if (!WindowSwitcherPopup)
+            WindowSwitcherPopup = AltTab.WindowSwitcherPopup;
         let altTabPopup = new WindowSwitcherPopup();
-        const advancedSwitcherEnabled = (altTabPopup.showOrig || altTabPopup._showPopup) ? true : false;
+        const advancedSwitcherEnabled = !!(altTabPopup.showOrig || altTabPopup._showPopup);
 
         if (advancedSwitcherEnabled) {
             // behavior variables
@@ -1812,35 +1829,37 @@ var Actions = class {
             altTabPopup.KEYBOARD_TRIGGERED = args['triggered-keyboard'];
             altTabPopup._keyBind = args['shortcut']; // shortcut without modifiers
             altTabPopup._singleApp         = args['filter-focused-app']
-                                                    ? Shell.WindowTracker.get_default().get_window_app(this._getFocusedWindow()).get_id()
-                                                    : null;
-            if ( args['timeout'])
+                ? Shell.WindowTracker.get_default().get_window_app(this._getFocusedWindow()).get_id()
+                : null;
+            if (args['timeout'])
                 altTabPopup.NO_MODS_TIMEOUT  = args['timeout'];
-            if ( args['position-pointer'] !== null)
+            if (args['position-pointer'] !== null)
                 altTabPopup.POSITION_POINTER = args['position-pointer'];
-            if ( args['group-mode']       !== 0)
+            if (args['group-mode']       !== 0)
                 altTabPopup.GROUP_MODE       = args['group-mode'];
-            if ( args['filter-mode']       > -1)
+            if (args['filter-mode']       > -1)
                 altTabPopup.WIN_FILTER_MODE  = args['filter-mode'];
-            if ( args['monitor-index']     > -1)
+            if (args['monitor-index']     > -1)
                 altTabPopup._monitorIndex    = args['monitor-index'];
-            if ( args['filter-pattern']   !== null)
+            if (args['filter-pattern']   !== null)
                 altTabPopup._searchEntry     = args['filter-pattern'];
             if (!args['triggered-keyboard'])
                 altTabPopup._modifierMask    = 0;
-            if ( args['apps']) {
-                altTabPopup._switcherMode   = 1; //SwitcherModes.APPS;
+            if (args['apps']) {
+                altTabPopup._switcherMode   = 1; // SwitcherModes.APPS;
                 altTabPopup.SHOW_APPS       = true;
             }
-            altTabPopup.connect('destroy', () => altTabPopup = null);
+            altTabPopup.connect('destroy', () => {
+                altTabPopup = null;
+            });
             altTabPopup.show();
-            if ( args['switch-ws'] !== undefined && args['switch-ws'] !== false) {
+            if (args['switch-ws'] !== undefined && args['switch-ws'] !== false)
                 altTabPopup._switchWorkspace(args['switch-ws']);
-            }
+
         // if Advanced Alt+Tab Window Switcher not available, use default popup
         } else {
             if (args['apps'])
-               altTabPopup = new AltTab.AppSwitcherPopup();
+                altTabPopup = new AltTab.AppSwitcherPopup();
             altTabPopup._resetNoModsTimeout = () => {};
             altTabPopup.show(0, 0, 0);
         }
@@ -1858,7 +1877,7 @@ var Actions = class {
         }
         this.customMenu[menuIndex].menuItems      = this._mscOptions.get(`customMenu${menuIndex}`);
         this.customMenu[menuIndex].actionList     = Settings.actionList;
-        let focusedWin = this._getFocusedWindow() ? this._getFocusedWindow().get_title() : null
+        let focusedWin = this._getFocusedWindow() ? this._getFocusedWindow().get_title() : null;
         if (focusedWin && focusedWin.length > 40)
             focusedWin = `${focusedWin.substring(0, 40)}...`;
         this.customMenu[menuIndex].focusedWindow  = focusedWin;
@@ -1868,7 +1887,7 @@ var Actions = class {
 
         Main.layoutManager.setDummyCursorGeometry(global.get_pointer()[0], global.get_pointer()[1], 0, 0);
 
-        //Main.osdWindowManager.hideAll();
+        // Main.osdWindowManager.hideAll();
         const focusedWinItem = this.customMenu[menuIndex].windowNeeded;
         const firstItem = this.customMenu[menuIndex]._getMenuItems()[focusedWinItem ? 1 : 0];
         this.customMenu[menuIndex].open(BoxPointer.PopupAnimation.FULL);
@@ -1880,13 +1899,13 @@ var Actions = class {
         const Methods = [
             'PlayPause',
             'Next',
-            'Previous'
-        ]
+            'Previous',
+        ];
         let method = Methods[action];
         let session = Gio.DBus.session;
         session.call(
             'org.freedesktop.DBus',
-            "/org/freedesktop",
+            '/org/freedesktop',
             'org.freedesktop.DBus',
             'ListNames',
             null, null, Gio.DBusCallFlags.NONE, -1, null,
@@ -1899,9 +1918,9 @@ var Actions = class {
                     let player = mprisServices[0];
                     this._executeMprisPlayerCommand(session, player, method);
                 } catch (e) {
-                    if (e instanceof Gio.DBusError) {
+                    if (e instanceof Gio.DBusError)
                         Gio.DBusError.strip_remote_error(e);
-                    }
+
                     logError(e);
                 }
             }
@@ -1909,14 +1928,15 @@ var Actions = class {
     }
 
     _executeMprisPlayerCommand(session, player, method) {
-        if (!player) return;
+        if (!player)
+            return;
         try {
             session.call(
                 player,
-                "/org/mpris/MediaPlayer2",
+                '/org/mpris/MediaPlayer2',
                 'org.mpris.MediaPlayer2.Player',
                 method,
-                null, null, Gio.DBusCallFlags.NONE,-1,null
+                null, null, Gio.DBusCallFlags.NONE, -1, null
             );
         } catch (e) {
             log(e);
@@ -1977,7 +1997,8 @@ var CustomMenuPopup = class CustomMenuPopup extends PopupMenu.PopupMenu {
             if (needsWin)
                 this.windowNeeded = true;
 
-            if (item[0] === 0) submenu = null;
+            if (item[0] === 0)
+                submenu = null;
             if (section) {
                 submenu = new PopupMenu.PopupSubMenuMenuItem(name, true);
                 submenu.icon.icon_name = icon;

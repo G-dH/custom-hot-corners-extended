@@ -11,7 +11,7 @@
 
 const { Gtk } = imports.gi;
 
-const ExtensionUtils = imports.misc.extensionUtils
+const ExtensionUtils = imports.misc.extensionUtils;
 const Me             = ExtensionUtils.getCurrentExtension();
 
 const Config         = imports.misc.config;
@@ -20,7 +20,7 @@ const shellVersion   = parseFloat(Config.PACKAGE_VERSION);
 
 // conversion of Gtk3 / Gtk4 widgets add methods
 var append = shellVersion < 40 ? 'add' : 'append';
-var set_child = shellVersion < 40 ? 'add' : 'set_child';
+var setChild = shellVersion < 40 ? 'add' : 'set_child';
 
 function _newImageFromIconName(name, size = null) {
     const args = shellVersion >= 40 ? [name] : [name, size];
@@ -33,15 +33,14 @@ function _setImageFromIconName(widget, name, size = null) {
 }
 
 function _setBtnFromIconName(btnWidget, iconName, size) {
-    if (btnWidget.set_icon_name) {
+    if (btnWidget.set_icon_name)
         btnWidget.set_icon_name(iconName);
-    } else {
+    else
         btnWidget.add(Gtk.Image.new_from_icon_name(iconName, size));
-    }
 }
 
 function extensionEnabled(uuid = null) {
-    const settings = ExtensionUtils.getSettings( 'org.gnome.shell');
+    const settings = ExtensionUtils.getSettings('org.gnome.shell');
 
     uuid = uuid ? uuid : Me.metadata.uuid;
 
@@ -50,7 +49,7 @@ function extensionEnabled(uuid = null) {
     let disabled = settings.get_strv('disabled-extensions');
     disabled = disabled.includes(uuid);
     let disableUser = settings.get_boolean('disable-user-extensions');
-    if(enabled && !disabled && !disableUser)
+    if (enabled && !disabled && !disableUser)
         return true;
     return false;
 }
@@ -65,28 +64,27 @@ function bold(label) {
 
 function getIconPath() {
     const colorAccents = ['red', 'bark', 'sage', 'olive', 'viridian', 'prussiangreen', 'blue', 'purple', 'magenta'];
-    const theme = this._interfaceSettings = ExtensionUtils.getSettings('org.gnome.desktop.interface').get_string('gtk-theme');
+    const theme = ExtensionUtils.getSettings('org.gnome.desktop.interface').get_string('gtk-theme');
     const themeSplit = theme.split('-');
     let accent = 'blue';
     if (themeSplit.length > 1 && themeSplit[0] === 'Yaru') {
         accent = themeSplit[1];
-        if (colorAccents.indexOf(accent) < 0) {
+        if (colorAccents.indexOf(accent) < 0)
             accent = 'orange';
-        }
     } else if (themeSplit[0] === 'Yaru') {
         accent = 'orange';
     } else if (themeSplit[0] === 'Pop') {
         accent = 'prussiangreen';
     }
 
-    //return `${Me.dir.get_path()}/resources/icons/${accent}`;
+    // return `${Me.dir.get_path()}/resources/icons/${accent}`;
     return `/icons/${accent}`;
 
     /* using set_from_icon_name is slow compared to set_from_file or set_from_resource
     const iconTheme = Gtk.IconTheme.get_for_display
-                        ? Gtk.IconTheme.get_for_display(Gdk.Display.get_default())
-                        : Gtk.IconTheme.get_for_screen(Gdk.Screen.get_default());
+        ? Gtk.IconTheme.get_for_display(Gdk.Display.get_default())
+        : Gtk.IconTheme.get_for_screen(Gdk.Screen.get_default());
     iconTheme.add_search_path
-                        ? iconTheme.add_search_path(GLib.build_filenamev([Me.path, `resources/icons/${accent}`]))
-                        : iconTheme.append_search_path(GLib.build_filenamev([Me.path, `resources/icons/${accent}`]));*/
+        ? iconTheme.add_search_path(GLib.build_filenamev([Me.path, `resources/icons/${accent}`]))
+        : iconTheme.append_search_path(GLib.build_filenamev([Me.path, `resources/icons/${accent}`]));*/
 }

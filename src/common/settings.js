@@ -9,7 +9,7 @@
 
 'use strict';
 
-const {GLib, Gio}    = imports.gi;
+const { GLib, Gio }    = imports.gi;
 
 const ExtensionUtils = imports.misc.extensionUtils;
 const Me             = ExtensionUtils.getCurrentExtension();
@@ -31,7 +31,7 @@ var Triggers = {
     BUTTON_MIDDLE:    3,
     SCROLL_UP:        4,
     SCROLL_DOWN:      5,
-    CTRL_PRESSURE:    6
+    CTRL_PRESSURE:    6,
 };
 
 var TriggerLabels = [
@@ -41,7 +41,7 @@ var TriggerLabels = [
     _('Middle Button'),
     _('Scroll Up'),
     _('Scroll Down'),
-    _('Ctrl + Hot Corner')
+    _('Ctrl + Hot Corner'),
 ];
 
 var TRANSITION_TIME = 200;
@@ -58,7 +58,9 @@ var OPTIONS_ICON = 'preferences-other-symbolic';
 const colorAccents = ['red', 'bark', 'sage', 'olive', 'viridian', 'prussiangreen', 'blue', 'purple', 'magenta'];
 
 var actionDict = {};
-actionList.forEach(act => actionDict[act[1]] = {title: act[2], icon: act[4]});
+actionList.forEach(act => {
+    actionDict[act[1]] = { title: act[2], icon: act[4] };
+});
 
 var _schema = 'org.gnome.shell.extensions.custom-hot-corners-extended';
 var _path = '/org/gnome/shell/extensions/custom-hot-corners-extended';
@@ -93,28 +95,28 @@ var MscOptions = class MscOptions {
         this._connectionIds = [];
 
         this.options = {
-            buttonsTriggerOnPress:  {type: 'boolean', key: 'buttons-trigger-on-press'},
-            watchCorners:           {type: 'boolean', key: 'watch-corners'},
-            cornersVisible:         {type: 'boolean', key: 'corners-visible'},
-            winSwitchWrap:          {type: 'boolean', key: 'win-switch-wrap'},
-            winSkipMinimized:       {type: 'boolean', key: 'win-switch-skip-minimized'},
-            winStableSequence:      {type: 'boolean', key: 'win-switch-stable-sequence'},
-            winThumbnailScale:      {type: 'int',     key: 'win-thumbnail-scale'},
-            actionEventDelay:       {type: 'int',     key: 'action-event-delay'},
-            rippleAnimation:        {type: 'boolean', key: 'ripple-animation'},
-            barrierFallback:        {type: 'boolean', key: 'barrier-fallback'},
-            customMenu1:            {type: 'strv',    key: 'custom-menu-1'},
-            customMenu2:            {type: 'strv',    key: 'custom-menu-2'},
-            customMenu3:            {type: 'strv',    key: 'custom-menu-3'},
-            customMenu4:            {type: 'strv',    key: 'custom-menu-4'},
-            supportedExtensions:    {type: 'strv',    key: 'supported-active-extensions'},
-            keyboardShortcuts:      {type: 'strv',    key: 'keyboard-shortcuts'},
-            internalFlags:          {type: 'strv',    key: 'internal-flags'},
-            showOsdMonitorIndexes:  {type: 'boolean', key: 'show-osd-monitor-indexes'},
-            customTintColor:        {type: 'string',  key: 'custom-tint-color'},
-            hotCornersRequireShift: {type: 'boolean', key: 'hot-corners-require-shift'},
-            hotCornersEnabled:      {type: 'boolean', key: 'hot-corners-enabled'}
-        }
+            buttonsTriggerOnPress:  { type: 'boolean', key: 'buttons-trigger-on-press' },
+            watchCorners:           { type: 'boolean', key: 'watch-corners' },
+            cornersVisible:         { type: 'boolean', key: 'corners-visible' },
+            winSwitchWrap:          { type: 'boolean', key: 'win-switch-wrap' },
+            winSkipMinimized:       { type: 'boolean', key: 'win-switch-skip-minimized' },
+            winStableSequence:      { type: 'boolean', key: 'win-switch-stable-sequence' },
+            winThumbnailScale:      { type: 'int',     key: 'win-thumbnail-scale' },
+            actionEventDelay:       { type: 'int',     key: 'action-event-delay' },
+            rippleAnimation:        { type: 'boolean', key: 'ripple-animation' },
+            barrierFallback:        { type: 'boolean', key: 'barrier-fallback' },
+            customMenu1:            { type: 'strv',    key: 'custom-menu-1' },
+            customMenu2:            { type: 'strv',    key: 'custom-menu-2' },
+            customMenu3:            { type: 'strv',    key: 'custom-menu-3' },
+            customMenu4:            { type: 'strv',    key: 'custom-menu-4' },
+            supportedExtensions:    { type: 'strv',    key: 'supported-active-extensions' },
+            keyboardShortcuts:      { type: 'strv',    key: 'keyboard-shortcuts' },
+            internalFlags:          { type: 'strv',    key: 'internal-flags' },
+            showOsdMonitorIndexes:  { type: 'boolean', key: 'show-osd-monitor-indexes' },
+            customTintColor:        { type: 'string',  key: 'custom-tint-color' },
+            hotCornersRequireShift: { type: 'boolean', key: 'hot-corners-require-shift' },
+            hotCornersEnabled:      { type: 'boolean', key: 'hot-corners-enabled' },
+        };
     }
 
     connect(name, callback) {
@@ -147,18 +149,18 @@ var MscOptions = class MscOptions {
         const key = this.options[option].key;
 
         switch (type) {
-            case 'string':
-                this._gsettings.set_string(key, value);
-                break;
-            case 'int':
-                this._gsettings.set_int(key, value);
-                break;
-            case 'boolean':
-                this._gsettings.set_boolean(key, value);
-                break;
-            case 'strv':
-                this._gsettings.set_strv(key, value);
-                break;
+        case 'string':
+            this._gsettings.set_string(key, value);
+            break;
+        case 'int':
+            this._gsettings.set_int(key, value);
+            break;
+        case 'boolean':
+            this._gsettings.set_boolean(key, value);
+            break;
+        case 'strv':
+            this._gsettings.set_strv(key, value);
+            break;
         }
     }
 
@@ -175,19 +177,18 @@ var MscOptions = class MscOptions {
     }
 };
 
-var resetAllCorners = function() {
+function resetAllCorners() {
     // since we can't find all created monitor directories in gsettings without using dconf,
     // we assume that max monitor count of 6 is enough for all users
-    for (const monitor of [0,1,2,3,4,5]) {
-        for (const corner of ['top-left', 'top-right', 'bottom-left', 'bottom-right']) {
+    for (const monitor of [0, 1, 2, 3, 4, 5]) {
+        for (const corner of ['top-left', 'top-right', 'bottom-left', 'bottom-right'])
             resetCorner(monitor, corner);
-        }
     }
 }
 
-var resetCorner = function(monitorIndex, corner) {
-    const schema = _schema + '.corner';
-    for (const trigger of [0,1,2,3,4,5,6]) {
+function resetCorner(monitorIndex, corner) {
+    const schema = `${_schema}.corner`;
+    for (const trigger of [0, 1, 2, 3, 4, 5, 6]) {
         const path = `${_path}/monitor-${monitorIndex}-${corner}-${trigger}/`;
         const settings = getSettings(schema, path);
         if (settings) {
@@ -195,9 +196,8 @@ var resetCorner = function(monitorIndex, corner) {
                 settings.reset(key);
             });
             // ctrlBtn for the secondary hot corner action must be always checked
-            if (trigger == 6) {
+            if (trigger === 6)
                 settings.set_boolean('ctrl', true);
-            }
         }
     }
 }
@@ -223,22 +223,21 @@ var Corner = class Corner {
         this.workspaceIndex = {};
 
         this.options = {
-            action: ['string', 'action',],
-            command: ['string', 'command',],
-            fullscreen: ['boolean', 'fullscreen',],
-            ctrl: ['boolean', 'ctrl',],
-            workspaceIndex: ['int', 'workspace-index',],
+            action: ['string', 'action'],
+            command: ['string', 'command'],
+            fullscreen: ['boolean', 'fullscreen'],
+            ctrl: ['boolean', 'ctrl'],
+            workspaceIndex: ['int', 'workspace-index'],
             hExpand: ['boolean', 'h-expand', Triggers.BUTTON_PRIMARY],
             vExpand: ['boolean', 'v-expand', Triggers.BUTTON_PRIMARY],
             barrierSizeH: ['int', 'barrier-size-h', Triggers.PRESSURE],
             barrierSizeV: ['int', 'barrier-size-v', Triggers.PRESSURE],
             pressureThreshold: ['int', 'pressure-threshold', Triggers.PRESSURE],
-        }
+        };
 
         this.cachedOptions = {};
-        for (let trigger of listTriggers()) {
+        for (let trigger of listTriggers())
             this.cachedOptions[trigger] = {};
-        }
     }
 
     _updateCachedSettings(trigger) {
@@ -247,10 +246,10 @@ var Corner = class Corner {
 
     get(option, trigger, updateCache = false) {
         if (updateCache || this.cachedOptions[option] === undefined) {
-            const [format, key, defaultTrigger] = this.options[option];
-            if (trigger ===undefined && defaultTrigger !== undefined) {
+            const [, key, defaultTrigger] = this.options[option];
+            if (trigger === undefined && defaultTrigger !== undefined)
                 trigger = defaultTrigger;
-            }
+
 
             let gSettings = this._gsettings[trigger];
 
@@ -262,27 +261,27 @@ var Corner = class Corner {
 
     set(option, value, trigger) {
         const [format, key, defaultTrigger] = this.options[option];
-        if (trigger ===undefined && defaultTrigger !== undefined) {
+        if (trigger === undefined && defaultTrigger !== undefined)
             trigger = defaultTrigger;
-        }
+
         switch (format) {
-            case 'string':
-                this._gsettings[trigger].set_string(key, value);
-                break;
-            case 'int':
-                this._gsettings[trigger].set_int(key, value);
-                break;
-            case 'boolean':
-                this._gsettings[trigger].set_boolean(key, value);
-                break;
+        case 'string':
+            this._gsettings[trigger].set_string(key, value);
+            break;
+        case 'int':
+            this._gsettings[trigger].set_int(key, value);
+            break;
+        case 'boolean':
+            this._gsettings[trigger].set_boolean(key, value);
+            break;
         }
     }
 
     getDefault(option, trigger) {
-        const [format, key, defaultTrigger] = this.options[option];
-        if (trigger ===undefined && defaultTrigger !== undefined) {
+        const [, key, defaultTrigger] = this.options[option];
+        if (trigger === undefined && defaultTrigger !== undefined)
             trigger = defaultTrigger;
-        }
+
         return this._gsettings[trigger].get_default_value(key).deep_unpack();
     }
 
@@ -370,19 +369,19 @@ function getSettings(schema, path) {
 
     const schemaObj = schemaSource.lookup(schema, true);
     if (!schemaObj) {
-        //throw new Error(
+        // throw new Error(
         log(
-            'Schema ' + schema + ' could not be found for extension ' +
-            Me.metadata.uuid + '. Please check your installation.'
+            `Schema ${schema} could not be found for extension ${
+                Me.metadata.uuid}. Please check your installation.`
         );
         return null;
     }
 
-    const args = {settings_schema: schemaObj};
-    if (path) {
+    const args = { settings_schema: schemaObj };
+    if (path)
         args.path = path;
-    }
+
 
     return new Gio.Settings(args);
-};
+}
 
