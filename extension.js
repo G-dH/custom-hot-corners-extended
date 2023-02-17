@@ -14,5 +14,5 @@ const HotCorners             = Me.imports.src.extension.hotCorners;
 
 function init() {
     ExtensionUtils.initTranslations(Me.metadata['gettext-domain']);
-    return (new HotCorners.CustomHotCornersExtended());
+    return new HotCorners.CustomHotCornersExtended();
 }

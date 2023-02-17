@@ -8,7 +8,7 @@
  */
 'use strict';
 
-const { Gio, GLib, GObject, St, Clutter } = imports.gi;
+const { Gio, GObject, St } = imports.gi;
 
 const Main = imports.ui.main;
 const PopupMenu = imports.ui.popupMenu;
@@ -111,7 +111,6 @@ var MenuButton = GObject.registerClass({ GTypeName: 'CHCEMenuButton' }, class Me
         const state = this._hotCornersRequireShift;
         this._mscOptions.set(key, !state);
         this._update();
-        // Main.notify(Me.metadata.name, _(`Option 'Hot Corners Require Shift' ${state ? 'disabled' : 'enabled'}`));
     }
 
     _toggleDisable() {
@@ -120,7 +119,6 @@ var MenuButton = GObject.registerClass({ GTypeName: 'CHCEMenuButton' }, class Me
         this._mscOptions.set(key, !state);
         this._update();
         Main.layoutManager._updateHotCorners();
-        // Main.notify(Me.metadata.name, _(`All triggers ${state ? 'disabled' : 'enabled'}`));
     }
 
     _reset() {
