@@ -83,9 +83,6 @@ var CustomHotCornersExtended = class CustomHotCornersExtended {
 
                 log(`${Me.metadata.name}: enabled`);
 
-                this._panelButton = new PanelButton.MenuButton(this._mscOptions);
-                Main.panel.addToStatusArea('CustomHotCorners', this._panelButton, 0, 'right');
-
                 this._delayId = 0;
                 return GLib.SOURCE_REMOVE;
             }
@@ -128,6 +125,7 @@ var CustomHotCornersExtended = class CustomHotCornersExtended {
         this._myCorners = [null, null];
 
         this._panelButton.destroy();
+        this._panelButton = null;
 
         log(`${Me.metadata.name}: ${fullDisable ? 'disabled' : 'suspended'}`);
     }
@@ -180,6 +178,16 @@ var CustomHotCornersExtended = class CustomHotCornersExtended {
 
         if (key === 'buttons-trigger-on-press')
             this._updateHotCorners();
+
+        if (this._mscOptions.get('enablePanelMenu')) {
+            if (!this._panelButton) {
+                this._panelButton = new PanelButton.MenuButton(this._mscOptions);
+                Main.panel.addToStatusArea('CustomHotCorners', this._panelButton, 0, 'right');
+            }
+        } else if (this._panelButton) {
+            this._panelButton.destroy();
+            this._panelButton = null;
+        }
     }
 
     _updateOsdMonitorIndexes() {

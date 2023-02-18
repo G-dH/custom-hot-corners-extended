@@ -63,6 +63,14 @@ function getOptionList(mscOptions) {
 
     optionsList.push(
         itemFactory.getRowWidget(
+            _('Show Panel Menu'),
+            _('Menu in the main panel offers access to the settings and deactivate corner triggers if needed.'),
+            itemFactory.newSwitch(), 'enablePanelMenu'
+        )
+    );
+
+    optionsList.push(
+        itemFactory.getRowWidget(
             _('Watch hot corners for external overrides'),
             _('Update corners when something (usually other extensions) change them'),
             itemFactory.newSwitch(), 'watchCorners'

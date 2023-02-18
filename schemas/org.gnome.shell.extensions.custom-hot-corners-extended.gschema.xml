@@ -39,6 +39,9 @@
   </schema>
 
   <schema path= '/org/gnome/shell/extensions/custom-hot-corners-extended/misc/' id='org.gnome.shell.extensions.custom-hot-corners-extended.misc'>
+    <key name='panel-menu-enable' type='b'>
+      <default>true</default>
+    </key>
     <key name='show-osd-monitor-indexes' type='b'>
       <default>false</default>
     </key>

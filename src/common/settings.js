@@ -95,6 +95,7 @@ var MscOptions = class MscOptions {
         this._connectionIds = [];
 
         this.options = {
+            enablePanelMenu:        { type: 'boolean', key: 'panel-menu-enable' },
             buttonsTriggerOnPress:  { type: 'boolean', key: 'buttons-trigger-on-press' },
             watchCorners:           { type: 'boolean', key: 'watch-corners' },
             cornersVisible:         { type: 'boolean', key: 'corners-visible' },
