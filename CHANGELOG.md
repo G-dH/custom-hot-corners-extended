@@ -1,4 +1,13 @@
 ## Changelog:
+### v24 (2023-02-17)
+**Added**
+- Panel menu allows disabling and resetting all triggers and also toggling `Hot keys require Shift` option.
+
+**Fixed**
+- Empty secondary monitors settings pages
+- First tick of the scroll wheel has no effect if the mouse doesn't support smooth scrolling.
+- minor improvements
+
 ### v23 (2022-11-24)
 **Added**
 - `Open Panel System Menu` action - replaces `Open Panel Aggregate Menu` and now includes both Aggregate and Quick Settings menus depending on the version of GS.
