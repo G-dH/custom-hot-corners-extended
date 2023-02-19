@@ -1,4 +1,8 @@
 ## Changelog:
+### v25 (2023-02-19)
+- Option `Show Panel Menu`.
+
+
 ### v24 (2023-02-17)
 **Added**
 - Panel menu allows disabling and resetting all triggers and also toggling `Hot keys require Shift` option.
@@ -7,6 +11,7 @@
 - Empty secondary monitors settings pages
 - First tick of the scroll wheel has no effect if the mouse doesn't support smooth scrolling.
 - minor improvements
+
 
 ### v23 (2022-11-24)
 **Added**
@@ -20,6 +25,7 @@
 - Spelling.
 - Support of updated AATWS.
 - Hot corners don't work in X11 session if VBox Machine window has focus (workaround for upstream bug).
+
 
 ### v21, v22 2022-09-06
 **Added:**
