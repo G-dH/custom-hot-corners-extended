@@ -124,8 +124,10 @@ var CustomHotCornersExtended = class CustomHotCornersExtended {
 
         this._myCorners = [null, null];
 
-        this._panelButton.destroy();
-        this._panelButton = null;
+        if (this._panelButton) {
+            this._panelButton.destroy();
+            this._panelButton = null;
+        }
 
         log(`${Me.metadata.name}: ${fullDisable ? 'disabled' : 'suspended'}`);
     }
