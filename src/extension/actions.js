@@ -452,11 +452,11 @@ var Actions = class {
 
     // ///////////////////////////////////////////////////////////////////////////
 
-    toggleOverview() {
-        if (Main.overview.dash.showAppsButton.checked) {
-            Main.overview.dash.showAppsButton.checked = false;
-        } else if (Main.overview._visible) {
+    toggleOverview(leaveOverview = false) {
+        if (Main.overview._shown && (leaveOverview || !Main.overview.dash.showAppsButton.checked)) {
             Main.overview.hide();
+        } else if (Main.overview.dash.showAppsButton.checked) {
+            Main.overview.dash.showAppsButton.checked = false;
         } else {
             const focusWindow = global.display.get_focus_window();
             // at least GS 42 is unable to show overview in X11 session if VirtualBox Machine window grabbed keyboard
@@ -482,8 +482,8 @@ var Actions = class {
         }
     }
 
-    showApplications() {
-        if (Main.overview.dash.showAppsButton.checked) {
+    showApplications(leaveOverview = false) {
+        if ((leaveOverview && Main.overview._shown) || Main.overview.dash.showAppsButton.checked) {
             Main.overview.hide();
         } else {
             const focusWindow = global.display.get_focus_window();
@@ -736,25 +736,29 @@ var Actions = class {
     }
 
     activateUiInspector() {
-        if (Main.lookingGlass === null)
-            Main.createLookingGlass();
-        const lg = Main.lookingGlass;
-        lg.open();
-        const Inspector = imports.ui.lookingGlass.Inspector;
-        lg.openInspector = () => {
-            let inspector = new Inspector(lg);
-            inspector.connect('target', (i, target, stageX, stageY) => {
-                lg._pushResult(`inspect(${Math.round(stageX)}, ${Math.round(stageY)})`, target);
-            });
-            inspector.connect('closed', () => {
-                lg.show();
-                global.stage.set_key_focus(lg._entry);
-            });
-            lg.hide();
-            return Clutter.EVENT_STOP;
-        };
+        this._timeouts.uiInspectorTimeoutId = GLib.timeout_add(0, 1400, () => {
+            if (Main.lookingGlass === null)
+                Main.createLookingGlass();
+            const lg = Main.lookingGlass;
+            lg.open();
+            const Inspector = imports.ui.lookingGlass.Inspector;
+            lg.openInspector = () => {
+                let inspector = new Inspector(lg);
+                inspector.connect('target', (i, target, stageX, stageY) => {
+                    lg._pushResult(`inspect(${Math.round(stageX)}, ${Math.round(stageY)})`, target);
+                });
+                inspector.connect('closed', () => {
+                    lg.show();
+                    global.stage.set_key_focus(lg._entry);
+                });
+                lg.hide();
+                return Clutter.EVENT_STOP;
+            };
 
-        lg.openInspector();
+            lg.openInspector();
+            this._timeouts.uiInspectorTimeoutId = 0;
+            return GLib.SOURCE_REMOVE;
+        });
     }
 
     switchToRecentWindow() {

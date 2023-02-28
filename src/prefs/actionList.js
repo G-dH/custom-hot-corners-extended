@@ -53,8 +53,10 @@ const nextIcon = horizontal ? 'go-next-symbolic' : 'go-down-symbolic';
 var actionList = [
     [0,    'disabled',                    _('-'),                                       false,  '',                                           false],
     [null, 'core-submenu',                _('Core Actions'),                             true,  'video-display-symbolic',                     false],
-    [1,    'toggle-overview',             _('Show Activities Overview'),                false,  'view-grid-symbolic',                         false],
-    [1,    'show-applications',           _('Show Application Grid'),                   false,  'view-app-grid-symbolic',                     false],
+    [1,    'toggle-overview',             _('Toggle Overview - Window Picker'),         false,  'view-grid-symbolic',                         false],
+    [1,    'show-overview',               _('Show Overview - Window Picker'),           false,  'view-grid-symbolic',                         false],
+    [1,    'toggle-applications',         _('Toggle Overview - App Grid'),              false,  'view-app-grid-symbolic',                     false],
+    [1,    'show-applications',           _('Show Overview - App Grid'),                false,  'view-app-grid-symbolic',                     false],
     [1,    'run-command',                 _('Run Preset Command / Activate App ...'),   false,  'utilities-terminal-symbolic',                false],
     [1,    'show-desktop',                _('Show Desktop (all monitors)'),              true,  'preferences-desktop-wallpaper-symbolic',     false],
     [1,    'show-desktop-mon',            _('Show Desktop (current monitor)'),           true,  'preferences-desktop-wallpaper-symbolic',     false],

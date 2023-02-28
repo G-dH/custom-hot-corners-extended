@@ -128,7 +128,15 @@ var ActionTrigger = class ActionTrigger {
     }
 
     _toggleOverview() {
+        this.actions.toggleOverview(true);
+    }
+
+    _showOverview() {
         this.actions.toggleOverview();
+    }
+
+    _toggleApplications() {
+        this.actions.showApplications(true);
     }
 
     _showApplications() {
