@@ -52,7 +52,6 @@ var CustomHotCornersExtended = class CustomHotCornersExtended {
         // delayed start to avoid initial hot corners overrides from other extensions
         // and also to not slowing down the screen unlock animation - the killer is registration of keyboard shortcuts
         // this._originalHotCornerEnabled = Main.layoutManager._interfaceSettings.get_boolean('enable-hot-corners');
-        // Main.layoutManager._interfaceSettings.set_boolean('enable-hot-corners', false);
         let enableDelay;
         if (this.actionTrigger) {
             enableDelay = 1;
@@ -65,7 +64,6 @@ var CustomHotCornersExtended = class CustomHotCornersExtended {
             GLib.PRIORITY_DEFAULT,
             enableDelay,
             () => {
-                // Main.layoutManager._interfaceSettings.set_boolean('enable-hot-corners', false);
                 this._extensionEnabled = true;
                 this._mscOptions = new Settings.MscOptions();
                 if (!this.actionTrigger)
@@ -103,8 +101,8 @@ var CustomHotCornersExtended = class CustomHotCornersExtended {
             this._mscOptions = null;
         }
 
-        // don't destroy Actions and lose effects and thumbnails because of the screen lock, for example
-        let fullDisable = !Utils.extensionEnabled();
+        // effects and thumbnails should survive screen lock
+        let fullDisable = !Main.sessionMode.isLocked;
         if (fullDisable) {
             if (this.actionTrigger)
                 this.actionTrigger.clean(true);
@@ -118,7 +116,6 @@ var CustomHotCornersExtended = class CustomHotCornersExtended {
         // restore original hot corners
         // some extensions also modify Main.layoutManager._updateHotCorners._updateHotCorners()
         //   and so it'll be more secure to take the function from the source (which could be altered too but less likely)
-        // Main.layoutManager._interfaceSettings.set_boolean('enable-hot-corners', true);
         Main.layoutManager._updateHotCorners = _origUpdateHotCorners;
         Main.layoutManager._updateHotCorners();
 
@@ -137,18 +134,33 @@ var CustomHotCornersExtended = class CustomHotCornersExtended {
         Main.layoutManager._updateHotCorners();
     }
 
+    _getEnabledExtensions(uuid = Me.metadata.uuid) {
+        let extensions = [];
+        Main.extensionManager._extensions.forEach(e => {
+            if (e.state === 1 && e.uuid.includes(uuid))
+                extensions.push(e);
+        });
+        return !!extensions.length;
+    }
+
     _updateSupportedExtensionsAvailability(reset = false) {
         let supportedExtensions = [];
         if (!reset) {
             // test ArcMenu
             if (global.toggleArcMenu)
-                supportedExtensions.push('ArcMenu');
+                supportedExtensions.push('arcmenu');
             // test AATWS
             const aatws = imports.ui.altTab.WindowSwitcherPopup.prototype;
             if (aatws._showPopup || aatws.showOrig)
-                supportedExtensions.push('AATWS');
-            if (global.workspaceManager.layout_rows === -1)
-                supportedExtensions.push('VerticalWS');
+                supportedExtensions.push('aatws');
+
+            let windowSearchProviderEnabled = false;
+            Main.overview._overview._controls.layoutManager._searchController._searchResults._providers?.forEach(p => {
+                if (p.id.includes('open-windows'))
+                    windowSearchProviderEnabled = true;
+            });
+            if (windowSearchProviderEnabled)
+                supportedExtensions.push('window-search-provider');
         }
         this._mscOptions.set('supportedExtensions', supportedExtensions);
     }

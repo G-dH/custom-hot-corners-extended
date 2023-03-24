@@ -65,7 +65,7 @@ actionList.forEach(act => {
 var _schema = 'org.gnome.shell.extensions.custom-hot-corners-extended';
 var _path = '/org/gnome/shell/extensions/custom-hot-corners-extended';
 
-const winSwitcherPopup = Utils.extensionEnabled('advanced-alt-tab@G-dH.github.com-dev');
+const winSwitcherPopup = Utils.extensionEnabled('advanced-alt-tab');
 
 function listTriggers() {
     return Object.values(Triggers);

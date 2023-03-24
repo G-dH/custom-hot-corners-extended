@@ -39,19 +39,23 @@ function _setBtnFromIconName(btnWidget, iconName, size) {
         btnWidget.add(Gtk.Image.new_from_icon_name(iconName, size));
 }
 
-function extensionEnabled(uuid = null) {
+// this module must be compatible with prefs, so Main.extensionManager is not usable
+// This function is only needed when prefs window is opened while extension is disabled
+function extensionEnabled(uuid = Me.metadata.uuid) {
     const settings = ExtensionUtils.getSettings('org.gnome.shell');
 
-    uuid = uuid ? uuid : Me.metadata.uuid;
-
-    let enabled = settings.get_strv('enabled-extensions');
-    enabled = enabled.includes(uuid);
-    let disabled = settings.get_strv('disabled-extensions');
-    disabled = disabled.includes(uuid);
+    let enabled = false;
+    settings.get_strv('enabled-extensions').forEach(e => {
+        if (e.includes(uuid))
+            enabled = true;
+    });
+    /* let disabled = false;
+    settings.get_strv('disabled-extensions').forEach(e => {
+        if (e.includes(uuid))
+            disabled = true;
+    });*/
     let disableUser = settings.get_boolean('disable-user-extensions');
-    if (enabled && !disabled && !disableUser)
-        return true;
-    return false;
+    return enabled/* && !disabled*/ && !disableUser;
 }
 
 function isSupportedExtensionDetected(extensionName) {

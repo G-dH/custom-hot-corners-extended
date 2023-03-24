@@ -16,9 +16,10 @@ const Me             = ExtensionUtils.getCurrentExtension();
 const _              = imports.gettext.domain(Me.metadata['gettext-domain']).gettext;
 const Utils          = Me.imports.src.common.utils;
 
-const AatwsEnabled = Utils.extensionEnabled('advanced-alt-tab@G-dH.github.com') || Utils.extensionEnabled('advanced-alt-tab@G-dH.github.com-dev');
-const AatwsDetected = Utils.isSupportedExtensionDetected('AATWS');
-// in gsettings enabled-extension key can remain unistalled extensions
+const AatwsEnabled = Utils.extensionEnabled('advanced-alt-tab@G-dH');
+// for prefs only - extension detects, prefs reads key
+const AatwsDetected = Utils.isSupportedExtensionDetected('aatws');
+// in gsettings enabled-extension key can remain uninstalled extensions, so it is not reliable
 var excludedItems = [];
 if (!AatwsEnabled || (AatwsEnabled && !AatwsDetected)) {
     excludedItems.push('win-switcher-popup-ws');
@@ -33,9 +34,14 @@ if (!AatwsEnabled || (AatwsEnabled && !AatwsDetected)) {
     excludedItems.push('next-workspace-popup');
 }
 const ArcMenuEnabled = Utils.extensionEnabled('arcmenu@arcmenu.com');
-const ArcMenuDetected = Utils.isSupportedExtensionDetected('ArcMenu');
+const ArcMenuDetected = Utils.isSupportedExtensionDetected('arcmenu');
 if (!ArcMenuEnabled || (ArcMenuEnabled && !ArcMenuDetected))
     excludedItems.push('toggle-arcmenu');
+
+const VShellEnabled = Utils.extensionEnabled('vertical-workspaces');
+const VShellDetected = Utils.isSupportedExtensionDetected('window-search-provider');
+if (!VShellEnabled || (VShellEnabled && !VShellDetected))
+    excludedItems.push('search-open-windows');
 
 if (shellVersion < 42)
     excludedItems.push('show-screenshot-ui');
@@ -64,10 +70,8 @@ var actionList = [
     [1,    'black-screen',                _('Hide Screen Content (all monitors)'),       true,  'video-display-symbolic',                     false],
     [1,    'black-screen-mon',            _('Hide Screen Content (current monitor)'),    true,  'video-display-symbolic',                     false],
 
-    // [null, 'desktop-submenu'             _('Desktop'),                                  true,  'video-display-symbolic',                     false],
-    // [null, 'run-submenu'                 _('Run Command'),                             false,  'utilities-terminal-symbolic',                false],
-    [null, 'supported-extensions',        _('Supported extensions (if installed)'),     false, 'utilities-terminal-symbolic',                 false],
-    [1,    'search-open-windows',         _('OFP/VW - Search for Open Windows'),        false,  'focus-windows-symbolic',                     false],
+    [null, 'supported-extensions',        _('Supported Installed extensions'),          false,  'utilities-terminal-symbolic',                false],
+    [1,    'search-open-windows',         _('OFP/V-Shell - List/Search Open Windows'),  false,  'focus-windows-symbolic',                     false],
     [1,    'toggle-arcmenu',              _('ArcMenu - Open'),                          false,  'view-grid-symbolic',                         false],
 
     [null, 'workspaces-submenu',          _('Workspaces'),                               true,  'video-display-symbolic',                     false],
@@ -75,10 +79,8 @@ var actionList = [
     [1,    'next-workspace',              _('Next Workspace'),                          false,   nextIcon,                                    false],
     [1,    'prev-workspace-popup',        _('Previous Workspace with Window Switcher'),  true,   prevIcon,                                    false],
     [1,    'next-workspace-popup',        _('Next Workspace with Window Switcher'),      true,   nextIcon,                                    false],
-    [1,    'prev-workspace-current-mon',  _('Previous Workspace - Current Monitor Only'), true,   prevIcon,                                    false],
+    [1,    'prev-workspace-current-mon',  _('Previous Workspace - Current Monitor Only'), true,  prevIcon,                                    false],
     [1,    'next-workspace-current-mon',  _('Next Workspace - Current Monitor Only'),    true,   prevIcon,                                    false],
-    // [1, 'prev-workspace-overview',     _('Previous Workspace Overview'),              true,   prevIcon,                                    false],
-    // [1, 'next-workspace-overview',     _('Next Workspace Overview'),                  true,   nextIcon,                                    false],
     [1,    'recent-workspace',            _('Switch to Most Recent Workspace'),          true,  'document-open-recent-symbolic',              false],
     [1,    'move-to-workspace',           _('Switch to Preset Workspace ...'),          false,  'go-jump-symbolic',                           false],
     [1,    'move-to-second-last-ws',      _('Switch to Second Last Workspace'),          true,  'go-jump-symbolic',                           false],
@@ -106,11 +108,9 @@ var actionList = [
     [1,    'win-switcher-popup-ws-first', _('Window Switcher Popup (current ws first)'), true,  'focus-windows-symbolic',                     false],
     [1,    'win-switcher-popup-apps',     _('Window Switcher Popup (sorted by apps)'),   true,  'focus-windows-symbolic',                     false],
     [1,    'win-switcher-popup-class',    _('Window Switcher Popup (focused app only)'), true,  'focus-windows-symbolic',                     false],
-    // [1, 'win-switcher-popup-search' _('Window Switcher Popup (type to search)'),   true,  'focus-windows-symbolic'],                      false],
     [1,    'app-switcher-popup-all',      _('App Switcher Popup (all/default)'),         true,  'focus-windows-symbolic',                     false],
     [1,    'app-switcher-popup-ws',       _('App Switcher Popup (current ws)'),          true,  'focus-windows-symbolic',                     false],
     [1,    'app-switcher-popup-mon',      _('App Switcher Popup (current monitor)'),     true,  'focus-windows-symbolic',                     false],
-    // [1, 'app-switcher-popup-all-fav',_('App Switcher Popup (current monitor)'),     true,  'focus-windows-symbolic'],                      false],
 
     [null, 'win-control-submenu',         _('Windows - Control'),                        true,  'focus-windows-symbolic',                     false],
     [1,    'minimize-win',                _('Minimize Window'),                         false,  'window-minimize-symbolic',                    true],
@@ -138,7 +138,7 @@ var actionList = [
     [1,    'move-win-to-next-monitor',    _('Move Window to Next Monitor'),              true,  'video-display-symbolic',                      true],
 
     [null, 'win-thumbnails-submenu',      _('DND Window Thumbnails (PIP)'),              true,  '',                                           false],
-    [1,    'make-thumbnail-win',          _('Create Window Thumbnail (at bottom-right)'), true,  'insert-image-symbolic',                       true],
+    [1,    'make-thumbnail-win',          _('Create Window Thumbnail (at bottom-right)'), true,  'insert-image-symbolic',                      true],
     [1,    'minimize-to-thumbnail',       _('Minimize Window to Thumbnail'),             true,  'insert-image-symbolic',                       true],
     [1,    'remove-win-thumbnails',       _('Remove All Window Thumbnails'),             true,  'window-close-symbolic',                      false],
 
@@ -157,7 +157,7 @@ var actionList = [
 
     [null, 'win-effects-submenu',         _('Windows - Color Effects'),                  true,  'view-reveal-symbolic',                        true],
     [1,    'invert-light-win',            _('Invert Lightness (window)'),                true,  'view-reveal-symbolic',                        true],
-    [1,    'invert-light-shift-win',      _('Invert Lightness - White to Grey (window)'), true,  'view-reveal-symbolic',                        true],
+    [1,    'invert-light-shift-win',      _('Invert Lightness - White to Grey (window)'), true,  'view-reveal-symbolic',                       true],
     [1,    'invert-colors-win',           _('Invert Colors (window)'),                   true,  'view-reveal-symbolic',                        true],
     [1,    'tint-red-toggle-win',         _('Red Tint (window)'),                        true,  'view-reveal-symbolic',                        true],
     [1,    'tint-green-toggle-win',       _('Green Tint (window)'),                      true,  'view-reveal-symbolic',                        true],
@@ -173,7 +173,7 @@ var actionList = [
     [1,    'contrast-high-all',           _('High Contrast (global)'),                   true,  'view-reveal-symbolic',                       false],
     [1,    'contrast-low-all',            _('Low Contrast (global)'),                    true,  'view-reveal-symbolic',                       false],
     [1,    'invert-light-all',            _('Invert Lightness (global)'),                true,  'view-reveal-symbolic',                       false],
-    [1,    'invert-light-shift-all',      _('Invert Lightness - White to Grey (global)'), true,  'view-reveal-symbolic',                       false],
+    [1,    'invert-light-shift-all',      _('Invert Lightness - White to Grey (global)'), true,  'view-reveal-symbolic',                      false],
     [1,    'tint-red-toggle-all',         _('Red Tint (global)'),                        true,  'view-reveal-symbolic',                       false],
     [1,    'tint-green-toggle-all',       _('Green Tint (global)'),                      true,  'view-reveal-symbolic',                       false],
     [1,    'tint-custom-toggle-all',      _('Custom Color Tint (global)'),               true,  'view-reveal-symbolic',                       false],
@@ -212,7 +212,7 @@ var actionList = [
     [1,    'log-out',                     _('Log Out Dialog'),                           true,  'system-log-out-symbolic',                    false],
     [1,    'switch-user',                 _('Switch User (if exists)'),                  true,  'system-switch-user-symbolic',                false],
 
-    [null, 'media-submenu',               _('Sound / Media'),                           true,  'audio-volume-medium-symbolic',                false],
+    [null, 'media-submenu',               _('Sound / Media'),                            true,  'audio-volume-medium-symbolic',               false],
     [1,    'volume-up',                   _('Volume Up'),                               false,  'audio-volume-high-symbolic',                 false],
     [1,    'volume-down',                 _('Volume Down'),                             false,  'audio-volume-low-symbolic',                  false],
     [1,    'mute-sound',                  _('Mute Audio (toggle)'),                     false,  'audio-volume-muted-symbolic',                false],
