@@ -1,25 +1,39 @@
 ## Changelog:
+### v27 (2023-03-30)
+**Added:**
+- GNOME 44 support
+- *GNOME Shell UI Inspector* action has a 1,4 seconds delay now, that allows you to use the inspector in situations where hot corners and keyboard shortcuts don't work because you can activate the inspector action before you open the element you want inspect
+- Actions to show overview / app grid now have two variants - *Toggle* - always hides the Overview if it's open and *Show*  - always switch to the respective Overview page if not active and then the second activation closes the Overview
+
+**Changed**
+- Refactored external extension support
+
+### v26 (2023-02-19)
+**Fixed:**
+- Crash after screen unlocks if panel menu enabled
+
 ### v25 (2023-02-19)
+**Added:**
 - Option `Show Panel Menu`.
 
 
 ### v24 (2023-02-17)
-**Added**
+**Added:**
 - Panel menu allows disabling and resetting all triggers and also toggling `Hot keys require Shift` option.
 
-**Fixed**
+**Fixed:**
 - Empty secondary monitors settings pages
 - First tick of the scroll wheel has no effect if the mouse doesn't support smooth scrolling.
 - minor improvements
 
 
 ### v23 (2022-11-24)
-**Added**
+**Added:**
 - `Open Panel System Menu` action - replaces `Open Panel Aggregate Menu` and now includes both Aggregate and Quick Settings menus depending on the version of GS.
 - Swipe gesture actions in `Debug` section - allows developers to test three finger gestures transition animations for workspace switching and Activities state switching.
 - Contrast / Brightness / Opacity adjustment actions show OSD scale.
 
-**Fixed**
+**Fixed:**
 - Unfocused window after toggling the `Show Desktop` action on/off.
 - Unhandled error when stored action not in the action list.
 - Spelling.
