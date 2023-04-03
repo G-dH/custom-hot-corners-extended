@@ -24,6 +24,7 @@ const PanelButton            = Me.imports.src.extension.panelButton;
 const listTriggers           = Settings.listTriggers();
 const Triggers               = Settings.Triggers;
 const _origUpdateHotCorners  = imports.ui.layout.LayoutManager.prototype._updateHotCorners;
+const shellVersion           = Settings.shellVersion;
 
 let ACTION_TIMEOUT = 100;
 
@@ -155,10 +156,12 @@ var CustomHotCornersExtended = class CustomHotCornersExtended {
                 supportedExtensions.push('aatws');
 
             let windowSearchProviderEnabled = false;
-            Main.overview._overview._controls.layoutManager._searchController._searchResults._providers?.forEach(p => {
-                if (p.id.includes('open-windows'))
-                    windowSearchProviderEnabled = true;
-            });
+            if (shellVersion >= 40 && Main.overview._overview._controls.layoutManager._searchController._searchResults._providers) {
+                Main.overview._overview._controls.layoutManager._searchController._searchResults._providers.forEach(p => {
+                    if (p.id.includes('open-windows'))
+                        windowSearchProviderEnabled = true;
+                });
+            }
             if (windowSearchProviderEnabled)
                 supportedExtensions.push('window-search-provider');
         }
