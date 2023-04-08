@@ -1,12 +1,18 @@
 ## Changelog:
+### v28
+**Fixed:**
+Compatibility with GNOME 3.xx
+
+
 ### v27 (2023-03-30)
 **Added:**
 - GNOME 44 support
 - *GNOME Shell UI Inspector* action has a 1,4 seconds delay now, that allows you to use the inspector in situations where hot corners and keyboard shortcuts don't work because you can activate the inspector action before you open the element you want inspect
 - Actions to show overview / app grid now have two variants - *Toggle* - always hides the Overview if it's open and *Show*  - always switch to the respective Overview page if not active and then the second activation closes the Overview
 
-**Changed**
+**Changed:**
 - Refactored external extension support
+
 
 ### v26 (2023-02-19)
 **Fixed:**
