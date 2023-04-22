@@ -444,13 +444,17 @@ var Actions = class {
         for (let win of windows) {
             if (win.get_title().includes(Me.metadata.name) && this._getWindowApp(win).get_name() === 'Extensions')
                 return { metaWin: win, isCHCE: true };
-            else if (win.wm_class.includes('org.gnome.Shell.Extensions'))
+            else if (win.wm_class && win.wm_class.includes('org.gnome.Shell.Extensions'))
                 return { metaWin: win, isCHCE: false };
         }
         return { metaWin: null, isCHCE: null };
     }
 
     // ///////////////////////////////////////////////////////////////////////////
+
+    _shouldUseGrabWorkaround(focusWindow) {
+        return !Meta.is_wayland_compositor() && focusWindow && focusWindow.wm_class && focusWindow.wm_class.includes('VirtualBox Machine');
+    }
 
     toggleOverview(leaveOverview = false) {
         if (Main.overview._shown && (leaveOverview || !Main.overview.dash.showAppsButton.checked)) {
@@ -460,7 +464,7 @@ var Actions = class {
         } else {
             const focusWindow = global.display.get_focus_window();
             // at least GS 42 is unable to show overview in X11 session if VirtualBox Machine window grabbed keyboard
-            if (shellVersion >= 42 && !Meta.is_wayland_compositor() && focusWindow && focusWindow.wm_class.includes('VirtualBox Machine')) {
+            if (this._shouldUseGrabWorkaround(focusWindow)) {
                 // following should help when windowed VBox Machine has focus.
                 global.stage.set_key_focus(Main.panel);
                 // key focus doesn't take the effect immediately, we must wait for it
@@ -488,7 +492,7 @@ var Actions = class {
         } else {
             const focusWindow = global.display.get_focus_window();
             // at least GS 42 is unable to show overview in X11 session if VirtualBox Machine window grabbed keyboard
-            if (shellVersion >= 42 && !Meta.is_wayland_compositor() && focusWindow && focusWindow.wm_class.includes('VirtualBox Machine')) {
+            if (this._shouldUseGrabWorkaround(focusWindow)) {
                 // following should help when windowed VBox Machine has focus.
                 global.stage.set_key_focus(Main.panel);
                 // key focus doesn't take the effect immediately, we must wait for it
