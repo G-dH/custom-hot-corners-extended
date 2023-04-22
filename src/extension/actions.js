@@ -997,7 +997,7 @@ var Actions = class {
 
     restartGnomeShell() {
         if (!Meta.is_wayland_compositor())
-            Meta.restart(_('Restarting Gnome Shell...', global.context));
+            Meta.restart(_('Restarting Gnome Shell...'), global.context);
         else
             Main.notify(Me.metadata.name, _('Gnome Shell - Restart is not available in Wayland session'));
     }
