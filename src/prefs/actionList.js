@@ -113,6 +113,7 @@ var actionList = [
     [1,    'app-switcher-popup-mon',      _('App Switcher Popup (current monitor)'),     true,  'focus-windows-symbolic',                     false],
 
     [null, 'win-control-submenu',         _('Windows - Control'),                        true,  'focus-windows-symbolic',                     false],
+    [1,    'toggle-overview-win',         _('App Windows Overiew'),                     false, 'focus-windows-symbolic',                    true],
     [1,    'minimize-win',                _('Minimize Window'),                         false,  'window-minimize-symbolic',                    true],
     [1,    'maximize-win',                _('Maximize Window (toggle)'),                false,  'window-maximize-symbolic',                    true],
     [1,    'close-win',                   _('Close Window'),                            false,  'window-close-symbolic',                       true],
