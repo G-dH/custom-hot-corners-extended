@@ -127,6 +127,10 @@ var ActionTrigger = class ActionTrigger {
         });
     }
 
+    _toggleOverviewWin () {
+        this.actions.toggleOverviewAppWindows()
+    }
+
     _toggleOverview() {
         this.actions.toggleOverview(true);
     }

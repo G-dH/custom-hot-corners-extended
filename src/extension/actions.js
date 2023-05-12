@@ -770,6 +770,18 @@ var Actions = class {
         // global.display.get_tab_list(0, null)[1].activate(global.get_current_time());
     }
 
+    toggleOverviewAppWindows() {
+        const isOverviewWindow = Workspace.prototype._isOverviewWindow
+        Workspace.prototype._isOverviewWindow = (win) => {
+			const activeWindow = global.display.focus_window;
+			return (!activeWindow)
+				? isOverviewWindow(win)
+				: (activeWindow.wm_class == win.wm_class);
+		};
+		Main.overview.toggle();
+        Workspace.prototype._isOverviewWindow = isOverviewWindow;
+    }
+
     closeWindow() {
         let win = this._getFocusedWindow(true);
         if (!win)
