@@ -18,6 +18,7 @@ const PopupMenu              = imports.ui.popupMenu;
 const BoxPointer             = imports.ui.boxpointer;
 const AltTab                 = imports.ui.altTab;
 const OsdMonitorLabeler      = imports.ui.osdMonitorLabeler;
+const Workspace              = imports.ui.workspace;
 
 const Util                   = imports.misc.util;
 const SystemActions          = imports.misc.systemActions;
@@ -771,15 +772,15 @@ var Actions = class {
     }
 
     toggleOverviewAppWindows() {
-        const isOverviewWindow = Workspace.prototype._isOverviewWindow
-        Workspace.prototype._isOverviewWindow = (win) => {
+        const isOverviewWindow = Workspace.Workspace.prototype._isOverviewWindow
+        Workspace.Workspace.prototype._isOverviewWindow = (win) => {
 			const activeWindow = global.display.focus_window;
 			return (!activeWindow)
 				? isOverviewWindow(win)
 				: (activeWindow.wm_class == win.wm_class);
 		};
 		Main.overview.toggle();
-        Workspace.prototype._isOverviewWindow = isOverviewWindow;
+        Workspace.Workspace.prototype._isOverviewWindow = isOverviewWindow;
     }
 
     closeWindow() {
