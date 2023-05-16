@@ -18,6 +18,7 @@ const PopupMenu              = imports.ui.popupMenu;
 const BoxPointer             = imports.ui.boxpointer;
 const AltTab                 = imports.ui.altTab;
 const OsdMonitorLabeler      = imports.ui.osdMonitorLabeler;
+const Workspace              = imports.ui.workspace;
 
 const Util                   = imports.misc.util;
 const SystemActions          = imports.misc.systemActions;
@@ -768,6 +769,18 @@ var Actions = class {
     switchToRecentWindow() {
         AltTab.getWindows(null)[1].activate(global.get_current_time());
         // global.display.get_tab_list(0, null)[1].activate(global.get_current_time());
+    }
+
+    toggleOverviewAppWindows() {
+        const isOverviewWindow = Workspace.Workspace.prototype._isOverviewWindow
+        Workspace.Workspace.prototype._isOverviewWindow = (win) => {
+			const activeWindow = global.display.focus_window;
+			return (!activeWindow)
+				? isOverviewWindow(win)
+				: (activeWindow.wm_class == win.wm_class);
+		};
+		Main.overview.toggle();
+        Workspace.Workspace.prototype._isOverviewWindow = isOverviewWindow;
     }
 
     closeWindow() {
