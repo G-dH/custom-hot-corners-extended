@@ -143,6 +143,10 @@ var ActionTrigger = class ActionTrigger {
         this.actions.showApplications();
     }
 
+    _toggleOverviewApp() {
+        this.actions.toggleOverviewAppWindows();
+    }
+
     _showDesktop() {
         this.actions.toggleShowDesktop();
     }

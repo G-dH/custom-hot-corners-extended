@@ -61,6 +61,7 @@ var actionList = [
     [null, 'core-submenu',                _('Core Actions'),                             true,  'video-display-symbolic',                     false],
     [1,    'toggle-overview',             _('Toggle Overview - Window Picker'),         false,  'view-grid-symbolic',                         false],
     [1,    'show-overview',               _('Show Overview - Window Picker'),           false,  'view-grid-symbolic',                         false],
+    [1,    'toggle-overview-app',         _('Toggle Overview - Current App Windows'),   false,  'focus-windows-symbolic',                      true],
     [1,    'toggle-applications',         _('Toggle Overview - App Grid'),              false,  'view-app-grid-symbolic',                     false],
     [1,    'show-applications',           _('Show Overview - App Grid'),                false,  'view-app-grid-symbolic',                     false],
     [1,    'run-command',                 _('Run Preset Command / Activate App ...'),   false,  'utilities-terminal-symbolic',                false],
@@ -88,7 +89,7 @@ var actionList = [
     [1,    'reorder-ws-next',             _(`Reorder Workspace - ${nextWS}`),            true,  nextIcon,                                     false],
     [1,    'rotate-ws-prev-mon',          _(`Rotate Windows Across Workspaces ${prevWS} (monitor)`),  true,  prevIcon,                        false],
     [1,    'rotate-ws-next-mon',          _(`Rotate Windows Across Workspaces ${nextWS} (monitor)`),  true,  prevIcon,                        false],
-    [1,    'close-workspace',             _('Close Current Workspace (and its windows)'), true,  'window-close-symbolic',                      false],
+    [1,    'close-workspace',             _('Close Current Workspace (and its windows)'), true,  'window-close-symbolic',                     false],
 
     [null, 'win-navigation-submenu',      _('Windows - Navigation'),                     true,  'focus-windows-symbolic',                     false],
     [1,    'recent-win',                  _('Switch to Most Recent Window'),             true,  'document-open-recent-symbolic',              false],
