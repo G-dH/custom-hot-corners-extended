@@ -18,7 +18,6 @@ const PopupMenu              = imports.ui.popupMenu;
 const BoxPointer             = imports.ui.boxpointer;
 const AltTab                 = imports.ui.altTab;
 const OsdMonitorLabeler      = imports.ui.osdMonitorLabeler;
-const Workspace              = imports.ui.workspace;
 
 const Util                   = imports.misc.util;
 const SystemActions          = imports.misc.systemActions;
@@ -187,8 +186,11 @@ var Actions = class {
 
         for (let effect of effects)
             actor.remove_effect_by_name(effect);
-        if (!glob && actor.metaWindow._opacityCE)
-            this._getWindowSurface(actor.get_meta_window()).opacity = 255;
+        if (!glob && actor.metaWindow._opacityCE) {
+            this._getWindowSurface(actor.get_meta_window()).forEach(s => {
+                s.opacity = 255;
+            });
+        }
     }
 
     _removeCustomMenus() {
@@ -334,7 +336,23 @@ var Actions = class {
     _getWindowSurface(metaWindow) {
         if (!metaWindow)
             return null;
-        return metaWindow.get_compositor_private().get_first_child();
+
+        const actor = metaWindow.get_compositor_private();
+        return this._findSurfaces(actor);
+    }
+
+    _findSurfaces(actor) {
+        if (actor.constructor.name.indexOf('MetaSurfaceActor') > -1)
+            return [actor];
+
+        const surfaces = [];
+        for (const child of actor.get_children()) {
+            const result = this._findSurfaces(child);
+            if (result.length)
+                surfaces.push(...result);
+        }
+
+        return surfaces;
     }
 
     _getFocusedActor() {
@@ -769,18 +787,6 @@ var Actions = class {
     switchToRecentWindow() {
         AltTab.getWindows(null)[1].activate(global.get_current_time());
         // global.display.get_tab_list(0, null)[1].activate(global.get_current_time());
-    }
-
-    toggleOverviewAppWindows() {
-        const isOverviewWindow = Workspace.Workspace.prototype._isOverviewWindow
-        Workspace.Workspace.prototype._isOverviewWindow = (win) => {
-			const activeWindow = global.display.focus_window;
-			return (!activeWindow)
-				? isOverviewWindow(win)
-				: (activeWindow.wm_class == win.wm_class);
-		};
-		Main.overview.toggle();
-        Workspace.Workspace.prototype._isOverviewWindow = isOverviewWindow;
     }
 
     closeWindow() {
@@ -1468,11 +1474,11 @@ var Actions = class {
 
         let value;
         if (toggleValue) {
-            value = windowSurface.opacity === 255
+            value = windowSurface[0].opacity === 255
                 ? toggleValue
                 : 255;
         } else {
-            value = windowSurface.opacity;
+            value = windowSurface[0].opacity;
             value += step;
             if (value > 255)
                 value = 255;
@@ -1480,7 +1486,9 @@ var Actions = class {
                 value = 32;
         }
 
-        windowSurface.opacity = value;
+        windowSurface.forEach(s => {
+            s.opacity = value;
+        });
 
         if (toggleValue)
             return;

@@ -91,7 +91,6 @@ var actionList = [
     [1,    'close-workspace',             _('Close Current Workspace (and its windows)'), true,  'window-close-symbolic',                      false],
 
     [null, 'win-navigation-submenu',      _('Windows - Navigation'),                     true,  'focus-windows-symbolic',                     false],
-    [1,    'toggle-overview-app',         _('Toggle Overview - App Windows'),            false, 'focus-windows-symbolic',                     true],
     [1,    'recent-win',                  _('Switch to Most Recent Window'),             true,  'document-open-recent-symbolic',              false],
     [1,    'prev-win-mon',                _('Previous Window (current monitor)'),        true,  'go-previous-symbolic',                       false],
     [1,    'prev-win-ws',                 _('Previous Window (current WS)'),             true,  'go-previous-symbolic',                       false],
