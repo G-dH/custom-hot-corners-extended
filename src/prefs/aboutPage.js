@@ -8,35 +8,27 @@
  */
 
 'use strict';
-const { Gtk, GObject } = imports.gi;
 
-let Adw = null;
-try {
-    Adw = imports.gi.Adw;
-} catch (e) {}
+import GObject from 'gi://GObject';
 
-const Me = imports.misc.extensionUtils.getCurrentExtension();
-const Settings = Me.imports.src.common.settings;
-
-const optionsFactory = Me.imports.src.prefs.optionsFactory;
+import * as OptionsFactory from './optionsFactory.js';
 
 // gettext
-const _  = Settings._;
+let _;
+let Me;
 
-var shellVersion = parseFloat(imports.misc.config.PACKAGE_VERSION);
-
-if (Adw) {
-    var AboutPageAdw = GObject.registerClass(
-    class AboutPageAdw extends optionsFactory.OptionsPageAdw {
-        _init(mscOptions, pageProperties = {}) {
-            const optionList = getOptionList(mscOptions);
-            super._init(optionList, pageProperties);
-        }
-    });
+export function init(extension) {
+    _ = extension.gettext.bind(extension);
+    Me = extension;
 }
 
-var AboutPageLegacy = GObject.registerClass(
-class AboutPageLegacy extends optionsFactory.OptionsPageLegacy {
+export function cleanGlobals() {
+    _ = null;
+    Me = null;
+}
+
+export const AboutPageAdw = GObject.registerClass(
+class AboutPageAdw extends OptionsFactory.OptionsPageAdw {
     _init(mscOptions, pageProperties = {}) {
         const optionList = getOptionList(mscOptions);
         super._init(optionList, pageProperties);
@@ -44,7 +36,7 @@ class AboutPageLegacy extends optionsFactory.OptionsPageLegacy {
 });
 
 function getOptionList(mscOptions) {
-    const itemFactory = new optionsFactory.ItemFactory(mscOptions);
+    const itemFactory = new OptionsFactory.ItemFactory(mscOptions);
     const optionList = [];
 
     optionList.push(itemFactory.getRowWidget(

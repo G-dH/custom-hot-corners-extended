@@ -9,26 +9,32 @@
 
 'use strict';
 
-const { Gtk, GObject } = imports.gi;
+import Gtk from 'gi://Gtk';
+import GObject from 'gi://GObject';
 
-const ExtensionUtils = imports.misc.extensionUtils;
-const Me             = ExtensionUtils.getCurrentExtension();
-const TreeViewPage   = Me.imports.src.prefs.treeViewPage.TreeViewPage;
+import * as TreeViewPage from './treeViewPage.js';
+import * as Settings from '../common/settings.js';
 
-const Settings       = Me.imports.src.common.settings;
-const _actionList    = Settings.actionList;
-const _excludedItems = Settings.excludedItems;
+import * as Utils from '../common/utils.js';
 
 // gettext
-const _  = Settings._;
-const shellVersion = Settings.shellVersion;
-
-const Utils          = Me.imports.src.common.utils;
+let _;
+let Me;
 
 const _bold = Utils.bold;
 
-var KeyboardPage = GObject.registerClass(
-class KeyboardPage extends TreeViewPage {
+export function init(extension) {
+    _ = extension.gettext.bind(extension);
+    Me = extension;
+}
+
+export function cleanGlobals() {
+    _ = null;
+    Me = null;
+}
+
+export const KeyboardPage = GObject.registerClass(
+class KeyboardPage extends TreeViewPage.TreeViewPage {
     _init(mscOptions) {
         super._init();
         this._mscOptions = mscOptions;
@@ -192,14 +198,16 @@ class KeyboardPage extends TreeViewPage {
     _populateTreeview() {
         let iter1, iter2;
         let submenuOnHold = null;
-        for (let i = 0; i < _actionList.length; i++) {
-            const item = _actionList[i];
+        const actionList = Settings.actionList;
+        const excludedItems = Settings.excludedItems;
+        for (let i = 0; i < actionList.length; i++) {
+            const item = actionList[i];
             const itemMeaning = item[0];
             const action = item[1];
             const title = item[2];
             const shortcutAllowed = item[3];
 
-            if (_excludedItems.includes(action) || !shortcutAllowed)
+            if (excludedItems.includes(action) || !shortcutAllowed)
                 continue;
             if (this.showActiveBtn.active && !(action in this.keybindings) && itemMeaning !== null)
                 continue;

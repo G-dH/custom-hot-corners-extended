@@ -9,38 +9,24 @@
 
 'use strict';
 
-const { Gtk, GObject } = imports.gi;
+import GObject from 'gi://GObject';
+import Gtk from 'gi://Gtk';
 
-let Adw = null;
-try {
-    Adw = imports.gi.Adw;
-} catch (e) {}
-
-const Me = imports.misc.extensionUtils.getCurrentExtension();
-const Settings        = Me.imports.src.common.settings;
-
-const optionsFactory = Me.imports.src.prefs.optionsFactory;
-
-var shellVersion = parseFloat(imports.misc.config.PACKAGE_VERSION);
+import * as OptionsFactory from './optionsFactory.js';
 
 // gettext
-const _  = Settings._;
+let _;
 
-// const OptionList = Me.imports.src.prefs.optionList;
-
-
-if (Adw) {
-    var MscOptionsPageAdw = GObject.registerClass(
-    class MscOptionsPageAdw extends optionsFactory.OptionsPageAdw {
-        _init(mscOptions, pageProperties = {}) {
-            const optionList = getOptionList(mscOptions);
-            super._init(optionList, pageProperties);
-        }
-    });
+export function init(extension) {
+    _ = extension.gettext.bind(extension);
 }
 
-var MscOptionsPageLegacy = GObject.registerClass(
-class MscOptionsPageLegacy extends optionsFactory.OptionsPageLegacy {
+export function cleanGlobals() {
+    _ = null;
+}
+
+export const MscOptionsPageAdw = GObject.registerClass(
+class MscOptionsPageAdw extends OptionsFactory.OptionsPageAdw {
     _init(mscOptions, pageProperties = {}) {
         const optionList = getOptionList(mscOptions);
         super._init(optionList, pageProperties);
@@ -48,7 +34,7 @@ class MscOptionsPageLegacy extends optionsFactory.OptionsPageLegacy {
 });
 
 function getOptionList(mscOptions) {
-    const itemFactory = new optionsFactory.ItemFactory(mscOptions);
+    const itemFactory = new OptionsFactory.ItemFactory(mscOptions);
 
     let optionsList = [];
     // options item format:

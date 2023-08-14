@@ -1,4 +1,4 @@
-# Custom Hot Corners - Extended
+# Custom Hot Corners - Extended - ESM
 
 A GNOME Shell Extension which allows you to control and navigate Gnome Shell environment through the corners and edges of your monitors. But not just that, it adds many unique actions with keyboard shortcuts too.
 
@@ -8,7 +8,7 @@ This extension is based on the original `Custom Hot Corners` extension, but not 
 
 
 ## Features:
-- Gnome 3.36 - 43 compatibility
+- Gnome 3.36 - 45 compatibility
 - Hot corners with adjustable barrier sizes, both vertical and horizontal independently and usable as hot edges
 - Mouse buttons and a scroll wheel can be used as action triggers
 - Each trigger can be set to work only if *Ctrl* key is pressed

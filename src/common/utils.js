@@ -9,30 +9,28 @@
 
 'use strict';
 
-const { Gtk } = imports.gi;
+let Me;
 
-const ExtensionUtils = imports.misc.extensionUtils;
-const Me             = ExtensionUtils.getCurrentExtension();
+import Gtk from 'gi://Gtk';
 
-const Config         = imports.misc.config;
-const shellVersion   = parseFloat(Config.PACKAGE_VERSION);
-
-
-// conversion of Gtk3 / Gtk4 widgets add methods
-var append = shellVersion < 40 ? 'add' : 'append';
-var setChild = shellVersion < 40 ? 'add' : 'set_child';
-
-function _newImageFromIconName(name, size = null) {
-    const args = shellVersion >= 40 ? [name] : [name, size];
-    return Gtk.Image.new_from_icon_name(...args);
+export function init(extension) {
+    Me = extension;
 }
 
-function _setImageFromIconName(widget, name, size = null) {
-    const args = shellVersion >= 40 ? [name] : [name, size];
-    widget.set_from_icon_name(...args);
+export function cleanGlobals() {
+    Me = null;
 }
 
-function _setBtnFromIconName(btnWidget, iconName, size) {
+
+export function _newImageFromIconName(name) {
+    return Gtk.Image.new_from_icon_name(name);
+}
+
+export function _setImageFromIconName(widget, name) {
+    widget.set_from_icon_name(name);
+}
+
+export function _setBtnFromIconName(btnWidget, iconName, size) {
     if (btnWidget.set_icon_name)
         btnWidget.set_icon_name(iconName);
     else
@@ -41,8 +39,8 @@ function _setBtnFromIconName(btnWidget, iconName, size) {
 
 // this module must be compatible with prefs, so Main.extensionManager is not usable
 // This function is only needed when prefs window is opened while extension is disabled
-function extensionEnabled(uuid = Me.metadata.uuid) {
-    const settings = ExtensionUtils.getSettings('org.gnome.shell');
+export function extensionEnabled(uuid = Me.metadata.uuid) {
+    const settings = Me.getSettings('org.gnome.shell');
 
     let enabled = false;
     settings.get_strv('enabled-extensions').forEach(e => {
@@ -58,17 +56,17 @@ function extensionEnabled(uuid = Me.metadata.uuid) {
     return enabled/* && !disabled*/ && !disableUser;
 }
 
-function isSupportedExtensionDetected(extensionName) {
-    return ExtensionUtils.getSettings('org.gnome.shell.extensions.custom-hot-corners-extended.misc').get_strv('supported-active-extensions').includes(extensionName);
+export function isSupportedExtensionDetected(extensionName) {
+    return Me.getSettings('org.gnome.shell.extensions.custom-hot-corners-extended.misc').get_strv('supported-active-extensions').includes(extensionName);
 }
 
-function bold(label) {
+export function bold(label) {
     return `<b>${label}</b>`;
 }
 
-function getIconPath() {
+export function getIconPath() {
     const colorAccents = ['red', 'bark', 'sage', 'olive', 'viridian', 'prussiangreen', 'blue', 'purple', 'magenta'];
-    const theme = ExtensionUtils.getSettings('org.gnome.desktop.interface').get_string('gtk-theme');
+    const theme = Me.getSettings('org.gnome.desktop.interface').get_string('gtk-theme');
     const themeSplit = theme.split('-');
     let accent = 'blue';
     if (themeSplit.length > 1 && themeSplit[0] === 'Yaru') {

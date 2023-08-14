@@ -5,13 +5,7 @@
   "name": "Custom Hot Corners - Extended",
   "settings-schema": "org.gnome.shell.extensions.custom-hot-corners-extended",
   "shell-version": [
-    "3.36",
-    "3.38",
-    "40",
-    "41",
-    "42",
-    "43",
-    "44"
+    "45"
   ],
   "url": "https://github.com/G-dH/custom-hot-corners/tree/gdh",
   "uuid": "custom-hot-corners-extended@G-dH.github.com",

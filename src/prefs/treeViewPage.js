@@ -9,29 +9,23 @@
 
 'use strict';
 
-const { Gtk, GObject } = imports.gi;
-
-const ExtensionUtils = imports.misc.extensionUtils;
-const Me             = ExtensionUtils.getCurrentExtension();
-
-const Settings       = Me.imports.src.common.settings;
-const _actionList    = Settings.actionList;
+import GObject from 'gi://GObject';
+import Gtk from 'gi://Gtk';
+import Adw from 'gi://Adw';
 
 // gettext
-const _  = Settings._;
-const shellVersion = Settings.shellVersion;
+let _;
 
-const Utils          = Me.imports.src.common.utils;
-// conversion of Gtk3 / Gtk4 widgets add methods
-const append = Utils.append;
-const setChild = Utils.setChild;
 
-let Adw = null;
-try {
-    Adw = imports.gi.Adw;
-} catch (e) {}
+export function init(extension) {
+    _ = extension.gettext.bind(extension);
+}
 
-var TreeViewPage = GObject.registerClass(
+export function cleanGlobals() {
+    _ = null;
+}
+
+export const TreeViewPage = GObject.registerClass(
 class TreeviewPage extends Gtk.Box {
     _init(widgetProperties = {
         margin_start: 16,
@@ -118,18 +112,18 @@ class TreeviewPage extends Gtk.Box {
             label: _('Show active items only'),
         });
 
-        btnBox[append](this.resetButton);
-        btnBox[append](collapseButton);
-        btnBox[append](expandButton);
+        btnBox.append(this.resetButton);
+        btnBox.append(collapseButton);
+        btnBox.append(expandButton);
 
-        scrolledWindow[setChild](this.treeView);
-        frame[setChild](scrolledWindow);
+        scrolledWindow.set_child(this.treeView);
+        frame.set_child(scrolledWindow);
 
-        box[append](this.lbl);
-        box[append](frame);
-        box[append](this.showActiveBtn);
-        box[append](btnBox);
-        this[append](box);
+        box.append(this.lbl);
+        box.append(frame);
+        box.append(this.showActiveBtn);
+        box.append(btnBox);
+        this.append(box);
     }
 
     setNewTreeviewModel() {

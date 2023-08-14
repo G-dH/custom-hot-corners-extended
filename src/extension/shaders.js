@@ -9,10 +9,10 @@
 
 'use strict';
 
-const { GObject, Clutter }     = imports.gi;
-const ExtensionUtils         = imports.misc.extensionUtils;
+import GObject from 'gi://GObject';
+import Clutter from 'gi://Clutter';
 
-var   InvertLightnessEffect = GObject.registerClass(
+export const   InvertLightnessEffect = GObject.registerClass(
 class InvertLightnessEffect extends Clutter.ShaderEffect {
     vfunc_get_static_shader_source() {
         return ShaderLib.getInversion(0);
@@ -27,7 +27,7 @@ class InvertLightnessEffect extends Clutter.ShaderEffect {
     }
 });
 
-var   InvertLightnessShiftEffect = GObject.registerClass(
+export const   InvertLightnessShiftEffect = GObject.registerClass(
 class InvertLightnessShiftEffect extends Clutter.ShaderEffect {
     vfunc_get_static_shader_source() {
         return ShaderLib.getInversion(1);
@@ -42,7 +42,7 @@ class InvertLightnessShiftEffect extends Clutter.ShaderEffect {
     }
 });
 
-var   ColorInversionEffect = GObject.registerClass(
+export const   ColorInversionEffect = GObject.registerClass(
 class ColorInversionEffect extends Clutter.ShaderEffect {
     vfunc_get_static_shader_source() {
         return ShaderLib.getInversion(2);
@@ -57,7 +57,7 @@ class ColorInversionEffect extends Clutter.ShaderEffect {
     }
 });
 
-var   ColorMixerEffect1 = GObject.registerClass(
+export const   ColorMixerEffect1 = GObject.registerClass(
 class ColorMixerEffect1 extends Clutter.ShaderEffect {
     vfunc_get_static_shader_source() {
         return ShaderLib.getChannelMix(1);
@@ -72,7 +72,7 @@ class ColorMixerEffect1 extends Clutter.ShaderEffect {
     }
 });
 
-var   ColorMixerEffect2 = GObject.registerClass(
+export const   ColorMixerEffect2 = GObject.registerClass(
 class ColorMixerEffect2 extends Clutter.ShaderEffect {
     vfunc_get_static_shader_source() {
         return ShaderLib.getChannelMix(2);
@@ -87,7 +87,7 @@ class ColorMixerEffect2 extends Clutter.ShaderEffect {
     }
 });
 
-var   DaltonismEffect = GObject.registerClass(
+export const   DaltonismEffect = GObject.registerClass(
 class DaltonismEffect extends Clutter.ShaderEffect {
     _init(properties) {
         super._init();
@@ -111,7 +111,7 @@ class DaltonismEffect extends Clutter.ShaderEffect {
 });
 
 
-var ShaderLib = class {
+export const ShaderLib = class {
     static getDaltonism(mode = 1, simulate) {
         return `
             uniform sampler2D tex;

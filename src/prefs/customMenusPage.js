@@ -9,35 +9,31 @@
 
 'use strict';
 
-const { Gtk, GObject } = imports.gi;
+import Gtk from 'gi://Gtk';
+import GObject from 'gi://GObject';
+import Adw from 'gi://Adw';
 
-const ExtensionUtils = imports.misc.extensionUtils;
-const Me             = ExtensionUtils.getCurrentExtension();
-const TreeViewPage   = Me.imports.src.prefs.treeViewPage.TreeViewPage;
+import * as TreeViewPage from './treeViewPage.js';
 
-let Adw = null;
-try {
-    Adw = imports.gi.Adw;
-} catch (e) {}
-
-const Settings       = Me.imports.src.common.settings;
-const _actionList    = Settings.actionList;
+import * as Settings from '../common/settings.js';
+import * as Utils from '../common/utils.js';
 
 // gettext
-const _  = Settings._;
-const shellVersion = Settings.shellVersion;
-
-const _excludedItems = Settings.excludedItems;
-
-const Utils          = Me.imports.src.common.utils;
-// conversion of Gtk3 / Gtk4 widgets add methods
-const append = Utils.append;
+let _;
 
 const _bold = Utils.bold;
 
 const TRANSITION_TIME = Settings.TRANSITION_TIME;
 
-var CustomMenusPage = GObject.registerClass(
+export function init(extension) {
+    _ = extension.gettext.bind(extension);
+}
+
+export function cleanGlobals() {
+    _ = null;
+}
+
+export const CustomMenusPage = GObject.registerClass(
 class CustomMenusPage extends Gtk.Box {
     _init(mscOptions) {
         super._init({
@@ -84,8 +80,8 @@ class CustomMenusPage extends Gtk.Box {
             menu.hexpand = true;
         }
 
-        this[append](switcher);
-        this[append](stack);
+        this.append(switcher);
+        this.append(stack);
         if (this.show_all)
             this.show_all();
         this._alreadyBuilt = true;
@@ -93,7 +89,7 @@ class CustomMenusPage extends Gtk.Box {
 });
 
 const CustomMenuPage = GObject.registerClass(
-class CustomMenuPage extends TreeViewPage {
+class CustomMenuPage extends TreeViewPage.TreeViewPage {
     _init(menuIndex, mscOptions) {
         super._init();
         this._mscOptions = mscOptions;
@@ -216,13 +212,15 @@ class CustomMenuPage extends TreeViewPage {
     _populateTreeview() {
         let iter, iter1, iter2;
         let submenuOnHold = null;
-        for (let i = 0; i < _actionList.length; i++) {
-            const item = _actionList[i];
+        const actionList = Settings.actionList;
+        const excludedItems = Settings.excludedItems;
+        for (let i = 0; i < actionList.length; i++) {
+            const item = actionList[i];
             const itemType = item[0];
             const action = item[1];
             const title = item[2];
 
-            if (_excludedItems.includes(action) || action === 'disabled' || action === 'move-to-workspace' || action === 'run-command')
+            if (excludedItems.includes(action) || action === 'disabled' || action === 'move-to-workspace' || action === 'run-command')
                 continue;
 
             // show selected actions only

@@ -9,37 +9,54 @@
 
 'use strict';
 
-const { GLib, Clutter, St, Meta, Shell, Gio } = imports.gi;
+import GObject from 'gi://GObject';
+import GLib from 'gi://GLib';
+import Clutter from 'gi://Clutter';
+import St from 'gi://St';
+import Meta from 'gi://Meta';
+import Shell from 'gi://Shell';
+import Gio from 'gi://Gio';
 
-const Main                   = imports.ui.main;
-const WorkspaceSwitcherPopup = imports.ui.workspaceSwitcherPopup;
-const Volume                 = imports.ui.status.volume;
-const PopupMenu              = imports.ui.popupMenu;
-const BoxPointer             = imports.ui.boxpointer;
-const AltTab                 = imports.ui.altTab;
-const OsdMonitorLabeler      = imports.ui.osdMonitorLabeler;
-const Workspace              = imports.ui.workspace;
+import * as Main from 'resource:///org/gnome/shell/ui/main.js';
+import * as WorkspaceSwitcherPopup from 'resource:///org/gnome/shell/ui/workspaceSwitcherPopup.js';
+import * as Volume from 'resource:///org/gnome/shell/ui/status/volume.js';
+import * as PopupMenu from 'resource:///org/gnome/shell/ui/popupMenu.js';
+import * as BoxPointer from 'resource:///org/gnome/shell/ui/boxpointer.js';
+import * as AltTab from 'resource:///org/gnome/shell/ui/altTab.js';
+import * as OsdMonitorLabeler from 'resource:///org/gnome/shell/ui/osdMonitorLabeler.js';
+import * as Workspace from 'resource:///org/gnome/shell/ui/workspace.js';
+import * as Screenshot from 'resource:///org/gnome/shell/ui/screenshot.js';
+import * as FileUtils from 'resource:///org/gnome/shell/misc/fileUtils.js';
+import * as LookingGlass from 'resource:///org/gnome/shell/ui/lookingGlass.js';
 
-const Util                   = imports.misc.util;
-const SystemActions          = imports.misc.systemActions;
-const ExtensionUtils         = imports.misc.extensionUtils;
-const Me                     = ExtensionUtils.getCurrentExtension();
-const Settings               = Me.imports.src.common.settings;
-const shellVersion           = Settings.shellVersion;
+import * as Util from 'resource:///org/gnome/shell/misc/util.js';
+import * as SystemActions from 'resource:///org/gnome/shell/misc/systemActions.js';
+
+import * as Settings from '../common/settings.js';
+import * as Shaders from './shaders.js';
+import * as WinTmb from './winTmb.js';
 
 // gettext
-const _                      = Settings._;
+let _;
+let Me;
 
-let WindowSwitcherPopup      = null;
-let Shaders                  = null;
-let WinTmb                   = null;
-let _origAltTabWSP           = null;
+// let _origAltTabWSP           = null;
+
+export function init(extension) {
+    _ = extension.gettext.bind(extension);
+    Me = extension;
+}
+
+export function cleanGlobals() {
+    _ = null;
+    Me = null;
+}
 
 function getCurrentMonitorGeometry() {
     return global.display.get_monitor_geometry(global.display.get_current_monitor());
 }
 
-var Actions = class {
+export const Actions = class {
     constructor(mscOptions) {
         this._signalsCollector      = [];
         this._timeouts              = {};
@@ -205,7 +222,7 @@ var Actions = class {
 
     _getShellSettings() {
         if (!this._shellSettings) {
-            this._shellSettings = ExtensionUtils.getSettings(
+            this._shellSettings = Me.getSettings(
                 'org.gnome.shell'
             );
         }
@@ -214,7 +231,7 @@ var Actions = class {
 
     _getMutterSettings() {
         if (!this._mutterSettings) {
-            this._mutterSettings = ExtensionUtils.getSettings(
+            this._mutterSettings = Me.getSettings(
                 'org.gnome.mutter'
             );
         }
@@ -223,7 +240,7 @@ var Actions = class {
 
     _getA11yAppSettings() {
         if (!this._a11yAppsSettings) {
-            this._a11yAppsSettings = ExtensionUtils.getSettings(
+            this._a11yAppsSettings = Me.getSettings(
                 'org.gnome.desktop.a11y.applications'
             );
         }
@@ -232,7 +249,7 @@ var Actions = class {
 
     _getA11yMagnifierSettings() {
         if (!this._a11yMagnifierSettings) {
-            this._a11yMagnifierSettings = ExtensionUtils.getSettings(
+            this._a11yMagnifierSettings = Me.getSettings(
                 'org.gnome.desktop.a11y.magnifier'
             );
         }
@@ -241,7 +258,7 @@ var Actions = class {
 
     _getInterfaceSettings() {
         if (!this._interfaceSettings) {
-            this._interfaceSettings = ExtensionUtils.getSettings(
+            this._interfaceSettings = Me.getSettings(
                 'org.gnome.desktop.interface'
             );
         }
@@ -250,7 +267,7 @@ var Actions = class {
 
     _getColorSettings() {
         if (!this._colorSettings) {
-            this._colorSettings = ExtensionUtils.getSettings(
+            this._colorSettings = Me.getSettings(
                 'org.gnome.settings-daemon.plugins.color'
             );
         }
@@ -259,7 +276,7 @@ var Actions = class {
 
     _getWsNamesSettings() {
         if (!this._wsNamesSettings) {
-            this._wsNamesSettings = ExtensionUtils.getSettings(
+            this._wsNamesSettings = Me.getSettings(
                 'org.gnome.desktop.wm.preferences'
             );
         }
@@ -268,7 +285,7 @@ var Actions = class {
 
     _getSoundSettings() {
         if (!this._soundSettings) {
-            this._soundSettings = ExtensionUtils.getSettings(
+            this._soundSettings = Me.getSettings(
                 'org.gnome.desktop.sound'
             );
         }
@@ -277,11 +294,10 @@ var Actions = class {
 
     _getDisplayBrightnessProxy() {
         if (!this._displayBrightnessProxy) {
-            const { loadInterfaceXML } = imports.misc.fileUtils;
             const BUS_NAME = 'org.gnome.SettingsDaemon.Power';
             const OBJECT_PATH = '/org/gnome/SettingsDaemon/Power';
 
-            const BrightnessInterface = loadInterfaceXML('org.gnome.SettingsDaemon.Power.Screen');
+            const BrightnessInterface = FileUtils.LoadInterfaceXML('org.gnome.SettingsDaemon.Power.Screen');
             const BrightnessProxy = Gio.DBusProxy.makeProxyWrapper(BrightnessInterface);
             this._displayBrightnessProxy = new BrightnessProxy(Gio.DBus.session, BUS_NAME, OBJECT_PATH,
                 (proxy, error) => {
@@ -376,11 +392,6 @@ var Actions = class {
                 return monitor;
         }
         return -1;
-    }
-
-    _getShaders() {
-        if (!Shaders)
-            Shaders = Me.imports.src.extension.shaders;
     }
 
     _isWsOrientationHorizontal() {
@@ -528,13 +539,6 @@ var Actions = class {
                         return GLib.SOURCE_REMOVE;
                     }
                 );
-            } else if (shellVersion < 40) {
-                // Pressing the apps btn before overview activation avoids icons animation in GS 3.36/3.38
-                // but in GS40 with Dash to Dock and its App button set to "no animation", this whole sequence is problematic
-
-                // in 3.36 pressing the button is usually enough to activate overview, but not always
-                Main.overview.dash.showAppsButton.checked = true;
-                Main.overview.show();
             } else if (Main.overview._shown) {
                 Main.overview.dash.showAppsButton.checked = true;
             } else {
@@ -599,7 +603,7 @@ var Actions = class {
 
     moveToRecentWorkspace() {
         // find the first window in the AltTab list (sorted by the most recently used) with different workspace and switch to it
-        const tabList = AltTab.getWindows(null);
+        const tabList = _getWindows(null);
         const currentWs = global.workspaceManager.get_active_workspace();
         for (let win of tabList) {
             const ws = win.get_workspace();
@@ -630,7 +634,7 @@ var Actions = class {
         const dynamicWs = this._getMutterSettings().get_boolean('dynamic-workspaces');
         const lastIndex = global.workspaceManager.get_n_workspaces() - (dynamicWs ? 1 : 0);
         // let windows = global.display.get_tab_list(Meta.TabList.NORMAL_ALL, null);
-        let windows = AltTab.getWindows(null);
+        let windows = _getWindows(null);
         for (let win of windows.reverse()) {
             // avoid moving modal windows as they move their parents (and vice versa) immediately, before we move the parent window.
             if (win.get_monitor() === monitor && !win.is_always_on_all_workspaces() && !win.is_attached_dialog() && !win.get_transient_for()) {
@@ -684,7 +688,7 @@ var Actions = class {
 
     closeWorkspace() {
         const activeWs = global.workspace_manager.get_active_workspace();
-        const windows = AltTab.getWindows(activeWs);
+        const windows = _getWindows(activeWs);
         for (let i = 0; i < windows.length; i++) {
             if (!windows[i].is_on_all_workspaces())
                 windows[i].delete(global.get_current_time() + i);
@@ -748,8 +752,7 @@ var Actions = class {
     }
 
     showScreenshotUi() {
-        if (shellVersion >= 42)
-            imports.ui.screenshot.showScreenshotUI();
+        Screenshot.showScreenshotUI();
     }
 
     toggleLookingGlass() {
@@ -765,9 +768,8 @@ var Actions = class {
                 Main.createLookingGlass();
             const lg = Main.lookingGlass;
             lg.open();
-            const Inspector = imports.ui.lookingGlass.Inspector;
             lg.openInspector = () => {
-                let inspector = new Inspector(lg);
+                let inspector = new LookingGlass.Inspector(lg);
                 inspector.connect('target', (i, target, stageX, stageY) => {
                     lg._pushResult(`inspect(${Math.round(stageX)}, ${Math.round(stageY)})`, target);
                 });
@@ -786,7 +788,7 @@ var Actions = class {
     }
 
     switchToRecentWindow() {
-        AltTab.getWindows(null)[1].activate(global.get_current_time());
+        _getWindows(null)[1].activate(global.get_current_time());
         // global.display.get_tab_list(0, null)[1].activate(global.get_current_time());
     }
 
@@ -1088,7 +1090,7 @@ var Actions = class {
             dark = true;
             break;
         case 'Yaru-dark':
-            newTheme = shellVersion >= 40 ? 'Yaru' : 'Yaru-light';
+            newTheme = 'Yaru';
             dark = false;
             break;
         case 'Adwaita':
@@ -1103,13 +1105,11 @@ var Actions = class {
             Main.notify(Me.metadata.name, _('Theme switcher works with Adwaita/Adwaita-dark and Yaru(-light)/Yaru-dark themes only'));
         }
 
-        if (shellVersion >= 42) {
-            dark = !(intSettings.get_string('color-scheme') === 'prefer-dark');
-            if (dark)
-                intSettings.set_string('color-scheme', 'prefer-dark');
-            else
-                intSettings.set_string('color-scheme', 'prefer-light');
-        }
+        dark = !(intSettings.get_string('color-scheme') === 'prefer-dark');
+        if (dark)
+            intSettings.set_string('color-scheme', 'prefer-dark');
+        else
+            intSettings.set_string('color-scheme', 'prefer-light');
 
         if (newTheme) {
             const shellThemeSettings = this._getShellThemeSettings('org.gnome.shell.extensions.user-theme');// , '/org/gnome/shell/extensions/user-theme/');
@@ -1235,12 +1235,7 @@ var Actions = class {
                 });
             }
 
-            let motion = this._translateDirectionIfNeeded(direction);
-
-            if (shellVersion >= 42)
-                Main.wm._workspaceSwitcherPopup.display(wsIndex);
-            else
-                Main.wm._workspaceSwitcherPopup.display(motion, wsIndex);
+            Main.wm._workspaceSwitcherPopup.display(wsIndex);
         }
     }
 
@@ -1311,7 +1306,7 @@ var Actions = class {
         let workspaceManager = global.workspace_manager;
 
         let workspace = null;
-        let windows = AltTab.getWindows(workspace);
+        let windows = _getWindows(workspace);
         if (monitorIndex > -1)
             windows = windows.filter(w => w.get_monitor() === monitorIndex);
 
@@ -1396,7 +1391,7 @@ var Actions = class {
         }*/
 
         if (!this._winPreview) {
-            this._winPreview = new AltTab.CyclerHighlight();
+            this._winPreview = new CyclerHighlight();
             global.window_group.add_actor(this._winPreview);
             [this._winPreview._xPointer, this._winPreview._yPointer] = global.get_pointer();
         }
@@ -1615,7 +1610,6 @@ var Actions = class {
 
     toggleLightnessInvertEffect(window = true, whiteShift = true) {
         let name = 'inversion';
-        this._getShaders();
         let effect = whiteShift
             ? Shaders.InvertLightnessShiftEffect
             : Shaders.InvertLightnessEffect;
@@ -1627,7 +1621,6 @@ var Actions = class {
 
     toggleColorsInvertEffect(window = true) {
         let name = 'inversion';
-        this._getShaders();
         let effect;
         effect = Shaders.ColorInversionEffect;
         if (window)
@@ -1638,8 +1631,6 @@ var Actions = class {
 
     toggleColorBlindShaderEffect(window = true, mode = 0, simulate = false) {
         let name = 'color-blind';
-        this._getShaders();
-
         const effect = Shaders.DaltonismEffect;
 
         simulate = simulate ? 1 : 0;
@@ -1651,7 +1642,6 @@ var Actions = class {
 
     toggleColorMixerEffect(window = true) {
         let name = 'color-mixer';
-        this._getShaders();
         let effect = Shaders.ColorMixerEffect2;
         if (window)
             this._toggleWindowEffect(name, effect);
@@ -1804,9 +1794,6 @@ var Actions = class {
     }
 
     makeThumbnailWindow(metaWindow = null, minimize = false) {
-        if (!WinTmb)
-            WinTmb = Me.imports.src.extension.winTmb;
-
         let metaWin;
         if (metaWindow) {
             metaWin = metaWindow;
@@ -1860,9 +1847,7 @@ var Actions = class {
         'apps':               false,
         'switch-ws':          false,
     }) {
-        if (!WindowSwitcherPopup)
-            WindowSwitcherPopup = AltTab.WindowSwitcherPopup;
-        let altTabPopup = new WindowSwitcherPopup();
+        let altTabPopup = new AltTab.WindowSwitcherPopup();
         const advancedSwitcherEnabled = !!(altTabPopup.showOrig || altTabPopup._showPopup);
 
         if (advancedSwitcherEnabled) {
@@ -2070,3 +2055,80 @@ var CustomMenuPopup = class CustomMenuPopup extends PopupMenu.PopupMenu {
         }
     }
 };
+
+function _getWindows(workspace) {
+    // We ignore skip-taskbar windows in switchers, but if they are attached
+    // to their parent, their position in the MRU list may be more appropriate
+    // than the parent; so start with the complete list ...
+    let windows = global.display.get_tab_list(Meta.TabList.NORMAL_ALL, workspace);
+    // ... map windows to their parent where appropriate ...
+    return windows.map(w => {
+        return w.is_attached_dialog() ? w.get_transient_for() : w;
+    // ... and filter out skip-taskbar windows and duplicates
+    }).filter((w, i, a) => !w.skip_taskbar && a.indexOf(w) === i);
+}
+
+const CyclerHighlight = GObject.registerClass(
+class CyclerHighlight extends St.Widget {
+    _init() {
+        super._init({ layout_manager: new Clutter.BinLayout() });
+        this._window = null;
+
+        this._clone = new Clutter.Clone();
+        this.add_actor(this._clone);
+
+        this._highlight = new St.Widget({ style_class: 'cycler-highlight' });
+        this.add_actor(this._highlight);
+
+        let coordinate = Clutter.BindCoordinate.ALL;
+        let constraint = new Clutter.BindConstraint({ coordinate });
+        this._clone.bind_property('source', constraint, 'source', 0);
+
+        this.add_constraint(constraint);
+
+        this.connect('destroy', this._onDestroy.bind(this));
+    }
+
+    set window(w) {
+        if (this._window === w)
+            return;
+
+        this._window?.disconnectObject(this);
+
+        this._window = w;
+
+        if (this._clone.source)
+            this._clone.source.sync_visibility();
+
+        const windowActor = this._window?.get_compositor_private() ?? null;
+
+        if (windowActor)
+            windowActor.hide();
+
+        this._clone.source = windowActor;
+
+        if (this._window) {
+            this._onSizeChanged();
+            this._window.connectObject('size-changed',
+                this._onSizeChanged.bind(this), this);
+        } else {
+            this._highlight.set_size(0, 0);
+            this._highlight.hide();
+        }
+    }
+
+    _onSizeChanged() {
+        const bufferRect = this._window.get_buffer_rect();
+        const rect = this._window.get_frame_rect();
+        this._highlight.set_size(rect.width, rect.height);
+        this._highlight.set_position(
+            rect.x - bufferRect.x,
+            rect.y - bufferRect.y);
+        this._highlight.show();
+    }
+
+    _onDestroy() {
+        this.window = null;
+    }
+});
+

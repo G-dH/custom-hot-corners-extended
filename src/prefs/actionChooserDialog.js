@@ -9,31 +9,32 @@
 
 'use strict';
 
-const { Gtk, GObject } = imports.gi;
+import Gtk from 'gi://Gtk';
+import GObject from 'gi://GObject';
 
-const Me             = imports.misc.extensionUtils.getCurrentExtension();
+import * as Settings from '../common/settings.js';
+import * as Utils from '../common/utils.js';
 
-const Settings       = Me.imports.src.common.settings;
-const shellVersion   = Settings.shellVersion;
-const _              = Settings._;
+let _;
 
-const actionList     = Settings.actionList;
+export function init(extension) {
+    _ = extension.gettext.bind(extension);
+}
 
-const Utils          = Me.imports.src.common.utils;
-// conversion of Gtk3 / Gtk4 widgets add methods
-const append         = Utils.append;
-const setChild      = Utils.setChild;
+export function cleanGlobals() {
+    _ = null;
+}
 
-var ActionChooserDialog = GObject.registerClass(
+export const ActionChooserDialog = GObject.registerClass(
 class ActionChooserDialog extends Gtk.Box {
     _init(button, corner, trigger, iconName, transitionWidget) {
         // this._transWidget = transitionWidget;
         const margin = 16;
         super._init({
-            margin_top: shellVersion >= 42 ? margin : 0,
-            margin_bottom: shellVersion >= 42 ? margin : 0,
-            margin_start: shellVersion >= 42 ? margin : 0,
-            margin_end: shellVersion >= 42 ? margin : 0,
+            margin_top: margin,
+            margin_bottom: margin,
+            margin_start: margin,
+            margin_end: margin,
         });
 
         // this._button = button;
@@ -69,17 +70,17 @@ class ActionChooserDialog extends Gtk.Box {
             visible: true,
         });
         if (trigger === 6) { // 6 === CTRL_PRESSURE
-            box[append](new Gtk.Label({
+            box.append(new Gtk.Label({
                 label: 'Ctrl +',
                 visible: true,
             }));
         }
-        box[append](trgIcon);
+        box.append(trgIcon);
 
         const headerbar = this.dialog.get_titlebar();
         headerbar.pack_start(box);
 
-        this.dialog.get_content_area()[append](this);
+        this.dialog.get_content_area().append(this);
 
         this.buildPage();
 
@@ -131,7 +132,7 @@ class ActionChooserDialog extends Gtk.Box {
         if (this._alreadyBuilt)
             return;
 
-        const margin = shellVersion < 42 ? 4 : 0;
+        const margin = 0;
         const box = new Gtk.Box({
             orientation: Gtk.Orientation.VERTICAL,
             spacing: 5,
@@ -201,28 +202,30 @@ class ActionChooserDialog extends Gtk.Box {
 
         this.resetButton = new Gtk.Button();
 
-        btnBox[append](expandButton);
-        btnBox[append](collapseButton);
-        btnBox[append](this.resetButton);
+        btnBox.append(expandButton);
+        btnBox.append(collapseButton);
+        btnBox.append(this.resetButton);
 
-        scrolledWindow[setChild](this.treeView);
-        frame[setChild](scrolledWindow);
+        scrolledWindow.set_child(this.treeView);
+        frame.set_child(scrolledWindow);
 
-        box[append](frame);
-        box[append](btnBox);
-        this[append](box);
+        box.append(frame);
+        box.append(btnBox);
+        this.append(box);
     }
 
     _populateTreeview() {
         let iter1, iter2;
         let submenuOnHold = null;
+        const actionList = Settings.actionList;
+        const excludedItems = Settings.excludedItems;
         for (let i = 0; i < actionList.length; i++) {
             const item = actionList[i];
             const itemType = item[0];
             const action = item[1];
             const title = action === 'disabled' ? 'Disable' : item[2];
 
-            if (Settings.excludedItems.includes(action))
+            if (excludedItems.includes(action))
                 continue;
 
             if (itemType === null) {

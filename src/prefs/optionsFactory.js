@@ -9,26 +9,15 @@
 
 'use strict';
 
-const { Gtk, GLib, Gio, GObject } = imports.gi;
+import GObject from 'gi://GObject';
+import Gio from 'gi://Gio';
+import Gtk from 'gi://Gtk';
+import Adw from 'gi://Adw';
 
-const ExtensionUtils = imports.misc.extensionUtils;
-const Me             = ExtensionUtils.getCurrentExtension();
-const Utils          = Me.imports.src.common.utils;
-
-// conversion of Gtk3 / Gtk4 widgets add methods
-const append         = Utils.append;
-const setChild      = Utils.setChild;
-
-const Settings       = Me.imports.src.common.settings;
-const shellVersion   = parseFloat(imports.misc.config.PACKAGE_VERSION);
-
-let Adw = null;
-try {
-    Adw = imports.gi.Adw;
-} catch (e) {}
+import * as Settings from '../common/settings.js';
 
 
-var ItemFactory = class ItemFactory {
+export const ItemFactory = class ItemFactory {
     constructor(options) {
         this._options = options;
         this._settings = this._options._gsettings;
@@ -48,7 +37,7 @@ var ItemFactory = class ItemFactory {
                 halign: Gtk.Align.START,
             });
             option.set_text(text);
-            label[append](option);
+            label.append(option);
 
             if (caption) {
                 const captionLabel = new Gtk.Label({
@@ -61,7 +50,7 @@ var ItemFactory = class ItemFactory {
                 context.add_class('dim-label');
                 context.add_class('caption');
                 captionLabel.set_text(caption);
-                label[append](captionLabel);
+                label.append(captionLabel);
             }
             label._title = text;
         } else {
@@ -221,7 +210,7 @@ var ItemFactory = class ItemFactory {
 
     newLinkButton(uri) {
         const linkBtn = new Gtk.LinkButton({
-            label: shellVersion < 42 ? 'Click Me!' : '',
+            label: '',
             uri,
             halign: Gtk.Align.END,
             valign: Gtk.Align.CENTER,
@@ -240,11 +229,7 @@ var ItemFactory = class ItemFactory {
         const context = btn.get_style_context();
         context.add_class('destructive-action');
 
-        if (shellVersion >= 40)
-            btn.icon_name = 'view-refresh-symbolic';
-        else
-            btn.add(Gtk.Image.new_from_icon_name('view-refresh-symbolic', Gtk.IconSize.BUTTON));
-
+        btn.icon_name = 'view-refresh-symbolic';
 
         btn.connect('clicked', () => {
             this._options.resetAll();
@@ -255,8 +240,8 @@ var ItemFactory = class ItemFactory {
     }
 };
 
-var OptionsPageLegacy = GObject.registerClass(
-class OptionsPageLegacy extends Gtk.ScrolledWindow {
+export const OptionsPageAdw = GObject.registerClass(
+class OptionsPageAdw extends Adw.PreferencesPage {
     _init(optionList, pageProperties = {}) {
         super._init(pageProperties);
 
@@ -267,51 +252,28 @@ class OptionsPageLegacy extends Gtk.ScrolledWindow {
     buildPage() {
         if (this._alreadyBuilt)
             return;
-        const mainBox = new Gtk.Box({
-            orientation: Gtk.Orientation.VERTICAL,
-            spacing: 5,
-            homogeneous: false,
-            margin_start: 30,
-            margin_end: 30,
-            margin_top: 12,
-            margin_bottom: 12,
-        });
-
-        const context = this.get_style_context();
-        context.add_class('background');
-
-        let frame;
-        let frameBox;
+            // pageProperties.width_request = 840;
+        let group;
         for (let item of this._optionList) {
             // label can be plain text for Section Title
             // or GtkBox for Option
             const option = item[0];
             const widget = item[1];
-
             if (!widget) {
-                const lbl = new Gtk.Label({
-                    label: option,
-                    xalign: 0,
-                    margin_bottom: 4,
+                if (group)
+                    this.add(group);
+
+                group = new Adw.PreferencesGroup({
+                    title: option,
+                    hexpand: true,
+                    // width_request: 700
                 });
-
-                const context = lbl.get_style_context();
-                context.add_class('heading');
-
-                mainBox[append](lbl);
-
-                frame = new Gtk.Frame({
-                    margin_bottom: 16,
-                });
-
-                frameBox = new Gtk.ListBox({
-                    selection_mode: null,
-                });
-
-                mainBox[append](frame);
-                frame[setChild](frameBox);
                 continue;
             }
+
+            const row = new Adw.ActionRow({
+                title: option._title,
+            });
 
             const grid = new Gtk.Grid({
                 column_homogeneous: false,
@@ -322,80 +284,22 @@ class OptionsPageLegacy extends Gtk.ScrolledWindow {
                 margin_bottom: 8,
                 hexpand: true,
             });
-
-            grid.attach(option, 0, 0, 5, 1);
-
+                /* for (let i of item) {
+                    box.append(i);*/
+            grid.attach(option, 0, 0, 1, 1);
             if (widget)
-                grid.attach(widget, 5, 0, 2, 1);
+                grid.attach(widget, 1, 0, 1, 1);
 
-            frameBox[append](grid);
+            row.set_child(grid);
+            if (widget._activatable === false)
+                row.activatable = false;
+            else
+                row.activatable_widget = widget;
+
+            group.add(row);
         }
-        this[setChild](mainBox);
+        this.add(group);
         this._alreadyBuilt = true;
     }
 });
 
-if (Adw) {
-    var OptionsPageAdw = GObject.registerClass(
-    class OptionsPageAdw extends Adw.PreferencesPage {
-        _init(optionList, pageProperties = {}) {
-            super._init(pageProperties);
-
-            this._optionList = optionList;
-            this.buildPage();
-        }
-
-        buildPage() {
-            if (this._alreadyBuilt)
-                return;
-            // pageProperties.width_request = 840;
-            let group;
-            for (let item of this._optionList) {
-                // label can be plain text for Section Title
-                // or GtkBox for Option
-                const option = item[0];
-                const widget = item[1];
-                if (!widget) {
-                    if (group)
-                        this.add(group);
-
-                    group = new Adw.PreferencesGroup({
-                        title: option,
-                        hexpand: true,
-                        // width_request: 700
-                    });
-                    continue;
-                }
-
-                const row = new Adw.ActionRow({
-                    title: option._title,
-                });
-
-                const grid = new Gtk.Grid({
-                    column_homogeneous: false,
-                    column_spacing: 20,
-                    margin_start: 8,
-                    margin_end: 8,
-                    margin_top: 8,
-                    margin_bottom: 8,
-                    hexpand: true,
-                });
-                /* for (let i of item) {
-                    box[append](i);*/
-                grid.attach(option, 0, 0, 1, 1);
-                if (widget)
-                    grid.attach(widget, 1, 0, 1, 1);
-
-                row.set_child(grid);
-                if (widget._activatable === false)
-                    row.activatable = false;
-                else
-                    row.activatable_widget = widget;
-
-                group.add(row);
-            }
-            this.add(group);
-            this._alreadyBuilt = true;
-        }
-    });
-}

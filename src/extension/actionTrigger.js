@@ -9,19 +9,29 @@
 
 'use strict';
 
-const { Clutter, Meta } = imports.gi;
+import Clutter from 'gi://Clutter';
+import Meta from 'gi://Meta';
 
-const Main           = imports.ui.main;
-const ExtensionUtils = imports.misc.extensionUtils;
-const Me             = ExtensionUtils.getCurrentExtension();
-const Settings       = Me.imports.src.common.settings;
-const Actions        = Me.imports.src.extension.actions;
-const Keybindings    = Me.imports.src.extension.keybindings;
+import * as Main from 'resource:///org/gnome/shell/ui/main.js';
+import * as Settings from '../common/settings.js';
+import * as Actions from './actions.js';
+import * as Keybindings from './keybindings.js';
 
 // gettext
-const _ = Settings._;
+let _;
+let Me;
 
-var ActionTrigger = class ActionTrigger {
+export function init(extension) {
+    _ = extension.gettext.bind(extension);
+    Me = extension;
+}
+
+export function cleanGlobals() {
+    _ = null;
+    Me = null;
+}
+
+export const ActionTrigger = class ActionTrigger {
     constructor(mscOptions) {
         this.actions = new Actions.Actions(mscOptions);
         this._mscOptions = mscOptions;
@@ -281,14 +291,13 @@ var ActionTrigger = class ActionTrigger {
     }
 
     _getShortcut(action) {
-        const settings = ExtensionUtils.getSettings(
+        const settings = Me.getSettings(
             'org.gnome.shell.extensions.custom-hot-corners-extended.misc');
         const shortcuts = settings.get_strv('keyboard-shortcuts');
         const scIndex = shortcuts.findIndex(s => s.includes(`${action} `));
         let sc = null;
         if (scIndex > -1)
             sc = shortcuts[scIndex].split(' ')[1].replace(/<.+>/, '');
-
 
         return sc;
     }

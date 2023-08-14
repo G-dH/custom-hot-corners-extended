@@ -9,19 +9,22 @@
 
 'use strict';
 
-const { GObject, Clutter, St, Meta, Shell } = imports.gi;
+import Clutter from 'gi://Clutter';
+import St from 'gi://St';
+import Meta from 'gi://Meta';
+import Shell from 'gi://Shell';
+import GObject from 'gi://GObject';
 
-const Main         = imports.ui.main;
-const DND          = imports.ui.dnd;
-const AltTab       = imports.ui.altTab;
-const Graphene     = imports.gi.Graphene;
-const shellVersion = parseFloat(imports.misc.config.PACKAGE_VERSION);
+import * as Main from 'resource:///org/gnome/shell/ui/main.js';
+import * as DND from 'resource:///org/gnome/shell/ui/dnd.js';
+import * as AltTab from 'resource:///org/gnome/shell/ui/altTab.js';
+
 
 const SCROLL_ICON_OPACITY = 240;
 const DRAG_OPACITY = 200;
 const CLOSE_BTN_OPACITY = 240;
 
-var   WindowThumbnail = GObject.registerClass(
+export const WindowThumbnail = GObject.registerClass(
 class WindowThumbnail extends St.BoxLayout {
     _init(metaWin, parent, properties) {
         this._hoverShowsPreview = false;
@@ -311,7 +314,7 @@ class WindowThumbnail extends St.BoxLayout {
         const closeButton = new St.Button({
             opacity: 0,
             style_class: 'window-close',
-            child: new St.Icon({ icon_name: shellVersion < 40 ? 'window-close-symbolic' : 'preview-close-symbolic' }),
+            child: new St.Icon({ icon_name: 'preview-close-symbolic' }),
             x_align: Clutter.ActorAlign.END,
             y_align: Clutter.ActorAlign.START,
             x_expand: true,

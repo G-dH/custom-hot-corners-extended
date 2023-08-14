@@ -9,22 +9,12 @@
 
 'use strict';
 
-const { GLib, Gio }    = imports.gi;
+import Gio from 'gi://Gio';
+import GLib from 'gi://GLib';
 
-const ExtensionUtils = imports.misc.extensionUtils;
-const Me             = ExtensionUtils.getCurrentExtension();
+import * as ActionList from '../prefs/actionList.js';
 
-const Utils          = Me.imports.src.common.utils;
-
-const Config         = imports.misc.config;
-var shellVersion     = parseFloat(Config.PACKAGE_VERSION);
-
-var _                = imports.gettext.domain(Me.metadata['gettext-domain']).gettext;
-
-var actionList       = Me.imports.src.prefs.actionList.actionList;
-var excludedItems    = Me.imports.src.prefs.actionList.excludedItems;
-
-var Triggers = {
+export const Triggers = {
     PRESSURE:         0,
     BUTTON_PRIMARY:   1,
     BUTTON_SECONDARY: 2,
@@ -34,45 +24,40 @@ var Triggers = {
     CTRL_PRESSURE:    6,
 };
 
-var TriggerLabels = [
-    _('Hot Corner'),
-    _('Primary Button'),
-    _('Secondary Button'),
-    _('Middle Button'),
-    _('Scroll Up'),
-    _('Scroll Down'),
-    _('Ctrl + Hot Corner'),
-];
-
-var TRANSITION_TIME = 200;
-
-var MONITOR_TITLE = _('Monitor');
-var MONITOR_ICON = 'video-display-symbolic';
-var KEYBOARD_TITLE = _('Keyboard');
-var KEYBOARD_ICON = 'input-keyboard-symbolic';
-var MENUS_TITLE = _('Custom Menus');
-var MENUS_ICON = 'open-menu-symbolic';
-var OPTIONS_TITLE = _('Options');
-var OPTIONS_ICON = 'preferences-other-symbolic';
-
-const colorAccents = ['red', 'bark', 'sage', 'olive', 'viridian', 'prussiangreen', 'blue', 'purple', 'magenta'];
-
-var actionDict = {};
-actionList.forEach(act => {
-    actionDict[act[1]] = { title: act[2], icon: act[4] };
-});
-
-var _schema = 'org.gnome.shell.extensions.custom-hot-corners-extended';
-var _path = '/org/gnome/shell/extensions/custom-hot-corners-extended';
-
-const winSwitcherPopup = Utils.extensionEnabled('advanced-alt-tab');
-
-function listTriggers() {
+export function listTriggers() {
     return Object.values(Triggers);
 }
 
+export const TRANSITION_TIME = 200;
 
-var MscOptions = class MscOptions {
+export const colorAccents = ['red', 'bark', 'sage', 'olive', 'viridian', 'prussiangreen', 'blue', 'purple', 'magenta'];
+
+export let actionList;
+export let excludedItems;
+export let actionDict;
+
+export const _schema = 'org.gnome.shell.extensions.custom-hot-corners-extended';
+export const _path = '/org/gnome/shell/extensions/custom-hot-corners-extended';
+
+// const winSwitcherPopup = Utils.extensionEnabled('advanced-alt-tab');
+
+let Me;
+
+export function init(extension) {
+    Me = extension;
+    actionDict = {};
+    actionList = ActionList.actionList;
+    excludedItems  = ActionList.excludedItems;
+    actionList.forEach(act => {
+        actionDict[act[1]] = { title: act[2], icon: act[4] };
+    });
+}
+
+export function cleanGlobals() {
+    Me = null;
+}
+
+export const MscOptions = class {
     constructor() {
         this._gsettings = this._loadSettings('misc');
         this._gsettings.delay();
@@ -178,7 +163,7 @@ var MscOptions = class MscOptions {
     }
 };
 
-function resetAllCorners() {
+export function resetAllCorners() {
     // since we can't find all created monitor directories in gsettings without using dconf,
     // we assume that max monitor count of 6 is enough for all users
     for (const monitor of [0, 1, 2, 3, 4, 5]) {
@@ -203,7 +188,7 @@ function resetCorner(monitorIndex, corner) {
     }
 }
 
-var Corner = class Corner {
+export const Corner = class Corner {
     constructor(loadIndex, monitorIndex, top, left, x, y) {
         this.monitorIndex = monitorIndex;
         this._loadIndex = loadIndex;
@@ -355,7 +340,7 @@ var Corner = class Corner {
  * Copied from Gnome Shells extensionUtils.js and adapted to allow
  * loading the setting with a specific path.
  */
-function getSettings(schema, path) {
+export function getSettings(schema, path) {
     const schemaDir = Me.dir.get_child('schemas');
     let schemaSource;
     if (schemaDir.query_exists(null)) {
@@ -385,4 +370,3 @@ function getSettings(schema, path) {
 
     return new Gio.Settings(args);
 }
-

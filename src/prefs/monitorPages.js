@@ -9,42 +9,49 @@
 
 'use strict';
 
-const { Gtk, Gdk, GLib, Gio, GObject } = imports.gi;
+import GObject from 'gi://GObject';
+import Gio from 'gi://Gio';
+import Gtk from 'gi://Gtk';
+import Gdk from 'gi://Gdk';
+import Adw from 'gi://Adw';
 
-let Adw = null;
-try {
-    Adw = imports.gi.Adw;
-} catch (e) {}
+import * as Settings from '../common/settings.js';
+import * as Utils from '../common/utils.js';
+import { ActionChooserDialog } from './actionChooserDialog.js';
 
-const ExtensionUtils = imports.misc.extensionUtils;
-const Me             = ExtensionUtils.getCurrentExtension();
-
-const Utils          = Me.imports.src.common.utils;
-const _newImageFromIconName = Utils._newImageFromIconName;
 const _setImageFromIconName = Utils._setImageFromIconName;
 const _setBtnFromIconName   = Utils._setBtnFromIconName;
-// conversion of Gtk3 / Gtk4 widgets add methods
-const append         = Utils.append;
-const setChild      = Utils.setChild;
 
-const Settings       = Me.imports.src.common.settings;
 const Triggers       = Settings.Triggers;
-const triggers       = Settings.listTriggers();
-const triggerLabels  = Settings.TriggerLabels;
-const actionList     = Settings.actionList;
-const actionDict     = Settings.actionDict;
+let actionDict;
 
-const ActionChooserDialog = Me.imports.src.prefs.actionChooserDialog.ActionChooserDialog;
 
-const _              = Settings._;
-const shellVersion   = Settings.shellVersion;
-
-const MONITOR_TITLE  = Settings.MONITOR_TITLE;
-const MONITOR_ICON   = Settings.MONITOR_ICON;
+let _;
+let TriggerLabels;
 
 const TRANSITION_TIME = Settings.TRANSITION_TIME;
 
-function getMonitorPages(mscOptions) {
+export function init(extension) {
+    _ = extension.gettext.bind(extension);
+    TriggerLabels = [
+        _('Hot Corner'),
+        _('Primary Button'),
+        _('Secondary Button'),
+        _('Middle Button'),
+        _('Scroll Up'),
+        _('Scroll Down'),
+        _('Ctrl + Hot Corner'),
+    ];
+
+    actionDict = Settings.actionDict;
+}
+
+export function cleanGlobals() {
+    _ = null;
+    TriggerLabels = null;
+}
+
+export function getMonitorPages(mscOptions) {
     let pages = [];
 
     const display = Gdk.Display.get_default();
@@ -67,7 +74,7 @@ function getMonitorPages(mscOptions) {
 
         const monitorPage = new MonitorPage(monitor, monitorIndex, corners, leftHandMouse);
 
-        let labelText = `  ${MONITOR_TITLE}`;
+        let labelText = `  ${_('Monitor')}`;
         if (nMonitors > 1) {
             labelText += ` ${monitorIndex + 1} ${monitorIndex === 0 ? _('(primary)') : ''}  `;
             mscOptions.set('showOsdMonitorIndexes', true);
@@ -136,11 +143,7 @@ class MonitorPage extends Gtk.Box {
 
         resetBtn.connect('clicked', () => Settings.resetCorner(this._monitorIndex, stack.get_visible_child_name()));
 
-        if (shellVersion >= 40)
-            resetBtn.icon_name = 'view-refresh-symbolic';
-        else
-            resetBtn.add(Gtk.Image.new_from_icon_name('view-refresh-symbolic', Gtk.IconSize.BUTTON));
-
+        resetBtn.icon_name = 'view-refresh-symbolic';
 
         context = resetBtn.get_style_context();
         context.add_class('destructive-action');
@@ -172,9 +175,6 @@ class MonitorPage extends Gtk.Box {
                 pixel_size: 36,
             });
 
-            if (shellVersion < 40)
-                image.icon_size = Gtk.IconSize.DND;
-
             image.set_from_resource(`${this._iconPath}/${this._corners[i].top ? 'Top' : 'Bottom'}${this._corners[i].left ? 'Left' : 'Right'}.svg`);
 
             icons.push(image);
@@ -203,8 +203,8 @@ class MonitorPage extends Gtk.Box {
             }
         }
 
-        this[append](stackGrid);
-        this[append](stack);
+        this.append(stackGrid);
+        this.append(stack);
         if (this.show_all)
             this.show_all();
         this._alreadyBuilt = true;
@@ -236,8 +236,8 @@ class CornerPage extends Gtk.Box {
         for (let trigger of trgOrder) {
             const grid = new Gtk.Grid({
                 column_spacing: 5,
-                margin_top: shellVersion >= 40 ? 5 : 10,
-                margin_bottom: shellVersion >= 40 ? 5 : 10,
+                margin_top: 5,
+                margin_bottom: 5,
 
             });
             let ctrlBtn = new Gtk.CheckButton({
@@ -281,7 +281,7 @@ class CornerPage extends Gtk.Box {
 
                         if (popupGrid.show_all)
                             popupGrid.show_all();
-                        cornerPopover[setChild](popupGrid);
+                        cornerPopover.set_child(popupGrid);
 
                         this._buildPressureSettings(popupGrid);
                         settingsBtn = new Gtk.MenuButton({
@@ -319,7 +319,7 @@ class CornerPage extends Gtk.Box {
 
             // trgIcon.set_from_file(`${this._iconPath}/${iconName}`);
             trgIcon.set_from_resource(`${this._iconPath}/${iconName}`);
-            trgIcon.set_tooltip_text(triggerLabels[trigger]);
+            trgIcon.set_tooltip_text(TriggerLabels[trigger]);
 
             const fsBtn = new Gtk.ToggleButton({
                 halign: Gtk.Align.START,
@@ -350,14 +350,14 @@ class CornerPage extends Gtk.Box {
                 grid.attach(cw,      2, trigger, 1, 1);
                 grid.attach(fsBtn,   3, trigger, 2, 1);
             }
-            this[append](grid);
+            this.append(grid);
         }
         const ew = this._buildExpandsionWidget();
         const ewFrame = new Gtk.Frame({
             margin_top: 10,
         });
-        ewFrame[setChild](ew);
-        this[append](ewFrame);
+        ewFrame.set_child(ew);
+        this.append(ewFrame);
         if (this.show_all)
             this.show_all();
 
@@ -418,9 +418,9 @@ class CornerPage extends Gtk.Box {
             xalign: 0,
             hexpand: true,
         });
-        actBtnContentBox[append](actBtnIcon);
-        actBtnContentBox[append](actBtnLabel);
-        actionButton[setChild](actBtnContentBox);
+        actBtnContentBox.append(actBtnIcon);
+        actBtnContentBox.append(actBtnLabel);
+        actionButton.set_child(actBtnContentBox);
 
         actionButton.connect('clicked', widget => {
             const actionChooserTree = new ActionChooserDialog(widget, this._corner, trigger, iconName, cw);
@@ -547,7 +547,7 @@ class CornerPage extends Gtk.Box {
 
     _buildExpandsionWidget() {
         const grid = new Gtk.Grid({
-            row_spacing: shellVersion >= 40 ? 0 : 10,
+            row_spacing: 0,
             column_spacing: 8,
             margin_start: 10,
             margin_end: 10,
@@ -645,7 +645,7 @@ class CornerPage extends Gtk.Box {
 
         const hImage = Gtk.Image.new_from_resource(`${this._iconPath}/${this._corner.top ? 'Top' : 'Bottom'}${this._corner.left ? 'Left' : 'Right'}HE.svg`);
         hImage.pixel_size = 40;
-        hExpandSwitch[setChild](hImage);
+        hExpandSwitch.set_child(hImage);
 
         const vExpandSwitch = new Gtk.ToggleButton({
             halign: Gtk.Align.CENTER,
@@ -657,7 +657,7 @@ class CornerPage extends Gtk.Box {
 
         const vImage = Gtk.Image.new_from_resource(`${this._iconPath}/${this._corner.top ? 'Top' : 'Bottom'}${this._corner.left ? 'Left' : 'Right'}VE.svg`);
         vImage.pixel_size = 40;
-        vExpandSwitch[setChild](vImage);
+        vExpandSwitch.set_child(vImage);
 
         this._corner._gsettings[Triggers.BUTTON_PRIMARY].bind('h-expand', hExpandSwitch, 'active', Gio.SettingsBindFlags.DEFAULT);
         this._corner._gsettings[Triggers.BUTTON_PRIMARY].bind('v-expand', vExpandSwitch, 'active', Gio.SettingsBindFlags.DEFAULT);
@@ -700,7 +700,7 @@ class CornerPage extends Gtk.Box {
             wrap: true,
         });
         grid.attach(cmdLabel, 0, 1, 2, 1);
-        dialog.get_content_area()[append](grid);
+        dialog.get_content_area().append(grid);
         dialog._appChooser.connect('application-selected', (w, appInfo) => {
             cmdLabel.set_text(`App ID:  \t\t${appInfo.get_id()}\nCommand: \t${appInfo.get_commandline()}`);
         }
