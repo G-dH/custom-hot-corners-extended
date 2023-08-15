@@ -372,7 +372,7 @@ class WindowThumbnail extends St.BoxLayout {
         }
 
         if (!this._winPreview) {
-            this._winPreview = new AltTab.CyclerHighlight();
+            this._winPreview = new Utils.CyclerHighlight();
             global.window_group.add_actor(this._winPreview);
             [this._winPreview._xPointer, this._winPreview._yPointer] = global.get_pointer();
         }

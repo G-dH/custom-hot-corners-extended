@@ -19,6 +19,8 @@ import * as Utils from '../common/utils.js';
 export function init(extension) {
     _ = extension.gettext.bind(extension);
 
+    actionList = [];
+    excludedItems = [];
     const AatwsEnabled = Utils.extensionEnabled('advanced-alt-tab@G-dH');
     // for prefs only - extension detects, prefs reads key
     const AatwsDetected = Utils.isSupportedExtensionDetected('aatws');
