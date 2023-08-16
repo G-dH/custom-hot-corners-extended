@@ -69,6 +69,7 @@ Make sure you have installed packages providing following commands: `glib-compil
 
     git clone https://github.com/G-dH/custom-hot-corners-extended.git
     cd custom-hot-corners-extended
+    git checkout esm-modules
     make install
 
 ### Installation from AUR on Arch based distributions
