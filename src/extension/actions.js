@@ -738,7 +738,7 @@ var Actions = class {
     screensaver() {
         let session = Gio.DBus.session;
         session.call(
-            'org.gnome.Shell.ScreenShield',
+            shellVersion < 40 ? 'org.gnome.ScreenSaver' : 'org.gnome.Shell.ScreenShield',
             '/org/gnome/ScreenSaver',
             'org.gnome.ScreenSaver',
             'SetActive',
