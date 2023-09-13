@@ -1,0 +1,306 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: \n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2021-04-07 21:22+0200\n"
+"PO-Revision-Date: 2021-04-08 17:19+0200\n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Poedit 2.3\n"
+"Last-Translator: \n"
+"Plural-Forms: nplurals=3; plural=(n==1 ? 0 : n>=2 && n<=4 ? 1 : 2);\n"
+"Language: tr-TR\n"
+
+#: settings.js:37
+msgid "Hot Corner"
+msgstr "İşlevsel Köşe"
+
+#: settings.js:38
+msgid "Primary Button"
+msgstr "Sağ Tık"
+
+#: settings.js:39
+msgid "Secondary Button"
+msgstr "Sol Tık"
+
+#: settings.js:40
+msgid "Middle Button"
+msgstr "Fare Tekerleği"
+
+#: settings.js:41
+msgid "Scroll Up"
+msgstr "Teker Yukarı"
+
+#: settings.js:42
+msgid "Scroll Down"
+msgstr "Teker Aşşağı"
+
+#: extension.js:787
+msgid "Restarting Gnome Shell ..."
+msgstr "Gnome Shell Yeniden Başlat ..."
+
+#: extension.js:790
+msgid "Gnome Shell - Restart is unavailable in Wayland session"
+msgstr "Gnome Shell - Wayland'de yeniden başlatma kullanılamıyor"
+
+#: misc-settings-widget.ui.h:1
+msgid ""
+"Enable all corner triggers in fullscreen mode\n"
+"<small>(When off, each trigger can be set independently)</small>"
+msgstr ""
+"Tam ekran modunda tüm köşe tetikleyicilerini etkinleştirin\n"
+"<small>(Kapalıyken her tetikleyici bağımsız olarak ayarlanabilir)</small>"
+
+#: misc-settings-widget.ui.h:3
+msgid ""
+"Minimum delay between actions (ms)\n"
+"<small>(Prevents accidental double-action. Ignored by volume control)</small>"
+msgstr ""
+"Eylemler arasındaki minimum gecikme (ms)\n"
+"<small>(Yanlışlıkla çift eylemi önler. Ses seviyesi kontrolü tarafından yoksayıldı)</small>"
+
+#: misc-settings-widget.ui.h:5
+msgid "Show ripple animations"
+msgstr "Dalgalanma animasyonlarını göster"
+
+#: misc-settings-widget.ui.h:6
+msgid "        Skip minimized"
+msgstr "        Simge durumuna küçültülmüş atla"
+
+#: misc-settings-widget.ui.h:7
+msgid "        Wraparound"
+msgstr "        Etrafına sarmak"
+
+#: misc-settings-widget.ui.h:8
+msgid ""
+"Delay extension activation\n"
+"<small>(Try to avoid potential hot corners overrides from other extensions)</"
+"small>"
+msgstr ""
+"Uzatma aktivasyonunu geciktir\n"
+"<small>(Diğer uzantıların olası işlevsel köşeleri geçersiz kılmalarını engellemeye çalışın)</small>"
+
+#: misc-settings-widget.ui.h:10
+msgid ""
+"Make active corners / edges visible\n"
+"<small>(Pressure barriers are not included)</small>"
+msgstr ""
+"Etkin köşeleri/kenarları görünür hale getirin\n"
+"<small>(Basınç bariyerleri dahil değildir)</small>"
+
+#: misc-settings-widget.ui.h:12
+msgid ""
+"Use fallback hot corner triggers\n"
+"<small>(When pressure barriers don't work, on virtual systems for example)</"
+"small>"
+msgstr ""
+"Geri dönüş işlevsel köşe tetikleyicilerini kullanma\n"
+"<small>(Örneğin sanal sistemlerde basınç bariyerleri çalışmadığında)</small>"
+
+#: misc-settings-widget.ui.h:14
+msgid "<b>Window switcher:</b>"
+msgstr "<b>Přepínač oken:</b>"
+
+#: misc-settings-widget.ui.h:15
+msgid "<b>Workspace switcher:</b>"
+msgstr "<b>Çalışma alanı değiştirici:</b>"
+
+#: misc-settings-widget.ui.h:16
+msgid "        Ignore last (empty) workspace"
+msgstr "        Son (boş) çalışma alanını yoksay"
+
+#: misc-settings-widget.ui.h:17
+msgid "        Show workspace indicator while switching"
+msgstr "        Geçiş sırasında çalışma alanı göstergesini göster"
+
+#: prefs.js:166
+msgid "Top"
+msgstr "Üst"
+
+#: prefs.js:166
+msgid "Bottom"
+msgstr "Alt"
+
+#: prefs.js:166
+msgid "Left"
+msgstr "Sol"
+
+#: prefs.js:166
+msgid "Right"
+msgstr "Sağ"
+
+#: prefs.js:171
+msgid "Monitor"
+msgstr "Ekran"
+
+#: prefs.js:175
+msgid "Options"
+msgstr "Seçenek"
+
+#: prefs.js:334
+msgid "Choose Application"
+msgstr "Uygulama Seç"
+
+#: corner-widget.ui.h:1
+msgid "Horizonataly:"
+msgstr "Yatay olarak:"
+
+#: corner-widget.ui.h:2
+msgid "Verticaly:"
+msgstr "Dikey olarak:"
+
+#: corner-widget.ui.h:3
+msgid ""
+"Expand corner along edge (for clicks and scrolls only):\n"
+"<small>(For visualisation activate 'Make active corners / edges visible' "
+"option)</small>"
+msgstr ""
+"Köşeyi kenar boyunca genişlet (yalnızca tıklamalar ve kaydırmalar için):\n"
+"<small>(Görselleştirme için 'Etkin köşeleri/görünür kenarları seçeneğini etkinleştirin)</small>"
+
+#: corner-widget.ui.h:5
+msgid "Enable in fullscreen mode"
+msgstr "Tam ekran modunda etkinleştir"
+
+#: corner-widget.ui.h:6
+msgid "Barrier size"
+msgstr "Bariyer boyutu"
+
+#: corner-widget.ui.h:7
+msgid "Pressure Threshold"
+msgstr "Basınç Eşiği"
+
+#: corner-widget.ui.h:8
+msgid "-"
+msgstr ""
+
+#: corner-widget.ui.h:9
+msgid "Show Activities (Overview)"
+msgstr "Etkinlikleri Göster (Genel Bakış)"
+
+#: corner-widget.ui.h:10
+msgid "Show Applications"
+msgstr "Uygulamaları Göster"
+
+#: corner-widget.ui.h:11
+msgid "Show Desktop"
+msgstr "Masaüstünü göster"
+
+#: corner-widget.ui.h:12
+msgid "Run Command"
+msgstr "Komut Çalıştır"
+
+#: corner-widget.ui.h:13
+msgid "Previous Workspace"
+msgstr "Önceki Çalışma Alanı"
+
+#: corner-widget.ui.h:14
+msgid "Next Workspace"
+msgstr "Sonraki Çalışma Alanı"
+
+#: corner-widget.ui.h:15
+msgid "Recent Workspace"
+msgstr "Son Çalışma Alanı"
+
+#: corner-widget.ui.h:16
+msgid "Move to Workspace #"
+msgstr "Çalışma Alanı # Git"
+
+#: corner-widget.ui.h:17
+msgid "Recent Window (Alt+Tab)"
+msgstr "Son Pencere (Alt+Tab)"
+
+#: corner-widget.ui.h:18
+msgid "Previous Window (current WS & monitor)"
+msgstr "Önceki Pencere (mevcut WS ve monitör)"
+
+#: corner-widget.ui.h:19
+msgid "Next Window (current WS & monitor)"
+msgstr "Sonraki Pencere (mevcut WS ve monitör)"
+
+#: corner-widget.ui.h:20
+msgid "Previous Window (current WS)"
+msgstr "Önceki Pencere (mevcut WS)"
+
+#: corner-widget.ui.h:21
+msgid "Next Window (current WS)"
+msgstr "Sonraki Pencere (mevcut WS)"
+
+#: corner-widget.ui.h:22
+msgid "Previous Window (all)"
+msgstr "Önceki Pencere (tümü)"
+
+#: corner-widget.ui.h:23
+msgid "Next Window (all)"
+msgstr "Sonraki Pencere (tümü)"
+
+#: corner-widget.ui.h:24
+msgid "Close Active Window"
+msgstr "Aktif Pencereyi Kapat"
+
+#: corner-widget.ui.h:25
+msgid "Toggle Maximize Active Window"
+msgstr "Etkin Pencereyi Büyüt'ü Aç / Kapat"
+
+#: corner-widget.ui.h:26
+msgid "Minimize Active Window"
+msgstr "Etkin Pencereyi Küçült"
+
+#: corner-widget.ui.h:27
+msgid "Black Screen"
+msgstr "Siyah Ekran"
+
+#: corner-widget.ui.h:28
+msgid "Lock Screen"
+msgstr "Kilit Ekranı"
+
+#: corner-widget.ui.h:29
+msgid "Suspend to RAM"
+msgstr "RAM'e askıya al"
+
+#: corner-widget.ui.h:30
+msgid "Power Off Dialog"
+msgstr "Kapatma İletişim Kutusu"
+
+#: corner-widget.ui.h:31
+msgid "Log Out Dialog"
+msgstr "Oturumu Kapat İletişim Kutusu"
+
+#: corner-widget.ui.h:32
+msgid "Switch User (if exists)"
+msgstr "Kullanıcıyı Değiştir (varsa)"
+
+#: corner-widget.ui.h:33
+msgid "Volume Up"
+msgstr "Sesi Aç"
+
+#: corner-widget.ui.h:34
+msgid "Volume Down"
+msgstr "Sesi Kıs"
+
+#: corner-widget.ui.h:35
+msgid "Mute"
+msgstr "Sesi Kapat"
+
+#: corner-widget.ui.h:36
+msgid "Invert Window (True Color Invert)"
+msgstr "Pencereyi Tersine Çevir (Gerçek Rengi Tersine Çevir)"
+
+#: corner-widget.ui.h:37
+msgid "Looking Glass (GS debugger)"
+msgstr ""
+
+#: corner-widget.ui.h:38
+msgid "Restart Gnome Shell (X11 only)"
+msgstr "Gnome Shell'i yeniden başlatın (yalnızca X11)"
+
+#: corner-widget.ui.h:39
+msgid "Open Preferences"
+msgstr "Tercihleri ​​Aç"
