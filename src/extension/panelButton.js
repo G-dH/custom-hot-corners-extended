@@ -54,7 +54,7 @@ export const MenuButton = GObject.registerClass({ GTypeName: 'CHCEMenuButton' },
         shiftItem.connect('activate', this._toggleRequireShift.bind(this));
         this._menuItems.push(shiftItem);
 
-        const resetItem = new PopupMenu.PopupMenuItem(_('Reset all triggers'), false);
+        const resetItem = new PopupMenu.PopupMenuItem(_('Update all triggers'), false);
         resetItem.connect('activate', this._reset.bind(this));
         this._menuItems.push(resetItem);
 
@@ -65,8 +65,8 @@ export const MenuButton = GObject.registerClass({ GTypeName: 'CHCEMenuButton' },
 
         this.menu.addMenuItem(disableItem);
         this.menu.addMenuItem(shiftItem);
-        this.menu.addMenuItem(resetItem);
         this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
+        this.menu.addMenuItem(resetItem);
         this.menu.addMenuItem(openPrefs);
 
         this._disableItem = disableItem;
@@ -111,8 +111,8 @@ export const MenuButton = GObject.registerClass({ GTypeName: 'CHCEMenuButton' },
     _update() {
         this._hotCornersRequireShift = this._mscOptions.get('hotCornersRequireShift', true);
         this._hotCornersEnabled = this._mscOptions.get('hotCornersEnabled', true);
-        this._disableItem.setOrnament(!this._hotCornersEnabled);
-        this._shiftItem.setOrnament(this._hotCornersRequireShift);
+        this._disableItem.setOrnament(this._hotCornersEnabled ? PopupMenu.Ornament.NONE : PopupMenu.Ornament.CHECK);
+        this._shiftItem.setOrnament(this._hotCornersRequireShift ? PopupMenu.Ornament.CHECK : PopupMenu.Ornament.NONE);
         this._updatePanelIcon();
     }
 
