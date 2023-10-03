@@ -12,6 +12,7 @@ import GLib from 'gi://GLib';
 
 import * as Main from 'resource:///org/gnome/shell/ui/main.js';
 import * as AltTab from 'resource:///org/gnome/shell/ui/altTab.js';
+import * as Layout from 'resource:///org/gnome/shell/ui/layout.js';
 
 import { Extension } from 'resource:///org/gnome/shell/extensions/extension.js';
 
@@ -59,42 +60,41 @@ export default class CustomHotCornersExtended extends Extension {
     }
 
     enable() {
-        // delayed start to avoid initial hot corners overrides from other extensions
-        // and also to not slowing down the screen unlock animation - the killer is registration of keyboard shortcuts
-        // this._originalHotCornerEnabled = Main.layoutManager._interfaceSettings.get_boolean('enable-hot-corners');
-        let enableDelay;
-        if (this.actionTrigger) {
-            enableDelay = 1;
-            this.actionTrigger.actions.resume();
-        } else {
-            enableDelay = 4;
-        }
+        this._origUpdateHotCorners = Layout.LayoutManager.prototype._updateHotCorners;
+        this._extensionEnabled = true;
+        this._mscOptions = new Settings.MscOptions();
 
+        if (!this.actionTrigger)
+            this.actionTrigger = new ActionTrigger.ActionTrigger(this._mscOptions);
+        this._updateMscOptions(null, true);
+        this._replace_updateHotCornersFunc();
+        this._updateWatch();
+        this._updateSupportedExtensionsAvailability();
+        this._mscOptions.set('showOsdMonitorIndexes', false);
+        this._mscOptions.connect('changed', (settings, key) => this._updateMscOptions(key));
+
+        // this._originalHotCornerEnabled = Main.layoutManager._interfaceSettings.get_boolean('enable-hot-corners');
+
+        let enableDelay;
+        if (this.actionTrigger)
+            enableDelay = 1;
+        else
+            enableDelay = 4;
+
+        // delay shortcuts binding that slows down unlock animation and rebasing extensions
+        // also reset hot corners to be sure they weren't overridden by another extension
         this._delayId = GLib.timeout_add_seconds(
             GLib.PRIORITY_DEFAULT,
             enableDelay,
             () => {
-                this._extensionEnabled = true;
-                this._mscOptions = new Settings.MscOptions();
-                if (!this.actionTrigger)
-                    this.actionTrigger = new ActionTrigger.ActionTrigger(this._mscOptions);
-                else
-                    this.actionTrigger._bindShortcuts();
-
-
-                this._updateMscOptions(null, true);
+                this.actionTrigger._bindShortcuts();
                 this._replace_updateHotCornersFunc();
-                this._updateWatch();
-                this._updateSupportedExtensionsAvailability();
-                this._mscOptions.set('showOsdMonitorIndexes', false);
-                this._mscOptions.connect('changed', (settings, key) => this._updateMscOptions(key));
-
-                log(`${this.metadata.name}: enabled`);
-
                 this._delayId = 0;
                 return GLib.SOURCE_REMOVE;
             }
         );
+
+        log(`${this.metadata.name}: enabled`);
     }
 
     disable() {
