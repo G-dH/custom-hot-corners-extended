@@ -55,7 +55,7 @@ const nextWS = horizontal ? _('Right') : _('Down');
 const prevIcon = horizontal ? 'go-previous-symbolic' : 'go-up-symbolic';
 const nextIcon = horizontal ? 'go-next-symbolic' : 'go-down-symbolic';
 
-//      [0.root/submenu, 1.action key,      2.action name,                       3.accelerator allowed,    4.icon name                            5.action needs window
+//  [0.root/submenu, 1.action key,        2.action name,                       3.accelerator allowed,    4.icon name                    5.action needs window
 var actionList = [
     [0,    'disabled',                    _('-'),                                       false,  '',                                           false],
     [null, 'core-submenu',                _('Core Actions'),                             true,  'video-display-symbolic',                     false],
