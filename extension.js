@@ -12,7 +12,6 @@ import GLib from 'gi://GLib';
 
 import * as Main from 'resource:///org/gnome/shell/ui/main.js';
 import * as AltTab from 'resource:///org/gnome/shell/ui/altTab.js';
-import * as Layout from 'resource:///org/gnome/shell/ui/layout.js';
 
 import { Extension } from 'resource:///org/gnome/shell/extensions/extension.js';
 
@@ -29,11 +28,9 @@ import * as Utils from './src/common/utils.js';
 const listTriggers           = Settings.listTriggers();
 
 let chce;
-let _origUpdateHotCorners;
 
 export default class CustomHotCornersExtended extends Extension {
-    constructor(metadata) {
-        super(metadata);
+    _init() {
         chce                       = this;
 
         Utils.init(this);
@@ -60,7 +57,8 @@ export default class CustomHotCornersExtended extends Extension {
     }
 
     enable() {
-        this._origUpdateHotCorners = Layout.LayoutManager.prototype._updateHotCorners;
+        this._init();
+        this._origUpdateHotCorners = Main.layoutManager._updateHotCorners;
         this._extensionEnabled = true;
         this._mscOptions = new Settings.MscOptions();
 
@@ -126,7 +124,8 @@ export default class CustomHotCornersExtended extends Extension {
         // restore original hot corners
         // some extensions also modify Main.layoutManager._updateHotCorners._updateHotCorners()
         //   and so it'll be more secure to take the function from the source (which could be altered too but less likely)
-        Main.layoutManager._updateHotCorners = _origUpdateHotCorners;
+
+        Main.layoutManager._updateHotCorners = this._origUpdateHotCorners;
         Main.layoutManager._updateHotCorners();
 
         this._myCorners = [null, null];
@@ -142,7 +141,8 @@ export default class CustomHotCornersExtended extends Extension {
         Actions.cleanGlobals();
         PanelButton.cleanGlobals();
         Settings.cleanGlobals();
-        ActionList.clean();
+        ActionList.cleanGlobals();
+
         log(`${this.metadata.name}: ${fullDisable ? 'disabled' : 'suspended'}`);
     }
 
