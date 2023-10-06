@@ -46,7 +46,7 @@ var CustomHotCornersExtended = class CustomHotCornersExtended {
         this._actionTimeoutId      = null;
         this._extensionEnabled     = false;
         this._watch                = {};
-        this._origUpdateHotCorners = Layout.LayoutManager.prototype._updateHotCorners;
+        this._origUpdateHotCorners = Main.layoutManager._updateHotCorners;
     }
 
     enable() {
@@ -55,6 +55,8 @@ var CustomHotCornersExtended = class CustomHotCornersExtended {
 
         if (!this.actionTrigger)
             this.actionTrigger = new ActionTrigger.ActionTrigger(this._mscOptions);
+        else
+            this.actionTrigger.actions.resume();
         this._updateMscOptions(null, true);
         this._replace_updateHotCornersFunc();
         this._updateWatch();
@@ -101,11 +103,10 @@ var CustomHotCornersExtended = class CustomHotCornersExtended {
         }
 
         // effects and thumbnails should survive screen lock
-        let fullDisable = !Main.sessionMode.isLocked;
+        let fullDisable = !(Main.sessionMode.isLocked && Utils.extensionEnabled());
         if (fullDisable) {
             if (this.actionTrigger)
                 this.actionTrigger.clean(true);
-
             this.actionTrigger = null;
         } else if (this.actionTrigger) {
             this.actionTrigger.clean(false);
