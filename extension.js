@@ -110,21 +110,18 @@ export default class CustomHotCornersExtended extends Extension {
         }
 
         // effects and thumbnails should survive screen lock
-        let fullDisable = !Main.sessionMode.isLocked;
+        let fullDisable = !(Main.sessionMode.isLocked && Utils.extensionEnabled());
         if (fullDisable) {
             if (this.actionTrigger)
                 this.actionTrigger.clean(true);
-
             this.actionTrigger = null;
         } else if (this.actionTrigger) {
             this.actionTrigger.clean(false);
         }
 
         this._extensionEnabled = false;
-        // restore original hot corners
-        // some extensions also modify Main.layoutManager._updateHotCorners._updateHotCorners()
-        //   and so it'll be more secure to take the function from the source (which could be altered too but less likely)
 
+        // restore original hot corners
         Main.layoutManager._updateHotCorners = this._origUpdateHotCorners;
         Main.layoutManager._updateHotCorners();
 
