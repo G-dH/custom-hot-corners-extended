@@ -43,7 +43,6 @@ var ActionTrigger = class ActionTrigger {
         }
         this._shortcutsBindingIds = [];
         this._gsettingsKBid = 0;
-        this._bindShortcuts();
     }
 
     clean(full = true) {

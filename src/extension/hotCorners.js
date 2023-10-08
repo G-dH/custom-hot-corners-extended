@@ -3,7 +3,7 @@
  * Hot Corners
  *
  * @author     GdH <G-dH@github.com>
- * @copyright  2021-2022
+ * @copyright  2021-2023
  * @license    GPL-3.0
  */
 
@@ -23,7 +23,6 @@ const PanelButton            = Me.imports.src.extension.panelButton;
 
 const listTriggers           = Settings.listTriggers();
 const Triggers               = Settings.Triggers;
-const _origUpdateHotCorners  = imports.ui.layout.LayoutManager.prototype._updateHotCorners;
 const shellVersion           = Settings.shellVersion;
 
 let ACTION_TIMEOUT = 100;
@@ -47,45 +46,46 @@ var CustomHotCornersExtended = class CustomHotCornersExtended {
         this._actionTimeoutId      = null;
         this._extensionEnabled     = false;
         this._watch                = {};
+        this._origUpdateHotCorners = Main.layoutManager._updateHotCorners;
     }
 
     enable() {
-        // delayed start to avoid initial hot corners overrides from other extensions
-        // and also to not slowing down the screen unlock animation - the killer is registration of keyboard shortcuts
-        // this._originalHotCornerEnabled = Main.layoutManager._interfaceSettings.get_boolean('enable-hot-corners');
-        let enableDelay;
-        if (this.actionTrigger) {
-            enableDelay = 1;
-            this.actionTrigger.actions.resume();
-        } else {
-            enableDelay = 4;
-        }
+        this._extensionEnabled = true;
+        this._mscOptions = new Settings.MscOptions();
 
+        if (!this.actionTrigger)
+            this.actionTrigger = new ActionTrigger.ActionTrigger(this._mscOptions);
+        else
+            this.actionTrigger.actions.resume();
+        this._updateMscOptions(null, true);
+        this._replace_updateHotCornersFunc();
+        this._updateWatch();
+        this._updateSupportedExtensionsAvailability();
+        this._mscOptions.set('showOsdMonitorIndexes', false);
+        this._mscOptions.connect('changed', (settings, key) => this._updateMscOptions(key));
+
+        // this._originalHotCornerEnabled = Main.layoutManager._interfaceSettings.get_boolean('enable-hot-corners');
+
+        let enableDelay;
+        if (this.actionTrigger)
+            enableDelay = 1;
+        else
+            enableDelay = 4;
+
+        // delay shortcuts binding that slows down unlock animation and rebasing extensions
+        // also reset hot corners to be sure they weren't overridden by another extension
         this._delayId = GLib.timeout_add_seconds(
             GLib.PRIORITY_DEFAULT,
             enableDelay,
             () => {
-                this._extensionEnabled = true;
-                this._mscOptions = new Settings.MscOptions();
-                if (!this.actionTrigger)
-                    this.actionTrigger = new ActionTrigger.ActionTrigger(this._mscOptions);
-                else
-                    this.actionTrigger._bindShortcuts();
-
-
-                this._updateMscOptions(null, true);
+                this.actionTrigger._bindShortcuts();
                 this._replace_updateHotCornersFunc();
-                this._updateWatch();
-                this._updateSupportedExtensionsAvailability();
-                this._mscOptions.set('showOsdMonitorIndexes', false);
-                this._mscOptions.connect('changed', (settings, key) => this._updateMscOptions(key));
-
-                log(`${Me.metadata.name}: enabled`);
-
                 this._delayId = 0;
                 return GLib.SOURCE_REMOVE;
             }
         );
+
+        log(`${Me.metadata.name}: enabled`);
     }
 
     disable() {
@@ -103,21 +103,19 @@ var CustomHotCornersExtended = class CustomHotCornersExtended {
         }
 
         // effects and thumbnails should survive screen lock
-        let fullDisable = !Main.sessionMode.isLocked;
+        let fullDisable = !(Main.sessionMode.isLocked && Utils.extensionEnabled());
         if (fullDisable) {
             if (this.actionTrigger)
                 this.actionTrigger.clean(true);
-
             this.actionTrigger = null;
         } else if (this.actionTrigger) {
             this.actionTrigger.clean(false);
         }
 
         this._extensionEnabled = false;
+
         // restore original hot corners
-        // some extensions also modify Main.layoutManager._updateHotCorners._updateHotCorners()
-        //   and so it'll be more secure to take the function from the source (which could be altered too but less likely)
-        Main.layoutManager._updateHotCorners = _origUpdateHotCorners;
+        Main.layoutManager._updateHotCorners = this._origUpdateHotCorners;
         Main.layoutManager._updateHotCorners();
 
         this._myCorners = [null, null];
