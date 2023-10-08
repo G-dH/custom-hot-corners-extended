@@ -8,7 +8,7 @@ This extension is based on the original `Custom Hot Corners` extension, but not 
 
 
 ## Features:
-- Gnome 3.36 - 43 compatibility
+- Gnome 3.36 - 45 compatibility
 - Hot corners with adjustable barrier sizes, both vertical and horizontal independently and usable as hot edges
 - Mouse buttons and a scroll wheel can be used as action triggers
 - Each trigger can be set to work only if *Ctrl* key is pressed
@@ -66,9 +66,17 @@ If you want to test the latest version from the Github repository (which is usua
 
 Make sure you have installed packages providing following commands: `glib-compile-resources`, `glib-compile-schemas`, `git`
 
+##### GMONE 3.36 - 44
 
     git clone https://github.com/G-dH/custom-hot-corners-extended.git
     cd custom-hot-corners-extended
+    make install
+
+##### GNOME 45
+
+    git clone https://github.com/G-dH/custom-hot-corners-extended.git
+    cd custom-hot-corners-extended
+    git checkout esm-modules
     make install
 
 ### Installation from AUR on Arch based distributions
@@ -89,7 +97,7 @@ After installation you need to enable the extension. Only direct installation fr
 
 ## Contribution
 
-Contributions are welcome and I will try my best to answer quickly to all suggestions. I'd really appreciate corrections of my bad english.
+Contributions are welcome and I will try my best to answer quickly to all suggestions. I'd really appreciate corrections to my English.
 
 ### Translations
 
