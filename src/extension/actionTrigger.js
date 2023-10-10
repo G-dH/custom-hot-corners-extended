@@ -650,10 +650,6 @@ export const ActionTrigger = class ActionTrigger {
         this.actions.openPanelDateMenu();
     }
 
-    _openPanelAppMenu() {
-        this.actions.openPanelAppMenu();
-    }
-
     _toggleTheme() {
         this.actions.toggleTheme();
     }
