@@ -201,7 +201,7 @@ var actionList = [
     [1,    'night-light-toggle',          _('Toggle Night Light'),                       true,  'night-light-symbolic',                       false],
     [1,    'toggle-theme',                _('Toggle Dark Gtk Theme'),                    true,  'view-reveal-symbolic',                       false],
     [1,    'hide-panel',                  _('Hide/Show Main Panel'),                     true,  'focus-top-bar-symbolic',                     false],
-    [1,    'open-panel-system-menu',      _('Open Panel System Menu'),                   true,  'open-menu-symbolic',                         false],
+    [1,    'open-panel-system-menu',      _('Open Panel Quick Settings Menu'),           true,  'open-menu-symbolic',                         false],
     [1,    'open-panel-date-menu',        _('Open Panel Date Menu'),                     true,  'open-menu-symbolic',                         false],
     [1,    'open-panel-app-menu',         _('Open Panel App Menu'),                      true,  'open-menu-symbolic',                         false],
 

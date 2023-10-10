@@ -1061,18 +1061,36 @@ var Actions = class {
     }
 
     openPanelSystemMenu() {
-        if (Main.panel.statusArea.aggregateMenu)
-            Main.panel.statusArea.aggregateMenu.menu.toggle();
-        if (Main.panel.statusArea.quickSettings)
+        // Move the dummy source widget to the current pinter position
+        Main.layoutManager.setDummyCursorGeometry(global.get_pointer()[0], global.get_pointer()[1], 0, 0);
+        if (Main.panel.statusArea.quickSettings) {
+            Main.panel.statusArea.quickSettings.menu._arrowAlignment = 0.5;
             Main.panel.statusArea.quickSettings.menu.toggle();
+            // change menu position by replacing the source actor with dummy widget
+            Main.panel.statusArea.quickSettings.menu._boxPointer._sourceActor = Main.layoutManager.dummyCursor;
+        }
+        if (Main.panel.statusArea.aggregateMenu) {
+            Main.panel.statusArea.aggregateMenu.menu._arrowAlignment = 0.5;
+            Main.panel.statusArea.aggregateMenu.menu.toggle();
+            // change menu position by replacing the source actor with dummy widget
+            Main.panel.statusArea.aggregateMenu.menu._boxPointer._sourceActor = Main.layoutManager.dummyCursor;
+        }
     }
 
     openPanelDateMenu() {
+        // Move the dummy source widget to the current pinter position
+        Main.layoutManager.setDummyCursorGeometry(global.get_pointer()[0], global.get_pointer()[1], 0, 0);
         Main.panel.statusArea.dateMenu.menu.toggle();
+        // change menu position by replacing the source actor with dummy widget
+        Main.panel.statusArea.dateMenu.menu._boxPointer._sourceActor = Main.layoutManager.dummyCursor;
     }
 
     openPanelAppMenu() {
+        // Move the dummy source widget to the current pinter position
+        Main.layoutManager.setDummyCursorGeometry(global.get_pointer()[0], global.get_pointer()[1], 0, 0);
         Main.panel.statusArea.appMenu.menu.toggle();
+        // change menu position by replacing the source actor with dummy widget
+        Main.panel.statusArea.appMenu.menu._boxPointer._sourceActor = Main.layoutManager.dummyCursor;
     }
 
     toggleTheme() {
