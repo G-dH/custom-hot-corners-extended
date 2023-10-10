@@ -857,6 +857,11 @@ var Actions = class {
         app.open_new_window(global.get_current_time());
     }
 
+    _shiftPressed() {
+        const mods = global.get_pointer()[2];
+        return (mods & Clutter.ModifierType.SHIFT_MASK) !== 0;
+    }
+
     fullscreenWinOnEmptyWs(metaWindow = null) {
         let win;
         if (!metaWindow)
@@ -866,9 +871,9 @@ var Actions = class {
         if (!win)
             return;
 
-        // if property fullscreen === true, win was already maximized on new ws
         if (win.fullscreen) {
             win.unmake_fullscreen();
+            // move window to its original ws if any
             if (win._originalWS) {
                 for (let i = 0; i < global.workspaceManager.n_workspaces; i++) {
                     let w = global.workspaceManager.get_workspace_by_index(i);
@@ -878,6 +883,7 @@ var Actions = class {
                         break;
                     }
                 }
+                // show workspace switcher popup to show the user which workspace is now active
                 this._showWsSwitcherPopup(0, win._originalWS.index());
                 win._originalWS = null;
             }
@@ -888,15 +894,26 @@ var Actions = class {
                     // w.get_window_type() === Meta.WindowType.NORMAL &&
                     !w.is_on_all_workspaces()
             ).length;
-            if (nWindows > 1) {
-                win._originalWS = ws;
-                let newWsIndex = ws.index() + 1;
-                Main.wm.insertWorkspace(newWsIndex);
-                // let newWs = global.workspace_manager.get_workspace_by_index(newWsIndex);
-                // win.change_workspace(newWs);
-                this.moveWinToAdjacentWs(1, [win]);
+
+            if (nWindows)
                 win.make_fullscreen();
-                win.activate(global.get_current_time());
+            // only move window to the new workspace if it's not the only window on the current workspace
+            if (nWindows > 1) {
+                const newWsIndex = ws.index() + 1;
+                Main.wm.insertWorkspace(newWsIndex);
+                const newWs = global.workspaceManager.get_workspace_by_index(newWsIndex);
+                // this.moveWinToAdjacentWs(1, [win]);
+                // changing the window workspace first and then move to the workspace makes the transition visually better
+                win.change_workspace(newWs);
+
+                // Don't switch to the new workspace if Shift key is held down
+                if (!this._shiftPressed()) {
+                    // activate the window to switch to the new workspace
+                    win.activate(global.get_current_time());
+                    // show workspace switcher popup to show the user which workspace is now active
+                    this._showWsSwitcherPopup(0, newWsIndex);
+                }
+                win._originalWS = ws;
             }
         }
     }
