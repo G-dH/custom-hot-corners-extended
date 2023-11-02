@@ -1,4 +1,4 @@
-# Custom Hot Corners - Extended - ESM
+# Custom Hot Corners - Extended
 
 A GNOME Shell Extension which allows you to control and navigate Gnome Shell environment through the corners and edges of your monitors. But not just that, it adds many unique actions with keyboard shortcuts too.
 
@@ -14,9 +14,9 @@ This extension is based on the original `Custom Hot Corners` extension, but not 
 - Each trigger can be set to work only if *Ctrl* key is pressed
 - Each direction of a scroll wheel rotation is configurable independently
 - Each trigger can activate one of many actions including command execution, workspace and window navigation, window control, power manager actions, sound volume control, MPRIS player control, color filters (for windows and global), accessibility features and more.
-- Preferences window provides an app chooser dialog for "Run Preset Command/Activate App ..." action configuration. You can choose and modify exec command of chosen application, or app ID which will work the same way as if click on the app icon in Dash or App Grid.
+- Preferences window provides an app chooser dialog for "Run Preset Command/Activate App ..." action configuration. You can choose and modify exec command of chosen application, or app ID which will work the same as when you click an app icon in the Dash or App Grid.
 - Each corner's area reactive to mouse clicks and scrolls can be extended both horizontally and/or vertically to cover most length of the monitor's edges. If the adjacent corner is not set to expand in related direction, the corner can be expanded to 7/8 of the monitor's width/height. If two adjacent corners are set to expand to each other's direction, then it is 1/2 of the length for each. You can see the result of expansion settings using the *Make active corners/edges visible* option.
-- Fallback hot corner triggers as option - can be used on virtualized systems with mouse pointer integration where pressure barriers are being ignored.
+- Fallback hot corner triggers as option - can be used on virtualized systems with mouse pointer integration where pressure barriers do not work.
 - Multi-monitor support. If you open preferences window, each monitor shows its index in the top left corner.
 - `Monitor 1` settings are always applied on the primary monitor, the rest keep the order as set by GNOME.
 - You can set global keyboard shortcuts for any actions on the menu, except for those available natively in GNOME Settings.
@@ -30,13 +30,14 @@ This extension is based on the original `Custom Hot Corners` extension, but not 
 
 Window thumbnails are scaled-down window clones that can be used to monitor windows not currently visible on the screen. Default position for the thumbnail is bottom right corner of the current monitor. You can create as many clones as you want and place them anywhere on the screen. Each thumbnail can be independently resized, you can adjust its opacity, even change its source window. When the thumbnail's source window close, thumbnail is removed too.
 
-    Double click          - activate source window
-    Primary cLick         - toggle scroll wheel function (resize / source)
-    Scroll wheel          - resize or switch source window
-    Ctrl + Scroll wheel   - switch source window or resize
-    Secondary click       - show full-size window preview and toggle sowing preview on mouse hover
-    ~~Middle click          - Toggle icon view instead of the window thumbnail~~ This feature was removed for now because of complications
-    Shift + Scroll wheel  - change thumbnail opacity
+| Control | Action |
+| ------- | ------ |
+| Double click          | activate source window |
+| Primary cLick         | toggle scroll wheel function (resize / source) |
+| Scroll wheel          | resize or switch source window |
+| Ctrl + Scroll wheel   | switch source window or resize |
+| Secondary click       | show full-size window preview and toggle sowing preview on mouse hover |
+| Shift + Scroll wheel  | change thumbnail opacity |
 
 
 ![Extension configuration window](screenshot.png)
@@ -66,10 +67,17 @@ If you want to test the latest version from the Github repository (which is usua
 
 Make sure you have installed packages providing following commands: `glib-compile-resources`, `glib-compile-schemas`, `git`
 
+##### GNOME 45
 
     git clone https://github.com/G-dH/custom-hot-corners-extended.git
     cd custom-hot-corners-extended
-    git checkout esm-modules
+    make install
+
+##### GMONE 3.36 - 44
+
+    git clone https://github.com/G-dH/custom-hot-corners-extended.git
+    cd custom-hot-corners-extended
+    git checkout gnome-3.36-44
     make install
 
 ### Installation from AUR on Arch based distributions
@@ -90,7 +98,7 @@ After installation you need to enable the extension. Only direct installation fr
 
 ## Contribution
 
-Contributions are welcome and I will try my best to answer quickly to all suggestions. I'd really appreciate corrections of my bad english.
+Contributions are welcome and I will try my best to answer quickly to all suggestions.
 
 ### Translations
 
