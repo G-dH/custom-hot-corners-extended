@@ -71,13 +71,13 @@ Make sure you have installed packages providing following commands: `glib-compil
 
     git clone https://github.com/G-dH/custom-hot-corners-extended.git
     cd custom-hot-corners-extended
+    git checkout gnome-3.36-44
     make install
 
 ##### GNOME 45
 
     git clone https://github.com/G-dH/custom-hot-corners-extended.git
     cd custom-hot-corners-extended
-    git checkout esm-modules
     make install
 
 ### Installation from AUR on Arch based distributions
@@ -98,7 +98,7 @@ After installation you need to enable the extension. Only direct installation fr
 
 ## Contribution
 
-Contributions are welcome and I will try my best to answer quickly to all suggestions. I'd really appreciate corrections to my English.
+Contributions are welcome and I will try my best to answer quickly to all suggestions.
 
 ### Translations
 
