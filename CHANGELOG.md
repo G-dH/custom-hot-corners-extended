@@ -1,4 +1,15 @@
 ## Changelog:
+### v29 (29.44, 29.45) (2023-11-03)
+**Added:**
+- GNOME 45 support - 2 versions of CHC-E are available, 29.44 for GNOME 3.36 - 44 and 29.45 for GNOME 45.
+- `Toggle Overview - Current App Windows` action allows to open the overview only for the windows of the currently active application
+
+**Fixed:**
+- Panel menu position if panel is hidden
+- `Fullscreen window on New WS` action ignores single window
+- `Activate ScreenSaver` action doesn't work on GS 3.36
+
+
 ### v28
 **Fixed:**
 Compatibility with GNOME 3.xx
