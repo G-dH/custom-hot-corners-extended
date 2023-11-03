@@ -22,7 +22,6 @@ import * as Settings from '../common/settings.js';
 const listTriggers           = Settings.listTriggers();
 const Triggers               = Settings.Triggers;
 
-let ACTION_TIMEOUT = 100;
 const HOT_CORNER_PRESSURE_TIMEOUT = 1000; // ms
 
 let _chce;
@@ -458,7 +457,7 @@ class CustomHotCorner extends Layout.HotCorner {
     }
 
     _actionTimeoutActive() {
-        if (Date.now() - this._lastActionTime > ACTION_TIMEOUT) {
+        if (Date.now() - this._lastActionTime > this._mscOptions.get('actionEventDelay')) {
             this._lastActionTime = Date.now();
             return false;
         }
