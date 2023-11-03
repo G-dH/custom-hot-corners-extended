@@ -31,7 +31,7 @@ let chce;
 
 export default class CustomHotCornersExtended extends Extension {
     _init() {
-        chce                       = this;
+        chce = this;
 
         Utils.init(this);
         ActionList.init(this);
@@ -41,7 +41,6 @@ export default class CustomHotCornersExtended extends Extension {
         PanelButton.init(this);
         Settings.init(this);
 
-        // this._originalHotCornerEnabled;
         this._mscOptions           = null;
         this.CORNERS_VISIBLE       = false;
         this.RIPPLE_ANIMATION      = true;
@@ -79,8 +78,11 @@ export default class CustomHotCornersExtended extends Extension {
         else
             enableDelay = 4;
 
-        // delay shortcuts binding that slows down unlock animation and rebasing extensions
+        // delay binding shortcuts that slows down the unlock animation and rebasing extensions
         // also reset hot corners to be sure they weren't overridden by another extension
+        if (this._delayId)
+            GLib.source_remove(this._delayId);
+
         this._delayId = GLib.timeout_add_seconds(
             GLib.PRIORITY_DEFAULT,
             enableDelay,
@@ -92,7 +94,7 @@ export default class CustomHotCornersExtended extends Extension {
             }
         );
 
-        log(`${this.metadata.name}: enabled`);
+        console.log(`${this.metadata.name}: enabled`);
     }
 
     disable() {
@@ -140,7 +142,7 @@ export default class CustomHotCornersExtended extends Extension {
         Settings.cleanGlobals();
         ActionList.cleanGlobals();
 
-        log(`${this.metadata.name}: ${fullDisable ? 'disabled' : 'suspended'}`);
+        console.log(`${this.metadata.name}: ${fullDisable ? 'disabled' : 'suspended'}`);
     }
 
     _replace_updateHotCornersFunc() {
@@ -189,7 +191,6 @@ export default class CustomHotCornersExtended extends Extension {
         actions.WIN_WRAPAROUND = this._mscOptions.get('winSwitchWrap');
         actions.WIN_SKIP_MINIMIZED  = this._mscOptions.get('winSkipMinimized');
         actions.WIN_STABLE_SEQUENCE = this._mscOptions.get('winStableSequence');
-        // ACTION_TIMEOUT = this._mscOptions.get('actionEventDelay');
         this.RIPPLE_ANIMATION  = this._mscOptions.get('rippleAnimation');
 
         if (this.CORNERS_VISIBLE !== this._mscOptions.get('cornersVisible')) {
