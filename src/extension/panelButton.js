@@ -24,8 +24,8 @@ let _;
 let Me;
 
 export function init(extension) {
-    _ = extension.gettext.bind(extension);
     Me = extension;
+    _ = extension.gettext.bind(Me);
 }
 
 export function cleanGlobals() {

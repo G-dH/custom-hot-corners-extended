@@ -222,72 +222,72 @@ export const Actions = class {
 
     _getShellSettings() {
         if (!this._shellSettings) {
-            this._shellSettings = Me.getSettings(
-                'org.gnome.shell'
-            );
+            this._shellSettings = new Gio.Settings({
+                schema_id: 'org.gnome.shell',
+            });
         }
         return this._shellSettings;
     }
 
     _getMutterSettings() {
         if (!this._mutterSettings) {
-            this._mutterSettings = Me.getSettings(
-                'org.gnome.mutter'
-            );
+            this._mutterSettings = new Gio.Settings({
+                schema_id: 'org.gnome.mutter',
+            });
         }
         return this._mutterSettings;
     }
 
     _getA11yAppSettings() {
         if (!this._a11yAppsSettings) {
-            this._a11yAppsSettings = Me.getSettings(
-                'org.gnome.desktop.a11y.applications'
-            );
+            this._a11yAppsSettings = new Gio.Settings({
+                schema_id: 'org.gnome.desktop.a11y.applications',
+            });
         }
         return this._a11yAppsSettings;
     }
 
     _getA11yMagnifierSettings() {
         if (!this._a11yMagnifierSettings) {
-            this._a11yMagnifierSettings = Me.getSettings(
-                'org.gnome.desktop.a11y.magnifier'
-            );
+            this._a11yMagnifierSettings = new Gio.Settings({
+                schema_id: 'org.gnome.desktop.a11y.magnifier',
+            });
         }
         return this._a11yMagnifierSettings;
     }
 
     _getInterfaceSettings() {
         if (!this._interfaceSettings) {
-            this._interfaceSettings = Me.getSettings(
-                'org.gnome.desktop.interface'
-            );
+            this._interfaceSettings = new Gio.Settings({
+                schema_id: 'org.gnome.desktop.interface',
+            });
         }
         return this._interfaceSettings;
     }
 
     _getColorSettings() {
         if (!this._colorSettings) {
-            this._colorSettings = Me.getSettings(
-                'org.gnome.settings-daemon.plugins.color'
-            );
+            this._colorSettings = new Gio.Settings({
+                schema_id: 'org.gnome.settings-daemon.plugins.color',
+            });
         }
         return this._colorSettings;
     }
 
     _getWsNamesSettings() {
         if (!this._wsNamesSettings) {
-            this._wsNamesSettings = Me.getSettings(
-                'org.gnome.desktop.wm.preferences'
-            );
+            this._wsNamesSettings = new Gio.Settings({
+                schema_id: 'org.gnome.desktop.wm.preferences',
+            });
         }
         return this._wsNamesSettings;
     }
 
     _getSoundSettings() {
         if (!this._soundSettings) {
-            this._soundSettings = Me.getSettings(
-                'org.gnome.desktop.sound'
-            );
+            this._soundSettings = new Gio.Settings({
+                schema_id: 'org.gnome.desktop.sound',
+            });
         }
         return this._soundSettings;
     }

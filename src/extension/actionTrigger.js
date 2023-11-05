@@ -290,8 +290,7 @@ export const ActionTrigger = class ActionTrigger {
     }
 
     _getShortcut(action) {
-        const settings = Me.getSettings(
-            'org.gnome.shell.extensions.custom-hot-corners-extended.misc');
+        const settings = Me.getSettings('org.gnome.shell.extensions.custom-hot-corners-extended.misc');
         const shortcuts = settings.get_strv('keyboard-shortcuts');
         const scIndex = shortcuts.findIndex(s => s.includes(`${action} `));
         let sc = null;
