@@ -25,8 +25,6 @@ import * as Actions from './src/extension/actions.js';
 import * as Utils from './src/common/utils.js';
 
 
-const listTriggers           = Settings.listTriggers();
-
 let chce;
 
 export default class CustomHotCornersExtended extends Extension {
@@ -53,6 +51,7 @@ export default class CustomHotCornersExtended extends Extension {
         this._actionTimeoutId      = null;
         this._extensionEnabled     = false;
         this._watch                = {};
+        this._listTriggers           = Settings.listTriggers();
     }
 
     enable() {
@@ -141,6 +140,8 @@ export default class CustomHotCornersExtended extends Extension {
         PanelButton.cleanGlobals();
         Settings.cleanGlobals();
         ActionList.cleanGlobals();
+
+        chce = null;
 
         console.log(`${this.metadata.name}: ${fullDisable ? 'disabled' : 'suspended'}`);
     }
@@ -262,7 +263,7 @@ export default class CustomHotCornersExtended extends Extension {
             for (let corner of corners) {
                 chce._cornersCollector.push(corner);
 
-                for (let trigger of listTriggers) {
+                for (let trigger of chce._listTriggers) {
                     // Update hot corner if something changes
                     // corner has it's own connect method defined in settings, this is not direct gsettings connect
                     // corner.connect('changed', (settings, key) => chce._updateCorner(corner, key, trigger), trigger);
@@ -312,7 +313,7 @@ export default class CustomHotCornersExtended extends Extension {
 
     _shouldExistHotCorner(corner) {
         let answer = false;
-        for (let trigger of listTriggers)
+        for (let trigger of chce._listTriggers)
             answer = answer || (corner.action[trigger] !== 'disabled');
 
         return answer;
