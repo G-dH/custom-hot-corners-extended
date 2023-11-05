@@ -9,9 +9,9 @@
 
 'use strict';
 
-let Me;
+import Gio from 'gi://Gio';
 
-import Gtk from 'gi://Gtk';
+let Me;
 
 export function init(extension) {
     Me = extension;
@@ -21,26 +21,10 @@ export function cleanGlobals() {
     Me = null;
 }
 
-
-export function _newImageFromIconName(name) {
-    return Gtk.Image.new_from_icon_name(name);
-}
-
-export function _setImageFromIconName(widget, name) {
-    widget.set_from_icon_name(name);
-}
-
-export function _setBtnFromIconName(btnWidget, iconName, size) {
-    if (btnWidget.set_icon_name)
-        btnWidget.set_icon_name(iconName);
-    else
-        btnWidget.add(Gtk.Image.new_from_icon_name(iconName, size));
-}
-
 // this module must be compatible with prefs, so Main.extensionManager is not usable
 // This function is only needed when prefs window is opened while extension is disabled
 export function extensionEnabled(uuid = Me.metadata.uuid) {
-    const settings = Me.getSettings('org.gnome.shell');
+    const settings = new Gio.Settings({ schema_id: 'org.gnome.shell' });
 
     let enabled = false;
     settings.get_strv('enabled-extensions').forEach(e => {
@@ -57,7 +41,8 @@ export function extensionEnabled(uuid = Me.metadata.uuid) {
 }
 
 export function isSupportedExtensionDetected(extensionName) {
-    return Me.getSettings('org.gnome.shell.extensions.custom-hot-corners-extended.misc').get_strv('supported-active-extensions').includes(extensionName);
+    const settings = Me.getSettings('org.gnome.shell.extensions.custom-hot-corners-extended.misc');
+    return settings.get_strv('supported-active-extensions').includes(extensionName);
 }
 
 export function bold(label) {
@@ -66,7 +51,7 @@ export function bold(label) {
 
 export function getIconPath() {
     const colorAccents = ['red', 'bark', 'sage', 'olive', 'viridian', 'prussiangreen', 'blue', 'purple', 'magenta'];
-    const theme = Me.getSettings('org.gnome.desktop.interface').get_string('gtk-theme');
+    const theme = new Gio.Settings({ schema_id: 'org.gnome.desktop.interface' }).get_string('gtk-theme');
     const themeSplit = theme.split('-');
     let accent = 'blue';
     if (themeSplit.length > 1 && themeSplit[0] === 'Yaru') {

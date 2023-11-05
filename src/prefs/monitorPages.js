@@ -19,9 +19,6 @@ import * as Settings from '../common/settings.js';
 import * as Utils from '../common/utils.js';
 import { ActionChooserDialog } from './actionChooserDialog.js';
 
-const _setImageFromIconName = Utils._setImageFromIconName;
-const _setBtnFromIconName   = Utils._setBtnFromIconName;
-
 const Triggers       = Settings.Triggers;
 let actionDict;
 
@@ -290,8 +287,7 @@ class CornerPage extends Gtk.Box {
                             // margin_end: Adw ? 20 : 16
                         });
 
-                        // Gtk3 implements button icon as an added Gtk.Image child, Gtk4 does not
-                        _setBtnFromIconName(settingsBtn, 'emblem-system-symbolic', Gtk.IconSize.BUTTON);
+                        settingsBtn.set_icon_name('emblem-system-symbolic');
                     }
                 }
             } else {
@@ -329,7 +325,7 @@ class CornerPage extends Gtk.Box {
                 tooltip_text: _('Enable this trigger in fullscreen mode'),
             });
 
-            _setBtnFromIconName(fsBtn, 'view-fullscreen-symbolic', Gtk.IconSize.BUTTON);
+            fsBtn.set_icon_name('view-fullscreen-symbolic');
 
             fsBtn.set_active(this._corner.get('fullscreen', trigger));
             this._corner._gsettings[trigger].bind('fullscreen', fsBtn, 'active', Gio.SettingsBindFlags.DEFAULT);
@@ -427,7 +423,7 @@ class CornerPage extends Gtk.Box {
             actionChooserTree.dialog.show();
         });
 
-        _setBtnFromIconName(appButton, 'find-location-symbolic', Gtk.IconSize.BUTTON);
+        appButton.set_icon_name('find-location-symbolic');
 
         cmdGrid.attach(commandEntry, 0, 0, 1, 1);
         cmdGrid.attach(appButton, 1, 0, 1, 1);
@@ -487,7 +483,7 @@ class CornerPage extends Gtk.Box {
             } else {
                 actionTitle = actionDict[action].title;
                 const iconName = actionDict[action].icon;
-                _setImageFromIconName(actBtnIcon, iconName, Gtk.IconSize.BUTTON);
+                actBtnIcon.set_from_icon_name(iconName);
             }
             actBtnLabel.set_label(actionTitle);
         };
