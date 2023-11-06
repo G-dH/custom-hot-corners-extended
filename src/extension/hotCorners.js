@@ -21,18 +21,14 @@ const Settings               = Me.imports.src.common.settings;
 const ActionTrigger          = Me.imports.src.extension.actionTrigger;
 const PanelButton            = Me.imports.src.extension.panelButton;
 
-const listTriggers           = Settings.listTriggers();
 const Triggers               = Settings.Triggers;
 const shellVersion           = Settings.shellVersion;
-
-let ACTION_TIMEOUT = 100;
 
 let chce;
 
 
 var CustomHotCornersExtended = class CustomHotCornersExtended {
     constructor() {
-        chce                       = this;
         // this._originalHotCornerEnabled;
         this._mscOptions           = null;
         this.CORNERS_VISIBLE       = false;
@@ -47,9 +43,11 @@ var CustomHotCornersExtended = class CustomHotCornersExtended {
         this._extensionEnabled     = false;
         this._watch                = {};
         this._origUpdateHotCorners = Main.layoutManager._updateHotCorners;
+        this._listTriggers         = Settings.listTriggers();
     }
 
     enable() {
+        chce = this;
         this._extensionEnabled = true;
         this._mscOptions = new Settings.MscOptions();
 
@@ -125,6 +123,7 @@ var CustomHotCornersExtended = class CustomHotCornersExtended {
             this._panelButton = null;
         }
 
+        chce = null;
         log(`${Me.metadata.name}: ${fullDisable ? 'disabled' : 'suspended'}`);
     }
 
@@ -174,7 +173,6 @@ var CustomHotCornersExtended = class CustomHotCornersExtended {
         actions.WIN_WRAPAROUND = this._mscOptions.get('winSwitchWrap');
         actions.WIN_SKIP_MINIMIZED  = this._mscOptions.get('winSkipMinimized');
         actions.WIN_STABLE_SEQUENCE = this._mscOptions.get('winStableSequence');
-        ACTION_TIMEOUT = this._mscOptions.get('actionEventDelay');
         this.RIPPLE_ANIMATION  = this._mscOptions.get('rippleAnimation');
 
         if (this.CORNERS_VISIBLE !== this._mscOptions.get('cornersVisible')) {
@@ -246,7 +244,7 @@ var CustomHotCornersExtended = class CustomHotCornersExtended {
             for (let corner of corners) {
                 chce._cornersCollector.push(corner);
 
-                for (let trigger of listTriggers) {
+                for (let trigger of chce._listTriggers) {
                     // Update hot corner if something changes
                     // corner has it's own connect method defined in settings, this is not direct gsettings connect
                     // corner.connect('changed', (settings, key) => chce._updateCorner(corner, key, trigger), trigger);
@@ -296,7 +294,7 @@ var CustomHotCornersExtended = class CustomHotCornersExtended {
 
     _shouldExistHotCorner(corner) {
         let answer = false;
-        for (let trigger of listTriggers)
+        for (let trigger of chce._listTriggers)
             answer = answer || (corner.action[trigger] !== 'disabled');
 
         return answer;
@@ -352,6 +350,7 @@ const CustomHotCorner = GObject.registerClass(
 class CustomHotCorner extends Layout.HotCorner {
     _init(corner) {
         this._chce = chce;
+        this._listTriggers = Settings.listTriggers();
         this._lastActionTime = 0;
         this._mscOptions = this._chce._mscOptions;
         let monitor = Main.layoutManager.monitors[corner.monitorIndex];
@@ -628,7 +627,7 @@ class CustomHotCorner extends Layout.HotCorner {
     }
 
     _shouldCreateActor() {
-        for (let trigger of listTriggers) {
+        for (let trigger of this._listTriggers) {
             if (trigger === Triggers.PRESSURE && (global.display.supports_extended_barriers() && !this._chce.BARRIER_FALLBACK))
                 continue;
             if (this._corner.get('action', trigger) !== 'disabled')
@@ -638,7 +637,7 @@ class CustomHotCorner extends Layout.HotCorner {
     }
 
     _shouldConnect(signals) {
-        for (let trigger of listTriggers) {
+        for (let trigger of this._listTriggers) {
             if (signals.includes(trigger)) {
                 if (this._corner.get('action', trigger) !== 'disabled')
                     return true;
@@ -771,7 +770,7 @@ class CustomHotCorner extends Layout.HotCorner {
     }
 
     _actionTimeoutActive() {
-        if (Date.now() - this._lastActionTime > ACTION_TIMEOUT) {
+        if (Date.now() - this._lastActionTime > this._mscOptions.get('actionEventDelay')) {
             this._lastActionTime = Date.now();
             return false;
         }
