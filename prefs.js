@@ -24,7 +24,7 @@ const OptionsPage     = Me.imports.src.prefs.optionsPage;
 const AboutPage       = Me.imports.src.prefs.aboutPage;
 
 const Utils           = Me.imports.src.common.utils;
-const _newImageFromIconName = Utils._newImageFromIconName;
+
 // conversion of Gtk3 / Gtk4 widgets add methods
 const append = Utils.append;
 
@@ -173,7 +173,7 @@ function buildPrefsWidget() {
             firstPageBuilt = true;
         }
         stack.add_named(page, title);
-        pagesBtns.push([new Gtk.Label({ label: title }), _newImageFromIconName(Settings.MONITOR_ICON, Gtk.IconSize.BUTTON)]);
+        pagesBtns.push([new Gtk.Label({ label: title }), Utils.newImageFromIconName(Gtk, Settings.MONITOR_ICON, Gtk.IconSize.BUTTON)]);
     }
 
     for (let page of pageList) {
@@ -184,7 +184,7 @@ function buildPrefsWidget() {
 
         stack.add_named(new pageClass(mscOptions), name);
         pagesBtns.push(
-            [new Gtk.Label({ label: title }), _newImageFromIconName(iconName, Gtk.IconSize.BUTTON)]
+            [new Gtk.Label({ label: title }), Utils.newImageFromIconName(Gtk, iconName, Gtk.IconSize.BUTTON)]
         );
     }
 

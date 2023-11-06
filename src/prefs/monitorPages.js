@@ -20,9 +20,7 @@ const ExtensionUtils = imports.misc.extensionUtils;
 const Me             = ExtensionUtils.getCurrentExtension();
 
 const Utils          = Me.imports.src.common.utils;
-const _newImageFromIconName = Utils._newImageFromIconName;
-const _setImageFromIconName = Utils._setImageFromIconName;
-const _setBtnFromIconName   = Utils._setBtnFromIconName;
+
 // conversion of Gtk3 / Gtk4 widgets add methods
 const append         = Utils.append;
 const setChild      = Utils.setChild;
@@ -291,7 +289,7 @@ class CornerPage extends Gtk.Box {
                         });
 
                         // Gtk3 implements button icon as an added Gtk.Image child, Gtk4 does not
-                        _setBtnFromIconName(settingsBtn, 'emblem-system-symbolic', Gtk.IconSize.BUTTON);
+                        Utils.setBtnFromIconName(Gtk, settingsBtn, 'emblem-system-symbolic', Gtk.IconSize.BUTTON);
                     }
                 }
             } else {
@@ -329,7 +327,7 @@ class CornerPage extends Gtk.Box {
                 tooltip_text: _('Enable this trigger in fullscreen mode'),
             });
 
-            _setBtnFromIconName(fsBtn, 'view-fullscreen-symbolic', Gtk.IconSize.BUTTON);
+            Utils.setBtnFromIconName(Gtk, fsBtn, 'view-fullscreen-symbolic', Gtk.IconSize.BUTTON);
 
             fsBtn.set_active(this._corner.get('fullscreen', trigger));
             this._corner._gsettings[trigger].bind('fullscreen', fsBtn, 'active', Gio.SettingsBindFlags.DEFAULT);
@@ -427,7 +425,7 @@ class CornerPage extends Gtk.Box {
             actionChooserTree.dialog.show();
         });
 
-        _setBtnFromIconName(appButton, 'find-location-symbolic', Gtk.IconSize.BUTTON);
+        Utils.setBtnFromIconName(Gtk, appButton, 'find-location-symbolic', Gtk.IconSize.BUTTON);
 
         cmdGrid.attach(commandEntry, 0, 0, 1, 1);
         cmdGrid.attach(appButton, 1, 0, 1, 1);
@@ -487,7 +485,7 @@ class CornerPage extends Gtk.Box {
             } else {
                 actionTitle = actionDict[action].title;
                 const iconName = actionDict[action].icon;
-                _setImageFromIconName(actBtnIcon, iconName, Gtk.IconSize.BUTTON);
+                Utils.setImageFromIconName(actBtnIcon, iconName, Gtk.IconSize.BUTTON);
             }
             actBtnLabel.set_label(actionTitle);
         };
