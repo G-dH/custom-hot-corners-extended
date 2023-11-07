@@ -859,6 +859,11 @@ export const Actions = class {
         app.open_new_window(-1);
     }
 
+    _shiftPressed() {
+        const mods = global.get_pointer()[2];
+        return (mods & Clutter.ModifierType.SHIFT_MASK) !== 0;
+    }
+
     fullscreenWinOnEmptyWs(metaWindow = null) {
         let win;
         if (!metaWindow)
