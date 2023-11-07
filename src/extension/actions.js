@@ -854,7 +854,7 @@ var Actions = class {
         if (!win)
             return;
         let app = Shell.WindowTracker.get_default().get_window_app(win);
-        app.open_new_window(global.get_current_time());
+        app.open_new_window(-1);
     }
 
     _shiftPressed() {
