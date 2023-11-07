@@ -19,7 +19,6 @@ import * as Layout from 'resource:///org/gnome/shell/ui/layout.js';
 
 import * as Settings from '../common/settings.js';
 
-const listTriggers           = Settings.listTriggers();
 const Triggers               = Settings.Triggers;
 
 const HOT_CORNER_PRESSURE_TIMEOUT = 1000; // ms
@@ -47,6 +46,7 @@ class CustomHotCorner extends Layout.HotCorner {
         this._monitor = monitor;
         this._actors  = [];
         this._corner.hotCornerExists = true;
+        this._listTriggers = Settings.listTriggers();
 
         if (this._hotCornerEnabled() && !this._chce.BARRIER_FALLBACK) {
             this._pressureBarrier = new Layout.PressureBarrier(
@@ -314,7 +314,7 @@ class CustomHotCorner extends Layout.HotCorner {
     }
 
     _shouldCreateActor() {
-        for (let trigger of listTriggers) {
+        for (let trigger of this._listTriggers) {
             if (trigger === Triggers.PRESSURE && (global.display.supports_extended_barriers() && !this._chce.BARRIER_FALLBACK))
                 continue;
             if (this._corner.get('action', trigger) !== 'disabled')
@@ -324,7 +324,7 @@ class CustomHotCorner extends Layout.HotCorner {
     }
 
     _shouldConnect(signals) {
-        for (let trigger of listTriggers) {
+        for (let trigger of this._listTriggers) {
             if (signals.includes(trigger)) {
                 if (this._corner.get('action', trigger) !== 'disabled')
                     return true;
