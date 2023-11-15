@@ -1,0 +1,4 @@
+*.mo
+resources/*gresource*
+schemas/gschemas.compiled
+custom-hot-corners-extended@G-dH.github.com.zip
