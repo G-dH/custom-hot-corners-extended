@@ -22,6 +22,8 @@ This extension is based on the original `Custom Hot Corners` extension, but not 
 - You can set global keyboard shortcuts for any actions on the menu, except for those available natively in GNOME Settings.
 - You can create up to 4 Custom Menus with your own selection of actions and use them as a single action.
 
+[Video review on Linux Experience Youtube channel](https://www.youtube.com/watch?v=KtjYPMCvQ7Y&t=519s)
+
 ## Changelog
 
 [CHANGELOG.md](CHANGELOG.md)
