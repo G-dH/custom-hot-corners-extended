@@ -981,12 +981,7 @@ var Actions = class {
         let currentMonitorIndex = win.get_monitor();
         if (currentMonitorIndex !== targetMonitorIndex) {
             // move window to target monitor
-            let actor = win.get_compositor_private();
-            let targetMonitor  = this._getMonitorByIndex(targetMonitorIndex);
-
-            let x = targetMonitor.x + Math.max(Math.floor(targetMonitor.width - actor.width) / 2, 0);
-            let y = targetMonitor.y + Math.max(Math.floor(targetMonitor.height - actor.height) / 2, 0);
-            win.move_frame(true, x, y);
+            win.move_to_monitor(targetMonitorIndex);
         }
     }
 
@@ -1003,12 +998,7 @@ var Actions = class {
         const currentMonitorIndex = win.get_monitor();
         if (nMonitors) {
             const targetMonitorIndex = (currentMonitorIndex + 1) % nMonitors;
-            let actor = win.get_compositor_private();
-            let targetMonitor  = this._getMonitorByIndex(targetMonitorIndex);
-
-            let x = targetMonitor.x + Math.max(Math.floor(targetMonitor.width - actor.width) / 2, 0);
-            let y = targetMonitor.y + Math.max(Math.floor(targetMonitor.height - actor.height) / 2, 0);
-            win.move_frame(true, x, y);
+            win.move_to_monitor(targetMonitorIndex);
         }
     }
 
