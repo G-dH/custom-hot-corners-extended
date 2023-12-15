@@ -212,15 +212,6 @@ var Actions = class {
         return this._shellSettings;
     }
 
-    _getMutterSettings() {
-        if (!this._mutterSettings) {
-            this._mutterSettings = new Gio.Settings({
-                schema_id: 'org.gnome.mutter',
-            });
-        }
-        return this._mutterSettings;
-    }
-
     _getA11yAppSettings() {
         if (!this._a11yAppsSettings) {
             this._a11yAppsSettings = new Gio.Settings({
@@ -627,9 +618,8 @@ var Actions = class {
     rotateWorkspaces(direction = 0, monitorIndex = -1, step = 1) {
         step = direction === Meta.MotionDirection.UP ? Number(step) : -step;
         const monitor = monitorIndex > -1 ? monitorIndex : global.display.get_current_monitor();
-        const dynamicWs = this._getMutterSettings().get_boolean('dynamic-workspaces');
+        const dynamicWs = Meta.prefs_get_dynamic_workspaces();
         const lastIndex = global.workspaceManager.get_n_workspaces() - (dynamicWs ? 1 : 0);
-        // let windows = global.display.get_tab_list(Meta.TabList.NORMAL_ALL, null);
         let windows = AltTab.getWindows(null);
         for (let win of windows.reverse()) {
             // avoid moving modal windows as they move their parents (and vice versa) immediately, before we move the parent window.
@@ -669,7 +659,6 @@ var Actions = class {
         let step = 1;
         if (!(Math.abs(diff) !== 1 && diff !== 0))
             step = Math.abs(diff);
-
 
         if (neighbor !== activeWs && (neighbor.index() !== lastIndex || activeWs !== lastIndex)) {
             for (let i = 0; i < nMonitors; i++) {
