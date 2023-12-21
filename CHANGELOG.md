@@ -13,9 +13,11 @@
 - Panel menu position if panel is hidden
 - `Fullscreen window on New WS` action ignores single window
 - `Activate ScreenSaver` action doesn't work on GS 3.36
+- Opacity adjustments doesn't work on Wayland
+- Panel menus position if the panel is hidden
 
 
-### v28
+### v28 (2023-04-03)
 **Fixed:**
 Compatibility with GNOME 3.xx
 
