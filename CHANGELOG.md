@@ -1,4 +1,8 @@
 ## Changelog:
+### v44.2 v45.2
+**Fixed:**
+- `Move Window to Next Monitor` does not maintain the relative position of the window
+
 
 ### v29 (29.44, 29.45) (2023-11-06)
 **Added:**
