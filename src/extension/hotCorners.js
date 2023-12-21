@@ -100,9 +100,15 @@ var CustomHotCornersExtended = class CustomHotCornersExtended {
             this._mscOptions = null;
         }
 
-        if (this.actionTrigger)
-            this.actionTrigger.clean(true);
-        this.actionTrigger = null;
+        // effects and thumbnails should survive screen lock
+        let fullDisable = !(Main.sessionMode.isLocked && Utils.extensionEnabled());
+        if (fullDisable) {
+            if (this.actionTrigger)
+                this.actionTrigger.clean(true);
+            this.actionTrigger = null;
+        } else if (this.actionTrigger) {
+            this.actionTrigger.clean(false);
+        }
 
         this._extensionEnabled = false;
 
