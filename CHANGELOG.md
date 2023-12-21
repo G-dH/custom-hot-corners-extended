@@ -1,4 +1,9 @@
 ## Changelog:
+### v44.2 v45.2
+**Fixed:**
+- `Move Window to Next Monitor` does not maintain the relative position of the window
+
+
 ### v29 (29.44, 29.45) (2023-11-06)
 **Added:**
 - GNOME 45 support - 2 versions of CHC-E are available, 29.44 for GNOME 3.36 - 44 and 29.45 for GNOME 45.
