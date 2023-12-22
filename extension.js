@@ -92,8 +92,6 @@ export default class CustomHotCornersExtended extends Extension {
                 return GLib.SOURCE_REMOVE;
             }
         );
-
-        console.log(`${this.metadata.name}: enabled`);
     }
 
     disable() {
@@ -136,8 +134,6 @@ export default class CustomHotCornersExtended extends Extension {
         ActionList.cleanGlobals();
 
         chce = null;
-
-        console.log(`${this.metadata.name}: ${fullDisable ? 'disabled' : 'suspended'}`);
     }
 
     _replace_updateHotCornersFunc() {
