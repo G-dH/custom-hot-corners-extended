@@ -82,8 +82,6 @@ var CustomHotCornersExtended = class CustomHotCornersExtended {
                 return GLib.SOURCE_REMOVE;
             }
         );
-
-        log(`${Me.metadata.name}: enabled`);
     }
 
     disable() {
@@ -124,7 +122,6 @@ var CustomHotCornersExtended = class CustomHotCornersExtended {
         }
 
         chce = null;
-        log(`${Me.metadata.name}: ${fullDisable ? 'disabled' : 'suspended'}`);
     }
 
     _replace_updateHotCornersFunc() {
