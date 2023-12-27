@@ -51,8 +51,8 @@ function getOptionList(mscOptions) {
         Me.metadata.name
     ));
 
-    const versionName = Me.metadata['version-name'] ?? '';
-    let version = Me.metadata['version'] ?? '';
+    const versionName = Me.metadata['version-name'] ? Me.metadata['version-name'] : '';
+    let version = Me.metadata['version'] ? Me.metadata['version'] : '';
     version = versionName && version ? `/${version}` : version;
     const versionStr = `${versionName}${version}`;
     optionList.push(itemFactory.getRowWidget(
