@@ -1,6 +1,6 @@
 # Custom Hot Corners - Extended
 
-A GNOME Shell Extension which allows you to control and navigate Gnome Shell environment through the corners and edges of your monitors. But not just that, it adds many unique actions with keyboard shortcuts too.
+A GNOME Shell Extension which allows you to control and navigate Gnome Shell environment through the corners and edges of your monitors. But not just that. It also adds many unique actions with custom keyboard shortcuts, so even if you don't like hot corners, this extension may improve your workflow.
 
 This extension is based on the original `Custom Hot Corners` extension, but not much of the original code remains.
 
@@ -14,13 +14,14 @@ This extension is based on the original `Custom Hot Corners` extension, but not 
 - Each trigger can be set to work only if *Ctrl* key is pressed
 - Each direction of a scroll wheel rotation is configurable independently
 - Each trigger can activate one of many actions including command execution, workspace and window navigation, window control, power manager actions, sound volume control, MPRIS player control, color filters (for windows and global), accessibility features and more.
-- Preferences window provides an app chooser dialog for "Run Preset Command/Activate App ..." action configuration. You can choose and modify exec command of chosen application, or app ID which will work the same as when you click an app icon in the Dash or App Grid.
+- Preferences window provides an app chooser dialog for *Run Preset Command/Activate App ...* action configuration. You can choose and modify exec command of chosen application, or app ID which will work the same as when you click an app icon in the Dash or App Grid.
 - Each corner's area reactive to mouse clicks and scrolls can be extended both horizontally and/or vertically to cover most length of the monitor's edges. If the adjacent corner is not set to expand in related direction, the corner can be expanded to 7/8 of the monitor's width/height. If two adjacent corners are set to expand to each other's direction, then it is 1/2 of the length for each. You can see the result of expansion settings using the *Make active corners/edges visible* option.
 - Fallback hot corner triggers as option - can be used on virtualized systems with mouse pointer integration where pressure barriers do not work.
 - Multi-monitor support. If you open preferences window, each monitor shows its index in the top left corner.
 - `Monitor 1` settings are always applied on the primary monitor, the rest keep the order as set by GNOME.
 - You can set global keyboard shortcuts for any actions on the menu, except for those available natively in GNOME Settings.
 - You can create up to 4 Custom Menus with your own selection of actions and use them as a single action.
+
 
 ## Video references:
 
@@ -123,16 +124,8 @@ If you like my work and want to keep me motivated, you can also buy me a coffee:
 ## Credits
 
 During development of this extension I was inspired by many extensions and other developers, I'll try to name the main contributors to my code:
-- [True Color Invert](https://github.com/jackkenney/gnome-true-color-invert) - useful extension with confusing name, which brought me to shader effects and whose modified code I use for 'Invert Lightness' action and other color filters.
-- [BaBar Task Bar](https://github.com/fthx/babar) - nice panel task bar which window preview I initially used as a base for my 'DND Window Thumbnail'
-- [GS Connect](https://github.com/GSConnect/gnome-shell-extension-gsconnect/wiki) - CHC-E relies on the keybinding module copied from this great extension.
 - [Simon Shneegans](https://schneegans.github.io/) - amazing developer with skill and style who provided me new Make files for my extensions and a lot of inspiration.
-- And, of course, the original 'Custom Hot Corners' extension that I forked based on which this extension grew.
+- [True Color Invert](https://github.com/jackkenney/gnome-true-color-invert) - useful extension with confusing name, which brought me to shader effects and whose modified code I use for 'Invert Lightness' action and other color filters.
+- [GS Connect](https://github.com/GSConnect/gnome-shell-extension-gsconnect/wiki) - CHC-E relies on the keybinding module copied from this great extension.
+- And, of course, the original 'Custom Hot Corners' extension, which I forked and upon which this extension was built.
 
-## Screenshots
-
-![Extension configuration window](screenshot0.png)
-![Extension configuration window](screenshot4.png)
-![Extension configuration window](screenshot1.png)
-![Extension configuration window](screenshot2.png)
-![Extension configuration window](screenshot3.png)
