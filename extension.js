@@ -103,6 +103,8 @@ export default class CustomHotCornersExtended extends Extension {
         }
         this._timeoutsCollector.forEach(c => GLib.Source.remove(c));
         this._timeoutsCollector = [];
+        this._watch.timeout = 0;
+
         this._removeHotCorners();
         if (this._mscOptions) {
             this._mscOptions.destroy();
