@@ -93,6 +93,8 @@ var CustomHotCornersExtended = class CustomHotCornersExtended {
         }
         this._timeoutsCollector.forEach(c => GLib.Source.remove(c));
         this._timeoutsCollector = [];
+        this._watch.timeout = 0;
+
         this._removeHotCorners();
         if (this._mscOptions) {
             this._mscOptions.destroy();
@@ -488,7 +490,7 @@ class CustomHotCorner extends Layout.HotCorner {
             actorH = null;
         });
 
-        Main.layoutManager.addChrome(actorH);
+        Main.layoutManager.addTopChrome(actorH);
         this._chce._actorsCollector.push(actorH);
         this._actors.push(actorH);
 
@@ -513,7 +515,7 @@ class CustomHotCorner extends Layout.HotCorner {
             actorV = null;
         });
 
-        Main.layoutManager.addChrome(actorV);
+        Main.layoutManager.addTopChrome(actorV);
         this._chce._actorsCollector.push(actorV);
         this._actors.push(actorV);
     }
@@ -562,7 +564,7 @@ class CustomHotCorner extends Layout.HotCorner {
         this._actor.connect('destroy', () => {
             this._actor = null;
         });
-        layoutManager.addChrome(this._actor);
+        layoutManager.addTopChrome(this._actor);
         this._chce._actorsCollector.push(this._actor);
         this._actors.push(this._actor);
 
@@ -588,7 +590,7 @@ class CustomHotCorner extends Layout.HotCorner {
             this._actorV.connect('destroy', () => {
                 this._actorV = null;
             });
-            layoutManager.addChrome(this._actorV);
+            layoutManager.addTopChrome(this._actorV);
             this._chce._actorsCollector.push(this._actorV);
             this._actors.push(this._actorV);
         }
