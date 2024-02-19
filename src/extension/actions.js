@@ -1393,7 +1393,7 @@ export const Actions = class {
 
         if (!this._winPreview) {
             this._winPreview = new CyclerHighlight();
-            global.window_group.add_actor(this._winPreview);
+            global.window_group.add_child(this._winPreview);
             [this._winPreview._xPointer, this._winPreview._yPointer] = global.get_pointer();
         }
 
@@ -1711,7 +1711,7 @@ export const Actions = class {
                     });
                     actor.connect('button-press-event', () => this.toggleDimMonitors(null, null, monitorIndex));
                     // Main.layoutManager.addChrome(actor);
-                    global.stage.add_actor(actor);
+                    global.stage.add_child(actor);
                     this._dimmerActors.push(actor);
                 }
             }
@@ -1899,9 +1899,9 @@ export const Actions = class {
         if (!this.customMenu[menuIndex]) {
             this.customMenu[menuIndex] = new CustomMenuPopup(Main.layoutManager);
             this.customMenu[menuIndex].act.connect('destroy', () => {
-                Main.layoutManager.uiGroup.remove_actor(this.customMenu[menuIndex].actor);
+                Main.layoutManager.uiGroup.remove_child(this.customMenu[menuIndex].actor);
             });
-            Main.layoutManager.uiGroup.add_actor(this.customMenu[menuIndex].actor);
+            Main.layoutManager.uiGroup.add_child(this.customMenu[menuIndex].actor);
         }
         this.customMenu[menuIndex].menuItems      = this._mscOptions.get(`customMenu${menuIndex}`);
         this.customMenu[menuIndex].actionList     = Settings.actionList;
@@ -2076,10 +2076,10 @@ class CyclerHighlight extends St.Widget {
         this._window = null;
 
         this._clone = new Clutter.Clone();
-        this.add_actor(this._clone);
+        this.add_child(this._clone);
 
         this._highlight = new St.Widget({ style_class: 'cycler-highlight' });
-        this.add_actor(this._highlight);
+        this.add_child(this._highlight);
 
         let coordinate = Clutter.BindCoordinate.ALL;
         let constraint = new Clutter.BindConstraint({ coordinate });

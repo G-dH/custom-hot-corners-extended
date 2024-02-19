@@ -90,7 +90,7 @@ function getOptionList(mscOptions) {
 
     optionList.push(itemFactory.getRowWidget(
         _('Buy Me a Coffee'),
-        _('If you like this extension, you can help me with my coffee expenses.'),
+        _('Enjoying CHC-E? Consider supporting it by buying me a coffee!'),
         itemFactory.newLinkButton('https://buymeacoffee.com/georgdh')
     ));
 

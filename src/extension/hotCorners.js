@@ -106,25 +106,50 @@ class CustomHotCorner extends Layout.HotCorner {
             let x = this._corner.x;
             if (!Meta.is_wayland_compositor() && !this._corner.left && !this._barrierCollision()['x'])
                 x += 1;
-            this._verticalBarrier = new Meta.Barrier({
-                display: global.display,
-                x1: x,
-                x2: x,
-                y1: this._corner.y,
-                y2: this._corner.top ? this._corner.y + sizeV : this._corner.y - sizeV,
-                directions: this._corner.left ? BD.POSITIVE_X : BD.NEGATIVE_X,
-            });
+
+            // GS 46+ replaced the Meta.Barrier.display property with backend
+            if (Meta.Barrier.prototype.backend) {
+                this._verticalBarrier = new Meta.Barrier({
+                    backend: global.backend,
+                    x1: x,
+                    x2: x,
+                    y1: this._corner.y,
+                    y2: this._corner.top ? this._corner.y + sizeV : this._corner.y - sizeV,
+                    directions: this._corner.left ? BD.POSITIVE_X : BD.NEGATIVE_X,
+                });
+            } else {
+                this._verticalBarrier = new Meta.Barrier({
+                    display: global.display,
+                    x1: x,
+                    x2: x,
+                    y1: this._corner.y,
+                    y2: this._corner.top ? this._corner.y + sizeV : this._corner.y - sizeV,
+                    directions: this._corner.left ? BD.POSITIVE_X : BD.NEGATIVE_X,
+                });
+            }
             let y = this._corner.y;
             if (!Meta.is_wayland_compositor() && !this._corner.top && !this._barrierCollision()['y'])
                 y += 1;
-            this._horizontalBarrier = new Meta.Barrier({
-                display: global.display,
-                x1: this._corner.x,
-                x2: this._corner.left ? this._corner.x + sizeH : this._corner.x - sizeH,
-                y1: y,
-                y2: y,
-                directions: this._corner.top ? BD.POSITIVE_Y : BD.NEGATIVE_Y,
-            });
+
+            if (Meta.Barrier.prototype.backend) {
+                this._horizontalBarrier = new Meta.Barrier({
+                    backend: global.backend,
+                    x1: this._corner.x,
+                    x2: this._corner.left ? this._corner.x + sizeH : this._corner.x - sizeH,
+                    y1: y,
+                    y2: y,
+                    directions: this._corner.top ? BD.POSITIVE_Y : BD.NEGATIVE_Y,
+                });
+            } else {
+                this._horizontalBarrier = new Meta.Barrier({
+                    display: global.display,
+                    x1: this._corner.x,
+                    x2: this._corner.left ? this._corner.x + sizeH : this._corner.x - sizeH,
+                    y1: y,
+                    y2: y,
+                    directions: this._corner.top ? BD.POSITIVE_Y : BD.NEGATIVE_Y,
+                });
+            }
 
             this._pressureBarrier.addBarrier(this._verticalBarrier);
             this._pressureBarrier.addBarrier(this._horizontalBarrier);
@@ -280,8 +305,7 @@ class CustomHotCorner extends Layout.HotCorner {
             this._actors.push(this._actorV);
         }
         // Fallback hot corners as a part of base actor
-        if (this._corner.get('action', Triggers.PRESSURE) !== 'disabled' &&
-            (!global.display.supports_extended_barriers() || this._chce.BARRIER_FALLBACK)) {
+        if (this._corner.get('action', Triggers.PRESSURE) !== 'disabled' && this._chce.BARRIER_FALLBACK) {
             let fSize = 3;
             this._cornerActor = new Clutter.Actor({
                 name:     'hot-corner',
@@ -315,7 +339,7 @@ class CustomHotCorner extends Layout.HotCorner {
 
     _shouldCreateActor() {
         for (let trigger of this._listTriggers) {
-            if (trigger === Triggers.PRESSURE && (global.display.supports_extended_barriers() && !this._chce.BARRIER_FALLBACK))
+            if (trigger === Triggers.PRESSURE && !this._chce.BARRIER_FALLBACK)
                 continue;
             if (this._corner.get('action', trigger) !== 'disabled')
                 return true;
