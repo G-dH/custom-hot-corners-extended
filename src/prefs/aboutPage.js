@@ -55,7 +55,7 @@ function getOptionList(mscOptions) {
 
     optionList.push(itemFactory.getRowWidget(
         _('Reset all options'),
-        _('Disable all triggers and set all options to default values.'),
+        _('Disable all triggers and reset all options to their default values'),
         itemFactory.newOptionsResetButton()
     ));
 
@@ -90,7 +90,7 @@ function getOptionList(mscOptions) {
 
     optionList.push(itemFactory.getRowWidget(
         _('Buy Me a Coffee'),
-        _('Enjoying CHC-E? Consider supporting it by buying me a coffee!'),
+        _('Enjoying this extension? Consider supporting it by buying me a coffee!'),
         itemFactory.newLinkButton('https://buymeacoffee.com/georgdh')
     ));
 

@@ -34,7 +34,6 @@ import * as SystemActions from 'resource:///org/gnome/shell/misc/systemActions.j
 
 import * as Settings from '../common/settings.js';
 import * as Shaders from './shaders.js';
-import * as WinTmb from './winTmb.js';
 
 // gettext
 let _;
@@ -78,7 +77,6 @@ export const Actions = class {
         this.WIN_SKIP_MINIMIZED     = false;
         this.WIN_STABLE_SEQUENCE    = false;
 
-        this.windowThumbnails       = [];
         this._tmbConnected          = false;
 
         this._mainPanelVisible      = Main.panel.is_visible();
@@ -90,7 +88,6 @@ export const Actions = class {
     }
 
     clean(full = true) {
-        // don't reset effects and destroy thumbnails if extension is enabled (GS calls ext. disable() before locking the screen f.e.)
         if (full) {
             if (this._mainPanelVisible)
                 Main.panel.show();
@@ -111,7 +108,6 @@ export const Actions = class {
             global.display.disconnect(this._osdMonitorsConnection);
             this._osdMonitorsConnection = 0;
         }
-        this._removeThumbnails(full);
         this._destroyDimmerActors();
         this._removeCustomMenus();
         this._destroyWindowPreview();
@@ -121,38 +117,6 @@ export const Actions = class {
             if (t)
                 GLib.source_remove(t);
         });
-    }
-
-    resume() {
-        this._resumeThumbnailsIfExist();
-    }
-
-    _resumeThumbnailsIfExist() {
-        this.windowThumbnails.forEach(
-            t => {
-                if (t)
-                    t.show();
-            }
-        );
-    }
-
-    _removeThumbnails(full = true) {
-        if (full) {
-            this.windowThumbnails.forEach(
-                t => {
-                    if (t)
-                        t.destroy();
-                }
-            );
-            this.windowThumbnails = [];
-        } else {
-            this.windowThumbnails.forEach(
-                t => {
-                    if (t)
-                        t.hide();
-                }
-            );
-        }
     }
 
     _removeOsdMonitorIndexes(keepConnection = false) {
@@ -1816,38 +1780,10 @@ export const Actions = class {
     }
 
     makeThumbnailWindow(metaWindow = null, minimize = false) {
-        let metaWin;
-        if (metaWindow) {
-            metaWin = metaWindow;
-        } else {
-            let actor = this._getFocusedActor();
-            metaWin = actor ? actor.get_meta_window() : null;
-        }
-
-        if (!metaWin)
-            return;
-
-        if (!this._tmbConnected) {
-            let conS = Main.overview.connect('showing', () => {
-                this.windowThumbnails.forEach(t => t.hide());
-            });
-            let conH = Main.overview.connect('hiding',  () => {
-                this.windowThumbnails.forEach(t => t.show());
-            });
-            this._signalsCollector.push([Main.overview, conS]);
-            this._signalsCollector.push([Main.overview, conH]);
-            this._tmbConnected = true;
-        }
-
-        let monitorHeight = getCurrentMonitorGeometry().height;
-        let scale = this._mscOptions.get('winThumbnailScale');
-        this.windowThumbnails.push(new WinTmb.WindowThumbnail(metaWin, this, {
-            actionTimeout: this._mscOptions.get('actionEventDelay'),
-            height: Math.floor(scale / 100 * monitorHeight),
-            thumbnailsOnScreen: this.windowThumbnails.length,
-            minimize,
-        })
-        );
+        if (global.windowThumbnails)
+            global.windowThumbnails.createThumbnail(metaWindow, minimize);
+        else
+            Main.notify(Me.metadata.name, _('This action requires the "WTMB (Window Thumbnails)" extension installed on your system'));
     }
 
     showAppSwitcherPopup() {

@@ -139,10 +139,10 @@ export function init(extension) {
         [1,    'move-app-to-next-new-ws',     _('Move App windows to New Workspace Next'),   true,  nextIcon,                                      true],
         [1,    'move-win-to-next-monitor',    _('Move Window to Next Monitor'),              true,  'video-display-symbolic',                      true],
 
-        [null, 'win-thumbnails-submenu',      _('DND Window Thumbnails (PIP)'),              true,  '',                                           false],
-        [1,    'make-thumbnail-win',          _('Create Window Thumbnail (at bottom-right)'), true,  'insert-image-symbolic',                      true],
-        [1,    'minimize-to-thumbnail',       _('Minimize Window to Thumbnail'),             true,  'insert-image-symbolic',                       true],
-        [1,    'remove-win-thumbnails',       _('Remove All Window Thumbnails'),             true,  'window-close-symbolic',                      false],
+        [null, 'win-thumbnails-submenu',      _('WTMB (Window Thumbnails) extension'),      false,  '',                                           false],
+        [1,    'make-thumbnail-win',          _('Create Window Thumbnail (PIP)'),           false,  'insert-image-symbolic',                       true],
+        [1,    'minimize-to-thumbnail',       _('Minimize Window to Thumbnail'),            false,  'insert-image-symbolic',                       true],
+        [1,    'remove-win-thumbnails',       _('Remove All Window Thumbnails'),            false,  'window-close-symbolic',                      false],
 
         [null, 'win-adjust-submenu',          _('Windows - Visual Adjustments'),             true,  'view-reveal-symbolic',                       false],
         [1,    'bright-up-win',               _('Brightness Up (window)'),                   true,  'display-brightness-symbolic',                 true],

@@ -87,7 +87,6 @@ export const MscOptions = class {
             winSwitchWrap:          { type: 'boolean', key: 'win-switch-wrap' },
             winSkipMinimized:       { type: 'boolean', key: 'win-switch-skip-minimized' },
             winStableSequence:      { type: 'boolean', key: 'win-switch-stable-sequence' },
-            winThumbnailScale:      { type: 'int',     key: 'win-thumbnail-scale' },
             actionEventDelay:       { type: 'int',     key: 'action-event-delay' },
             rippleAnimation:        { type: 'boolean', key: 'ripple-animation' },
             barrierFallback:        { type: 'boolean', key: 'barrier-fallback' },
