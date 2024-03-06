@@ -3,7 +3,7 @@
  * OptionsPage
  *
  * @author     GdH <G-dH@github.com>
- * @copyright  2021-2022
+ * @copyright  2021-2024
  * @license    GPL-3.0
  */
 
@@ -167,39 +167,6 @@ function getOptionList(mscOptions) {
             _('Exclude minimized windows from the switcher list'),
             itemFactory.newSwitch(),
             'winSkipMinimized'
-        )
-    );
-
-    optionsList.push(
-        itemFactory.getRowWidget(
-            _('DND Window Thumbnails'),
-            `${_('Window thumbnails are overlay clones of windows, can be dragged by mouse anywhere on the screen')}\n${
-                _('Thumbnail control:')}\n    ${
-                _('Double click:    \t\tactivate source window')}\n    ${
-                _('Primary click:   \t\ttoggle scroll wheel function (resize / source)')}\n    ${
-                _('Secondary click: \t\tshow full size window preview')}\n    ${
-                _('Middle click:    \t\ttoggle icon view')}\n    ${
-                _('Scroll wheel:    \t\tresize or change source window')}\n    ${
-                _('Ctrl + Scroll wheel: \tchange source window or resize')}\n    ${
-                _('Shift + Scroll wheel: \tadjust opacity')}\n    `
-            ,
-            null
-        )
-    );
-
-    let tmbScaleAdjustment = new Gtk.Adjustment({
-        lower: 5,
-        upper: 50,
-        step_increment: 1,
-        page_increment: 10,
-    });
-
-    optionsList.push(
-        itemFactory.getRowWidget(
-            _('Thumbnail height scale (%)'),
-            _('Height of the thumbnail relative to screen height'),
-            itemFactory.newSpinButton(tmbScaleAdjustment),
-            'winThumbnailScale'
         )
     );
 
