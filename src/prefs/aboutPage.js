@@ -3,7 +3,7 @@
  * AboutPage
  *
  * @author     GdH <G-dH@github.com>
- * @copyright  2021-2022
+ * @copyright  2021-2024
  * @license    GPL-3.0
  */
 
@@ -78,7 +78,7 @@ function getOptionList(mscOptions) {
 
     optionList.push(itemFactory.getRowWidget(
         _('GNOME Extensions'),
-        _('Rate and comment the extension on GNOME Extensions site.'),
+        _('Rate and comment the extension on GNOME Extensions site'),
         itemFactory.newLinkButton('https://extensions.gnome.org/extension/4467')
     ));
 
