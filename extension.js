@@ -2,7 +2,7 @@
  * Custom Hot Corners - Extended
  *
  * @author     GdH <G-dH@github.com>
- * @copyright  2021-2023
+ * @copyright  2021-2024
  * @license    GPL-3.0
  */
 
