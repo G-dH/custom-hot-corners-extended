@@ -171,7 +171,7 @@ export function resetAllCorners() {
     }
 }
 
-function resetCorner(monitorIndex, corner) {
+export function resetCorner(monitorIndex, corner) {
     const schema = `${_schema}.corner`;
     for (const trigger of [0, 1, 2, 3, 4, 5, 6]) {
         const path = `${_path}/monitor-${monitorIndex}-${corner}-${trigger}/`;
