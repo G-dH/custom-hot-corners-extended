@@ -15,10 +15,6 @@ const ExtensionUtils = imports.misc.extensionUtils;
 const Me             = ExtensionUtils.getCurrentExtension();
 const Utils          = Me.imports.src.common.utils;
 
-// conversion of Gtk3 / Gtk4 widgets add methods
-const append         = Utils.append;
-const setChild      = Utils.setChild;
-
 const Settings       = Me.imports.src.common.settings;
 const shellVersion   = parseFloat(imports.misc.config.PACKAGE_VERSION);
 
@@ -48,7 +44,7 @@ var ItemFactory = class ItemFactory {
                 halign: Gtk.Align.START,
             });
             option.set_text(text);
-            label[append](option);
+            label.append(option);
 
             if (caption) {
                 const captionLabel = new Gtk.Label({
@@ -61,7 +57,7 @@ var ItemFactory = class ItemFactory {
                 context.add_class('dim-label');
                 context.add_class('caption');
                 captionLabel.set_text(caption);
-                label[append](captionLabel);
+                label.append(captionLabel);
             }
             label._title = text;
         } else {
@@ -298,7 +294,7 @@ class OptionsPageLegacy extends Gtk.ScrolledWindow {
                 const context = lbl.get_style_context();
                 context.add_class('heading');
 
-                mainBox[append](lbl);
+                mainBox.append(lbl);
 
                 frame = new Gtk.Frame({
                     margin_bottom: 16,
@@ -308,8 +304,8 @@ class OptionsPageLegacy extends Gtk.ScrolledWindow {
                     selection_mode: null,
                 });
 
-                mainBox[append](frame);
-                frame[setChild](frameBox);
+                mainBox.append(frame);
+                frame.set_child(frameBox);
                 continue;
             }
 
@@ -328,74 +324,73 @@ class OptionsPageLegacy extends Gtk.ScrolledWindow {
             if (widget)
                 grid.attach(widget, 5, 0, 2, 1);
 
-            frameBox[append](grid);
+            frameBox.append(grid);
         }
-        this[setChild](mainBox);
+        this.set_child(mainBox);
         this._alreadyBuilt = true;
     }
 });
 
-if (Adw) {
-    var OptionsPageAdw = GObject.registerClass(
-    class OptionsPageAdw extends Adw.PreferencesPage {
-        _init(optionList, pageProperties = {}) {
-            super._init(pageProperties);
+var OptionsPageAdw = GObject.registerClass(
+class OptionsPageAdw extends Adw.PreferencesPage {
+    _init(optionList, pageProperties = {}) {
+        super._init(pageProperties);
 
-            this._optionList = optionList;
-            this.buildPage();
-        }
+        this._optionList = optionList;
+        this.buildPage();
+    }
 
-        buildPage() {
-            if (this._alreadyBuilt)
-                return;
+    buildPage() {
+        if (this._alreadyBuilt)
+            return;
             // pageProperties.width_request = 840;
-            let group;
-            for (let item of this._optionList) {
-                // label can be plain text for Section Title
-                // or GtkBox for Option
-                const option = item[0];
-                const widget = item[1];
-                if (!widget) {
-                    if (group)
-                        this.add(group);
+        let group;
+        for (let item of this._optionList) {
+            // label can be plain text for Section Title
+            // or GtkBox for Option
+            const option = item[0];
+            const widget = item[1];
+            if (!widget) {
+                if (group)
+                    this.add(group);
 
-                    group = new Adw.PreferencesGroup({
-                        title: option,
-                        hexpand: true,
-                        // width_request: 700
-                    });
-                    continue;
-                }
-
-                const row = new Adw.ActionRow({
-                    title: option._title,
-                });
-
-                const grid = new Gtk.Grid({
-                    column_homogeneous: false,
-                    column_spacing: 20,
-                    margin_start: 8,
-                    margin_end: 8,
-                    margin_top: 8,
-                    margin_bottom: 8,
+                group = new Adw.PreferencesGroup({
+                    title: option,
                     hexpand: true,
+                    // width_request: 700
                 });
-                /* for (let i of item) {
-                    box[append](i);*/
-                grid.attach(option, 0, 0, 1, 1);
-                if (widget)
-                    grid.attach(widget, 1, 0, 1, 1);
-
-                row.set_child(grid);
-                if (widget._activatable === false)
-                    row.activatable = false;
-                else
-                    row.activatable_widget = widget;
-
-                group.add(row);
+                continue;
             }
-            this.add(group);
-            this._alreadyBuilt = true;
+
+            const row = new Adw.ActionRow({
+                title: option._title,
+            });
+
+            const grid = new Gtk.Grid({
+                column_homogeneous: false,
+                column_spacing: 20,
+                margin_start: 8,
+                margin_end: 8,
+                margin_top: 8,
+                margin_bottom: 8,
+                hexpand: true,
+            });
+                /* for (let i of item) {
+                    box.append(i);*/
+            grid.attach(option, 0, 0, 1, 1);
+            if (widget)
+                grid.attach(widget, 1, 0, 1, 1);
+
+            row.set_child(grid);
+            if (widget._activatable === false)
+                row.activatable = false;
+            else
+                row.activatable_widget = widget;
+
+            group.add(row);
         }
-    });
-}
+        this.add(group);
+        this._alreadyBuilt = true;
+    }
+});
+
