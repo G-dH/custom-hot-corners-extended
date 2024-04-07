@@ -73,19 +73,19 @@ function getOptionList(mscOptions) {
     optionList.push(itemFactory.getRowWidget(
         _('Changelog'),
         _("See what's changed."),
-        itemFactory.newLinkButton('https://github.com/G-dH/custom-hot-corners-extended/blob/gdh/CHANGELOG.md')
+        itemFactory.newLinkButton('https://github.com/G-dH/custom-hot-corners-extended/blob/main/CHANGELOG.md')
     ));
 
     optionList.push(itemFactory.getRowWidget(
         _('GNOME Extensions'),
         _('Rate and comment the extension on GNOME Extensions site'),
-        itemFactory.newLinkButton('https://extensions.gnome.org/extension/4467')
+        itemFactory.newLinkButton('https://extensions.gnome.org/extension/4167')
     ));
 
     optionList.push(itemFactory.getRowWidget(
         _('Report a bug or suggest new feature'),
         null,
-        itemFactory.newLinkButton('https://github.com/G-dH/custom-hot-corners-extended')
+        itemFactory.newLinkButton('https://github.com/G-dH/custom-hot-corners-extended/issues')
     ));
 
     optionList.push(itemFactory.getRowWidget(
