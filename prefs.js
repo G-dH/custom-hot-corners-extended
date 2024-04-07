@@ -117,7 +117,7 @@ export default class CustomHotCornersExtended extends ExtensionPreferences {
             window.add(page);
         }
 
-        window.set_default_size(700, 800);
+        window.set_default_size(700, 880);
 
         window.connect('close-request', () => {
             mscOptions.set('showOsdMonitorIndexes', false);

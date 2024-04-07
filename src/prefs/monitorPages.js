@@ -13,7 +13,6 @@ import GObject from 'gi://GObject';
 import Gio from 'gi://Gio';
 import Gtk from 'gi://Gtk';
 import Gdk from 'gi://Gdk';
-import Adw from 'gi://Adw';
 
 import * as Settings from '../common/settings.js';
 import * as Utils from '../common/utils.js';
@@ -90,10 +89,10 @@ class MonitorPage extends Gtk.Box {
     _init(monitor, monitorIndex, corners, leftHandMouse, widgetProperties = {
         orientation: Gtk.Orientation.VERTICAL,
         spacing: 16,
-        margin_start: Adw ? 0 : 16,
-        margin_end: Adw ? 0 : 16,
-        margin_top: Adw ? 0 : 16,
-        margin_bottom: Adw ? 0 : 16,
+        margin_start: 0,
+        margin_end: 0,
+        margin_top: 0,
+        margin_bottom: 0,
     }) {
         super._init(widgetProperties);
 
@@ -202,8 +201,7 @@ class MonitorPage extends Gtk.Box {
 
         this.append(stackGrid);
         this.append(stack);
-        if (this.show_all)
-            this.show_all();
+
         this._alreadyBuilt = true;
     }
 });
@@ -228,8 +226,40 @@ class CornerPage extends Gtk.Box {
         if (this._alreadyBuilt)
             return;
         this._alreadyBuilt = true;
+
+        const hotFrame = new Gtk.Frame({
+            label: `<b>${_('Hot Corner')}</b>`,
+            margin_top: 10,
+        });
+        hotFrame.get_label_widget().use_markup = true;
+
+        this.append(hotFrame);
+        const hotBox = new Gtk.Box({
+            orientation: Gtk.Orientation.VERTICAL,
+            vexpand: false,
+            visible: true,
+            margin_start: 12,
+            margin_end: 12,
+        });
+        hotFrame.set_child(hotBox);
+
+        const clickFrame = new Gtk.Frame({
+            label: `<b>${_('Click Corner')}</b>`,
+            margin_top: 10,
+        });
+        clickFrame.get_label_widget().use_markup = true;
+
+        this.append(clickFrame);
+        const clickBox = new Gtk.Box({
+            orientation: Gtk.Orientation.VERTICAL,
+            vexpand: false,
+            visible: true,
+            margin_start: 12,
+            margin_end: 12,
+        });
+        clickFrame.set_child(clickBox);
+
         const trgOrder = [0, 6, 1, 2, 3, 4, 5];
-        // for (let trigger of triggers) {
         for (let trigger of trgOrder) {
             const grid = new Gtk.Grid({
                 column_spacing: 5,
@@ -238,7 +268,6 @@ class CornerPage extends Gtk.Box {
 
             });
             let ctrlBtn = new Gtk.CheckButton({
-            // const ctrlBtn = new Gtk.ToggleButton({
                 label: 'Ctrl',
                 halign: Gtk.Align.START,
                 valign: Gtk.Align.CENTER,
@@ -251,7 +280,6 @@ class CornerPage extends Gtk.Box {
             this._corner._gsettings[trigger].bind('ctrl', ctrlBtn, 'active', Gio.SettingsBindFlags.DEFAULT);
 
             let iconName;
-            let settingsBtn = null;
             if (trigger === 0 || trigger === 6) {
                 iconName = `${this._corner.top ? 'Top' : 'Bottom'}${this._corner.left ? 'Left' : 'Right'}.svg`;
                 if (trigger === 6) {
@@ -263,32 +291,6 @@ class CornerPage extends Gtk.Box {
                     ctrlBtn.set_active(false);
                     ctrlBtn.set_sensitive(false);
                     ctrlBtn.opacity = 0;
-                    // ctrlBtn.set_tooltip_text(_('This trigger works only when Ctrl key is NOT pressed'));
-                    // ctrlBtn.set_visible(false);
-                    if (trigger === Triggers.PRESSURE) {
-                        const cornerPopover = new Gtk.Popover();
-                        const popupGrid = new Gtk.Grid({
-                            margin_start: 10,
-                            margin_end: 10,
-                            margin_top: 10,
-                            margin_bottom: 10,
-                            column_spacing: 12,
-                            row_spacing: 8,
-                        });
-
-                        if (popupGrid.show_all)
-                            popupGrid.show_all();
-                        cornerPopover.set_child(popupGrid);
-
-                        this._buildPressureSettings(popupGrid);
-                        settingsBtn = new Gtk.MenuButton({
-                            popover: cornerPopover,
-                            valign: Gtk.Align.CENTER,
-                            // margin_end: Adw ? 20 : 16
-                        });
-
-                        settingsBtn.set_icon_name('emblem-system-symbolic');
-                    }
                 }
             } else {
                 let iconIdx = trigger;
@@ -302,7 +304,6 @@ class CornerPage extends Gtk.Box {
             }
 
             const trgIcon = new Gtk.Image({
-                // icon_name: iconName,
                 halign: Gtk.Align.START,
                 margin_start: 10,
                 margin_end: 15,
@@ -313,7 +314,6 @@ class CornerPage extends Gtk.Box {
                 // in Gtk4 image has always some extra margin and therefore it's tricky to adjust row height
             });
 
-            // trgIcon.set_from_file(`${this._iconPath}/${iconName}`);
             trgIcon.set_from_resource(`${this._iconPath}/${iconName}`);
             trgIcon.set_tooltip_text(TriggerLabels[trigger]);
 
@@ -335,27 +335,20 @@ class CornerPage extends Gtk.Box {
             grid.attach(trgIcon, 1, trigger, 1, 1);
             if (ctrlBtn.visible)
                 grid.attach(ctrlBtn, 0, trigger, 1, 1);
-            /* else if (settingsBtn) {
-                grid.attach(settingsBtn, 0, trigger, 1, 1);
-            }*/
-            if (trigger === Triggers.PRESSURE) {
-                grid.attach(cw,      2, trigger, 1, 1);
-                grid.attach(settingsBtn, 3, trigger, 1, 1);
-                grid.attach(fsBtn,   4, trigger, 1, 1);
-            } else {
-                grid.attach(cw,      2, trigger, 1, 1);
-                grid.attach(fsBtn,   3, trigger, 2, 1);
-            }
-            this.append(grid);
+            grid.attach(cw,      2, trigger, 1, 1);
+            grid.attach(fsBtn,   3, trigger, 2, 1);
+
+            if ([0, 6].includes(trigger))
+                hotBox.append(grid);
+            else
+                clickBox.append(grid);
         }
-        const ew = this._buildExpandsionWidget();
-        const ewFrame = new Gtk.Frame({
-            margin_top: 10,
-        });
-        ewFrame.set_child(ew);
-        this.append(ewFrame);
-        if (this.show_all)
-            this.show_all();
+
+        const hew = this._buildHotCornerExpansionWidget();
+        hotBox.append(hew);
+
+        const cew = this._buildClickableCornerExpansionWidget();
+        clickBox.append(cew);
 
         this._alreadyBuilt = true;
     }
@@ -471,10 +464,6 @@ class CornerPage extends Gtk.Box {
             });
         }.bind(this);
 
-        // bold action titles like GNOME 42 Adw has. But I prefer normal font
-        /* const context = actionButton.get_style_context();
-        context.add_class('heading');*/
-
         const updateActBtnLbl = () => {
             const action = this._corner.get('action', trigger);
             let actionTitle;
@@ -482,8 +471,8 @@ class CornerPage extends Gtk.Box {
                 actionTitle = _("Error: Stored action doesn't exist!!!");
             } else {
                 actionTitle = actionDict[action].title;
-                const iconName = actionDict[action].icon;
-                actBtnIcon.set_from_icon_name(iconName);
+                const actBtnIconName = actionDict[action].icon;
+                actBtnIcon.set_from_icon_name(actBtnIconName);
             }
             actBtnLabel.set_label(actionTitle);
         };
@@ -508,8 +497,6 @@ class CornerPage extends Gtk.Box {
 
         this._corner._gsettings[trigger].bind('workspace-index', workspaceIndexSpinButton, 'value', Gio.SettingsBindFlags.DEFAULT);
 
-        if (cw.show_all)
-            cw.show_all();
         return cw;
     }
 
@@ -536,41 +523,29 @@ class CornerPage extends Gtk.Box {
 
         popupGrid.attach(pressureLabel,               0, 3, 1, 1);
         popupGrid.attach(pressureThresholdSpinButton, 1, 3, 1, 1);
-
-        if (popupGrid.show_all)
-            popupGrid.show_all();
     }
 
-    _buildExpandsionWidget() {
+    _buildHotCornerExpansionWidget() {
         const grid = new Gtk.Grid({
             row_spacing: 0,
             column_spacing: 8,
-            margin_start: 10,
-            margin_end: 10,
             margin_top: 20,
-            margin_bottom: 20,
+            margin_bottom: 8,
             halign: Gtk.Align.FILL,
             tooltip_text: _("You can activate 'Make active corners/edges visible' option on 'Options' page to see the results of these settings."),
         });
 
-        const barrier = this._buildBarrierSizeAdjustment();
-        const click = this._buildClickExpansionAdjustment();
-        //                      x, y, w, h
-        grid.attach(click[0],   0, 1, 1, 1);
-        grid.attach(click[1],   1, 1, 1, 1);
-        grid.attach(click[2],   2, 1, 1, 1);
-        grid.attach(barrier[0], 0, 2, 1, 1);
-        grid.attach(barrier[1], 1, 2, 1, 1);
-        grid.attach(barrier[2], 2, 2, 1, 1);
+        const hImage = Gtk.Image.new_from_resource(`${this._iconPath}/${this._corner.top ? 'Top' : 'Bottom'}${this._corner.left ? 'Left' : 'Right'}HE.svg`);
+        hImage.pixel_size = 40;
+        hImage.margin_start = 100;
+        const vImage = Gtk.Image.new_from_resource(`${this._iconPath}/${this._corner.top ? 'Top' : 'Bottom'}${this._corner.left ? 'Left' : 'Right'}VE.svg`);
+        vImage.pixel_size = 40;
 
-        return grid;
-    }
-
-    _buildBarrierSizeAdjustment() {
         const label = new Gtk.Label({
-            label: _('Hot corner barrier size:'),
-            tooltip_text: `${_('Set horizontal and vertical size of the barrier that reacts to the mouse pointer pressure (part of hot corner).')}\n${
-                _('Size can be set in percentage of the screen width and height.')}`,
+            wrap: true,
+            label: _('Pressure threshold and barrier sizes:\n(Enlarge the barrier size to convert the hot corner into a hot edge)'),
+            tooltip_text: `${_('Set horizontal and vertical size of the barrier that reacts to the mouse pointer pressure.')}\n${
+                _('The sizes are set in percentage of the screen width and height.')}`,
             halign: Gtk.Align.START,
             hexpand: false,
         });
@@ -594,7 +569,7 @@ class CornerPage extends Gtk.Box {
             digits: 0,
             draw_value: true,
             has_origin: true,
-            tooltip_text: _('Horizontal pressure barrier size in % of monitor width'),
+            tooltip_text: _('Horizontal pressure barrier size in percentage of the monitor width'),
             halign: Gtk.Align.FILL,
             hexpand: true,
         });
@@ -607,7 +582,7 @@ class CornerPage extends Gtk.Box {
             digits: 0,
             draw_value: true,
             has_origin: true,
-            tooltip_text: _('Vertical pressure barrier size in % of monitor height'),
+            tooltip_text: _('Vertical pressure barrier size in percentage of the monitor height'),
             halign: Gtk.Align.FILL,
             hexpand: true,
         });
@@ -618,21 +593,58 @@ class CornerPage extends Gtk.Box {
         this._corner._gsettings[Triggers.PRESSURE].bind('barrier-size-h', barrierAdjustmentH, 'value', Gio.SettingsBindFlags.DEFAULT);
         this._corner._gsettings[Triggers.PRESSURE].bind('barrier-size-v', barrierAdjustmentV, 'value', Gio.SettingsBindFlags.DEFAULT);
 
-        return [label, barrierSizeSliderH, barrierSizeSliderV];
-    }
-
-    _buildClickExpansionAdjustment() {
-        const label = new Gtk.Label({
-            label: _('Expand clickable corner:'),
-            tooltip_text:
-                          `${_('Expand the area reactive to mouse clicks and scrolls along the edge of the monitor.')}\n${
-                              _('If adjacent corners are set to expand along the same edge, each of them allocates a half of the edge')}`,
-            halign: Gtk.Align.START,
-            hexpand: false,
+        const cornerPopover = new Gtk.Popover();
+        const popupGrid = new Gtk.Grid({
+            margin_start: 10,
+            margin_end: 10,
+            margin_top: 10,
+            margin_bottom: 10,
+            column_spacing: 12,
+            row_spacing: 8,
         });
 
-        const hExpandSwitch = new Gtk.ToggleButton({
-            halign: Gtk.Align.CENTER,
+        cornerPopover.set_child(popupGrid);
+
+        this._buildPressureSettings(popupGrid);
+        const settingsBtn = new Gtk.MenuButton({
+            popover: cornerPopover,
+            valign: Gtk.Align.CENTER,
+        });
+
+        settingsBtn.set_icon_name('emblem-system-symbolic');
+
+        //                              x, y, w, h
+        grid.attach(label,              0, 0, 5, 1);
+        grid.attach(hImage,             1, 1, 1, 1);
+        grid.attach(barrierSizeSliderH, 2, 1, 1, 1);
+        grid.attach(vImage,             3, 1, 1, 1);
+        grid.attach(barrierSizeSliderV, 4, 1, 1, 1);
+        grid.attach(settingsBtn,        0, 1, 1, 1);
+
+        return grid;
+    }
+
+    _buildClickableCornerExpansionWidget() {
+        const grid = new Gtk.Grid({
+            row_spacing: 0,
+            column_spacing: 8,
+            margin_top: 20,
+            margin_bottom: 8,
+            halign: Gtk.Align.FILL,
+            tooltip_text: _("You can activate 'Make active corners/edges visible' option on 'Options' page to see the results of these settings."),
+        });
+
+        const label = new Gtk.Label({
+            label: _('Expand clickable area - corner to edge:'),
+            tooltip_text:
+                          `${_('Expand the area reactive to mouse clicks and scrolls along the edge of the monitor in selected axis.')}\n${
+                              _('If an adjacent corner is set to expand along the same edge, each of them allocates a half of the edge')}`,
+            halign: Gtk.Align.START,
+            hexpand: true,
+        });
+
+        const hExpandSwitch = new Gtk.Switch({
+            halign: Gtk.Align.START,
             valign: Gtk.Align.CENTER,
             vexpand: false,
             hexpand: false,
@@ -641,10 +653,10 @@ class CornerPage extends Gtk.Box {
 
         const hImage = Gtk.Image.new_from_resource(`${this._iconPath}/${this._corner.top ? 'Top' : 'Bottom'}${this._corner.left ? 'Left' : 'Right'}HE.svg`);
         hImage.pixel_size = 40;
-        hExpandSwitch.set_child(hImage);
+        hImage.margin_start = 50;
 
-        const vExpandSwitch = new Gtk.ToggleButton({
-            halign: Gtk.Align.CENTER,
+        const vExpandSwitch = new Gtk.Switch({
+            halign: Gtk.Align.END,
             valign: Gtk.Align.CENTER,
             vexpand: false,
             hexpand: false,
@@ -653,12 +665,20 @@ class CornerPage extends Gtk.Box {
 
         const vImage = Gtk.Image.new_from_resource(`${this._iconPath}/${this._corner.top ? 'Top' : 'Bottom'}${this._corner.left ? 'Left' : 'Right'}VE.svg`);
         vImage.pixel_size = 40;
-        vExpandSwitch.set_child(vImage);
+        vImage.margin_start = 50;
+        vImage.halign = Gtk.Align.END;
 
         this._corner._gsettings[Triggers.BUTTON_PRIMARY].bind('h-expand', hExpandSwitch, 'active', Gio.SettingsBindFlags.DEFAULT);
         this._corner._gsettings[Triggers.BUTTON_PRIMARY].bind('v-expand', vExpandSwitch, 'active', Gio.SettingsBindFlags.DEFAULT);
 
-        return [label, hExpandSwitch, vExpandSwitch];
+        //                         x, y, w, h
+        grid.attach(label,         0, 1, 1, 1);
+        grid.attach(hImage,        1, 1, 1, 1);
+        grid.attach(hExpandSwitch, 2, 1, 1, 1);
+        grid.attach(vImage,        3, 1, 1, 1);
+        grid.attach(vExpandSwitch, 4, 1, 1, 1);
+
+        return grid;
     }
 
     _chooseAppDialog() {
@@ -701,8 +721,7 @@ class CornerPage extends Gtk.Box {
             cmdLabel.set_text(`App ID:  \t\t${appInfo.get_id()}\nCommand: \t${appInfo.get_commandline()}`);
         }
         );
-        if (dialog.show_all)
-            dialog.show_all();
+
         dialog.show();
         return dialog;
     }
