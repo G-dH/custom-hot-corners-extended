@@ -244,7 +244,7 @@ class CornerPage extends Gtk.Box {
         hotFrame.set_child(hotBox);
 
         const clickFrame = new Gtk.Frame({
-            label: `<b>${_('Click Corner')}</b>`,
+            label: `<b>${_('Click/Scroll Corner')}</b>`,
             margin_top: 10,
         });
         clickFrame.get_label_widget().use_markup = true;
