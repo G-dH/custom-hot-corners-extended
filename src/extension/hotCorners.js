@@ -81,7 +81,7 @@ var CustomHotCornersExtended = class CustomHotCornersExtended {
             }
         );
 
-        log(`${Me.metadata.name}: enabled`);
+        console.debug(`${Me.metadata.name}: enabled`);
     }
 
     disable() {
@@ -123,8 +123,14 @@ var CustomHotCornersExtended = class CustomHotCornersExtended {
             this._panelButton = null;
         }
 
+        if (this._displayRedirectionDisabled) {
+            Meta.enable_unredirect_for_display(global.display);
+            this._displayRedirectionDisabled = false;
+        }
+
         chce = null;
-        log(`${Me.metadata.name}: ${fullDisable ? 'disabled' : 'suspended'}`);
+
+        console.debug(`${Me.metadata.name}: ${fullDisable ? 'disabled' : 'suspended'}`);
     }
 
     _replace_updateHotCornersFunc() {
@@ -153,7 +159,7 @@ var CustomHotCornersExtended = class CustomHotCornersExtended {
                 supportedExtensions.push('aatws');
 
             let windowSearchProviderEnabled = false;
-            if (shellVersion >= 40 && Main.overview._overview._controls.layoutManager._searchController._searchResults._providers) {
+            if (Main.overview._overview._controls.layoutManager._searchController._searchResults._providers) {
                 Main.overview._overview._controls.layoutManager._searchController._searchResults._providers.forEach(p => {
                     if (p.id.includes('open-windows'))
                         windowSearchProviderEnabled = true;
@@ -236,6 +242,7 @@ var CustomHotCornersExtended = class CustomHotCornersExtended {
         // index of the primary monitor to the first position
         monIndexes.splice(0, 0, monIndexes.splice(primaryIndex, 1)[0]);
 
+        chce._fullscreenRequired = false;
         for (let i = 0; i < Main.layoutManager.monitors.length; ++i) {
             // Monitor 1 in preferences will always refer to the primary monitor
             const corners = Settings.Corner.forMonitor(i, monIndexes[i], global.display.get_monitor_geometry(monIndexes[i]));
@@ -246,7 +253,7 @@ var CustomHotCornersExtended = class CustomHotCornersExtended {
 
                 for (let trigger of chce._listTriggers) {
                     // Update hot corner if something changes
-                    // corner has it's own connect method defined in settings, this is not direct gsettings connect
+                    // corner has its own connect method defined in settings, this is not direct gsettings connect
                     // corner.connect('changed', (settings, key) => chce._updateCorner(corner, key, trigger), trigger);
                     corner.connect('changed', chce._updateHotCorners, trigger);
                 }
@@ -257,6 +264,14 @@ var CustomHotCornersExtended = class CustomHotCornersExtended {
                         chce._removePanelBarrier();
                 }
             }
+        }
+
+        // If any corner action should be available in fullscreen mode,
+        // disable bypassing the compositor when the display switches to fullscreen mode
+        // and keep track of its state - each disable has to be enabled, it works as a stack
+        if (chce._fullscreenRequired && !chce._displayRedirectionDisabled) {
+            Meta.disable_unredirect_for_display(global.display);
+            chce._displayRedirectionDisabled = true;
         }
     }
 
@@ -294,8 +309,11 @@ var CustomHotCornersExtended = class CustomHotCornersExtended {
 
     _shouldExistHotCorner(corner) {
         let answer = false;
-        for (let trigger of chce._listTriggers)
-            answer = answer || (corner.action[trigger] !== 'disabled');
+        for (let trigger of chce._listTriggers) {
+            const cornerActive = corner.action[trigger] !== 'disabled';
+            answer = answer || cornerActive;
+            chce._fullscreenRequired = chce._fullscreenRequired || (cornerActive && corner.get('fullscreen', trigger));
+        }
 
         return answer;
     }
