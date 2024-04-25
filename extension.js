@@ -9,6 +9,7 @@
 'use strict';
 
 import GLib from 'gi://GLib';
+import Meta from 'gi://Meta';
 
 import * as Main from 'resource:///org/gnome/shell/ui/main.js';
 import * as AltTab from 'resource:///org/gnome/shell/ui/altTab.js';
@@ -143,6 +144,11 @@ export default class CustomHotCornersExtended extends Extension {
         Settings.cleanGlobals();
         ActionList.cleanGlobals();
 
+        if (this._displayRedirectionDisabled) {
+            Meta.enable_unredirect_for_display(global.display);
+            this._displayRedirectionDisabled = false;
+        }
+
         chce = null;
 
         console.log(`${this.metadata.name}: ${fullDisable ? 'disabled' : 'suspended'}`);
@@ -257,6 +263,7 @@ export default class CustomHotCornersExtended extends Extension {
         // index of the primary monitor to the first position
         monIndexes.splice(0, 0, monIndexes.splice(primaryIndex, 1)[0]);
 
+        chce._fullscreenRequired = false;
         for (let i = 0; i < Main.layoutManager.monitors.length; ++i) {
             // Monitor 1 in preferences will always refer to the primary monitor
             const corners = Settings.Corner.forMonitor(i, monIndexes[i], global.display.get_monitor_geometry(monIndexes[i]));
@@ -278,6 +285,14 @@ export default class CustomHotCornersExtended extends Extension {
                         chce._removePanelBarrier();
                 }
             }
+        }
+
+        // If any corner action should be available in fullscreen mode,
+        // disable bypassing the compositor when the display switches to fullscreen mode
+        // and keep track of its state - each disable has to be enabled, it works as a stack
+        if (chce._fullscreenRequired && !chce._displayRedirectionDisabled) {
+            Meta.disable_unredirect_for_display(global.display);
+            chce._displayRedirectionDisabled = true;
         }
     }
 
@@ -315,8 +330,11 @@ export default class CustomHotCornersExtended extends Extension {
 
     _shouldExistHotCorner(corner) {
         let answer = false;
-        for (let trigger of chce._listTriggers)
-            answer = answer || (corner.action[trigger] !== 'disabled');
+        for (let trigger of chce._listTriggers) {
+            const cornerActive = corner.action[trigger] !== 'disabled';
+            answer = answer || cornerActive;
+            chce._fullscreenRequired = chce._fullscreenRequired || (cornerActive && corner.get('fullscreen', trigger));
+        }
 
         return answer;
     }
