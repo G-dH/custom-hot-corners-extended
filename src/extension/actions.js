@@ -1464,7 +1464,8 @@ var Actions = class {
 
         const gicon = new Gio.ThemedIcon({ name: icons[n] });
         const level = volume / maxLevel * ampScale;
-        Main.osdWindowManager.show(-1, gicon, null, level, ampScale);
+        const label = sink.get_port().human_port;
+        Main.osdWindowManager.show(-1, gicon, label, level, ampScale);
     }
 
     toggleNightLight() {
