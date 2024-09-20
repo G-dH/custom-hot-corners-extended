@@ -10,12 +10,16 @@
 'use strict';
 
 import Clutter from 'gi://Clutter';
+import Cogl from 'gi://Cogl';
 import Meta from 'gi://Meta';
 
 import * as Main from 'resource:///org/gnome/shell/ui/main.js';
 import * as Settings from '../common/settings.js';
 import * as Actions from './actions.js';
 import * as Keybindings from './keybindings.js';
+
+// Cogl.Color replaces Clutter.Color in GS 47
+const Color = Clutter.Color ? Clutter.Color : Cogl.Color;
 
 // gettext
 let _;
@@ -785,7 +789,7 @@ export const ActionTrigger = class ActionTrigger {
 
     _tintRedToggleWin() {
         this.actions.toggleColorTintEffect(
-            new Clutter.Color({
+            new Color({
                 red:    255,
                 green:  200,
                 blue:   146,
@@ -795,7 +799,7 @@ export const ActionTrigger = class ActionTrigger {
 
     _tintRedToggleAll() {
         this.actions.toggleColorTintEffect(
-            new Clutter.Color({
+            new Color({
                 red:    255,
                 green:  200,
                 blue:   146,
@@ -805,7 +809,7 @@ export const ActionTrigger = class ActionTrigger {
 
     _tintGreenToggleWin() {
         this.actions.toggleColorTintEffect(
-            new Clutter.Color({
+            new Color({
                 red:    200,
                 green:  255,
                 blue:   146,
@@ -815,7 +819,7 @@ export const ActionTrigger = class ActionTrigger {
 
     _tintGreenToggleAll() {
         this.actions.toggleColorTintEffect(
-            new Clutter.Color({
+            new Color({
                 red:    200,
                 green:  255,
                 blue:   146,

@@ -12,6 +12,7 @@
 import GObject from 'gi://GObject';
 import GLib from 'gi://GLib';
 import Clutter from 'gi://Clutter';
+import Cogl from 'gi://Cogl';
 import St from 'gi://St';
 import Meta from 'gi://Meta';
 import Shell from 'gi://Shell';
@@ -1581,7 +1582,8 @@ export const Actions = class {
 
     toggleColorTintEffect(color, window = true) {
         if (!color) {
-            const [success, col] = Clutter.Color.from_string(this._mscOptions.get('customTintColor'));
+            const Color = Clutter.Color ? Clutter.Color : Cogl.Color;
+            const [success, col] = Color.from_string(this._mscOptions.get('customTintColor'));
             if (!success)
                 return;
             else

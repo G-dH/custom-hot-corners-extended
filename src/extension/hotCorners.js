@@ -10,6 +10,7 @@
 'use strict';
 
 import Clutter from 'gi://Clutter';
+import Cogl from 'gi://Cogl';
 import Meta from 'gi://Meta';
 import Shell from 'gi://Shell';
 import GObject from 'gi://GObject';
@@ -18,6 +19,9 @@ import * as Main from 'resource:///org/gnome/shell/ui/main.js';
 import * as Layout from 'resource:///org/gnome/shell/ui/layout.js';
 
 import * as Settings from '../common/settings.js';
+
+// Cogl.Color replaces Clutter.Color in GS 47
+const Color = Clutter.Color ? Clutter.Color : Cogl.Color;
 
 const Triggers               = Settings.Triggers;
 
@@ -186,7 +190,7 @@ class CustomHotCorner extends Layout.HotCorner {
             width: sizeH,
             height: 1,
             reactive: false,
-            background_color: new Clutter.Color({
+            background_color: new Color({
                 red:   0,
                 green: 255,
                 blue:  0,
@@ -212,7 +216,7 @@ class CustomHotCorner extends Layout.HotCorner {
             width: 1,
             height: sizeV,
             reactive: false,
-            background_color: new Clutter.Color({
+            background_color: new Color({
                 red:   0,
                 green: 255,
                 blue:  0,
@@ -261,7 +265,7 @@ class CustomHotCorner extends Layout.HotCorner {
             width: hSize,
             height: aSize,
             reactive: true,
-            background_color: new Clutter.Color({
+            background_color: new Color({
                 red:   255,
                 green: 120,
                 blue:  0,
@@ -288,7 +292,7 @@ class CustomHotCorner extends Layout.HotCorner {
                 width: aSize,
                 height: vSize,
                 reactive: true,
-                background_color: new Clutter.Color({
+                background_color: new Color({
                     red:   255,
                     green: 120,
                     blue:  0,
@@ -315,7 +319,7 @@ class CustomHotCorner extends Layout.HotCorner {
                 height:   fSize,
                 reactive: true,
                 visible:  true,
-                background_color: new Clutter.Color({
+                background_color: new Color({
                     red:   0,
                     green: 255,
                     blue:  0,
