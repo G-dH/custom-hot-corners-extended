@@ -24,7 +24,6 @@ import * as Volume from 'resource:///org/gnome/shell/ui/status/volume.js';
 import * as PopupMenu from 'resource:///org/gnome/shell/ui/popupMenu.js';
 import * as BoxPointer from 'resource:///org/gnome/shell/ui/boxpointer.js';
 import * as AltTab from 'resource:///org/gnome/shell/ui/altTab.js';
-import * as OsdMonitorLabeler from 'resource:///org/gnome/shell/ui/osdMonitorLabeler.js';
 import * as Workspace from 'resource:///org/gnome/shell/ui/workspace.js';
 import * as Screenshot from 'resource:///org/gnome/shell/ui/screenshot.js';
 import * as FileUtils from 'resource:///org/gnome/shell/misc/fileUtils.js';
@@ -409,7 +408,7 @@ export const Actions = class {
         monIndexes.splice(0, 0, monIndexes.splice(primaryIndex, 1)[0]);
 
         for (let i = 0; i < nMonitors; ++i) {
-            const label = new OsdMonitorLabeler.OsdMonitorLabel(monIndexes[i], `${i + 1}`);
+            const label = new OsdMonitorLabel(monIndexes[i], `${i + 1}`);
             label._label.style_class = '';
             label._label.set_style(`background-color: rgba(35, 35, 35, 1.0);
                                     color: rgba(255, 255, 255, 1.0);
@@ -2093,3 +2092,42 @@ class CyclerHighlight extends St.Widget {
     }
 });
 
+const OsdMonitorLabel = GObject.registerClass(
+class OsdMonitorLabel extends St.Widget {
+    _init(monitor, label) {
+        super._init({ x_expand: true, y_expand: true });
+
+        this._monitor = monitor;
+
+        this._box = new St.BoxLayout({
+            vertical: true,
+        });
+        this.add_child(this._box);
+
+        this._label = new St.Label({
+            style_class: 'osd-monitor-label',
+            text: label,
+        });
+        this._box.add_child(this._label);
+
+        Main.uiGroup.add_child(this);
+        Main.uiGroup.set_child_above_sibling(this, null);
+        this._position();
+
+        Meta.disable_unredirect_for_display(global.display);
+        this.connect('destroy', () => {
+            Meta.enable_unredirect_for_display(global.display);
+        });
+    }
+
+    _position() {
+        let workArea = Main.layoutManager.getWorkAreaForMonitor(this._monitor);
+
+        if (Clutter.get_default_text_direction() === Clutter.TextDirection.RTL)
+            this._box.x = workArea.x + (workArea.width - this._box.width);
+        else
+            this._box.x = workArea.x;
+
+        this._box.y = workArea.y;
+    }
+});
