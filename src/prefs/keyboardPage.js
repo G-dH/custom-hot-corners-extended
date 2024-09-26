@@ -165,7 +165,7 @@ class KeyboardPage extends TreeViewPage.TreeViewPage {
     }
 
     _updateTitle() {
-        this.lbl.set_markup(`${_bold(_('Keyboard Shortcuts'))}    (active: ${Object.keys(this.keybindings).length})`);
+        this.lbl.set_markup(`${_bold(_('Keyboard Shortcuts'))}    (${_('active')}: ${Object.keys(this.keybindings).length})`);
     }
 
     _loadShortcuts() {

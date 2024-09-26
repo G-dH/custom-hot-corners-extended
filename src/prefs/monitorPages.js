@@ -268,7 +268,7 @@ class CornerPage extends Gtk.Box {
 
             });
             let ctrlBtn = new Gtk.CheckButton({
-                label: 'Ctrl',
+                label: _('Ctrl'),
                 halign: Gtk.Align.START,
                 valign: Gtk.Align.CENTER,
                 vexpand: false,
