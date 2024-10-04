@@ -1,0 +1,1303 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR GdH
+# This file is distributed under the same license as the custom-hot-corners-extended package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: custom-hot-corners-extended\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2024-09-28 16:09+0200\n"
+"PO-Revision-Date: 2024-09-28 16:11+0200\n"
+"Last-Translator: Uwe Senkler\n"
+"Language-Team: \n"
+"Language: de\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Poedit 3.5\n"
+
+#: prefs.js:53
+msgid "Keyboard"
+msgstr "Tastatur"
+
+#: prefs.js:59 src/prefs/actionList.js:230
+msgid "Custom Menus"
+msgstr "Eigene Menüs"
+
+#: prefs.js:65
+msgid "Options"
+msgstr "Optionen"
+
+#: prefs.js:71
+msgid "About"
+msgstr "Info"
+
+#: src/extension/actionTrigger.js:612
+msgid "disabled"
+msgstr "deaktiviert"
+
+#: src/extension/actionTrigger.js:617
+msgid "Hot corners were updated."
+msgstr "Aktive Ecke wurden aktualisiert."
+
+#: src/extension/actionTrigger.js:884
+msgid "Error: ArcMenu trigger not available..."
+msgstr "Fehler: ArcMenü-Auslöser nicht verfügbar…"
+
+#: src/extension/actions.js:987
+msgid "Restarting Gnome Shell..."
+msgstr "Gnome Shell neu starten …"
+
+#: src/extension/actions.js:989
+msgid "Gnome Shell - Restart is not available in Wayland session"
+msgstr "Gnome Shell ­­­­– Neustart ist in einer Wayland-Sitzung nicht verfügbar"
+
+#: src/extension/actions.js:1070
+msgid ""
+"Theme switcher works with Adwaita/Adwaita-dark and Yaru(-light)/Yaru-dark "
+"themes only"
+msgstr ""
+"Der Stilumschalter funktioniert nur mit den Stilen Adwaita/Adwaita-dark siwue "
+"Yaru(-light)/Yaru-dark"
+
+#: src/extension/actions.js:1493
+msgid "Opacity"
+msgstr "Deckkraft"
+
+#: src/extension/actions.js:1562
+msgid "(global)"
+msgstr "(global)"
+
+#: src/extension/actions.js:1563
+msgid "Brightness"
+msgstr "Helligkeit"
+
+#: src/extension/actions.js:1563
+msgid "Contrast"
+msgstr "Kontrast"
+
+#: src/extension/actions.js:1788
+msgid ""
+"This action requires the \"WTMB (Window Thumbnails)\" extension installed on "
+"your system"
+msgstr ""
+"Für diese Aktion ist die Erweiterung »WTMB )Window Thumbnails)« erforderlich"
+
+#: src/extension/actions.js:2011
+msgid "No window has focus!"
+msgstr "Kein Fenster hat den Fokus!"
+
+#: src/extension/panelButton.js:49
+msgid "Disable all triggers"
+msgstr "Alle Auslöser deaktivieren"
+
+#: src/extension/panelButton.js:53
+msgid "Hot corner triggers require Shift key"
+msgstr "Aktive-Ecken-Auslöser nur mit Umschalttaste"
+
+#: src/extension/panelButton.js:57
+msgid "Update all triggers"
+msgstr "Alle Auslöser aktualisieren"
+
+#: src/extension/panelButton.js:62
+msgid "Settings"
+msgstr "Einstellungen"
+
+#: src/extension/panelButton.js:136
+msgid "Hot corners were re-created."
+msgstr "Aktive Ecken wurden  wiederhergestellt."
+
+#: src/prefs/aboutPage.js:51
+msgid "Version"
+msgstr "Version"
+
+#: src/prefs/aboutPage.js:57
+msgid "Reset all options"
+msgstr "Alle Optionen zurücksetzen"
+
+#: src/prefs/aboutPage.js:58
+msgid "Disable all triggers and reset all options to their default values"
+msgstr ""
+"Alle Auslöser werden deaktiviert und alle Optionen auf die "
+"Standardeinstellungen zurückgesetzt"
+
+#: src/prefs/aboutPage.js:64
+msgid "Links"
+msgstr "Verweise"
+
+#: src/prefs/aboutPage.js:68
+msgid "Homepage"
+msgstr "Internet-Seite"
+
+#: src/prefs/aboutPage.js:69
+msgid "Source code and more info about this extension"
+msgstr "Quellcode und weitere Informationen zu dieser Erweiterung"
+
+#: src/prefs/aboutPage.js:74
+msgid "Changelog"
+msgstr "Änderungsprotokoll"
+
+#: src/prefs/aboutPage.js:75
+msgid "See what's changed."
+msgstr "Anzeigen, was hat sich geändert hat."
+
+#: src/prefs/aboutPage.js:80
+msgid "GNOME Extensions"
+msgstr "GNOME-Erweiterungen"
+
+#: src/prefs/aboutPage.js:81
+msgid "Rate and comment the extension on GNOME Extensions site"
+msgstr ""
+"Diese Erweiterung auf der GNOME-Erweiterungen-Seite bewerten und kommentieren"
+
+#: src/prefs/aboutPage.js:86
+msgid "Report a bug or suggest new feature"
+msgstr "Fehler melden oder neue Funktionen vorschlagen"
+
+#: src/prefs/aboutPage.js:92
+msgid "Buy Me a Coffee"
+msgstr "Einen Kaffee für mich"
+
+#: src/prefs/aboutPage.js:93
+msgid "Enjoying this extension? Consider supporting it by buying me a coffee!"
+msgstr ""
+"Sie schätzen diese Erweiterung? Vielleicht wollen Sie die Entwicklung "
+"unterstützen und mir einen Kaffee spendieren!"
+
+#: src/prefs/actionChooserDialog.js:49
+msgid "Choose Action"
+msgstr "Aktion wählen"
+
+#: src/prefs/actionChooserDialog.js:93
+msgid "Cancel"
+msgstr "Abbrechen"
+
+#: src/prefs/actionChooserDialog.js:100 src/prefs/keyboardPage.js:79
+msgid "Action"
+msgstr "Aktion"
+
+#: src/prefs/actionChooserDialog.js:188 src/prefs/treeViewPage.js:91
+msgid "Expand all"
+msgstr "Alle ausklappen"
+
+#: src/prefs/actionChooserDialog.js:196 src/prefs/treeViewPage.js:100
+msgid "Collapse all"
+msgstr "Alle einklappen"
+
+#: src/prefs/actionList.js:54 src/prefs/monitorPages.js:185
+msgid "Left"
+msgstr "Links"
+
+#: src/prefs/actionList.js:54
+msgid "Up"
+msgstr "Aufwärts"
+
+#: src/prefs/actionList.js:55 src/prefs/monitorPages.js:185
+msgid "Right"
+msgstr "Rechts"
+
+#: src/prefs/actionList.js:55
+msgid "Down"
+msgstr "Abwärts"
+
+#: src/prefs/actionList.js:61
+msgid "-"
+msgstr "–"
+
+#: src/prefs/actionList.js:62
+msgid "Core Actions"
+msgstr "Basisaktionen"
+
+#: src/prefs/actionList.js:63
+msgid "Toggle Overview - Window Picker"
+msgstr "Übersicht umschalten – Fensterübersicht"
+
+#: src/prefs/actionList.js:64
+msgid "Show Overview - Window Picker"
+msgstr "Übersicht anzeigen – Fensterübersicht"
+
+#: src/prefs/actionList.js:65
+msgid "Toggle Overview - Current App Windows"
+msgstr "Übersicht umschalten – Fenster der aktuellen Anwendung"
+
+#: src/prefs/actionList.js:66
+msgid "Toggle Overview - App Grid"
+msgstr "Übersicht umschalten – Anwendungsübersicht"
+
+#: src/prefs/actionList.js:67
+msgid "Show Overview - App Grid"
+msgstr "Übersicht anzeigen – Anwendungsübersicht"
+
+#: src/prefs/actionList.js:68
+msgid "Run Preset Command / Activate App ..."
+msgstr "Gewählten Befehl ausführen/Anwendung aktivieren …"
+
+#: src/prefs/actionList.js:69
+msgid "Show Desktop (all monitors)"
+msgstr "Arbeitsfläche anzeigen (alle Bildschirme)"
+
+#: src/prefs/actionList.js:70
+msgid "Show Desktop (current monitor)"
+msgstr "Arbeitsfläche anzeigen (aktueller Bildschirm)"
+
+#: src/prefs/actionList.js:71
+msgid "Activate Screenshot Tool"
+msgstr "Bildschirmfotowerkzeuge aktivieren"
+
+#: src/prefs/actionList.js:72
+msgid "Hide Screen Content (all monitors)"
+msgstr "Bildschirminhalt ausblenden (alle Bildschirme)"
+
+#: src/prefs/actionList.js:73
+msgid "Hide Screen Content (current monitor)"
+msgstr "Bildschirminhalt ausblenden (aktueller Bildschirme"
+
+#: src/prefs/actionList.js:75
+msgid "Supported Installed extensions"
+msgstr "Unterstützte installierte Erweiterungen"
+
+#: src/prefs/actionList.js:76
+msgid "OFP/V-Shell - List/Search Open Windows"
+msgstr "OFP/V-Shell – Geöffnete Fenster auflisten/suchen"
+
+#: src/prefs/actionList.js:77
+msgid "ArcMenu - Open"
+msgstr "ArcMenu - Öffnen"
+
+#: src/prefs/actionList.js:79
+msgid "Workspaces"
+msgstr "Arbeitsflächen"
+
+#: src/prefs/actionList.js:80
+msgid "Previous Workspace"
+msgstr "Vorherige Arbeitsfläche"
+
+#: src/prefs/actionList.js:81
+msgid "Next Workspace"
+msgstr "Nächste Arbeitsfläche"
+
+#: src/prefs/actionList.js:82
+msgid "Previous Workspace with Window Switcher"
+msgstr "Vorherige Arbeitsfläche mit Fensterübersicht"
+
+#: src/prefs/actionList.js:83
+msgid "Next Workspace with Window Switcher"
+msgstr "Nächste Arbeitsfläche mit Fensterübersicht"
+
+#: src/prefs/actionList.js:84
+msgid "Previous Workspace - Current Monitor Only"
+msgstr "Vorherige Arbeitsfläche – nur aktueller Bildschirm"
+
+#: src/prefs/actionList.js:85
+msgid "Next Workspace - Current Monitor Only"
+msgstr "Nächste Arbeitsfläche – nur aktueller Bildschirm"
+
+#: src/prefs/actionList.js:86
+msgid "Switch to Most Recent Workspace"
+msgstr "Zur zuletzt verwendeten Arbeitsfläche wechseln"
+
+#: src/prefs/actionList.js:87
+msgid "Switch to Preset Workspace ..."
+msgstr "Zur voreingestellten Arbeitsfläche wechseln …"
+
+#: src/prefs/actionList.js:88
+msgid "Switch to Second Last Workspace"
+msgstr "Zur vorletzten verwendeten Arbeitsfläche wechseln"
+
+#: src/prefs/actionList.js:93
+msgid "Close Current Workspace (and its windows)"
+msgstr "Aktuelle Arbeitsfläche (und ihre Fenster) schließen"
+
+#: src/prefs/actionList.js:95
+msgid "Windows - Navigation"
+msgstr "Fenster – Navigation"
+
+#: src/prefs/actionList.js:96
+msgid "Switch to Most Recent Window"
+msgstr "Zum zuletzt verwendeten Fenster wechseln"
+
+#: src/prefs/actionList.js:97
+msgid "Previous Window (current monitor)"
+msgstr "Vorheriges Fenster (aktueller Bildschirm)"
+
+#: src/prefs/actionList.js:98
+msgid "Previous Window (current WS)"
+msgstr "Vorheriges Fenster (aktuelle AF)"
+
+#: src/prefs/actionList.js:99
+msgid "Previous Window (all)"
+msgstr "Vorheriges Fenster (überall)"
+
+#: src/prefs/actionList.js:100
+msgid "Previous Window - Current App (all)"
+msgstr "Vorheriges Fenster (überall)"
+
+#: src/prefs/actionList.js:101
+msgid "Next Window (current monitor)"
+msgstr "Nächstes Fenster )aktueller Bildschirm)"
+
+#: src/prefs/actionList.js:102
+msgid "Next Window (current WS)"
+msgstr "Nächstes Fenster (aktuelle AF)"
+
+#: src/prefs/actionList.js:103
+msgid "Next Window (all)"
+msgstr "Nächstes Fenster (überall)"
+
+#: src/prefs/actionList.js:104
+msgid "Next Window - Current App (all)"
+msgstr "Nächstes Fenster – aktuelle Anwendung (überall)"
+
+#: src/prefs/actionList.js:106
+msgid "Windows/App - Switcher Popups"
+msgstr "Fenster/Anwendung – Wechsler"
+
+#: src/prefs/actionList.js:107
+msgid "Window Switcher Popup (all/default)"
+msgstr "Fensterwechsler (Fensterwechsler (alle/Standard)"
+
+#: src/prefs/actionList.js:108
+msgid "Window Switcher Popup (current ws)"
+msgstr "Fensterwechsler (aktuelle AF)"
+
+#: src/prefs/actionList.js:109
+msgid "Window Switcher Popup (current monitor)"
+msgstr "Fensterwechsler (aktueller Bildschirm)"
+
+#: src/prefs/actionList.js:110
+msgid "Window Switcher Popup (current ws first)"
+msgstr "Fensterwechsler (aktuelle AF zuerst)"
+
+#: src/prefs/actionList.js:111
+msgid "Window Switcher Popup (sorted by apps)"
+msgstr "Fensterwechsler (nach Anwendung sortiert)"
+
+#: src/prefs/actionList.js:112
+msgid "Window Switcher Popup (focused app only)"
+msgstr "Fensterwechsler (nur fokusierte Anwendung)"
+
+#: src/prefs/actionList.js:113
+msgid "App Switcher Popup (all/default)"
+msgstr "Anwendungswechsler (alle/Standard)"
+
+#: src/prefs/actionList.js:114
+msgid "App Switcher Popup (current ws)"
+msgstr "Anwendungswechsler (aktuelle AF)"
+
+#: src/prefs/actionList.js:115
+msgid "App Switcher Popup (current monitor)"
+msgstr "Anwendungswechsler (aktueller Bildschirm)"
+
+#: src/prefs/actionList.js:117
+msgid "Windows - Control"
+msgstr "Fenster – Steuerung"
+
+#: src/prefs/actionList.js:118
+msgid "Minimize Window"
+msgstr "Fenster minimieren"
+
+#: src/prefs/actionList.js:119
+msgid "Maximize Window (toggle)"
+msgstr "Fenster maximieren (Umschalter)"
+
+#: src/prefs/actionList.js:120
+msgid "Close Window"
+msgstr "Fenster schließen"
+
+#: src/prefs/actionList.js:121
+msgid "Fullscreen Window (toggle)"
+msgstr "Vollbildfenster (Umschalter)"
+
+#: src/prefs/actionList.js:122
+msgid "Fullscreen Window on New WS (toggle)"
+msgstr "Vollbildfenster auf neuer AF (Umschalter)"
+
+#: src/prefs/actionList.js:123
+msgid "Always on Top Window (toggle)"
+msgstr "Immer im Vordergrund (Umschalter)"
+
+#: src/prefs/actionList.js:124
+msgid "Always on Visible Workspace (toggle)"
+msgstr "Immer auf sichtbarer Arbeitsfläche (Umschalter)"
+
+#: src/prefs/actionList.js:125
+msgid "Open New Window (if supported)"
+msgstr "Neues Fenster öffnen (sofern unterstützt)"
+
+#: src/prefs/actionList.js:126
+msgid "Quit Focused Application"
+msgstr "Anwendung mit Fokus beenden"
+
+#: src/prefs/actionList.js:127
+msgid "Force Quit Focused Application"
+msgstr "Anwendung mit Fokus sofort beenden"
+
+#: src/prefs/actionList.js:128
+msgid "Unminimize All Windows (workspace)"
+msgstr "Minimierung aller Fenster aufheben (Arbeitsfläche)"
+
+#: src/prefs/actionList.js:129
+msgid "Unminimize All Windows"
+msgstr "Minimierung aller Fenster aufheben"
+
+#: src/prefs/actionList.js:131
+msgid "Windows - Relocations"
+msgstr "Fenster – Positionierung"
+
+#: src/prefs/actionList.js:132
+msgid "Move Window to Previous workspace"
+msgstr "Fenster auf die vorherige Arbeitsfläche verschieben"
+
+#: src/prefs/actionList.js:133
+msgid "Move Window to New workspace Prev"
+msgstr "Fenster auf neue Arbeitsfläche bewegen (vorige)"
+
+#: src/prefs/actionList.js:134
+msgid "Move Window to Next workspace"
+msgstr "Fenster auf die nächste Arbeitsfläche verschieben"
+
+#: src/prefs/actionList.js:135
+msgid "Move Window to New workspace Next"
+msgstr "Fenster auf neue Arbeitsfläche bewegen (nächste)"
+
+#: src/prefs/actionList.js:136
+msgid "Move App windows to Prev Workspace"
+msgstr "Anwendungsfenster auf vorherige Arbeitsfläche verschieben"
+
+#: src/prefs/actionList.js:137
+msgid "Move App windows to New Workspace Prev"
+msgstr "Anwendungsfenster auf neue Arbeitsfläche verschieben (vorherige)"
+
+#: src/prefs/actionList.js:138
+msgid "Move App windows to Next Workspace"
+msgstr "Anwendungsfenster auf nächste Arbeitsfläche verschieben"
+
+#: src/prefs/actionList.js:139
+msgid "Move App windows to New Workspace Next"
+msgstr "Anwendungsfenster auf neue Arbeitsfläche verschieben (nächste)"
+
+#: src/prefs/actionList.js:140
+msgid "Move Window to Next Monitor"
+msgstr "Fenster auf nächsten Bildschirm verschieben"
+
+#: src/prefs/actionList.js:142
+msgid "WTMB (Window Thumbnails) extension"
+msgstr "Erweiterung WTMB (Window Thumbnails)"
+
+#: src/prefs/actionList.js:143
+msgid "Create Window Thumbnail (PIP)"
+msgstr "Fenstervorschau erstellen (PIP)"
+
+#: src/prefs/actionList.js:144
+msgid "Minimize Window to Thumbnail"
+msgstr "Fenster zu Vorschau minimieren"
+
+#: src/prefs/actionList.js:145
+msgid "Remove All Window Thumbnails"
+msgstr "Alle Fenstervorschauen entfernen"
+
+#: src/prefs/actionList.js:147
+msgid "Windows - Visual Adjustments"
+msgstr "Fenster – Visuelle Erscheinung"
+
+#: src/prefs/actionList.js:148
+msgid "Brightness Up (window)"
+msgstr "Helligkeit aufwärts (Fenster)"
+
+#: src/prefs/actionList.js:149
+msgid "Brightness Down (window)"
+msgstr "Helligkeit abwärts (Fenster)"
+
+#: src/prefs/actionList.js:150
+msgid "Contrast Up (window)"
+msgstr "Kontrast aufwärts (Fenster)"
+
+#: src/prefs/actionList.js:151
+msgid "Contrast Down (window)"
+msgstr "Kontrast abwärts (Fenster)"
+
+#: src/prefs/actionList.js:152
+msgid "High Contrast (window)"
+msgstr "Starker Kontrast (Fenster)"
+
+#: src/prefs/actionList.js:153
+msgid "Low Contrast (window)"
+msgstr "Schwacher Kontrast (Fenster)"
+
+#: src/prefs/actionList.js:154
+msgid "Opacity Up (window)"
+msgstr "Deckkraft aufwärts (Fenster)"
+
+#: src/prefs/actionList.js:155
+msgid "Opacity Down (window)"
+msgstr "Denkkraft abwärts (Fenster)"
+
+#: src/prefs/actionList.js:156
+msgid "Opacity 78% (window)"
+msgstr "Deckkraft 78% (Fenster)"
+
+#: src/prefs/actionList.js:157
+#, javascript-format
+msgid "Opacity 78% for dark themes (window)"
+msgstr "Deckkraft 78% für dunkle Stile (Fenster)"
+
+#: src/prefs/actionList.js:158
+#, javascript-format
+msgid "Opacity 94% + bit of contrast (window)"
+msgstr "Deckkraft 94% + bit of Kontrast (Fenster)"
+
+#: src/prefs/actionList.js:160
+msgid "Windows - Color Effects"
+msgstr "Fenster ­– Farbeffekte"
+
+#: src/prefs/actionList.js:161
+msgid "Invert Lightness (window)"
+msgstr "Helligkeit invertieren (Fenster)"
+
+#: src/prefs/actionList.js:162
+msgid "Invert Lightness - White to Grey (window)"
+msgstr "Helligkeit invertieren – Weiß zu Grau (Fenster)"
+
+#: src/prefs/actionList.js:163
+msgid "Invert Colors (window)"
+msgstr "Farben invertieren (Fenster)"
+
+#: src/prefs/actionList.js:164
+msgid "Red Tint (window)"
+msgstr "Rot einfärben (Fenster)"
+
+#: src/prefs/actionList.js:165
+msgid "Green Tint (window)"
+msgstr "Grün einfärben (Fenster)"
+
+#: src/prefs/actionList.js:166
+msgid "Custom Color Tint (window)"
+msgstr "Mit eigener Farbe einfärben (Fenster)"
+
+#: src/prefs/actionList.js:167
+msgid "Desaturate (window)"
+msgstr "Entsättigen (Fenster)"
+
+#: src/prefs/actionList.js:168
+msgid "Remove All Effects (window)"
+msgstr "Alle Effekte entfernen (Fenster)"
+
+#: src/prefs/actionList.js:170
+msgid "Global Visual Effects"
+msgstr "Globale visuelle Effekte"
+
+#: src/prefs/actionList.js:171
+msgid "Brightness Up (global)"
+msgstr "Helligkeit aufwärts (global)"
+
+#: src/prefs/actionList.js:172
+msgid "Brightness Down (global)"
+msgstr "Helligkeit abwärts (global)"
+
+#: src/prefs/actionList.js:173
+msgid "Contrast Up (global)"
+msgstr "Kontrast aufwärts (global)"
+
+#: src/prefs/actionList.js:174
+msgid "Contrast Down (global)"
+msgstr "Kontrast abwärts (global)"
+
+#: src/prefs/actionList.js:175
+msgid "High Contrast (global)"
+msgstr "Starker Kontrast (global)"
+
+#: src/prefs/actionList.js:176
+msgid "Low Contrast (global)"
+msgstr "Schwacher Kontrast (global)"
+
+#: src/prefs/actionList.js:177 src/prefs/actionList.js:192
+msgid "Invert Lightness (global)"
+msgstr "Helligkeit invertieren (global)"
+
+#: src/prefs/actionList.js:178
+msgid "Invert Lightness - White to Grey (global)"
+msgstr "Helligkeit invertieren – Weiß zu Grau (global)"
+
+#: src/prefs/actionList.js:179
+msgid "Red Tint (global)"
+msgstr "Rot einfärben (global)"
+
+#: src/prefs/actionList.js:180
+msgid "Green Tint (global)"
+msgstr "Grün einfärben (global)"
+
+#: src/prefs/actionList.js:181
+msgid "Custom Color Tint (global)"
+msgstr "Mit eigener Farbe einfärben (global)"
+
+#: src/prefs/actionList.js:182
+msgid "Desaturate (global)"
+msgstr "Entsättigen (global)"
+
+#: src/prefs/actionList.js:183
+msgid "Remove All Effects (global)"
+msgstr "Alle Effekte entfernen (global)"
+
+#: src/prefs/actionList.js:185
+msgid "Universal Access"
+msgstr "Bedienungshilfen"
+
+#: src/prefs/actionList.js:186
+msgid "Magnifier - Zoom 2x (toggle)"
+msgstr "Lupe – doppelte Größer (Umschalter)"
+
+#: src/prefs/actionList.js:187
+msgid "Magnifier - Zoom In"
+msgstr "Lupe – vergrößern"
+
+#: src/prefs/actionList.js:188
+msgid "Magnifier - Zoom Out"
+msgstr "Lupe – verkleinern"
+
+#: src/prefs/actionList.js:189
+msgid "Screen Reader (toggle)"
+msgstr "Bildschirmleser (Umschalter)"
+
+#: src/prefs/actionList.js:190
+msgid "Large Text (toggle)"
+msgstr "Großer Text (Umschalter)"
+
+#: src/prefs/actionList.js:191
+msgid "Screen Keyboard (toggle)"
+msgstr "Bildschirmtastatur (Umschalter)"
+
+#: src/prefs/actionList.js:193
+msgid "Color Correction - Protanopia (window)"
+msgstr "Farbkorrektur – Protanopie (Fenster)"
+
+#: src/prefs/actionList.js:194
+msgid "Color Correction - Deuteranopia (window)"
+msgstr "Farbkorrektur – Deuteranopie (Fenster)"
+
+#: src/prefs/actionList.js:195
+msgid "Color Correction - Tritanopia (window)"
+msgstr "Farbkorrektur – Tritanopie (Fenster)"
+
+#: src/prefs/actionList.js:196
+msgid "Color Simulation - Protanopia (window)"
+msgstr "Farbsimulation – Protanopie (Fenster)"
+
+#: src/prefs/actionList.js:197
+msgid "Color Simulation - Deuteranopia (window)"
+msgstr "Farbkorrektur – Deuteranopie (Fenster)"
+
+#: src/prefs/actionList.js:198
+msgid "Color Simulation - Tritanopia (window)"
+msgstr "Farbkorrektur – Tritanopie (Fenster)"
+
+#: src/prefs/actionList.js:199
+msgid "Color Mixer GBR"
+msgstr "Farbmixer GBR"
+
+#: src/prefs/actionList.js:201
+msgid "GNOME"
+msgstr "GNOME"
+
+#: src/prefs/actionList.js:202
+msgid "Toggle Night Light"
+msgstr "Nachtmodus umschalten"
+
+#: src/prefs/actionList.js:203
+msgid "Toggle Dark Gtk Theme"
+msgstr "Dunklen Stil umschalten"
+
+#: src/prefs/actionList.js:204
+msgid "Hide/Show Main Panel"
+msgstr "Obere Leiste ausblenden/anzeigen"
+
+#: src/prefs/actionList.js:205
+msgid "Open Panel Quick Settings Menu"
+msgstr "Systemmenü öffnen"
+
+#: src/prefs/actionList.js:206
+msgid "Open Panel Date Menu"
+msgstr "Datumsmenü öffnen"
+
+#: src/prefs/actionList.js:208
+msgid "System"
+msgstr "System"
+
+#: src/prefs/actionList.js:209
+msgid "Lock Screen"
+msgstr "Bildschirm sperren"
+
+#: src/prefs/actionList.js:210
+msgid "Activate ScreenSaver"
+msgstr "Bildschirmschoner aktivieren"
+
+#: src/prefs/actionList.js:211
+msgid "Suspend to RAM"
+msgstr "Bereitschaft"
+
+#: src/prefs/actionList.js:212
+msgid "Power Off Dialog"
+msgstr "Ausschaltdialog"
+
+#: src/prefs/actionList.js:213
+msgid "Log Out Dialog"
+msgstr "Abmeldedialog"
+
+#: src/prefs/actionList.js:214
+msgid "Switch User (if exists)"
+msgstr "Benutzer wechsseln (sofern vorhanden)"
+
+#: src/prefs/actionList.js:216
+msgid "Sound / Media"
+msgstr "Audio/Medienwiedergabe"
+
+#: src/prefs/actionList.js:217
+msgid "Volume Up"
+msgstr "Lauter"
+
+#: src/prefs/actionList.js:218
+msgid "Volume Down"
+msgstr "Leiser"
+
+#: src/prefs/actionList.js:219
+msgid "Mute Audio (toggle)"
+msgstr "Stummschalten (Umschalter)"
+
+#: src/prefs/actionList.js:220
+msgid "Media Key - Play/Pause"
+msgstr "Medientaste – Wiedergabe/Pause"
+
+#: src/prefs/actionList.js:221
+msgid "Media Key - Next Track"
+msgstr "Medientaste – Nächster Titel"
+
+#: src/prefs/actionList.js:222
+msgid "Media Key - Previous Track"
+msgstr "Medientaste – Vorheriger Titel"
+
+#: src/prefs/actionList.js:223
+msgid "Spotify - Play/Pause"
+msgstr "Spotify – Wiedergabe/Pause"
+
+#: src/prefs/actionList.js:224
+msgid "Spotify - Next Track"
+msgstr "Spotify – Nächster Titel"
+
+#: src/prefs/actionList.js:225
+msgid "Spotify - Previous Track"
+msgstr "Spotify – Vorheriger Titel"
+
+#: src/prefs/actionList.js:226
+msgid "Firefox - Play/Pause"
+msgstr "Firefox – Wiedergabe/Pause"
+
+#: src/prefs/actionList.js:227
+msgid "Firefox - Next Track"
+msgstr "Firefox – Nächster Titel"
+
+#: src/prefs/actionList.js:228
+msgid "Firefox - Previous Track"
+msgstr "Firefox – Vorheriger Titel"
+
+#: src/prefs/actionList.js:231
+msgid "Show Custom Menu 1"
+msgstr "Eigenes Menü 1 anzeigen"
+
+#: src/prefs/actionList.js:232
+msgid "Show Custom Menu 2"
+msgstr "Eigenes Menü 2 anzeigen"
+
+#: src/prefs/actionList.js:233
+msgid "Show Custom Menu 3"
+msgstr "Eigenes Menü 3 anzeigen"
+
+#: src/prefs/actionList.js:234
+msgid "Show Custom Menu 4"
+msgstr "Eigenes Menü 4 anzeigen"
+
+#: src/prefs/actionList.js:236
+msgid "Hardware Control"
+msgstr "Hardware-Steuerung"
+
+#: src/prefs/actionList.js:237
+msgid "Display Brightness Up (HW)"
+msgstr "Bildschirmhelligkeit aufwärts (HW)"
+
+#: src/prefs/actionList.js:238
+msgid "Display Brightness Down (HW)"
+msgstr "Bildschirmhelligkeit abwärts (HW)"
+
+#: src/prefs/actionList.js:240
+msgid "Debug"
+msgstr "Fehlerdiagnose"
+
+#: src/prefs/actionList.js:241
+msgid "Looking Glass (GNOME Shell debugger)"
+msgstr "Looking Glass (GNOME-Shell-Fehlerdiagnoseprogramm)"
+
+#: src/prefs/actionList.js:242
+msgid "GNOME Shell UI Inspector"
+msgstr "GNOME Shell UI Inspector"
+
+#: src/prefs/actionList.js:243
+msgid "Restart GNOME Shell (X11 only)"
+msgstr "GNOME Shell neu starten (nur X11)"
+
+#: src/prefs/actionList.js:244
+msgid "Show Run Command Prompt"
+msgstr "Befehlseingabezeile anzeigen"
+
+#: src/prefs/actionList.js:245
+msgid "Swipe Workspace Up (Shift mods step)"
+msgstr "Arbeitsfläche nach oben wischen (Umschalttaste modifiziert Schritt)"
+
+#: src/prefs/actionList.js:246
+msgid "Swipe Workspace Down (Shift mods step)"
+msgstr "Arbeitsfläche nach unten wischen (Umschalttaste modifiziert Schritt)"
+
+#: src/prefs/actionList.js:247
+msgid "Swipe Overview Up (Shift mods step)"
+msgstr "Übersicht nach oben wischen (Umschalttaste modifiziert Schritt)"
+
+#: src/prefs/actionList.js:248
+msgid "Swipe Overview Down (Shift mods step)"
+msgstr "Übersicht nach unten wischen (Umschalttaste modifiziert Schritt)"
+
+#: src/prefs/actionList.js:250
+msgid "CHC-E"
+msgstr "CHC-E"
+
+#: src/prefs/actionList.js:251
+msgid "Open CHC-E Preferences"
+msgstr "CHC-E-Einstellungen öffnen"
+
+#: src/prefs/actionList.js:252
+msgid "Toggle Hot Corners Require Shift"
+msgstr "Umschalten der Aktiven Ecken nur mit Umschalttaste"
+
+#: src/prefs/actionList.js:253
+msgid "Reset Hot Corners"
+msgstr "Aktive Ecken zurücksetzen"
+
+#: src/prefs/customMenusPage.js:77
+msgid "Menu "
+msgstr "Menü "
+
+#: src/prefs/customMenusPage.js:119
+msgid "Check items you want to have in the Custom Menu action."
+msgstr "Einträge aktivieren, die im Eigenen Menü erscheinen sollen."
+
+#: src/prefs/customMenusPage.js:119
+msgid ""
+"You can decide whether the action menu items will be in its section submenu "
+"or in the root of the menu by checking/unchecking the section item"
+msgstr ""
+"Sie können festlegen, ob die Einträge im jeweiligen Abschnittsuntermenü oder "
+"direkt im Menü erscheinen sollen, indem Sie den Abschnittseintrag "
+"(de-)aktivieren"
+
+#: src/prefs/customMenusPage.js:120
+msgid "Deselect all"
+msgstr "Alle abwählen"
+
+#: src/prefs/customMenusPage.js:121
+msgid "Remove all items from this menu"
+msgstr "Alle Einträge aus diesem Menü entfernen"
+
+#: src/prefs/customMenusPage.js:133
+msgid "Menu Item"
+msgstr "Menüeintrag"
+
+#: src/prefs/customMenusPage.js:136
+msgid "Add to Menu"
+msgstr "Zum Menü hinzufügen"
+
+#: src/prefs/customMenusPage.js:200
+msgid "Select items for Custom Menu"
+msgstr "Einträge für eigenes Menü wählen"
+
+#: src/prefs/customMenusPage.js:200
+msgid "items"
+msgstr "Einträge"
+
+#: src/prefs/optionsPage.js:45
+msgid "Global options"
+msgstr "Globale Optionen"
+
+#: src/prefs/optionsPage.js:52
+msgid "Show Panel Menu"
+msgstr "Menü in oberer Leiste anzeigen"
+
+#: src/prefs/optionsPage.js:53
+msgid ""
+"Menu in the main panel offers access to the settings and deactivate corner "
+"triggers if needed."
+msgstr ""
+"Ein Menü in der oberen Leiste bietet Zugriff auf die Einstellungen und die "
+"Möglichkeit, Eckenauslöser bei Bedarf zu deaktivieren."
+
+#: src/prefs/optionsPage.js:60
+msgid "Watch hot corners for external overrides"
+msgstr ""
+"Aktive Ecken daraufhin überwachen, ob sie extern außer Kraft gesetzt wurden"
+
+#: src/prefs/optionsPage.js:61
+msgid "Update corners when something (usually other extensions) change them"
+msgstr ""
+"Aktive Ecke aktualisieren, wenn ihre Funktion (üblicherweise von einer "
+"anderen Erweiterung) geändert wurde"
+
+#: src/prefs/optionsPage.js:74
+msgid "Minimum delay between actions (ms)"
+msgstr "Mindestabstand zwischen Aktionen (ms)"
+
+#: src/prefs/optionsPage.js:75
+msgid "Prevents accidental double-action. Ignored by volume control"
+msgstr ""
+"Versehentliche Mehrfachauslösung wird verhindert. Ausnahme: "
+"Lautstärkenregelung"
+
+#: src/prefs/optionsPage.js:83
+msgid "Show ripple animations"
+msgstr "Wellenanimationen anzeigen"
+
+#: src/prefs/optionsPage.js:84
+msgid ""
+"When you trigger an action, ripples are animated from the corresponding corner"
+msgstr ""
+"Wenn Sie eine Aktion auslösen, erfolgt eine von der entsprechenden Ecke "
+"ausgehende Animation."
+
+#: src/prefs/optionsPage.js:92
+msgid "Direct hot corner triggers require Shift"
+msgstr "Direkte Aktive-Ecken-Auslöser erfordern das Drücken der Umschalttaste"
+
+#: src/prefs/optionsPage.js:93
+msgid ""
+"All hot corner triggers that are directly accessible (without Ctrl) require "
+"the Shift key pressed to be activated. This option is primarily meant as a "
+"temporary solution accessible also as an action using a keyboard shortcut or "
+"mouse trigger to avoid accidental activation of hot corners in specific "
+"situations such as playing full-screen games."
+msgstr ""
+"Alle Aktive-Ecken-Auslöser, die direkt, also ohne die Strg-Taste, zugänglich "
+"sind, erfordern das Drücken der Umschalttaste, um aktiviert zu werden. Dieser "
+"Option ist primär als temporäre Lösung gedacht, verfügbar auch als Aktion "
+"mittels Tastenkombination oder Mausaktion, um versehentliche Aktivierung von "
+"Aktiven Ecken in bestimmten Situationen wie beispielsweise das Ausführen von "
+"Spielen im Vollbildmodus zu vermeiden."
+
+#: src/prefs/optionsPage.js:100
+msgid "Mouse buttons trigger on press event"
+msgstr "Maustasten lösen beim Drücken aus"
+
+#: src/prefs/optionsPage.js:101
+msgid ""
+"Trigger an action when you press the mouse button instead of when you release "
+"it.\n"
+"Triggering on release event is default because minimizes accidental "
+"triggering when dragging objects form areas close to the edge of the monitor "
+"(like unmaximize by dragging from the top panel or using scroll bars). Minor "
+"disadvantage is longer reaction time which is given by the delay between "
+"pressing and releasing the button."
+msgstr ""
+"Eine Aktion wird ausgelöst, wenn die Maustaste gedrückt wird, und nicht erst, "
+"wenn sie gelöst wird.\n"
+"Auslösen bei Lösen ist die Standardeinstellung, weil dadurch versehentliches "
+"Auslösen minimiert wird, wenn Objekte aus Bereichen nahe des Bildschirmrands "
+"gezogen werden (wie etwa Aufheben der Maximierung durch Ziehen von der oberen "
+"Leiste oder bei Nutzen der Bildlaufleisten). Kleiner Nachteil ist die längere "
+"Reaktionszeit durch die Verzögerung zwischen Drücken und Lösen der Taste."
+
+#: src/prefs/optionsPage.js:108
+msgid "Use fallback hot corner triggers"
+msgstr "Rückfall-Aktive-Ecken-Auslöser verwenden"
+
+#: src/prefs/optionsPage.js:109
+msgid ""
+"If pressure barriers don't work, this option allows trigger the hot corner "
+"action by hovering the corner"
+msgstr ""
+"Für den Fall, dass Drucksperren nicht funktionieren, erlaubt diese Option, "
+"die Aktive-Ecken-Aktion auszulösen, indem der Mauszeiger die Ecke "
+"überstreicht."
+
+#: src/prefs/optionsPage.js:117
+msgid "Make active corners / edges visible"
+msgstr "Aktive Ecke/Kanten sichtbar machen"
+
+#: src/prefs/optionsPage.js:118
+msgid ""
+"Shows which corners are active and their size/expansion settings. Pressure "
+"barriers are green, clickable areas are orange"
+msgstr ""
+"Aktive Ecken und ihre Größeneinstellung werden angezeigt. Drucksperren "
+"erscheinen grün, klickbare Bereich orange"
+
+#: src/prefs/optionsPage.js:126
+msgid "Window switcher"
+msgstr "Fensterumschalter"
+
+#: src/prefs/optionsPage.js:134
+msgid "Wraparound"
+msgstr "Umlaufen"
+
+#: src/prefs/optionsPage.js:135
+msgid ""
+"Whether the switcher should continue from the last window to the first and "
+"vice versa"
+msgstr ""
+"Festlegen, ob der Umschalter vom letzten Fenster zum ersten und umgekehrt "
+"springt"
+
+#: src/prefs/optionsPage.js:143
+msgid "Stable sequence"
+msgstr "Feste Reihenfolge"
+
+#: src/prefs/optionsPage.js:144
+msgid ""
+"By default windows are sorted by the MRU (Most Recently Used) AltTab list, "
+"which is given by time stamps that are updated each time the window is "
+"activated by the user. The stable sequence is given by the unique ID that "
+"each window gets when it's created."
+msgstr ""
+"Standardmäßig sind Fenster nach der MRU-AltTab-Liste (Most Recently Used, "
+"zuletzt genutzt) sortiert, die nach den Zeitstempeln sortiert ist, die bei "
+"jedem Aufruf eines Fensters durch den Benutzer aktualisiert wird. Die feste "
+"Reihenfolge richtet sich nach den eindeutigen IDs, die Fenster bei ihrer "
+"Erstellung erhalten."
+
+#: src/prefs/optionsPage.js:152
+msgid "Skip minimized"
+msgstr "Minimierte überspringen"
+
+#: src/prefs/optionsPage.js:153
+msgid "Exclude minimized windows from the switcher list"
+msgstr "Minimierte Fenster erscheinen nicht im Umschalter"
+
+#: src/prefs/optionsPage.js:161
+msgid "Custom Colors for Effects"
+msgstr "Eigene Farben für Effekte"
+
+#: src/prefs/optionsPage.js:169
+msgid "Tint Color"
+msgstr "Tönungsfarbe"
+
+#: src/prefs/optionsPage.js:170
+msgid "Color for 'Custom Color Tint' action. Lighter color means weaker filter."
+msgstr ""
+"Farbe für die Aktion »Eigene Tönungsfarbe«. Je heller die Farbe, desto "
+"schwächer ist der Filter."
+
+#: src/prefs/treeViewPage.js:112
+msgid "Show active items only"
+msgstr "Nur aktive Einträge anzeigen"
+
+#: src/prefs/keyboardPage.js:61
+msgid "Click on the Shortcut Key cell to set new shortcut."
+msgstr ""
+"Zum Festlegen einer neuen Tastenkombination auf die entsprechende Zelle "
+"klicken."
+
+#: src/prefs/keyboardPage.js:62
+msgid "Press Backspace key instead of the new shortcut to disable shortcut."
+msgstr ""
+"Zum Deaktivieren der Tastenkombination statt dessen die Rücktaste drücken."
+
+#: src/prefs/keyboardPage.js:63
+msgid "Warning: Some system shortcuts can NOT be overriden here."
+msgstr ""
+"Warnung: Einige Systemtastenkombinationen können hier NICHT außer Kraft "
+"gesetzt werden."
+
+#: src/prefs/keyboardPage.js:64
+msgid "Warning: Shortcuts already used in this extension will be ignored."
+msgstr ""
+"Warnung: Bereits in dieser Erweiterung verwendete Tastenkombinationen werden "
+"ignoriert."
+
+#: src/prefs/keyboardPage.js:65
+msgid "Disable all"
+msgstr "Alle deaktivieren"
+
+#: src/prefs/keyboardPage.js:66
+msgid "Remove all keyboard shortcuts"
+msgstr "Alle Tastenkombinationen entfernen"
+
+#: src/prefs/keyboardPage.js:82
+msgid "Shortcut"
+msgstr "Tastenkombination"
+
+#: src/prefs/keyboardPage.js:168
+msgid "Keyboard Shortcuts"
+msgstr "Tastenkombinationen"
+
+#: src/prefs/keyboardPage.js:168
+msgid "active"
+msgstr "aktiv"
+
+#: src/prefs/monitorPages.js:33 src/prefs/monitorPages.js:231
+msgid "Hot Corner"
+msgstr "Aktive Ecke"
+
+#: src/prefs/monitorPages.js:34
+msgid "Primary Button"
+msgstr "Primäre Taste"
+
+#: src/prefs/monitorPages.js:35
+msgid "Secondary Button"
+msgstr "Sekundäre Taste"
+
+#: src/prefs/monitorPages.js:36
+msgid "Middle Button"
+msgstr "Mittlere Taste"
+
+#: src/prefs/monitorPages.js:37
+msgid "Scroll Up"
+msgstr "Aufwärts laufen"
+
+#: src/prefs/monitorPages.js:38
+msgid "Scroll Down"
+msgstr "Abwärts laufen"
+
+#: src/prefs/monitorPages.js:39
+msgid "Ctrl + Hot Corner"
+msgstr "Strg + Aktive Ecke"
+
+#: src/prefs/monitorPages.js:73 src/prefs/monitorPages.js:127
+msgid "Monitor"
+msgstr "Bildschirm"
+
+#: src/prefs/monitorPages.js:75
+msgid "(primary)"
+msgstr "(primärI"
+
+#: src/prefs/monitorPages.js:133
+msgid "Disable all triggers and reset settings of this corner"
+msgstr ""
+"Alle Auslöser deaktivieren und die Einstellungen für diese Ecke zurücksetzen"
+
+#: src/prefs/monitorPages.js:185
+msgid "Top"
+msgstr "Oben"
+
+#: src/prefs/monitorPages.js:185
+msgid "Bottom"
+msgstr "Unten"
+
+#: src/prefs/monitorPages.js:247
+msgid "Click/Scroll Corner"
+msgstr "Klick-/rollbare Ecken"
+
+#: src/prefs/monitorPages.js:271
+msgid "Ctrl"
+msgstr "Strg"
+
+#: src/prefs/monitorPages.js:276
+msgid "If checked this trigger will only work when the Ctrl key is pressed"
+msgstr "Wenn aktiviert, arbeitet dieser Auslöser nur bei gedrückter Strg-Taste"
+
+#: src/prefs/monitorPages.js:289
+msgid "This trigger only works when the Ctrl key is pressed"
+msgstr "Dieser Auslöser arbeitet nur, wenn die Strg-Taste gedrückt wird"
+
+#: src/prefs/monitorPages.js:325
+msgid "Enable this trigger in fullscreen mode"
+msgstr "Auslöser im Vollbildmodus aktivieren"
+
+#: src/prefs/monitorPages.js:388
+msgid "Enter command or choose app ID"
+msgstr "Befehl eingeben oder Anwendungs-ID wählen"
+
+#: src/prefs/monitorPages.js:471
+msgid "Error: Stored action doesn't exist!!!"
+msgstr "Fehler: Gespeicherte Aktion existiert nicht!"
+
+#: src/prefs/monitorPages.js:505
+msgid "Pressure Threshold"
+msgstr "Druckschwellenwert"
+
+#: src/prefs/monitorPages.js:535 src/prefs/monitorPages.js:634
+msgid ""
+"You can activate 'Make active corners/edges visible' option on 'Options' page "
+"to see the results of these settings."
+msgstr ""
+"Sie können die Option »Aktive Ecke/Kanten sichtbar machen« auf der Seite "
+"»Optionen« aktivieren und so das Ergebnis dieser Einstellungen sehen."
+
+#: src/prefs/monitorPages.js:546
+msgid ""
+"Pressure threshold and barrier sizes:\n"
+"(Enlarge the barrier size to convert the hot corner into a hot edge)"
+msgstr ""
+"Druckschwellenwert und Sperrengrößen:\n"
+"(Sperrengröße ausweiten, um die Aktive Ecke zur einer Aktive Kante zu wandeln)"
+
+#: src/prefs/monitorPages.js:547
+msgid ""
+"Set horizontal and vertical size of the barrier that reacts to the mouse "
+"pointer pressure."
+msgstr ""
+"Horizontale und vertikale Abmessungen der Sperre festlegen, die auf den "
+"Mauszeigerdruck reagiert."
+
+#: src/prefs/monitorPages.js:548
+msgid "The sizes are set in percentage of the screen width and height."
+msgstr ""
+"Die Abmessungen werden in Prozentanteilen von Bildschirmbreite und -höhe "
+"festgelegt."
+
+#: src/prefs/monitorPages.js:572
+msgid "Horizontal pressure barrier size in percentage of the monitor width"
+msgstr ""
+"Horizontale Abmessung der Drucksperre in Prozentanteilen der Bildschirmbreite"
+
+#: src/prefs/monitorPages.js:585
+msgid "Vertical pressure barrier size in percentage of the monitor height"
+msgstr ""
+"Vertikale Abmessung der Drucksperre in Prozentanteilen der Bildschirmhöhe"
+
+#: src/prefs/monitorPages.js:638
+msgid "Expand clickable area - corner to edge:"
+msgstr "Klickbaren Bereich erweitern – Ecke zu Kante:"
+
+#: src/prefs/monitorPages.js:640
+msgid ""
+"Expand the area reactive to mouse clicks and scrolls along the edge of the "
+"monitor in selected axis."
+msgstr ""
+"Bereich, der auf Mausklicks und -rollen reagiert, entlang der Monitorkante in "
+"gewählter Richtung erweitern."
+
+#: src/prefs/monitorPages.js:641
+msgid ""
+"If an adjacent corner is set to expand along the same edge, each of them "
+"allocates a half of the edge"
+msgstr ""
+"Ist eine gegenüberliegende Ecke  in dieselbe Richtung erweitert, reagiert "
+"jede auf eine Kantenhälfte"
+
+#: src/prefs/monitorPages.js:651
+msgid "Expand horizonatally"
+msgstr "Horizontal erweitern"
+
+#: src/prefs/monitorPages.js:663
+msgid "Expand vertically"
+msgstr "Vertikal erweitern"
+
+#: src/prefs/monitorPages.js:686
+msgid "Choose Application"
+msgstr "Anwendung wählen"
+
+#: src/prefs/monitorPages.js:694
+msgid "_Cancel"
+msgstr "_Abbrechen"
+
+#: src/prefs/monitorPages.js:695
+msgid "_Add ID"
+msgstr "_ID hinzufügen"
+
+#: src/prefs/monitorPages.js:696
+msgid "_Add Command"
+msgstr "Befehl hinzufügen"
