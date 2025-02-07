@@ -2114,9 +2114,15 @@ class OsdMonitorLabel extends St.Widget {
         Main.uiGroup.set_child_above_sibling(this, null);
         this._position();
 
-        Meta.disable_unredirect_for_display(global.display);
+        if (Meta.disable_unredirect_for_display)
+            Meta.disable_unredirect_for_display(global.display);
+        else // since GS 48
+            global.compositor.disable_unredirect();
         this.connect('destroy', () => {
-            Meta.enable_unredirect_for_display(global.display);
+            if (Meta.enable_unredirect_for_display)
+                Meta.enable_unredirect_for_display(global.display);
+            else // since GS 48
+                global.compositor.enable_unredirect();
         });
     }
 
