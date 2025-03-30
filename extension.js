@@ -145,7 +145,10 @@ export default class CustomHotCornersExtended extends Extension {
         ActionList.cleanGlobals();
 
         if (this._displayRedirectionDisabled) {
-            Meta.enable_unredirect_for_display(global.display);
+            if (Meta.disable_unredirect_for_display)
+                Meta.disable_unredirect_for_display(global.display);
+            else // since GS 48
+                global.compositor.disable_unredirect();
             this._displayRedirectionDisabled = false;
         }
 
@@ -291,7 +294,10 @@ export default class CustomHotCornersExtended extends Extension {
         // disable bypassing the compositor when the display switches to fullscreen mode
         // and keep track of its state - each disable has to be enabled, it works as a stack
         if (chce._fullscreenRequired && !chce._displayRedirectionDisabled) {
-            Meta.disable_unredirect_for_display(global.display);
+            if (Meta.disable_unredirect_for_display)
+                Meta.disable_unredirect_for_display(global.display);
+            else // new in GS 48
+                global.compositor.disable_unredirect();
             chce._displayRedirectionDisabled = true;
         }
     }
