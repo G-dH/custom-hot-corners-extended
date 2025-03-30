@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: custom-hot-corners-extended\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-09-28 16:09+0200\n"
-"PO-Revision-Date: 2024-09-28 16:11+0200\n"
+"POT-Creation-Date: 2024-10-04 08:33+0200\n"
+"PO-Revision-Date: 2025-03-30 14:29+0200\n"
 "Last-Translator: Uwe Senkler\n"
 "Language-Team: \n"
 "Language: de\n"
@@ -18,29 +18,13 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "X-Generator: Poedit 3.5\n"
 
-#: prefs.js:53
-msgid "Keyboard"
-msgstr "Tastatur"
-
-#: prefs.js:59 src/prefs/actionList.js:230
-msgid "Custom Menus"
-msgstr "Eigene Menüs"
-
-#: prefs.js:65
-msgid "Options"
-msgstr "Optionen"
-
-#: prefs.js:71
-msgid "About"
-msgstr "Info"
-
 #: src/extension/actionTrigger.js:612
 msgid "disabled"
 msgstr "deaktiviert"
 
 #: src/extension/actionTrigger.js:617
 msgid "Hot corners were updated."
-msgstr "Aktive Ecke wurden aktualisiert."
+msgstr "Funktionale Ecken wurden aktualisiert."
 
 #: src/extension/actionTrigger.js:884
 msgid "Error: ArcMenu trigger not available..."
@@ -95,7 +79,7 @@ msgstr "Alle Auslöser deaktivieren"
 
 #: src/extension/panelButton.js:53
 msgid "Hot corner triggers require Shift key"
-msgstr "Aktive-Ecken-Auslöser nur mit Umschalttaste"
+msgstr "Funktionale-Ecken-Auslöser nur mit Umschalttaste"
 
 #: src/extension/panelButton.js:57
 msgid "Update all triggers"
@@ -107,84 +91,7 @@ msgstr "Einstellungen"
 
 #: src/extension/panelButton.js:136
 msgid "Hot corners were re-created."
-msgstr "Aktive Ecken wurden  wiederhergestellt."
-
-#: src/prefs/aboutPage.js:51
-msgid "Version"
-msgstr "Version"
-
-#: src/prefs/aboutPage.js:57
-msgid "Reset all options"
-msgstr "Alle Optionen zurücksetzen"
-
-#: src/prefs/aboutPage.js:58
-msgid "Disable all triggers and reset all options to their default values"
-msgstr ""
-"Alle Auslöser werden deaktiviert und alle Optionen auf die "
-"Standardeinstellungen zurückgesetzt"
-
-#: src/prefs/aboutPage.js:64
-msgid "Links"
-msgstr "Verweise"
-
-#: src/prefs/aboutPage.js:68
-msgid "Homepage"
-msgstr "Internet-Seite"
-
-#: src/prefs/aboutPage.js:69
-msgid "Source code and more info about this extension"
-msgstr "Quellcode und weitere Informationen zu dieser Erweiterung"
-
-#: src/prefs/aboutPage.js:74
-msgid "Changelog"
-msgstr "Änderungsprotokoll"
-
-#: src/prefs/aboutPage.js:75
-msgid "See what's changed."
-msgstr "Anzeigen, was hat sich geändert hat."
-
-#: src/prefs/aboutPage.js:80
-msgid "GNOME Extensions"
-msgstr "GNOME-Erweiterungen"
-
-#: src/prefs/aboutPage.js:81
-msgid "Rate and comment the extension on GNOME Extensions site"
-msgstr ""
-"Diese Erweiterung auf der GNOME-Erweiterungen-Seite bewerten und kommentieren"
-
-#: src/prefs/aboutPage.js:86
-msgid "Report a bug or suggest new feature"
-msgstr "Fehler melden oder neue Funktionen vorschlagen"
-
-#: src/prefs/aboutPage.js:92
-msgid "Buy Me a Coffee"
-msgstr "Einen Kaffee für mich"
-
-#: src/prefs/aboutPage.js:93
-msgid "Enjoying this extension? Consider supporting it by buying me a coffee!"
-msgstr ""
-"Sie schätzen diese Erweiterung? Vielleicht wollen Sie die Entwicklung "
-"unterstützen und mir einen Kaffee spendieren!"
-
-#: src/prefs/actionChooserDialog.js:49
-msgid "Choose Action"
-msgstr "Aktion wählen"
-
-#: src/prefs/actionChooserDialog.js:93
-msgid "Cancel"
-msgstr "Abbrechen"
-
-#: src/prefs/actionChooserDialog.js:100 src/prefs/keyboardPage.js:79
-msgid "Action"
-msgstr "Aktion"
-
-#: src/prefs/actionChooserDialog.js:188 src/prefs/treeViewPage.js:91
-msgid "Expand all"
-msgstr "Alle ausklappen"
-
-#: src/prefs/actionChooserDialog.js:196 src/prefs/treeViewPage.js:100
-msgid "Collapse all"
-msgstr "Alle einklappen"
+msgstr "Funktionale Ecken wurden  wiederhergestellt."
 
 #: src/prefs/actionList.js:54 src/prefs/monitorPages.js:185
 msgid "Left"
@@ -236,11 +143,11 @@ msgstr "Gewählten Befehl ausführen/Anwendung aktivieren …"
 
 #: src/prefs/actionList.js:69
 msgid "Show Desktop (all monitors)"
-msgstr "Arbeitsfläche anzeigen (alle Bildschirme)"
+msgstr "Schreibtisch anzeigen (alle Bildschirme)"
 
 #: src/prefs/actionList.js:70
 msgid "Show Desktop (current monitor)"
-msgstr "Arbeitsfläche anzeigen (aktueller Bildschirm)"
+msgstr "Schreibtisch anzeigen (aktueller Bildschirm)"
 
 #: src/prefs/actionList.js:71
 msgid "Activate Screenshot Tool"
@@ -800,6 +707,10 @@ msgstr "Firefox – Nächster Titel"
 msgid "Firefox - Previous Track"
 msgstr "Firefox – Vorheriger Titel"
 
+#: src/prefs/actionList.js:230 prefs.js:59
+msgid "Custom Menus"
+msgstr "Eigene Menüs"
+
 #: src/prefs/actionList.js:231
 msgid "Show Custom Menu 1"
 msgstr "Eigenes Menü 1 anzeigen"
@@ -874,11 +785,11 @@ msgstr "CHC-E-Einstellungen öffnen"
 
 #: src/prefs/actionList.js:252
 msgid "Toggle Hot Corners Require Shift"
-msgstr "Umschalten der Aktiven Ecken nur mit Umschalttaste"
+msgstr "Umschalten der funktionalen Ecken nur mit Umschalttaste"
 
 #: src/prefs/actionList.js:253
 msgid "Reset Hot Corners"
-msgstr "Aktive Ecken zurücksetzen"
+msgstr "Funktionale Ecken zurücksetzen"
 
 #: src/prefs/customMenusPage.js:77
 msgid "Menu "
@@ -921,225 +832,9 @@ msgstr "Einträge für eigenes Menü wählen"
 msgid "items"
 msgstr "Einträge"
 
-#: src/prefs/optionsPage.js:45
-msgid "Global options"
-msgstr "Globale Optionen"
-
-#: src/prefs/optionsPage.js:52
-msgid "Show Panel Menu"
-msgstr "Menü in oberer Leiste anzeigen"
-
-#: src/prefs/optionsPage.js:53
-msgid ""
-"Menu in the main panel offers access to the settings and deactivate corner "
-"triggers if needed."
-msgstr ""
-"Ein Menü in der oberen Leiste bietet Zugriff auf die Einstellungen und die "
-"Möglichkeit, Eckenauslöser bei Bedarf zu deaktivieren."
-
-#: src/prefs/optionsPage.js:60
-msgid "Watch hot corners for external overrides"
-msgstr ""
-"Aktive Ecken daraufhin überwachen, ob sie extern außer Kraft gesetzt wurden"
-
-#: src/prefs/optionsPage.js:61
-msgid "Update corners when something (usually other extensions) change them"
-msgstr ""
-"Aktive Ecke aktualisieren, wenn ihre Funktion (üblicherweise von einer "
-"anderen Erweiterung) geändert wurde"
-
-#: src/prefs/optionsPage.js:74
-msgid "Minimum delay between actions (ms)"
-msgstr "Mindestabstand zwischen Aktionen (ms)"
-
-#: src/prefs/optionsPage.js:75
-msgid "Prevents accidental double-action. Ignored by volume control"
-msgstr ""
-"Versehentliche Mehrfachauslösung wird verhindert. Ausnahme: "
-"Lautstärkenregelung"
-
-#: src/prefs/optionsPage.js:83
-msgid "Show ripple animations"
-msgstr "Wellenanimationen anzeigen"
-
-#: src/prefs/optionsPage.js:84
-msgid ""
-"When you trigger an action, ripples are animated from the corresponding corner"
-msgstr ""
-"Wenn Sie eine Aktion auslösen, erfolgt eine von der entsprechenden Ecke "
-"ausgehende Animation."
-
-#: src/prefs/optionsPage.js:92
-msgid "Direct hot corner triggers require Shift"
-msgstr "Direkte Aktive-Ecken-Auslöser erfordern das Drücken der Umschalttaste"
-
-#: src/prefs/optionsPage.js:93
-msgid ""
-"All hot corner triggers that are directly accessible (without Ctrl) require "
-"the Shift key pressed to be activated. This option is primarily meant as a "
-"temporary solution accessible also as an action using a keyboard shortcut or "
-"mouse trigger to avoid accidental activation of hot corners in specific "
-"situations such as playing full-screen games."
-msgstr ""
-"Alle Aktive-Ecken-Auslöser, die direkt, also ohne die Strg-Taste, zugänglich "
-"sind, erfordern das Drücken der Umschalttaste, um aktiviert zu werden. Dieser "
-"Option ist primär als temporäre Lösung gedacht, verfügbar auch als Aktion "
-"mittels Tastenkombination oder Mausaktion, um versehentliche Aktivierung von "
-"Aktiven Ecken in bestimmten Situationen wie beispielsweise das Ausführen von "
-"Spielen im Vollbildmodus zu vermeiden."
-
-#: src/prefs/optionsPage.js:100
-msgid "Mouse buttons trigger on press event"
-msgstr "Maustasten lösen beim Drücken aus"
-
-#: src/prefs/optionsPage.js:101
-msgid ""
-"Trigger an action when you press the mouse button instead of when you release "
-"it.\n"
-"Triggering on release event is default because minimizes accidental "
-"triggering when dragging objects form areas close to the edge of the monitor "
-"(like unmaximize by dragging from the top panel or using scroll bars). Minor "
-"disadvantage is longer reaction time which is given by the delay between "
-"pressing and releasing the button."
-msgstr ""
-"Eine Aktion wird ausgelöst, wenn die Maustaste gedrückt wird, und nicht erst, "
-"wenn sie gelöst wird.\n"
-"Auslösen bei Lösen ist die Standardeinstellung, weil dadurch versehentliches "
-"Auslösen minimiert wird, wenn Objekte aus Bereichen nahe des Bildschirmrands "
-"gezogen werden (wie etwa Aufheben der Maximierung durch Ziehen von der oberen "
-"Leiste oder bei Nutzen der Bildlaufleisten). Kleiner Nachteil ist die längere "
-"Reaktionszeit durch die Verzögerung zwischen Drücken und Lösen der Taste."
-
-#: src/prefs/optionsPage.js:108
-msgid "Use fallback hot corner triggers"
-msgstr "Rückfall-Aktive-Ecken-Auslöser verwenden"
-
-#: src/prefs/optionsPage.js:109
-msgid ""
-"If pressure barriers don't work, this option allows trigger the hot corner "
-"action by hovering the corner"
-msgstr ""
-"Für den Fall, dass Drucksperren nicht funktionieren, erlaubt diese Option, "
-"die Aktive-Ecken-Aktion auszulösen, indem der Mauszeiger die Ecke "
-"überstreicht."
-
-#: src/prefs/optionsPage.js:117
-msgid "Make active corners / edges visible"
-msgstr "Aktive Ecke/Kanten sichtbar machen"
-
-#: src/prefs/optionsPage.js:118
-msgid ""
-"Shows which corners are active and their size/expansion settings. Pressure "
-"barriers are green, clickable areas are orange"
-msgstr ""
-"Aktive Ecken und ihre Größeneinstellung werden angezeigt. Drucksperren "
-"erscheinen grün, klickbare Bereich orange"
-
-#: src/prefs/optionsPage.js:126
-msgid "Window switcher"
-msgstr "Fensterumschalter"
-
-#: src/prefs/optionsPage.js:134
-msgid "Wraparound"
-msgstr "Umlaufen"
-
-#: src/prefs/optionsPage.js:135
-msgid ""
-"Whether the switcher should continue from the last window to the first and "
-"vice versa"
-msgstr ""
-"Festlegen, ob der Umschalter vom letzten Fenster zum ersten und umgekehrt "
-"springt"
-
-#: src/prefs/optionsPage.js:143
-msgid "Stable sequence"
-msgstr "Feste Reihenfolge"
-
-#: src/prefs/optionsPage.js:144
-msgid ""
-"By default windows are sorted by the MRU (Most Recently Used) AltTab list, "
-"which is given by time stamps that are updated each time the window is "
-"activated by the user. The stable sequence is given by the unique ID that "
-"each window gets when it's created."
-msgstr ""
-"Standardmäßig sind Fenster nach der MRU-AltTab-Liste (Most Recently Used, "
-"zuletzt genutzt) sortiert, die nach den Zeitstempeln sortiert ist, die bei "
-"jedem Aufruf eines Fensters durch den Benutzer aktualisiert wird. Die feste "
-"Reihenfolge richtet sich nach den eindeutigen IDs, die Fenster bei ihrer "
-"Erstellung erhalten."
-
-#: src/prefs/optionsPage.js:152
-msgid "Skip minimized"
-msgstr "Minimierte überspringen"
-
-#: src/prefs/optionsPage.js:153
-msgid "Exclude minimized windows from the switcher list"
-msgstr "Minimierte Fenster erscheinen nicht im Umschalter"
-
-#: src/prefs/optionsPage.js:161
-msgid "Custom Colors for Effects"
-msgstr "Eigene Farben für Effekte"
-
-#: src/prefs/optionsPage.js:169
-msgid "Tint Color"
-msgstr "Tönungsfarbe"
-
-#: src/prefs/optionsPage.js:170
-msgid "Color for 'Custom Color Tint' action. Lighter color means weaker filter."
-msgstr ""
-"Farbe für die Aktion »Eigene Tönungsfarbe«. Je heller die Farbe, desto "
-"schwächer ist der Filter."
-
-#: src/prefs/treeViewPage.js:112
-msgid "Show active items only"
-msgstr "Nur aktive Einträge anzeigen"
-
-#: src/prefs/keyboardPage.js:61
-msgid "Click on the Shortcut Key cell to set new shortcut."
-msgstr ""
-"Zum Festlegen einer neuen Tastenkombination auf die entsprechende Zelle "
-"klicken."
-
-#: src/prefs/keyboardPage.js:62
-msgid "Press Backspace key instead of the new shortcut to disable shortcut."
-msgstr ""
-"Zum Deaktivieren der Tastenkombination statt dessen die Rücktaste drücken."
-
-#: src/prefs/keyboardPage.js:63
-msgid "Warning: Some system shortcuts can NOT be overriden here."
-msgstr ""
-"Warnung: Einige Systemtastenkombinationen können hier NICHT außer Kraft "
-"gesetzt werden."
-
-#: src/prefs/keyboardPage.js:64
-msgid "Warning: Shortcuts already used in this extension will be ignored."
-msgstr ""
-"Warnung: Bereits in dieser Erweiterung verwendete Tastenkombinationen werden "
-"ignoriert."
-
-#: src/prefs/keyboardPage.js:65
-msgid "Disable all"
-msgstr "Alle deaktivieren"
-
-#: src/prefs/keyboardPage.js:66
-msgid "Remove all keyboard shortcuts"
-msgstr "Alle Tastenkombinationen entfernen"
-
-#: src/prefs/keyboardPage.js:82
-msgid "Shortcut"
-msgstr "Tastenkombination"
-
-#: src/prefs/keyboardPage.js:168
-msgid "Keyboard Shortcuts"
-msgstr "Tastenkombinationen"
-
-#: src/prefs/keyboardPage.js:168
-msgid "active"
-msgstr "aktiv"
-
 #: src/prefs/monitorPages.js:33 src/prefs/monitorPages.js:231
 msgid "Hot Corner"
-msgstr "Aktive Ecke"
+msgstr "Funktionale Ecke"
 
 #: src/prefs/monitorPages.js:34
 msgid "Primary Button"
@@ -1163,7 +858,7 @@ msgstr "Abwärts laufen"
 
 #: src/prefs/monitorPages.js:39
 msgid "Ctrl + Hot Corner"
-msgstr "Strg + Aktive Ecke"
+msgstr "Strg + funktionale Ecke"
 
 #: src/prefs/monitorPages.js:73 src/prefs/monitorPages.js:127
 msgid "Monitor"
@@ -1223,8 +918,9 @@ msgid ""
 "You can activate 'Make active corners/edges visible' option on 'Options' page "
 "to see the results of these settings."
 msgstr ""
-"Sie können die Option »Aktive Ecke/Kanten sichtbar machen« auf der Seite "
-"»Optionen« aktivieren und so das Ergebnis dieser Einstellungen sehen."
+"Sie können die Option »Funktionale Ecken/aktive Kanten sichtbar machen« auf "
+"der Seite »Optionen« aktivieren und so das Ergebnis dieser Einstellungen "
+"sehen."
 
 #: src/prefs/monitorPages.js:546
 msgid ""
@@ -1232,7 +928,8 @@ msgid ""
 "(Enlarge the barrier size to convert the hot corner into a hot edge)"
 msgstr ""
 "Druckschwellenwert und Sperrengrößen:\n"
-"(Sperrengröße ausweiten, um die Aktive Ecke zur einer Aktive Kante zu wandeln)"
+"(Sperrengröße ausweiten, um die funktionale Ecke zur einer aktiven Kante zu "
+"wandeln)"
 
 #: src/prefs/monitorPages.js:547
 msgid ""
@@ -1301,3 +998,308 @@ msgstr "_ID hinzufügen"
 #: src/prefs/monitorPages.js:696
 msgid "_Add Command"
 msgstr "Befehl hinzufügen"
+
+#: src/prefs/optionsPage.js:45
+msgid "Global options"
+msgstr "Globale Optionen"
+
+#: src/prefs/optionsPage.js:52
+msgid "Show Panel Menu"
+msgstr "Menü in oberer Leiste anzeigen"
+
+#: src/prefs/optionsPage.js:53
+msgid ""
+"Menu in the main panel offers access to the settings and deactivate corner "
+"triggers if needed."
+msgstr ""
+"Ein Menü in der oberen Leiste bietet Zugriff auf die Einstellungen und die "
+"Möglichkeit, Eckenauslöser bei Bedarf zu deaktivieren."
+
+#: src/prefs/optionsPage.js:60
+msgid "Watch hot corners for external overrides"
+msgstr ""
+"Funktionale Ecken daraufhin überwachen, ob sie extern außer Kraft gesetzt "
+"wurden"
+
+#: src/prefs/optionsPage.js:61
+msgid "Update corners when something (usually other extensions) change them"
+msgstr ""
+"Funktionale Ecke aktualisieren, wenn ihre Funktion (üblicherweise von einer "
+"anderen Erweiterung) geändert wurde"
+
+#: src/prefs/optionsPage.js:74
+msgid "Minimum delay between actions (ms)"
+msgstr "Mindestabstand zwischen Aktionen (ms)"
+
+#: src/prefs/optionsPage.js:75
+msgid "Prevents accidental double-action. Ignored by volume control"
+msgstr ""
+"Versehentliche Mehrfachauslösung wird verhindert. Ausnahme: "
+"Lautstärkenregelung"
+
+#: src/prefs/optionsPage.js:83
+msgid "Show ripple animations"
+msgstr "Wellenanimationen anzeigen"
+
+#: src/prefs/optionsPage.js:84
+msgid ""
+"When you trigger an action, ripples are animated from the corresponding corner"
+msgstr ""
+"Wenn Sie eine Aktion auslösen, erfolgt eine von der entsprechenden Ecke "
+"ausgehende Animation"
+
+#: src/prefs/optionsPage.js:92
+msgid "Direct hot corner triggers require Shift"
+msgstr ""
+"Direkte Funktionale-Ecken-Auslöser erfordern das Drücken der Umschalttaste"
+
+#: src/prefs/optionsPage.js:93
+msgid ""
+"All hot corner triggers that are directly accessible (without Ctrl) require "
+"the Shift key pressed to be activated. This option is primarily meant as a "
+"temporary solution accessible also as an action using a keyboard shortcut or "
+"mouse trigger to avoid accidental activation of hot corners in specific "
+"situations such as playing full-screen games."
+msgstr ""
+"Alle Funktionale-Ecken-Auslöser, die direkt, also ohne die Strg-Taste, "
+"zugänglich sind, erfordern das Drücken der Umschalttaste, um aktiviert zu "
+"werden. Dieser Option ist primär als temporäre Lösung gedacht, verfügbar auch "
+"als Aktion mittels Tastenkürzel oder Mausaktion, um versehentliche "
+"Aktivierung von funktionalen Ecken in bestimmten Situationen wie "
+"beispielsweise das Ausführen von Spielen im Vollbildmodus zu vermeiden."
+
+#: src/prefs/optionsPage.js:100
+msgid "Mouse buttons trigger on press event"
+msgstr "Maustasten lösen beim Drücken aus"
+
+#: src/prefs/optionsPage.js:101
+msgid ""
+"Trigger an action when you press the mouse button instead of when you release "
+"it.\n"
+"Triggering on release event is default because minimizes accidental "
+"triggering when dragging objects form areas close to the edge of the monitor "
+"(like unmaximize by dragging from the top panel or using scroll bars). Minor "
+"disadvantage is longer reaction time which is given by the delay between "
+"pressing and releasing the button."
+msgstr ""
+"Eine Aktion wird ausgelöst, wenn die Maustaste gedrückt wird, und nicht erst, "
+"wenn sie gelöst wird.\n"
+"Auslösen bei Lösen ist die Standardeinstellung, weil dadurch versehentliches "
+"Auslösen minimiert wird, wenn Objekte aus Bereichen nahe des Bildschirmrands "
+"gezogen werden (wie etwa Aufheben der Maximierung durch Ziehen von der oberen "
+"Leiste oder bei Nutzen der Bildlaufleisten). Kleiner Nachteil ist die längere "
+"Reaktionszeit durch die Verzögerung zwischen Drücken und Lösen der Taste."
+
+#: src/prefs/optionsPage.js:108
+msgid "Use fallback hot corner triggers"
+msgstr "Rückfallauslöser für Funktionale Ecken verwenden"
+
+#: src/prefs/optionsPage.js:109
+msgid ""
+"If pressure barriers don't work, this option allows trigger the hot corner "
+"action by hovering the corner"
+msgstr ""
+"Für den Fall, dass Drucksperren nicht funktionieren, erlaubt diese Option, "
+"die Funktionale-Ecken-Aktion auszulösen, indem der Mauszeiger die Ecke "
+"überstreicht"
+
+#: src/prefs/optionsPage.js:117
+msgid "Make active corners / edges visible"
+msgstr "Funktionale Ecken/aktive Kanten sichtbar machen"
+
+#: src/prefs/optionsPage.js:118
+msgid ""
+"Shows which corners are active and their size/expansion settings. Pressure "
+"barriers are green, clickable areas are orange"
+msgstr ""
+"Funktionale Ecken und ihre Größeneinstellung werden angezeigt. Drucksperren "
+"erscheinen grün, klickbare Bereiche orange"
+
+#: src/prefs/optionsPage.js:126
+msgid "Window switcher"
+msgstr "Fensterumschalter"
+
+#: src/prefs/optionsPage.js:134
+msgid "Wraparound"
+msgstr "Umlaufen"
+
+#: src/prefs/optionsPage.js:135
+msgid ""
+"Whether the switcher should continue from the last window to the first and "
+"vice versa"
+msgstr ""
+"Festlegen, ob der Umschalter vom letzten Fenster zum ersten und umgekehrt "
+"springt"
+
+#: src/prefs/optionsPage.js:143
+msgid "Stable sequence"
+msgstr "Feste Reihenfolge"
+
+#: src/prefs/optionsPage.js:144
+msgid ""
+"By default windows are sorted by the MRU (Most Recently Used) AltTab list, "
+"which is given by time stamps that are updated each time the window is "
+"activated by the user. The stable sequence is given by the unique ID that "
+"each window gets when it's created."
+msgstr ""
+"Standardmäßig sind Fenster nach der MRU-AltTab-Liste (Most Recently Used, "
+"zuletzt genutzt) sortiert, die nach den Zeitstempeln sortiert ist, die bei "
+"jedem Aufruf eines Fensters durch den Benutzer aktualisiert wird. Die feste "
+"Reihenfolge richtet sich nach den eindeutigen IDs, die Fenster bei ihrer "
+"Erstellung erhalten."
+
+#: src/prefs/optionsPage.js:152
+msgid "Skip minimized"
+msgstr "Minimierte überspringen"
+
+#: src/prefs/optionsPage.js:153
+msgid "Exclude minimized windows from the switcher list"
+msgstr "Minimierte Fenster erscheinen nicht im Umschalter"
+
+#: src/prefs/optionsPage.js:161
+msgid "Custom Colors for Effects"
+msgstr "Eigene Farben für Effekte"
+
+#: src/prefs/optionsPage.js:169
+msgid "Tint Color"
+msgstr "Tönungsfarbe"
+
+#: src/prefs/optionsPage.js:170
+msgid "Color for 'Custom Color Tint' action. Lighter color means weaker filter."
+msgstr ""
+"Farbe für die Aktion »Eigene Tönungsfarbe«. Je heller die Farbe, desto "
+"schwächer ist der Filter."
+
+#: src/prefs/actionChooserDialog.js:49
+msgid "Choose Action"
+msgstr "Aktion wählen"
+
+#: src/prefs/actionChooserDialog.js:93
+msgid "Cancel"
+msgstr "Abbrechen"
+
+#: src/prefs/actionChooserDialog.js:100 src/prefs/keyboardPage.js:79
+msgid "Action"
+msgstr "Aktion"
+
+#: src/prefs/actionChooserDialog.js:188 src/prefs/treeViewPage.js:91
+msgid "Expand all"
+msgstr "Alle ausklappen"
+
+#: src/prefs/actionChooserDialog.js:196 src/prefs/treeViewPage.js:100
+msgid "Collapse all"
+msgstr "Alle einklappen"
+
+#: src/prefs/treeViewPage.js:112
+msgid "Show active items only"
+msgstr "Nur aktive Einträge anzeigen"
+
+#: src/prefs/keyboardPage.js:61
+msgid "Click on the Shortcut Key cell to set new shortcut."
+msgstr ""
+"Zum Festlegen eines neuen Tastenkürzels auf die entsprechende Zelle klicken."
+
+#: src/prefs/keyboardPage.js:62
+msgid "Press Backspace key instead of the new shortcut to disable shortcut."
+msgstr "Zum Deaktivieren der Tastenkürzel statt dessen die Rücktaste drücken."
+
+#: src/prefs/keyboardPage.js:63
+msgid "Warning: Some system shortcuts can NOT be overriden here."
+msgstr ""
+"Warnung: Einige Systemtastenkürzel können hier NICHT außer Kraft gesetzt "
+"werden."
+
+#: src/prefs/keyboardPage.js:64
+msgid "Warning: Shortcuts already used in this extension will be ignored."
+msgstr ""
+"Warnung: Bereits in dieser Erweiterung verwendete Tastenkürzel werden "
+"ignoriert."
+
+#: src/prefs/keyboardPage.js:65
+msgid "Disable all"
+msgstr "Alle deaktivieren"
+
+#: src/prefs/keyboardPage.js:66
+msgid "Remove all keyboard shortcuts"
+msgstr "Alle Tastenkürzel entfernen"
+
+#: src/prefs/keyboardPage.js:82
+msgid "Shortcut"
+msgstr "Tastenkürzel"
+
+#: src/prefs/keyboardPage.js:168
+msgid "Keyboard Shortcuts"
+msgstr "Tastenkürzel"
+
+#: src/prefs/keyboardPage.js:168
+msgid "active"
+msgstr "aktiv"
+
+#: src/prefs/aboutPage.js:51
+msgid "Version"
+msgstr "Version"
+
+#: src/prefs/aboutPage.js:57
+msgid "Reset all options"
+msgstr "Alle Optionen zurücksetzen"
+
+#: src/prefs/aboutPage.js:58
+msgid "Disable all triggers and reset all options to their default values"
+msgstr ""
+"Alle Auslöser werden deaktiviert und alle Optionen auf die "
+"Standardeinstellungen zurückgesetzt"
+
+#: src/prefs/aboutPage.js:64
+msgid "Links"
+msgstr "Verweise"
+
+#: src/prefs/aboutPage.js:68
+msgid "Homepage"
+msgstr "Internet-Seite"
+
+#: src/prefs/aboutPage.js:69
+msgid "Source code and more info about this extension"
+msgstr "Quellcode und weitere Informationen zu dieser Erweiterung"
+
+#: src/prefs/aboutPage.js:74
+msgid "Changelog"
+msgstr "Änderungsprotokoll"
+
+#: src/prefs/aboutPage.js:75
+msgid "See what's changed."
+msgstr "Anzeigen, was hat sich geändert hat."
+
+#: src/prefs/aboutPage.js:80
+msgid "GNOME Extensions"
+msgstr "GNOME-Erweiterungen"
+
+#: src/prefs/aboutPage.js:81
+msgid "Rate and comment the extension on GNOME Extensions site"
+msgstr ""
+"Diese Erweiterung auf der GNOME-Erweiterungen-Seite bewerten und kommentieren"
+
+#: src/prefs/aboutPage.js:86
+msgid "Report a bug or suggest new feature"
+msgstr "Fehler melden oder neue Funktionen vorschlagen"
+
+#: src/prefs/aboutPage.js:92
+msgid "Buy Me a Coffee"
+msgstr "Buy Me a Coffee"
+
+#: src/prefs/aboutPage.js:93
+msgid "Enjoying this extension? Consider supporting it by buying me a coffee!"
+msgstr ""
+"Sie schätzen diese Erweiterung? Vielleicht wollen Sie die Entwicklung "
+"unterstützen und mir einen Kaffee spendieren!"
+
+#: prefs.js:53
+msgid "Keyboard"
+msgstr "Tastatur"
+
+#: prefs.js:65
+msgid "Options"
+msgstr "Optionen"
+
+#: prefs.js:71
+msgid "About"
+msgstr "Info"
