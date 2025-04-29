@@ -1,4 +1,37 @@
 ## Changelog:
+### v48.1
+**Fixed:**
+- Display redirection cannot be disabled
+
+**Changed:**
+- Updated German translation
+
+
+### v48.0
+**Added:**
+- GNOME 48 support
+- *Display Brightness* action doesn't work
+
+
+### v47.0
+**Added:**
+- GNOME 47 support
+- Improved fullscreen support by adding a display redirection handler
+- Added audio output name to the volume controller OSD
+- German translation
+
+**Changed:**
+- Redesigned *Monitor* page in the Settings window
+
+
+### v46.0
+**Added:**
+- GNOME 46 support
+
+**Changed:**
+- Window Thumbnail actions now require the WTMB extension
+
+
 ### v44.2 v45.2
 **Fixed:**
 - `Move Window to Next Monitor` does not maintain the relative position of the window
@@ -36,6 +69,7 @@ Compatibility with GNOME 3.xx
 ### v26 (2023-02-19)
 **Fixed:**
 - Crash after screen unlocks if panel menu enabled
+
 
 ### v25 (2023-02-19)
 **Added:**
