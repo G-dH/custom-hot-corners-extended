@@ -1,7 +1,7 @@
 {
-  "description": "Give a function to any corner or edge of your monitors and expand your keyboard capabilities.\nMouse pointer pressure, clicks and scrolls over the monitor corners/edges or custom keyboard shortcuts can trigger any of dozens built-in actions that helps you navigate and control your desktop environment, or your own shell commands.\n\nSignificant part of available actions are visual adjustments (contrast, brightness, opacity) and color filters (red, green, desaturate, lightness and color inversions) , including correction filters for colorblind users and cb simulation filters for developers.",
+  "description": "Give a function to any corner or edge of your monitors and expand your keyboard capabilities.\nMouse pointer pressure, clicks and scrolls over the monitor corners/edges or custom keyboard shortcuts can trigger any of dozens built-in actions that helps you navigate and control your desktop environment, or your own shell commands.",
   "gettext-domain": "custom-hot-corners-extended",
-  "name": "Custom Hot Corners - Extended",
+  "name": "CHC-E (Custom Hot Corners - Extended)",
   "settings-schema": "org.gnome.shell.extensions.custom-hot-corners-extended",
   "shell-version": [
     "45",
