@@ -1,5 +1,5 @@
 ## Changelog:
-### v48.1
+### v48.1 (2025-04-30)
 **Fixed:**
 - Display redirection cannot be disabled
 
@@ -7,13 +7,13 @@
 - Updated German translation
 
 
-### v48.0
+### v48.0 (2025-03-19)
 **Added:**
 - GNOME 48 support
 - *Display Brightness* action doesn't work
 
 
-### v47.0
+### v47.0 (2024-10-04)
 **Added:**
 - GNOME 47 support
 - Improved fullscreen support by adding a display redirection handler
@@ -24,7 +24,7 @@
 - Redesigned *Monitor* page in the Settings window
 
 
-### v46.0
+### v46.0 (2024-03-25)
 **Added:**
 - GNOME 46 support
 
@@ -32,7 +32,7 @@
 - Window Thumbnail actions now require the WTMB extension
 
 
-### v44.2 v45.2
+### v44.2 v45.2 (2024-01-17)
 **Fixed:**
 - `Move Window to Next Monitor` does not maintain the relative position of the window
 - `Watch hot corners for external overrides` not updated after re-enabling the extension
