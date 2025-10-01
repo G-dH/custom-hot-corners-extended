@@ -3,7 +3,7 @@
  * Actions
  *
  * @author     GdH <G-dH@github.com>
- * @copyright  2021-2024
+ * @copyright  2021-2025
  * @license    GPL-3.0
  */
 
@@ -252,7 +252,7 @@ export const Actions = class {
             const BUS_NAME = 'org.gnome.SettingsDaemon.Power';
             const OBJECT_PATH = '/org/gnome/SettingsDaemon/Power';
 
-                const BrightnessInterface = FileUtils.loadInterfaceXML('org.gnome.SettingsDaemon.Power.Screen');
+            const BrightnessInterface = FileUtils.loadInterfaceXML('org.gnome.SettingsDaemon.Power.Screen');
             const BrightnessProxy = Gio.DBusProxy.makeProxyWrapper(BrightnessInterface);
             this._displayBrightnessProxy = new BrightnessProxy(Gio.DBus.session, BUS_NAME, OBJECT_PATH,
                 (proxy, error) => {
@@ -771,10 +771,16 @@ export const Actions = class {
         let win = this._getFocusedWindow(true);
         if (!win)
             return;
-        if (win.maximized_horizontally && win.maximized_vertically)
-            win.unmaximize(Meta.MaximizeFlags.BOTH);
-        else
+        if (win.maximized_horizontally && win.maximized_vertically) {
+            if (win.get_maximized)
+                win.unmaximize(Meta.MaximizeFlags.BOTH);
+            else
+                win.unmaximize();
+        } else if (win.get_maximized) {
             win.maximize(Meta.MaximizeFlags.BOTH);
+        } else {
+            win.maximize();
+        }
     }
 
     minimizeWindow() {
@@ -1447,7 +1453,10 @@ export const Actions = class {
         const gicon = new Gio.ThemedIcon({ name: icons[n] });
         const level = volume / maxLevel * ampScale;
         const label = sink.get_port().human_port;
-        Main.osdWindowManager.show(-1, gicon, label, level, ampScale);
+        if (Main.osdWindowManager.showAll) // // Since GNOME 49
+            Main.osdWindowManager.showAll(gicon, label, level, ampScale);
+        else
+            Main.osdWindowManager.show(-1, gicon, label, level, ampScale);
     }
 
     toggleNightLight() {
@@ -1495,7 +1504,10 @@ export const Actions = class {
         const ampScale = 1;
         const gicon = new Gio.ThemedIcon({ name: 'view-reveal-symbolic' });
         const level = value / maxLevel;
-        Main.osdWindowManager.show(-1, gicon, title, level, ampScale);
+        if (Main.osdWindowManager.showAll) // // Since GNOME 49
+            Main.osdWindowManager.showAll(gicon, title, level, ampScale);
+        else
+            Main.osdWindowManager.show(-1, gicon, title, level, ampScale);
     }
 
     adjustSwBrightnessContrast(step = 0, window = false, brightness = true, valueO = null) {
@@ -1567,7 +1579,10 @@ export const Actions = class {
         const ampScale = maxLevel / maxLevelNorm;
         const gicon = new Gio.ThemedIcon({ name: brightness ? 'display-brightness-symbolic' : 'view-reveal-symbolic' });
         const level = (value * 100 + 100) / maxLevel * ampScale;
-        Main.osdWindowManager.show(-1, gicon, title, level, ampScale);
+        if (Main.osdWindowManager.showAll) // // Since GNOME 49
+            Main.osdWindowManager.showAll(gicon, title, level, ampScale);
+        else
+            Main.osdWindowManager.show(-1, gicon, title, level, ampScale);
     }
 
     toggleDesaturateEffect(window = true) {
