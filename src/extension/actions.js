@@ -68,7 +68,6 @@ export const Actions = class {
         this._interfaceSettings     = null;
         this._shellSettings         = null;
         this._soundSettings         = null;
-        this._displayBrightnessProxy = null;
 
         this.WS_IGNORE_LAST         = false;
         this.WS_WRAPAROUND          = false;
@@ -245,23 +244,6 @@ export const Actions = class {
             });
         }
         return this._soundSettings;
-    }
-
-    _getDisplayBrightnessProxy() {
-        if (!this._displayBrightnessProxy) {
-            const BUS_NAME = 'org.gnome.SettingsDaemon.Power';
-            const OBJECT_PATH = '/org/gnome/SettingsDaemon/Power';
-
-            const BrightnessInterface = FileUtils.loadInterfaceXML('org.gnome.SettingsDaemon.Power.Screen');
-            const BrightnessProxy = Gio.DBusProxy.makeProxyWrapper(BrightnessInterface);
-            this._displayBrightnessProxy = new BrightnessProxy(Gio.DBus.session, BUS_NAME, OBJECT_PATH,
-                (proxy, error) => {
-                    if (error)
-                        log(error.message);
-                }
-            );
-        }
-        return this._displayBrightnessProxy;
     }
 
     _destroyDimmerActors() {
@@ -653,23 +635,10 @@ export const Actions = class {
     }
 
     setDisplayBrightness(direction) {
-        const proxy = this._getDisplayBrightnessProxy();
-        let value = proxy.Brightness;
-        if (value === null)
-            return;
-        const STEP = 5;
         if (direction === Meta.MotionDirection.UP)
-            value += STEP;
+            Main.brightnessManager?._screenBrightnessUp();
         else
-            value -= STEP;
-
-
-        if (value > 100)
-            value = 100;
-        if (value < 0)
-            value = 0;
-
-        proxy.Brightness = value;
+            Main.brightnessManager?._screenBrightnessDown();
     }
 
     lockScreen() {
