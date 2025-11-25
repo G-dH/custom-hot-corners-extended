@@ -1,4 +1,9 @@
 ## Changelog:
+### v49.0 (2025-10-01)
+**Added:**
+- GNOME 49 support
+
+
 ### v48.1 (2025-04-30)
 **Fixed:**
 - Display redirection cannot be disabled
