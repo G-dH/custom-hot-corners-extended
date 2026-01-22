@@ -1045,12 +1045,17 @@ export const Actions = class {
             Main.notify(Me.metadata.name, _('Theme switcher works with Adwaita/Adwaita-dark and Yaru(-light)/Yaru-dark themes only'));
         }
 
+        // The color-scheme key can hold one of following values (meanings for vanilla GNOME Shell):
+        // default      - dark top bar, light windows
+        // prefer-light - light top bar, light windows
+        // prefer-dark  - dark top bar, dark windows
         dark = !(intSettings.get_string('color-scheme') === 'prefer-dark');
         if (dark)
             intSettings.set_string('color-scheme', 'prefer-dark');
         else
-            intSettings.set_string('color-scheme', 'prefer-light');
+            intSettings.set_string('color-scheme', 'default');
 
+        // Legacy GTK styling
         if (newTheme) {
             const shellThemeSettings = this._getShellThemeSettings('org.gnome.shell.extensions.user-theme');// , '/org/gnome/shell/extensions/user-theme/');
             if (dark) {
