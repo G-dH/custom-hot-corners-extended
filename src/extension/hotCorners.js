@@ -108,7 +108,7 @@ class CustomHotCorner extends Layout.HotCorner {
             // ...and block opposite directions. Neither with X nor with Wayland
             // ...such barriers work.
             let x = this._corner.x;
-            if (!Meta.is_wayland_compositor() && !this._corner.left && !this._barrierCollision()['x'])
+            if (Meta.is_wayland_compositor && !Meta.is_wayland_compositor() && !this._corner.left && !this._barrierCollision()['x'])
                 x += 1;
 
             // GS 46+ replaced the Meta.Barrier.display property with backend
@@ -132,7 +132,7 @@ class CustomHotCorner extends Layout.HotCorner {
                 });
             }
             let y = this._corner.y;
-            if (!Meta.is_wayland_compositor() && !this._corner.top && !this._barrierCollision()['y'])
+            if (Meta.is_wayland_compositor && !Meta.is_wayland_compositor() && !this._corner.top && !this._barrierCollision()['y'])
                 y += 1;
 
             if (Meta.Barrier.prototype.backend) {

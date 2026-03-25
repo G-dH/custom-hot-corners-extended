@@ -421,7 +421,7 @@ export const Actions = class {
     // ///////////////////////////////////////////////////////////////////////////
 
     _shouldUseGrabWorkaround(focusWindow) {
-        return !Meta.is_wayland_compositor() && focusWindow && focusWindow.wm_class && focusWindow.wm_class.includes('VirtualBox Machine');
+        return Meta.is_wayland_compositor && !Meta.is_wayland_compositor() && focusWindow && focusWindow.wm_class && focusWindow.wm_class.includes('VirtualBox Machine');
     }
 
     toggleOverview(leaveOverview = false) {
@@ -958,7 +958,7 @@ export const Actions = class {
     }
 
     restartGnomeShell() {
-        if (!Meta.is_wayland_compositor())
+        if (Meta.is_wayland_compositor && !Meta.is_wayland_compositor())
             Meta.restart(_('Restarting Gnome Shell...'), global.context);
         else
             Main.notify(Me.metadata.name, _('Gnome Shell - Restart is not available in Wayland session'));
