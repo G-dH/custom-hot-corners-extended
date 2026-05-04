@@ -1,4 +1,8 @@
 ## Changelog:
+### v50.0 (2026-05-04)
+**Added:**
+- GNOME 50 support
+
 ### v49.0 (2025-10-01)
 **Added:**
 - GNOME 49 support
