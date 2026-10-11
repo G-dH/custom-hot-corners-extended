@@ -3,7 +3,7 @@
  * Actions
  *
  * @author     GdH <G-dH@github.com>
- * @copyright  2021-2025
+ * @copyright  2021-2026
  * @license    GPL-3.0
  */
 
@@ -68,6 +68,7 @@ export const Actions = class {
         this._interfaceSettings     = null;
         this._shellSettings         = null;
         this._soundSettings         = null;
+        this._displayBrightnessProxy = null;
 
         this.WS_IGNORE_LAST         = false;
         this.WS_WRAPAROUND          = false;
@@ -1606,15 +1607,26 @@ export const Actions = class {
             this._toggleGlobalEffect(name, effect);
     }
 
-    toggleColorBlindShaderEffect(window = true, mode = 0, simulate = false) {
-        let name = 'color-blind';
-        const effect = Shaders.DaltonismEffect;
+    toggleColorBlindShaderEffect(window = true, mode = 1, simulate = false) {
+        let name = `color-blind-${mode}-${simulate}`;
+        const shaderList = [
+            '',
+            'DeuterCorrectionEffect',
+            'ProtanCorrectionEffect',
+            'TritanCorrectionEffect',
+            'DeuterSimulatonEffect',
+            'ProtanSimulatonEffect',
+            'TritanSimulatonEffect',
+        ];
 
         simulate = simulate ? 1 : 0;
+        const index = mode + simulate * 3;
+        const effect = Shaders[shaderList[index]];
+
         if (window)
-            this._toggleWindowEffect(name, effect, { mode, simulate });
+            this._toggleWindowEffect(name, effect);
         else
-            this._toggleGlobalEffect(name, effect, { mode, simulate });
+            this._toggleGlobalEffect(name, effect);
     }
 
     toggleColorMixerEffect(window = true) {

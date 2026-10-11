@@ -4,16 +4,11 @@
   "name": "CHC-E (Custom Hot Corners - Extended)",
   "settings-schema": "org.gnome.shell.extensions.custom-hot-corners-extended",
   "shell-version": [
-    "45",
-    "46",
-    "47",
-    "48",
-    "49",
-    "50"
+    "51"
   ],
   "url": "https://github.com/G-dH/custom-hot-corners",
   "uuid": "custom-hot-corners-extended@G-dH.github.com",
-  "version-name": "50.0",
+  "version-name": "51.0",
   "donations": {
     "buymeacoffee": "georgdh"
   }

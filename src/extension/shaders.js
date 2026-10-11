@@ -3,7 +3,7 @@
  * Shaders
  *
  * @author     GdH <G-dH@github.com>
- * @copyright  2021-2024
+ * @copyright  2021-2026
  * @license    GPL-3.0
  */
 
@@ -11,11 +11,23 @@
 
 import GObject from 'gi://GObject';
 import Clutter from 'gi://Clutter';
+import Cogl from 'gi://Cogl';
 
 export const   InvertLightnessEffect = GObject.registerClass(
 class InvertLightnessEffect extends Clutter.ShaderEffect {
-    vfunc_get_static_shader_source() {
-        return ShaderLib.getInversion(0);
+    /* _init() {
+        super._init({ shader_type: 1 });
+        this.set_shader_source(ShaderLib.getInversion(0));
+    }*/
+
+    vfunc_get_static_snippet() {
+        const source = ShaderLib.getInversion(0);
+        const snippet = Cogl.Snippet.new(
+            Cogl.SnippetHook.FRAGMENT,
+            source.declarations,
+            source.post
+        );
+        return snippet;
     }
 
     vfunc_paint_target(node, paintContext) {
@@ -29,8 +41,19 @@ class InvertLightnessEffect extends Clutter.ShaderEffect {
 
 export const   InvertLightnessShiftEffect = GObject.registerClass(
 class InvertLightnessShiftEffect extends Clutter.ShaderEffect {
-    vfunc_get_static_shader_source() {
-        return ShaderLib.getInversion(1);
+    /* _init() {
+        super._init({ shader_type: 1 });
+        this.set_shader_source(ShaderLib.getInversion(1));
+    }*/
+
+    vfunc_get_static_snippet() {
+        const source = ShaderLib.getInversion(1);
+        const snippet = Cogl.Snippet.new(
+            Cogl.SnippetHook.FRAGMENT,
+            source.declarations,
+            source.post
+        );
+        return snippet;
     }
 
     vfunc_paint_target(node, paintContext) {
@@ -44,8 +67,19 @@ class InvertLightnessShiftEffect extends Clutter.ShaderEffect {
 
 export const   ColorInversionEffect = GObject.registerClass(
 class ColorInversionEffect extends Clutter.ShaderEffect {
-    vfunc_get_static_shader_source() {
-        return ShaderLib.getInversion(2);
+    /* _init() {
+        super._init({ shader_type: 1 });
+        this.set_shader_source(ShaderLib.getInversion(2));
+    }*/
+
+    vfunc_get_static_snippet() {
+        const source = ShaderLib.getInversion(2);
+        const snippet = Cogl.Snippet.new(
+            Cogl.SnippetHook.FRAGMENT,
+            source.declarations,
+            source.post
+        );
+        return snippet;
     }
 
     vfunc_paint_target(node, paintContext) {
@@ -59,8 +93,19 @@ class ColorInversionEffect extends Clutter.ShaderEffect {
 
 export const   ColorMixerEffect1 = GObject.registerClass(
 class ColorMixerEffect1 extends Clutter.ShaderEffect {
-    vfunc_get_static_shader_source() {
-        return ShaderLib.getChannelMix(1);
+    /* _init() {
+        super._init({ shader_type: 1 });
+        this.set_shader_source(ShaderLib.getChannelMix(1));
+    }*/
+
+    vfunc_get_static_snippet() {
+        const source = ShaderLib.getChannelMix(1);
+        const snippet = Cogl.Snippet.new(
+            Cogl.SnippetHook.FRAGMENT,
+            source.declarations,
+            source.post
+        );
+        return snippet;
     }
 
     vfunc_paint_target(node, paintContext) {
@@ -74,8 +119,19 @@ class ColorMixerEffect1 extends Clutter.ShaderEffect {
 
 export const   ColorMixerEffect2 = GObject.registerClass(
 class ColorMixerEffect2 extends Clutter.ShaderEffect {
-    vfunc_get_static_shader_source() {
-        return ShaderLib.getChannelMix(2);
+    /* _init() {
+        super._init({ shader_type: 1 });
+        this.set_shader_source(ShaderLib.getChannelMix(2));
+    }*/
+
+    vfunc_get_static_snippet() {
+        const source = ShaderLib.getChannelMix(2);
+        const snippet = Cogl.Snippet.new(
+            Cogl.SnippetHook.FRAGMENT,
+            source.declarations,
+            source.post
+        );
+        return snippet;
     }
 
     vfunc_paint_target(node, paintContext) {
@@ -87,18 +143,16 @@ class ColorMixerEffect2 extends Clutter.ShaderEffect {
     }
 });
 
-export const   DaltonismEffect = GObject.registerClass(
-class DaltonismEffect extends Clutter.ShaderEffect {
-    _init(properties) {
-        super._init();
-        this._mode = properties.mode;
-        this._simulation = properties.simulate;
-
-        this.set_shader_source(ShaderLib.getDaltonism(this._mode, this._simulation));
-    }
-
-    vfunc_get_static_shader_source() {
-        return ShaderLib.getDaltonism(this._mode, this._simulation);
+export const DeuterSimulatonEffect = GObject.registerClass(
+class DeuterSimulatonEffect extends Clutter.ShaderEffect {
+    vfunc_get_static_snippet() {
+        const source = ShaderLib.getDaltonism(1, 1);
+        this._snippet = Cogl.Snippet.new(
+            Cogl.SnippetHook.FRAGMENT,
+            source.declarations,
+            source.post
+        );
+        return this._snippet;
     }
 
     vfunc_paint_target(node, paintContext) {
@@ -110,15 +164,121 @@ class DaltonismEffect extends Clutter.ShaderEffect {
     }
 });
 
+export const ProtanSimulatonEffect = GObject.registerClass(
+class ProtanSimulatonEffect extends Clutter.ShaderEffect {
+    vfunc_get_static_snippet() {
+        const source = ShaderLib.getDaltonism(2, 1);
+        this._snippet = Cogl.Snippet.new(
+            Cogl.SnippetHook.FRAGMENT,
+            source.declarations,
+            source.post
+        );
+        return this._snippet;
+    }
+
+    vfunc_paint_target(node, paintContext) {
+        this.set_uniform_value('tex', 0);
+        if (paintContext === undefined)
+            super.vfunc_paint_target(node);
+        else
+            super.vfunc_paint_target(node, paintContext);
+    }
+});
+
+export const TritanSimulatonEffect = GObject.registerClass(
+class TritanSimulatonEffect extends Clutter.ShaderEffect {
+    vfunc_get_static_snippet() {
+        const source = ShaderLib.getDaltonism(3, 1);
+        this._snippet = Cogl.Snippet.new(
+            Cogl.SnippetHook.FRAGMENT,
+            source.declarations,
+            source.post
+        );
+        return this._snippet;
+    }
+
+    vfunc_paint_target(node, paintContext) {
+        this.set_uniform_value('tex', 0);
+        if (paintContext === undefined)
+            super.vfunc_paint_target(node);
+        else
+            super.vfunc_paint_target(node, paintContext);
+    }
+});
+
+export const DeuterCorrectionEffect = GObject.registerClass(
+class DeuterCorrectionEffect extends Clutter.ShaderEffect {
+    vfunc_get_static_snippet() {
+        const source = ShaderLib.getDaltonism(1, 0);
+        this._snippet = Cogl.Snippet.new(
+            Cogl.SnippetHook.FRAGMENT,
+            source.declarations,
+            source.post
+        );
+        return this._snippet;
+    }
+
+    vfunc_paint_target(node, paintContext) {
+        this.set_uniform_value('tex', 0);
+        if (paintContext === undefined)
+            super.vfunc_paint_target(node);
+        else
+            super.vfunc_paint_target(node, paintContext);
+    }
+});
+
+export const ProtanCorrectionEffect = GObject.registerClass(
+class ProtanCorrectionEffect extends Clutter.ShaderEffect {
+    vfunc_get_static_snippet() {
+        const source = ShaderLib.getDaltonism(2, 0);
+        this._snippet = Cogl.Snippet.new(
+            Cogl.SnippetHook.FRAGMENT,
+            source.declarations,
+            source.post
+        );
+        return this._snippet;
+    }
+
+    vfunc_paint_target(node, paintContext) {
+        this.set_uniform_value('tex', 0);
+        if (paintContext === undefined)
+            super.vfunc_paint_target(node);
+        else
+            super.vfunc_paint_target(node, paintContext);
+    }
+});
+
+export const TritanCorrectionEffect = GObject.registerClass(
+class TritanCorrectionEffect extends Clutter.ShaderEffect {
+    vfunc_get_static_snippet() {
+        const source = ShaderLib.getDaltonism(3, 0);
+        this._snippet = Cogl.Snippet.new(
+            Cogl.SnippetHook.FRAGMENT,
+            source.declarations,
+            source.post
+        );
+        return this._snippet;
+    }
+
+    vfunc_paint_target(node, paintContext) {
+        this.set_uniform_value('tex', 0);
+        if (paintContext === undefined)
+            super.vfunc_paint_target(node);
+        else
+            super.vfunc_paint_target(node, paintContext);
+    }
+});
 
 export const ShaderLib = class {
-    static getDaltonism(mode = 1, simulate) {
-        return `
-            uniform sampler2D tex;
-            #define COLORBLIND_MODE ${mode}
-            #define SIMULATE ${simulate}
-            void main() {
-                vec4 c = texture2D(tex, cogl_tex_coord_in[0].st);
+    static getDaltonism(mode, simulate) {
+        return {
+            // uniform sampler2D tex;
+            declarations: `
+                #define COLORBLIND_MODE ${mode}
+                #define SIMULATE ${simulate}`,
+            post: `
+                // void main() {
+                vec4 c = cogl_texel0;
 
                 // RGB to LMS matrix
                 float L = (17.8824 * c.r) + (43.5161 * c.g) + (4.11935 * c.b);
@@ -139,7 +299,7 @@ export const ShaderLib = class {
                 #if ( COLORBLIND_MODE == 3) // Tritanopia - blues are greatly reduced (1 of 10 000)
                     float l = 1.0 * L + 0.0 * M + 0.0 * S;
                     float m = 0.0 * L + 1.0 * M + 0.0 * S;
-                    // GdH - trinatopia vector calculated by me, all public sources were off
+                    // GdH - tritanopia vector calculated by me, all public sources were off
                     float s = -0.012491378299329402 * L + 0.07203451899279534 * M + 0.0 * S;
                 #endif
 
@@ -186,16 +346,19 @@ export const ShaderLib = class {
                     correction.a = c.a;
                     cogl_color_out = correction.rgba;
                 #endif
-            }
-        `;
+            // }
+            `,
+        };
     }
 
     static getChannelMix(mode) {
-        return `
-            uniform sampler2D tex;
-            #define MIX_MODE ${mode}
-            void main() {
-                vec4 c = texture2D(tex, cogl_tex_coord_in[0].st);
+        return {
+            // uniform sampler2D tex;
+            declarations: `
+            #define MIX_MODE ${mode}`,
+            post: `
+            // void main() {
+                vec4 c = cogl_texel0;
                 #if (MIX_MODE == 1)
                     c = vec4(c.g, c.b, c.r, c.a);
                 #elif (MIX_MODE == 2)
@@ -204,23 +367,26 @@ export const ShaderLib = class {
                     c = vec4(c.b, c.g, c.r, c.a);
                 #endif
                 cogl_color_out = c;
-            }
-        `;
+            // }
+            `,
+        };
     }
 
     static getInversion(mode) {
-        return `
-            uniform sampler2D tex;
+        return {
+            // uniform sampler2D tex;
+            declarations: `
             // Modes: 0 = Lightness
             //        1 = Lightness - white bias
             //        2 = Color
             #define INVERSION_MODE ${mode}
             #define BIAS float(INVERSION_MODE)
-
+            `,
+            post: `
             // based on shift_whitish.glsl https://github.com/vn971/linux-color-inversion
 
-            void main() {
-                vec4 c = texture2D(tex, cogl_tex_coord_in[0].st);
+            // void main() {
+                vec4 c = cogl_texel0;
                 #if (INVERSION_MODE < 2)
                     /* INVERSION_MODE ? shifted : non-shifted */
                     float white_bias = BIAS * c.a * .02;
@@ -232,7 +398,7 @@ export const ShaderLib = class {
                                c.a);
 
                 #elif (INVERSION_MODE == 2)
-                    c = vec4(c.a * 1 - c.r, c.a * 1 - c.g, c.a * 1 - c.b, c.a);
+                    c = vec4(c.a - c.r, c.a - c.g, c.a - c.b, c.a);
                 #endif
 
                 // gamma has to be compensated to maintain perceived differences in lightness on dark and light ends of the lightness scale
@@ -240,7 +406,8 @@ export const ShaderLib = class {
                 c.rgb = pow(c.rgb, vec3(1.0/gamma));
 
                 cogl_color_out = c;
-            }
-        `;
+            // }
+            `,
+        };
     }
 };
