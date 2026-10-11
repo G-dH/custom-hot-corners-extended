@@ -15,11 +15,6 @@ import Cogl from 'gi://Cogl';
 
 export const   InvertLightnessEffect = GObject.registerClass(
 class InvertLightnessEffect extends Clutter.ShaderEffect {
-    /* _init() {
-        super._init({ shader_type: 1 });
-        this.set_shader_source(ShaderLib.getInversion(0));
-    }*/
-
     vfunc_get_static_snippet() {
         const source = ShaderLib.getInversion(0);
         const snippet = Cogl.Snippet.new(
@@ -41,11 +36,6 @@ class InvertLightnessEffect extends Clutter.ShaderEffect {
 
 export const   InvertLightnessShiftEffect = GObject.registerClass(
 class InvertLightnessShiftEffect extends Clutter.ShaderEffect {
-    /* _init() {
-        super._init({ shader_type: 1 });
-        this.set_shader_source(ShaderLib.getInversion(1));
-    }*/
-
     vfunc_get_static_snippet() {
         const source = ShaderLib.getInversion(1);
         const snippet = Cogl.Snippet.new(
@@ -67,11 +57,6 @@ class InvertLightnessShiftEffect extends Clutter.ShaderEffect {
 
 export const   ColorInversionEffect = GObject.registerClass(
 class ColorInversionEffect extends Clutter.ShaderEffect {
-    /* _init() {
-        super._init({ shader_type: 1 });
-        this.set_shader_source(ShaderLib.getInversion(2));
-    }*/
-
     vfunc_get_static_snippet() {
         const source = ShaderLib.getInversion(2);
         const snippet = Cogl.Snippet.new(
@@ -93,11 +78,6 @@ class ColorInversionEffect extends Clutter.ShaderEffect {
 
 export const   ColorMixerEffect1 = GObject.registerClass(
 class ColorMixerEffect1 extends Clutter.ShaderEffect {
-    /* _init() {
-        super._init({ shader_type: 1 });
-        this.set_shader_source(ShaderLib.getChannelMix(1));
-    }*/
-
     vfunc_get_static_snippet() {
         const source = ShaderLib.getChannelMix(1);
         const snippet = Cogl.Snippet.new(
@@ -119,11 +99,6 @@ class ColorMixerEffect1 extends Clutter.ShaderEffect {
 
 export const   ColorMixerEffect2 = GObject.registerClass(
 class ColorMixerEffect2 extends Clutter.ShaderEffect {
-    /* _init() {
-        super._init({ shader_type: 1 });
-        this.set_shader_source(ShaderLib.getChannelMix(2));
-    }*/
-
     vfunc_get_static_snippet() {
         const source = ShaderLib.getChannelMix(2);
         const snippet = Cogl.Snippet.new(
