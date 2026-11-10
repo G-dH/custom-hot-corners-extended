@@ -75,7 +75,14 @@ If you want to test the latest version from the Github repository (which is usua
 
 Make sure you have installed packages providing following commands: `glib-compile-resources`, `glib-compile-schemas`, `git`
 
-##### GNOME 45+
+##### GMONE 51
+
+    git clone https://github.com/G-dH/custom-hot-corners-extended.git
+    cd custom-hot-corners-extended
+    git checkout gnome-51
+    make install
+
+##### GNOME 45-50
 
     git clone https://github.com/G-dH/custom-hot-corners-extended.git
     cd custom-hot-corners-extended
