@@ -1426,7 +1426,7 @@ export const Actions = class {
 
         const gicon = new Gio.ThemedIcon({ name: icons[n] });
         const level = volume / maxLevel * ampScale;
-        const label = sink.get_port().human_port;
+        const label = sink.get_port()?.human_port ?? sink.description
         if (Main.osdWindowManager.showAll) // // Since GNOME 49
             Main.osdWindowManager.showAll(gicon, label, level, ampScale);
         else
